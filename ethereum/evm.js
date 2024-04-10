@@ -16,10 +16,8 @@ import { hex, hexten } from "../util/çevir";
  */
 const adresDüzelt = (adres) => {
   if (adres.length != 42 || !adres.startsWith("0x")) return null;
-  /** @type {string} */
-  let küçük = adres.slice(2).toLowerCase();
   /** @const {string} */
-  const entropi = keccak256(küçük);
+  const entropi = keccak256(adres.slice(2).toLowerCase());
   /** @type {boolean} */
   let büyükVar = false;
   /** @type {boolean} */
@@ -69,7 +67,7 @@ const adresGeçerli = (adres) => {
     let c = adres.charCodeAt(i);
     let e = entropi.charCodeAt(i);
     if (65 <= c && c <= 90) {
-      if (c <= 55) return false;
+      if (e <= 55) return false;
     } else if (97 <= c && c <= 122) {
       if (e > 55) return false;
     } else if (c < 48 || 57 < c) {
