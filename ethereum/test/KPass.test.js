@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { ethers } from "ethers";
 import { ChainId } from "../../crosschain/chains";
-import { TokenData } from "../TCKT";
+import { TokenData } from "../KPass";
 
 /**
  * @param {!TokenInfo} tokenInfo

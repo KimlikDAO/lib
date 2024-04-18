@@ -1,6 +1,4 @@
 /**
- * TCKT için ek `did.Section` tanımları.
- *
  * @author KimlikDAO
  * @externs
  */

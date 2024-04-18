@@ -85,7 +85,7 @@ const testCombineMultiple = () => {
   const commitmentAnon = commit(ownerAddress, commitmentAnonR);
 
   /** @const {!did.DecryptedSections} */
-  const tckt = {
+  const kpass = {
     "humanID": /** @type {!did.HumanID} */({
       id: "9e10e195f5c4fb987af3077fe241ff7108d39ed7a3b2908da6a37778ad75ee39",
     }),
@@ -96,17 +96,17 @@ const testCombineMultiple = () => {
   };
 
   /** @const {!Array<did.DecryptedSections>} */
-  const tckts = Array(5);
+  const kpasses = Array(5);
 
-  for (let i = 0; i < tckts.length; ++i) {
-    tckts[i] = /** @type {!did.DecryptedSections} */(structuredClone(tckt));
-    sign(tckts[i], commitment, commitmentAnon, 1337, BigInt(i + 10));
+  for (let i = 0; i < kpasses.length; ++i) {
+    kpasses[i] = /** @type {!did.DecryptedSections} */(structuredClone(kpass));
+    sign(kpasses[i], commitment, commitmentAnon, 1337, BigInt(i + 10));
   }
 
   /** @const {!did.DecryptedSections} */
-  const combined = combineMultiple(tckts, commitmentR, commitmentAnonR, 5);
+  const combined = combineMultiple(kpasses, commitmentR, commitmentAnonR, 5);
 
-  assertEq(Object.keys(combined).length, Object.keys(tckt).length);
+  assertEq(Object.keys(combined).length, Object.keys(kpass).length);
 
   assertEq(combined["humanID"].secp256k1.length, 5);
   assertEq(combined["personInfo"].secp256k1.length, 5);
@@ -144,7 +144,7 @@ const testCombineMultipleConflicting = () => {
   const commitmentAnon = commit(ownerAddress, commitmentAnonR);
 
   /** @const {!did.DecryptedSections} */
-  const tckt1 = {
+  const kpass1 = {
     "humanID": /** @type {!did.HumanID} */({
       id: "9e10e195f5c4fb987af3077fe241ff7108d39ed7a3b2908da6a37778ad75ee39",
     }),
@@ -155,7 +155,7 @@ const testCombineMultipleConflicting = () => {
   };
 
   /** @const {!did.DecryptedSections} */
-  const tckt2 = {
+  const kpass2 = {
     "humanID": /** @type {!did.HumanID} */({
       id: "793ae065c561c060048762a8a9112f0645574f76a9179169cf446147564ff373",
     }),
@@ -166,16 +166,16 @@ const testCombineMultipleConflicting = () => {
   };
 
   /** @const {!Array<did.DecryptedSections>} */
-  const tckts = Array(5);
+  const kpasses = Array(5);
 
-  for (let i = 0; i < tckts.length; ++i) {
-    tckts[i] = /** @type {!did.DecryptedSections} */(i < 2
-      ? structuredClone(tckt1) : structuredClone(tckt2));
-    sign(tckts[i], commitment, commitmentAnon, 1337, BigInt(i + 10));
+  for (let i = 0; i < kpasses.length; ++i) {
+    kpasses[i] = /** @type {!did.DecryptedSections} */(i < 2
+      ? structuredClone(kpass1) : structuredClone(kpass2));
+    sign(kpasses[i], commitment, commitmentAnon, 1337, BigInt(i + 10));
   }
 
   /** @const {!did.DecryptedSections} */
-  const combined = combineMultiple(tckts, commitmentR, commitmentAnonR, 3);
+  const combined = combineMultiple(kpasses, commitmentR, commitmentAnonR, 3);
   assertEq(combined["personInfo"].secp256k1.length, 5);
   assertEq(combined["humanID"].secp256k1.length, 3);
 
@@ -206,7 +206,7 @@ const testCombineMultipleInsufficient = () => {
   const commitmentAnon = commit(ownerAddress, commitmentAnonR);
 
   /** @const {!Array<!did.DecryptedSections>} */
-  const tckt = [{
+  const kpass = [{
     "humanID": /** @type {!did.HumanID} */({
       id: "9e10e195f5c4fb987af3077fe241ff7108d39ed7a3b2908da6a37778ad75ee39",
     }),
@@ -233,16 +233,16 @@ const testCombineMultipleInsufficient = () => {
   }];
 
   /** @const {!Array<did.DecryptedSections>} */
-  const tckts = Array(5);
+  const kpasses = Array(5);
 
-  for (let i = 0; i < tckts.length; ++i) {
-    tckts[i] = /** @type {!did.DecryptedSections} */(
-      structuredClone(tckt[i % 3]));
-    sign(tckts[i], commitment, commitmentAnon, 1337, BigInt(i + 10));
+  for (let i = 0; i < kpasses.length; ++i) {
+    kpasses[i] = /** @type {!did.DecryptedSections} */(
+      structuredClone(kpass[i % 3]));
+    sign(kpasses[i], commitment, commitmentAnon, 1337, BigInt(i + 10));
   }
 
   /** @const {!did.DecryptedSections} */
-  const combined = combineMultiple(tckts, commitmentR, commitmentAnonR, 3);
+  const combined = combineMultiple(kpasses, commitmentR, commitmentAnonR, 3);
   assertEq(combined["personInfo"].secp256k1.length, 5);
   assertEq(Object.keys(combined).length, 1);
 

@@ -6,7 +6,7 @@ const TR = true;
 /**
  * @noinline
  * @param {string} ad DOM biriminin adı.
- * @return {Element}
+ * @return {!Element}
  */
 const adla = (ad) => document.getElementById(ad);
 

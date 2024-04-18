@@ -87,7 +87,7 @@ const commit = (ownerAddress, commitmentR) => {
 /**
  * Returns the list of unique signers of an `did.Section`.
  *
- * Note these signers still need to be validated against the `TCKTSigners`
+ * Note these signers still need to be validated against the `KimlikDAOPassSigners`
  * contract.
  *
  * @param {string} sectionName

@@ -36,12 +36,12 @@ build/ethereum/test/eravm.compiled-test.js: ethereum/test/eravm.compiled-test.js
 	bun uglifyjs $@ -m -c toplevel,unsafe -o $@
 	wc $@
 
-build/ethereum/test/TCKT.compiled-test.js: ethereum/test/TCKT.compiled-test.js \
+build/ethereum/test/KPass.compiled-test.js: ethereum/test/KPass.compiled-test.js \
     crosschain/chains.js \
     crypto/secp256k1.js crypto/sha3.js crypto/modular.js \
     ethereum/eth.d.js ethereum/logs.d.js ethereum/transaction.d.js \
     ethereum/provider.d.js ethereum/provider.js \
-    ethereum/TCKTLite.js ethereum/TCKT.js \
+    ethereum/KPassLite.js ethereum/KPass.js \
     ethereum/evm.js \
     testing/assert.js testing/nodejs.d.js \
     util/çevir.js

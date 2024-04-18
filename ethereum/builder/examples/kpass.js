@@ -15,19 +15,19 @@ const Chains = {
  * @const {string}
  * @noinline
  */
-const TCKT_ADDR = "0xcCc0a9b023177549fcf26c947edb5bfD9B230cCc";
+const KPASS = "0xcCc0a9b023177549fcf26c947edb5bfD9B230cCc";
 
 /**
  * @param {!Array<string>} addresses
  * @return {!Promise<!Array<boolean>>}
  */
-const hasTCKT = (addresses) => {
+const hasKPass = (addresses) => {
   /** @const {!Array<string>} */
   const chains = Object.keys(Chains);
   /** @const {!Array<!Array<!eth.Transaction|string>>} */
   const paramsList = addresses.map((addr) => [
     /** @type {!eth.Transaction} */({
-      to: TCKT_ADDR,
+      to: KPASS,
       data: "0xc50a1514" + evm.address(addr)
     }), "latest"
   ]);
@@ -48,4 +48,4 @@ const hasTCKT = (addresses) => {
   );
 }
 
-export { hasTCKT };
+export { hasKPass };

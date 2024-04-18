@@ -1,8 +1,8 @@
 /**
- * @fileoverview TCKT akıllı sözleşmesinin js önyüzu.
+ * @fileoverview KPass akıllı sözleşmesinin js önyüzu.
  */
 import { ChainId } from "../crosschain/chains";
-import TCKT from "./TCKTLite";
+import KPass from "./KPassLite";
 import evm from './evm';
 import { callMethod } from "./provider";
 
@@ -157,7 +157,7 @@ let Provider = /** @type {!eth.Provider} */({
 const setProvider = (provider) => Provider = provider;
 
 /**
- * Asks the connected wallet to track the TCKT contract (as an NFT).
+ * Asks the connected wallet to track the KPass contract (as an NFT).
  *
  * Sends a `wallet_watchAsset` request to the connected wallet.
  *
@@ -169,8 +169,8 @@ const addToWallet = (chainId, tokenId) => Provider.request(/** @type {!eth.Reque
   params: /** @type {!eth.WatchAssetParam} */({
     type: 'ERC721',
     options: {
-      address: TCKT.getAddress(chainId),
-      symbol: "TCKT",
+      address: KPass.getAddress(chainId),
+      symbol: "KPASS",
       tokenId,
     }
   }),
@@ -223,7 +223,7 @@ const maybeGasLimit = (chainId, gasLimit) => chainId in NO_GAS_ESTIMATE
  * @return {!Promise<string>} transaction hash
  */
 const sendTransaction = (chainId, address, value, gas, calldata) =>
-  sendTransactionTo(address, TCKT.getAddress(chainId), value, gas, calldata);
+  sendTransactionTo(address, KPass.getAddress(chainId), value, gas, calldata);
 
 /** @const {!Object<string, string>} */
 const NonceCache = {};
@@ -250,7 +250,7 @@ const getNonce = (chainId, address, token) => {
  * @param {string} address
  * @return {!Promise<string>}
  */
-const handleOf = (chainId, address) => TCKT.handleOf(Provider, chainId, address);
+const handleOf = (chainId, address) => KPass.handleOf(Provider, chainId, address);
 
 /**
  * @param {ChainId} chainId
@@ -258,7 +258,7 @@ const handleOf = (chainId, address) => TCKT.handleOf(Provider, chainId, address)
  * @return {!Promise<number>}
  */
 const revokesRemaining = (chainId, sender) =>
-  callMethod(Provider, TCKT.getAddress(chainId), "0x165c44f3", sender)
+  callMethod(Provider, KPass.getAddress(chainId), "0x165c44f3", sender)
     .then((revokes) => parseInt(revokes.slice(-6), 16));
 
 /**
@@ -311,7 +311,7 @@ const getRevokeeAddresses = (chainId, revoker) =>
   Provider.request(/** @type {!eth.Request} */({
     method: "eth_getLogs",
     params: [/** @type {!eth.GetLogs} */({
-      address: TCKT.getAddress(chainId),
+      address: KPass.getAddress(chainId),
       fromBlock: "0x12A3AE7",
       toBlock: "0x12A3AE7",
       topics: [
@@ -343,7 +343,7 @@ const createWithRevokers = (chainId, address, cid, revokeThreshold, revokers) =>
 
 /**
  * @param {number} revokeThreshold The threshold for vote weight after which
- *                                 the TCKT is revoked.
+ *                                 the KPass is revoked.
  * @param {!Object<string, number>} revokers (Address, weight) pairs for the
  *                                           revokers.
  * @return {string} serialized revoker list.
@@ -402,7 +402,7 @@ const createWithRevokersWithTokenPayment = (chainId, address, cid, revokeThresho
 /**
  * @param {ChainId} chainId
  * @param {number} token
- * @return {!Promise<!Array<number>>} price of TCKT in the given currency
+ * @return {!Promise<!Array<number>>} price of KPass in the given currency
  */
 const priceIn = (chainId, token) => {
   if (chainId == "0x38" && token == 0)
@@ -460,7 +460,7 @@ const getApprovalFor = (chainId, address, token) => sendTransactionTo(
   "0x" + TokenData[chainId][token].adres,
   "0",
   maybeGasLimit(chainId, 80_000),
-  "0x095ea7b3" + evm.address(TCKT.getAddress(chainId)) + evm.Uint256Max);
+  "0x095ea7b3" + evm.address(KPass.getAddress(chainId)) + evm.Uint256Max);
 
 /**
  * @param {ChainId} chainId      chainId for the chain we want the permit for
@@ -504,7 +504,7 @@ const getPermitFor = (chainId, owner, token, withRevokers) =>
         "primaryType": "Permit",
         "message": {
           "owner": owner,
-          "spender": TCKT.getAddress(chainId),
+          "spender": KPass.getAddress(chainId),
           "value": "0x" + price[+withRevokers].toString(16),
           "nonce": nonce,
           "deadline": "0x" + deadline

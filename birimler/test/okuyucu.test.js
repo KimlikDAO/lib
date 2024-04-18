@@ -22,8 +22,8 @@ describe("sayfaOku tests", () => {
     const sayfa = sayfaOku("ana/sayfa.html", { dil: "tr", dev: true, kök: "birimler/test/" });
     expect(sayfa).toContain("ana/sayfa.css");
     expect(sayfa).toContain("Cüzdan eklendi");
-    expect(sayfa).toContain("TCKT eklendi");
-    expect(sayfa).toContain("birim/tckt/birim.css");
+    expect(sayfa).toContain("KPASS eklendi");
+    expect(sayfa).toContain("birim/kpass/birim.css");
 
     expect(sayfa).toContain("<b>kalın</b>");
     expect(sayfa).not.toContain("bold");

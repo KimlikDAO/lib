@@ -46,8 +46,8 @@ const testKeccak256 = () => {
   );
 
   assertEq(
-    keccak256("TCKT"),
-    "cad65853fd3e826d6deb3c81411fb138906a27c444b8fe3dffc33ec38b1f3375"
+    keccak256("KPASS"),
+    "9f448b217834c1795fa1012375379ddfe66572d54ef164e1262b3887de01e08f"
   );
 
   assertEq(

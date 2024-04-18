@@ -13,7 +13,7 @@ kimlikdao-js, KimlikDAO projeleri için gerekli olan javascript modüllerinin tu
 
 `crypto`: Kriptografik fonksiyonlar ve kitaplıklar
 
-`did`: KimlikDAO'nun DID ve TCKT tanımları
+`did`: KimlikDAO'nun DID ve KPass tanımları
 
 `ethereum`: Ethereum node'ları ile etkileşim araçları
 

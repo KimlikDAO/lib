@@ -1,11 +1,9 @@
 /**
- * @fileoverview TCKT'nin blokzincir dışı saklanan verisini yönetme birimi.
- *
  * @author KimlikDAO
  */
 
 import { ChainId } from "../crosschain/chains";
-import TCKT from "../ethereum/TCKTLite";
+import KPass from "../ethereum/KPassLite";
 import dom from "../util/dom";
 import { hex } from "../util/çevir";
 import { SectionGroup } from "./decryptedSections";
@@ -17,15 +15,16 @@ import { SectionGroup } from "./decryptedSections";
 const KIMLIKDAO_URL = "https://kimlikdao.org";
 
 /** @const {string} */
-const İmzaİsteğiTR = `TCKT Erişim İsteği:
+const SignPromptTR = `KimlikDAO Pass Erişim İsteği:
 -------------------------------------------------
-()Bu mesajı imzaladığınızda, bağlı uygulama TCKT’nizin
+()Bu mesajı imzaladığınızda, bağlı uygulama KimlikDAO Pass’inizin
 
   {}
 
-bölüm<>ne erişebilecek. Bu mesajı sadece bu bilgileri paylaşmak istiyorsanız imzalayın.\n\n\n`
+bölüm<>ne erişebilecek. Bu mesajı sadece bu bilgileri paylaşmak istiyorsanız imzalayın.\n\n\n`;
+
 /** @const {string} */
-const İmzaİsteğiEN = `KimlikDAO Pass Access Request:
+const SignPromptEN = `KimlikDAO Pass Access Request:
 -------------------------------------------------
 ()When you sign this message, the connected app will have access to
 
@@ -39,13 +38,13 @@ section<> of your KimlikDAO Pass. Only sign this message if you would like to sh
  * @param {string=} girişEn
  * @return {string}
  */
-const imzaMetni = (bölümler, girişTr, girişEn) => {
+const signPrompt = (bölümler, girişTr, girişEn) => {
   /** @const {string} */
-  const tr = İmzaİsteğiTR
+  const tr = SignPromptTR
     .replace("()", girişTr || "")
     .replace("<>", bölümler.length == 1 ? "ü" : "leri");
   /** @const {string} */
-  const en = İmzaİsteğiEN
+  const en = SignPromptEN
     .replace("()", girişEn || "")
     .replace("<>", bölümler.length == 1 ? "" : "s");
   return (dom.TR ? tr + en : en + tr)
@@ -59,33 +58,33 @@ const imzaMetni = (bölümler, girişTr, girişEn) => {
  * @param {string=} girişEn
  * @return {!SectionGroup}
  */
-const bölüm = (bölümler, ağ, girişTr, girişEn) => /** @type {!SectionGroup} */({
+const section = (bölümler, ağ, girişTr, girişEn) => /** @type {!SectionGroup} */({
   sectionNames: bölümler,
   userPrompt: imzaMetni(bölümler, girişTr, girişEn)
     + "Nonce: " + hex(/** @type {!Uint8Array} */(crypto.getRandomValues(new Uint8Array(8))))
     + "\nChainId: " + ağ
-    + "\nNFT: " + TCKT.getAddress(ağ)
+    + "\nNFT: " + KPass.getAddress(ağ)
 });
 
 /**
- * @param {ChainId} ağ
+ * @param {ChainId} chainId
  * @return {{
  *   metadata: !eth.ERC721Metadata,
- *   bölümler: !Array<SectionGroup>
+ *   sections: !Array<SectionGroup>
  * }}
  */
-const metadataVeBölümler = (ağ) => ({
+const metadataAndSections = (chainId) => ({
   metadata: /** @type {!eth.ERC721Metadata} */({
-    name: "TCKT",
-    description: "KimlikDAO Kimlik Tokeni",
-    image: KIMLIKDAO_URL + "/TCKT.svg",
+    name: "KPASS",
+    description: "KimlikDAO Pass",
+    image: KIMLIKDAO_URL + "/KPASS.svg",
     external_url: KIMLIKDAO_URL,
   }),
-  bölümler: [
-    bölüm(["personInfo", "contactInfo", "addressInfo", "kütükBilgileri"], ağ),
-    bölüm(["contactInfo", "humanID"], ağ),
-    bölüm(["humanID"], ağ),
-    bölüm(["exposureReport"], ağ,
+  sections: [
+    section(["personInfo", "contactInfo", "addressInfo", "kütükBilgileri"], ağ),
+    section(["contactInfo", "humanID"], ağ),
+    section(["humanID"], ağ),
+    section(["exposureReport"], ağ,
       "https://kimlikdao.org adresinde olduğunuzdan emin olun! Bu adreste değilseniz bu metni imzalamayın.\n\n",
       "Ensure that you're on https://kimlikdao.org. If not, don't sign this message!\n\n"
     )
@@ -93,7 +92,7 @@ const metadataVeBölümler = (ağ) => ({
 });
 
 /** @const {!Object<string, string>} */
-const OnaylamaAnahtarları = {
+const VerificationKeys = {
   "exposureReport":
     "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAx6RG1FTAvyuNi4Hd5+o6muaVPgF12CN97J50" +
     "YHpHkcEfe3zYMnun/OT1o4fkPidoTgh7PbTOiPvsu6yTVenCjV3PCuwUoKniPCjq0sPMCOgQNTAsOjFg" +
@@ -119,7 +118,7 @@ const OnaylamaAnahtarları = {
 };
 
 export {
-  OnaylamaAnahtarları,
-  imzaMetni,
-  metadataVeBölümler
+  VerificationKeys,
+  metadataAndSections,
+  signPrompt
 };
