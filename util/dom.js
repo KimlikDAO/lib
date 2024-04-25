@@ -8,7 +8,7 @@ const TR = true;
  * @param {string} ad DOM biriminin adı.
  * @return {!Element}
  */
-const adla = (ad) => document.getElementById(ad);
+const adla = (ad) => /** @type {!Element} */(document.getElementById(ad));
 
 /**
  * @noinline

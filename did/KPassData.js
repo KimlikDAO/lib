@@ -17,7 +17,7 @@ const KIMLIKDAO_URL = "https://kimlikdao.org";
 /** @const {string} */
 const SignPromptTR = `KimlikDAO Pass Erişim İsteği:
 -------------------------------------------------
-()Bu mesajı imzaladığınızda, bağlı uygulama KimlikDAO Pass’inizin
+()Bu mesajı imzaladığınızda, bağlı uygulama KPass’inizin
 
   {}
 
@@ -30,40 +30,40 @@ const SignPromptEN = `KimlikDAO Pass Access Request:
 
   {}
 
-section<> of your KimlikDAO Pass. Only sign this message if you would like to share this information.\n\n\n`
+section<> of your KPass. Only sign this message if you would like to share this information.\n\n\n`
 
 /**
- * @param {!Array<string>} bölümler
- * @param {string=} girişTr
- * @param {string=} girişEn
+ * @param {!Array<string>} sections
+ * @param {string=} introTr
+ * @param {string=} introEn
  * @return {string}
  */
-const signPrompt = (bölümler, girişTr, girişEn) => {
+const signPrompt = (sections, introTr, introEn) => {
   /** @const {string} */
   const tr = SignPromptTR
-    .replace("()", girişTr || "")
-    .replace("<>", bölümler.length == 1 ? "ü" : "leri");
+    .replace("()", introTr || "")
+    .replace("<>", sections.length == 1 ? "ü" : "leri");
   /** @const {string} */
   const en = SignPromptEN
-    .replace("()", girişEn || "")
-    .replace("<>", bölümler.length == 1 ? "" : "s");
+    .replace("()", introEn || "")
+    .replace("<>", sections.length == 1 ? "" : "s");
   return (dom.TR ? tr + en : en + tr)
-    .replace(/{}/g, bölümler.join(",\n  "));
+    .replace(/{}/g, sections.join(",\n  "));
 }
 
 /**
- * @param {!Array<string>} bölümler
- * @param {ChainId} ağ
- * @param {string=} girişTr
- * @param {string=} girişEn
+ * @param {!Array<string>} sections
+ * @param {ChainId} chainId
+ * @param {string=} introTr
+ * @param {string=} introEn
  * @return {!SectionGroup}
  */
-const section = (bölümler, ağ, girişTr, girişEn) => /** @type {!SectionGroup} */({
-  sectionNames: bölümler,
-  userPrompt: imzaMetni(bölümler, girişTr, girişEn)
+const section = (sections, chainId, introTr, introEn) => /** @type {!SectionGroup} */({
+  sectionNames: sections,
+  userPrompt: signPrompt(sections, introTr, introEn)
     + "Nonce: " + hex(/** @type {!Uint8Array} */(crypto.getRandomValues(new Uint8Array(8))))
-    + "\nChainId: " + ağ
-    + "\nNFT: " + KPass.getAddress(ağ)
+    + "\nChainId: " + chainId
+    + "\nNFT: " + KPass.getAddress(chainId)
 });
 
 /**
@@ -81,10 +81,10 @@ const metadataAndSections = (chainId) => ({
     external_url: KIMLIKDAO_URL,
   }),
   sections: [
-    section(["personInfo", "contactInfo", "addressInfo", "kütükBilgileri"], ağ),
-    section(["contactInfo", "humanID"], ağ),
-    section(["humanID"], ağ),
-    section(["exposureReport"], ağ,
+    section(["personInfo", "contactInfo", "addressInfo", "kütükBilgileri"], chainId),
+    section(["contactInfo", "humanID"], chainId),
+    section(["humanID"], chainId),
+    section(["exposureReport"], chainId,
       "https://kimlikdao.org adresinde olduğunuzdan emin olun! Bu adreste değilseniz bu metni imzalamayın.\n\n",
       "Ensure that you're on https://kimlikdao.org. If not, don't sign this message!\n\n"
     )
