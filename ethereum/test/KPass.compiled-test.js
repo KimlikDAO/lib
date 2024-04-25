@@ -1,6 +1,6 @@
-import { ChainId } from "/crosschain/chains";
-import KPass from "/ethereum/KPass";
-import { assertEq } from "/testing/assert";
+import { ChainId } from "../../crosschain/chains";
+import { assertEq } from "../../testing/assert";
+import KPass from "../KPass";
 
 assertEq(KPass.isTokenAvailable(ChainId.xa86a, 1), true);
 assertEq(KPass.isTokenAvailable(ChainId.x406, 1), false);

@@ -1,5 +1,5 @@
+import { hex } from "@kimlikdao/lib/util/çevir";
 import { JsonRpcProvider, Wallet } from "ethers";
-import { hex } from "../../../util/çevir";
 import { ByteCode, SZABO, batchSendFixedAmountNoPush0 } from "../builder";
 
 /**
@@ -25,7 +25,7 @@ const batchSend = batchSendFixedAmountNoPush0([
 const send = async (program) => {
   /**
    * @const
-   * @type {!Provider}
+   * @type {!JsonRpcProvider}
    */
   const provider = new JsonRpcProvider("https://fantom-testnet.rpc.thirdweb.com");
   /** @const {!Wallet} */

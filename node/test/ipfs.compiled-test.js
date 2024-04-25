@@ -1,6 +1,6 @@
 
-import ipfs from "/node/ipfs";
-import { assertEq } from "/testing/assert";
+import { assertEq } from "../../testing/assert";
+import ipfs from "../ipfs";
 
 /**
  * @return {!Promise<*>}

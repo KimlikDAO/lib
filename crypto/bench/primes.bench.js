@@ -1,7 +1,7 @@
-import { getNonsmooth, millerRabinBase2 } from "/crypto/primes";
-import { keccak256Uint8 } from "/crypto/sha3";
-import { assert } from "/testing/assert";
-import { hex } from "/util/çevir";
+import { assert } from "../../testing/assert";
+import { hex } from "../../util/çevir";
+import { getNonsmooth, millerRabinBase2 } from "../primes";
+import { keccak256Uint8 } from "../sha3";
 
 const benchGetNonsmooth = () => {
   console.time("getNonsmooth()");

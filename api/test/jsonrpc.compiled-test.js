@@ -1,6 +1,6 @@
-import jsonrpc from "/api/jsonrpc";
-import evm from "/ethereum/evm";
-import { assertEq } from "/testing/assert";
+import evm from "../../ethereum/evm";
+import { assertEq } from "../../testing/assert";
+import jsonrpc from "../jsonrpc";
 
 /** @const {string} */
 const OLD_TCKO_ADDR = "0xb97bf95b4f3110285727b70da5a7465bfd2098ca";

@@ -1,8 +1,8 @@
+import { assertArrayEq, assertEq } from "../../testing/assert";
+import { hex } from "../../util/çevir";
+import { keccak256, keccak256Uint32 } from "../sha3";
 import { keccak256 as keccak256_orig } from "./sha3_orig";
 import { keccak256 as keccak256_prev } from "./sha3_prev";
-import { keccak256, keccak256Uint32 } from "/crypto/sha3";
-import { assertArrayEq, assertEq } from "/testing/assert";
-import { hex } from "/util/çevir";
 
 const testKeccak256 = () => {
   assertEq(

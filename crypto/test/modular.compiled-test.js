@@ -1,5 +1,5 @@
-import { exp, exp2, expTimesExp, inverse } from "/crypto/modular";
-import { assertEq } from "/testing/assert";
+import { assertEq } from "../../testing/assert";
+import { exp, exp2, expTimesExp, inverse } from "../modular";
 
 /**
  * Prime used in the secp256k1 curve.

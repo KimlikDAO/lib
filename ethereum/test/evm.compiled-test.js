@@ -1,5 +1,5 @@
-import evm from "/ethereum/evm";
-import { assert, assertEq } from "/testing/assert";
+import evm from "../../ethereum/evm";
+import { assert, assertEq } from "../../testing/assert";
 
 assertEq(evm.signerAddress(
   evm.personalDigest("140e575468d2a8dcbcc437e0f12e37606491f1621fe71239b99b793cd590b7f4"),

@@ -1,6 +1,6 @@
-import { decrypt, encrypt } from "/crosschain/unlockable";
-import { assertEq } from "/testing/assert";
-import { FakeSigner } from "/testing/crosschain";
+import { assertEq } from "../../testing/assert";
+import { FakeSigner } from "../../testing/crosschain";
+import { decrypt, encrypt } from "../unlockable";
 
 /**
  * @return {!Promise<boolean>}

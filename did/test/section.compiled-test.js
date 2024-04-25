@@ -1,7 +1,7 @@
-import { commit, hash, recoverSectionSigners, signSection } from "/did/section";
-import { assertElemEq, assertEq } from "/testing/assert";
-import vm from "/testing/vm";
-import { base64, hex } from "/util/çevir";
+import { assertElemEq, assertEq } from "../../testing/assert";
+import vm from "../../testing/vm";
+import { base64, hex } from "../../util/çevir";
+import { commit, hash, recoverSectionSigners, signSection } from "../section";
 
 const testHash = () => {
   {

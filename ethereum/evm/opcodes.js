@@ -33,19 +33,19 @@ const OpData = {};
 
 /**
  * @param {number}
- * @return {!Op}
+ * @return {Op}
  */
-const dupN = (n) => /** @type {!Op} */((127 + n).toString(16));
+const dupN = (n) => /** @type {Op} */((127 + n).toString(16));
 
 /**
  * @param {number} n number of bytes to push to the stack as a word
- * @return {!Op}
+ * @return {Op}
  */
-const pushN = (n) => /** @type {!Op} */((95 + n).toString(16));
+const pushN = (n) => /** @type {Op} */((95 + n).toString(16));
 
 /**
  * @param {!bigint} n
- * @return {!Array<!Op|!OpData>}
+ * @return {!Array<Op|OpData>}
  */
 const pushNumber = (n) => {
   /** @type {string} */

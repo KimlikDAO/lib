@@ -1,6 +1,6 @@
-import { generate, prepareGenerateKey, verify } from "/did/verifiableID";
-import { assert } from "/testing/assert";
-import { base64 } from "/util/çevir";
+import { assert } from "../../testing/assert";
+import { base64 } from "../../util/çevir";
+import { generate, prepareGenerateKey, verify } from "../verifiableID";
 
 /**
  * @return {!Promise<void>}

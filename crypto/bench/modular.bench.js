@@ -1,5 +1,5 @@
-import { exp, exp2, expTimesExp } from "/crypto/modular";
-import { assertEq } from "/testing/assert";
+import { assertEq } from "../../testing/assert";
+import { exp, exp2, expTimesExp } from "../modular";
 
 /**
  * @param {!bigint} a

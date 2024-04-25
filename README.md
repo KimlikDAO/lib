@@ -40,7 +40,18 @@ Bu repoda iki tür test var:
 
 ### compiled-test'ler nasıl çalıştırılır?
 
-Örnek olarak `crypto/test/modular.compiled-test.js`'i çalıştırmak için `make build/crypto/test/modular.compiled-test.js` komutunu çalıştırmak gerekir. Sorunsuz çalıştırılması durumunda aşağıdaki gibi bir çıktı oluşur:
+`compiled-test`'ler hem GCC ile derlenerek hem de doğrudan `bun` ortamında
+çalıştırılabilir.
+Örnek olarak `crypto/test/modular.compiled-test.js`'i çalıştırmak için ya
+```shell
+make build/crypto/test/modular.compiled-test.js
+bun build/crypto/test/modular.compiled-test.js
+```
+yazabiliriz ya da doğrudan
+```shell
+bun crypto/test/modular.compiled-test.js
+```
+yazabiliriz. Sorunsuz çalıştırılması durumunda aşağıdaki gibi bir çıktı oluşur:
 
 ![](.github/img/modular.compiled-test.png "Örnek modular.compiled-test.js çıktısı")
 

@@ -1,6 +1,0 @@
-{
-  "devDependencies": {
-    "@ethereumjs/evm": "^2.1.0",
-    "ethers": "^6.10.0"
-  }
-}

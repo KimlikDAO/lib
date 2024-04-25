@@ -1,6 +1,6 @@
+import { shuffle } from "@kimlikdao/lib/util/arrays";
+import { hex } from "@kimlikdao/lib/util/çevir";
 import { JsonRpcProvider, TransactionResponse, Wallet } from "ethers";
-import { shuffle } from "../../../util/arrays";
-import { hex } from "../../../util/çevir";
 import { SZABO, batchSendWithKPassNoPush0 } from "../builder";
 
 /**
@@ -40,7 +40,7 @@ const send = () => {
 
   /**
    * @const
-   * @type {!Provider}
+   * @type {!JsonRpcProvider}
    */
   const provider = new JsonRpcProvider("https://rpc.ftm.tools");
   /** @const {!Wallet} */

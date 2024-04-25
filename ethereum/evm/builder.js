@@ -44,7 +44,6 @@ const batchSendFixedAmount = (recipients, amountSzabos) => {
   return toByteCode(ops.slice(0, -1));
 }
 
-
 /**
  * Generates a batchSend bytecode for an EVM chain that doesn't support
  * the PUSH0 opcode.
@@ -70,7 +69,7 @@ const batchSendFixedAmountNoPush0 = (recipients, amountSzabos) => {
  * Generates a batchSend bytecode for an EVM chain that doesn't support
  * the PUSH0 opcode.
  *
- * @param {!Array<AddressAndKPASS>} recipients
+ * @param {!Array<AddressAndKPass>} recipients
  * @param {number} withKPassSzabos
  * @param {number} withoutKPassSzabos
  * @return {{ code: ByteCode, valueSzabos: number}}
@@ -109,10 +108,8 @@ export {
   Address,
   AddressWithKPass,
   ByteCode,
-  SZABO,
-  batchSendFixedAmount,
+  SZABO, batchSendERC20, batchSendFixedAmount,
   batchSendFixedAmountNoPush0,
-  batchSendWithKPassNoPush0,
-  batchSendERC20,
-  toByteCode
+  batchSendWithKPassNoPush0, toByteCode
 };
+

@@ -1,5 +1,5 @@
-import { equal, G, N, O, Point } from "/crypto/secp256k1";
-import { assert } from "/testing/assert";
+import { assert } from "../../testing/assert";
+import { equal, G, N, O, Point } from "../secp256k1";
 
 /**
  * @param {!Point} P

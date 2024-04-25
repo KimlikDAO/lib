@@ -1,5 +1,5 @@
-import { getCreateAddress } from "/ethereum/eravm";
-import { assertEq } from "/testing/assert";
+import { getCreateAddress } from "../../ethereum/eravm";
+import { assertEq } from "../../testing/assert";
 
 assertEq(
   getCreateAddress("0xE9D29Bf6Eaa12E6d79265BcC8E07F7Bf6085D53e", 0),

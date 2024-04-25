@@ -1,6 +1,6 @@
-import { keccak256Uint32 } from "/crypto/sha3";
-import { evaluate, generateChallenge, reconstructY } from "/crypto/wesolowski";
-import { assert, assertArrayEq } from "/testing/assert";
+import { assert, assertArrayEq } from "../../testing/assert";
+import { keccak256Uint32 } from "../sha3";
+import { evaluate, generateChallenge, reconstructY } from "../wesolowski";
 
 const testEvaluateReconstruct = () => {
   /** @const {number} */

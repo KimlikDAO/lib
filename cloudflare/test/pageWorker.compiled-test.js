@@ -1,5 +1,5 @@
-import { create } from "/cloudflare/pageWorker";
-import { assertEq } from "/testing/assert";
+import { assertEq } from "../../testing/assert";
+import { create } from "../pageWorker";
 
 /**
  * @constructor

@@ -1,14 +1,17 @@
-import { keccak256Uint8 } from "/crypto/sha3";
+import { keccak256Uint8 } from "../../crypto/sha3";
+import { assert, assertElemEq, assertEq } from "../../testing/assert";
+import { FakeSigner, Signer } from "../../testing/crosschain";
+import vm from "../../testing/vm";
+import { base64 } from "../../util/çevir";
 import {
-  combineMultiple, fromUnlockableNFT, SectionGroup, selectEncryptedSections,
+  SectionGroup,
+  combineMultiple,
+  fromUnlockableNFT,
+  selectEncryptedSections,
   sign,
   toUnlockableNFT
-} from "/did/decryptedSections";
-import { commit, recoverSectionSigners } from "/did/section";
-import { assert, assertElemEq, assertEq } from "/testing/assert";
-import { FakeSigner, Signer } from "/testing/crosschain";
-import vm from "/testing/vm";
-import { base64 } from "/util/çevir";
+} from "../decryptedSections";
+import { commit, recoverSectionSigners } from "../section";
 
 const testSelectEncryptedSections = () => {
   /** @const {!Array<string>} */
