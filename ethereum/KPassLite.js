@@ -65,6 +65,7 @@ const hasKPasses = (providerURLs, addresses) => {
 }
 
 export default {
+  KPASS_ADDRS,
   getAddress,
   handleOf,
   hasKPass,
