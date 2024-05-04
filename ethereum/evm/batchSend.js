@@ -1,38 +1,16 @@
-import { hexten } from "../../util/çevir";
-import { Op, OpData, pushNumber } from "./opcodes";
+import { Op, pushNumber } from "./opcodes";
+import { evm, opsToBytes } from "./types";
 
-/** @typedef {string} */
-const Address = {};
-/** @typedef {!Uint8Array} */
-const ByteCode = {};
-/** @type {{ addr: Address, kpass: boolean }} */
+/** @type {{ addr: evm.address, kpass: boolean }} */
 const AddressWithKPass = {};
-
-/** @const {number} */
-const MILLION = 1_000_000;
 
 /** @const {!bigint} */
 const SZABO = 10n ** 12n;
 
 /**
- * @param {Address} addr
- * @return {OpData}
- */
-const address = (addr) => {
-  if (addr.startsWith("0x")) addr = addr.slice(2);
-  return addr.toUpperCase();
-}
-
-/**
- * @param {!Array<Op|OpData>} ops
- * @return {ByteCode}
- */
-const toByteCode = (ops) => hexten(ops.join(""));
-
-/**
- * @param {!Array<Address>} addresses
+ * @param {!Array<evm.address>} recipients
  * @param {number} amountSzabos
- * @return {ByteCode}
+ * @return {evm.bytes}
  */
 const batchSendFixedAmount = (recipients, amountSzabos) => {
   /** @const {!Array<Op|OpData>} */
@@ -41,16 +19,16 @@ const batchSendFixedAmount = (recipients, amountSzabos) => {
   for (const recipient of recipients)
     ops.push(Op.PUSH0, Op.PUSH0, Op.PUSH0, Op.PUSH0, Op.DUP5,
       Op.PUSH20, address(recipient), Op.PUSH0, Op.CALL, Op.POP);
-  return toByteCode(ops.slice(0, -1));
+  return opsToBytes(ops.slice(0, -1));
 }
 
 /**
  * Generates a batchSend bytecode for an EVM chain that doesn't support
  * the PUSH0 opcode.
  *
- * @param {!Array<Address>} recipients
+ * @param {!Array<evm.address>} recipients
  * @param {number} amountSzabos
- * @return {ByteCode}
+ * @return {evm.bytes}
  */
 const batchSendFixedAmountNoPush0 = (recipients, amountSzabos) => {
   /** @const {!Array<Op|OpData>} */
@@ -62,7 +40,7 @@ const batchSendFixedAmountNoPush0 = (recipients, amountSzabos) => {
   for (const recipient of recipients)
     ops.push(Op.DUP1, Op.DUP1, Op.DUP1, Op.DUP1, Op.DUP6,
       Op.PUSH20, address(recipient), Op.DUP3, Op.CALL, Op.POP);
-  return toByteCode(ops.slice(0, -1));
+  return opsToBytes(ops.slice(0, -1));
 }
 
 /**
@@ -72,7 +50,7 @@ const batchSendFixedAmountNoPush0 = (recipients, amountSzabos) => {
  * @param {!Array<AddressAndKPass>} recipients
  * @param {number} withKPassSzabos
  * @param {number} withoutKPassSzabos
- * @return {{ code: ByteCode, valueSzabos: number}}
+ * @return {{ code: evm.bytes, valueSzabos: number}}
  */
 const batchSendWithKPassNoPush0 = (recipients, withKPassSzabos, withoutKPasstSzabos) => {
   /** @const {!Array<Op|OpData>} */
@@ -90,26 +68,16 @@ const batchSendWithKPassNoPush0 = (recipients, withKPassSzabos, withoutKPasstSza
     valueSzabos += kpass ? withKPassSzabos : withoutKPasstSzabos;
   }
   return {
-    code: toByteCode(ops.slice(0, -1)),
+    code: opsToBytes(ops.slice(0, -1)),
     valueSzabos
   };
 }
 
-/**
- * @param {!Array<Address>} recipients
- * @param {Address} token
- * @param {number} amount
- */
-const batchSendERC20 = (recipients, token, amountSzabos) => {
-
-}
-
 export {
-  Address,
   AddressWithKPass,
-  ByteCode,
-  SZABO, batchSendERC20, batchSendFixedAmount,
+  SZABO,
+  batchSendFixedAmount,
   batchSendFixedAmountNoPush0,
-  batchSendWithKPassNoPush0, toByteCode
+  batchSendWithKPassNoPush0,
 };
 

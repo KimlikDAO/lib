@@ -10,6 +10,7 @@
     "test": "bun test"
   },
   "devDependencies": {
+    "@ethereumjs/evm": "^3.0.0",
     "@noble/secp256k1": "^2.0.0",
     "ethers": "^6.10.0",
     "google-closure-compiler": "^20230802.0.0",

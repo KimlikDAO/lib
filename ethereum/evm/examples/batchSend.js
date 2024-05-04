@@ -1,6 +1,6 @@
 import { hex } from "@kimlikdao/lib/util/çevir";
 import { JsonRpcProvider, Wallet } from "ethers";
-import { ByteCode, SZABO, batchSendFixedAmountNoPush0 } from "../builder";
+import { SZABO, batchSendFixedAmountNoPush0 } from "../builder";
 
 /**
  * @const
@@ -20,7 +20,7 @@ const batchSend = batchSendFixedAmountNoPush0([
 ], 100);
 
 /**
- * @param {!ByteCode} program
+ * @param {evm.bytes} program
  */
 const send = async (program) => {
   /**

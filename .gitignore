@@ -1,3 +1,4 @@
+.vscode
 /build
 bun*
 node_modules*
