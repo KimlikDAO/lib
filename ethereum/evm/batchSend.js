@@ -1,5 +1,5 @@
 import { Op, pushNumber } from "./opcodes";
-import { evm, opsToBytes } from "./types";
+import { evm, toOpData } from "./types";
 
 /** @type {{ addr: evm.address, kpass: boolean }} */
 const AddressWithKPass = {};
@@ -19,7 +19,7 @@ const batchSendFixedAmount = (recipients, amountSzabos) => {
   for (const recipient of recipients)
     ops.push(Op.PUSH0, Op.PUSH0, Op.PUSH0, Op.PUSH0, Op.DUP5,
       Op.PUSH20, address(recipient), Op.PUSH0, Op.CALL, Op.POP);
-  return opsToBytes(ops.slice(0, -1));
+  return toOpData(ops.slice(0, -1));
 }
 
 /**
