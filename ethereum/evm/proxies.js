@@ -49,7 +49,7 @@ const upgradableProxy = (implAddress, implSlot) => {
   const pushImplSlot = pushBytes(implSlot);
 
   return toOpData([
-    pushAddress(implAddress), pushImplSlot, Op.SSTORE, // storage[0] = codeAddress
+    pushAddress(implAddress), pushImplSlot, Op.SSTORE, // storage[implSlot] = implAddress
     pushNumber(call.length),
     Op.DUP1, // len len
     pushNumber(21 + pushImplSlot.length + 10), // 32 len len
