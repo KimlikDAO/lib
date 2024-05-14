@@ -12,12 +12,12 @@ const P = (1n << 254n) + 0x224698fc094cf91b992d30ed00000001n;
  */
 const poseidon = (vals) => {
   const /** number */ n = vals.length;
-  let s0 = 0n;
-  let s1 = 0n;
-  let s2 = 0n;
-  let t0;
-  let t1;
-  let t2;
+  let /** !bigint */ s0 = 0n;
+  let /** !bigint */ s1 = 0n;
+  let /** !bigint */ s2 = 0n;
+  let /** !bigint */ t0;
+  let /** !bigint */ t1;
+  let /** !bigint */ t2;
   if (n & 1) vals.push(0n);
   for (let /** number */ i = 0; i < n; i += 2) {
     s0 += vals[i]; s0 %= P;

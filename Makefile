@@ -6,12 +6,13 @@ include crypto/test/Makefile
 include did/test/Makefile
 include ethereum/test/Makefile
 include ethereum/evm/test/Makefile
+include mina/test/Makefile
 include node/test/Makefile
 include util/test/Makefile
 
 .PHONY: test test.bun test.node
 
-BIRIMLER := api cloudflare crosschain crypto did ethereum node util ethereum/evm
+BIRIMLER := api cloudflare crosschain crypto did ethereum mina node util ethereum/evm
 
 test: test.bun test.node
 bench: bench.bun bench.node
