@@ -31,6 +31,7 @@ build/crypto/bench/modular.bench.js: crypto/bench/modular.bench.js \
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs $@ -m -c toplevel,unsafe -o $@
+	bun birimler/bigintCompressor.js $@
 	wc $@
 
 build/crypto/bench/wesolowski.bench.js: crypto/bench/wesolowski.bench.js \
@@ -50,6 +51,7 @@ build/crypto/bench/wesolowski.bench.js: crypto/bench/wesolowski.bench.js \
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs $@ -m -c toplevel,unsafe -o $@
+	bun birimler/bigintCompressor.js $@
 	wc $@
 
 build/crypto/bench/primes.bench.js: crypto/bench/primes.bench.js \
@@ -68,4 +70,5 @@ build/crypto/bench/primes.bench.js: crypto/bench/primes.bench.js \
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs testing/nodejs.js $@ -m -c toplevel,unsafe -o $@
+	bun birimler/bigintCompressor.js $@
 	wc $@

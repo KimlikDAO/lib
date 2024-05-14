@@ -15,4 +15,5 @@ build/api/test/jsonrpc.compiled-test.js: api/test/jsonrpc.compiled-test.js \
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs $@ -m -o $@
+	bun birimler/bigintCompressor.js $@
 	wc $@

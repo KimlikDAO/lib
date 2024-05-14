@@ -13,4 +13,5 @@ build/cloudflare/test/pageWorker.compiled-test.js: cloudflare/test/pageWorker.co
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs $@ -m -c toplevel,unsafe -o $@
+	bun birimler/bigintCompressor.js $@
 	wc $@

@@ -12,4 +12,5 @@ build/util/test/çevir.compiled-test.js: util/test/çevir.compiled-test.js \
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs $@ -m -c toplevel,unsafe -o $@
+	bun birimler/bigintCompressor.js $@
 	wc $@

@@ -14,6 +14,7 @@ build/node/test/ipfs.compiled-test.js: node/test/ipfs.compiled-test.js \
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs testing/nodejs.js $@ -m -c toplevel,unsafe -o $@
+	bun birimler/bigintCompressor.js $@
 	wc $@
 
 build/node/test/ipfs.compiled-test.bun:

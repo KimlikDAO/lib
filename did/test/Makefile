@@ -20,6 +20,7 @@ build/did/test/decryptedSections.compiled-test.js: did/test/decryptedSections.co
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs testing/nodejs.js $@ -m -c toplevel,unsafe -o $@
+	bun birimler/bigintCompressor.js $@
 	wc $@
 
 build/did/test/section.compiled-test.js: did/test/section.compiled-test.js \
@@ -42,6 +43,7 @@ build/did/test/section.compiled-test.js: did/test/section.compiled-test.js \
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs testing/nodejs.js $@ -m -c toplevel,unsafe -o $@
+	bun birimler/bigintCompressor.js $@
 	wc $@
 
 build/did/test/verifiableID.compiled-test.js: did/test/verifiableID.compiled-test.js \
@@ -65,4 +67,5 @@ build/did/test/verifiableID.compiled-test.js: did/test/verifiableID.compiled-tes
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs testing/nodejs.js $@ -m -c toplevel,unsafe -o $@
+	bun birimler/bigintCompressor.js $@
 	wc $@

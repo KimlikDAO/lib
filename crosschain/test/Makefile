@@ -19,4 +19,5 @@ build/crosschain/test/unlockable.compiled-test.js: crosschain/test/unlockable.co
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs testing/nodejs.js $@ -m -c toplevel,unsafe -o $@
+	bun birimler/bigintCompressor.js $@
 	wc $@

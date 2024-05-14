@@ -15,6 +15,7 @@ build/ethereum/test/evm.compiled-test.js: ethereum/test/evm.compiled-test.js \
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs $@ -m -c toplevel,unsafe -o $@
+	bun birimler/bigintCompressor.js $@
 	wc $@
 
 build/ethereum/test/eravm.compiled-test.js: ethereum/test/eravm.compiled-test.js \
@@ -34,6 +35,7 @@ build/ethereum/test/eravm.compiled-test.js: ethereum/test/eravm.compiled-test.js
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs $@ -m -c toplevel,unsafe -o $@
+	bun birimler/bigintCompressor.js $@
 	wc $@
 
 build/ethereum/test/KPass.compiled-test.js: ethereum/test/KPass.compiled-test.js \
@@ -57,4 +59,5 @@ build/ethereum/test/KPass.compiled-test.js: ethereum/test/KPass.compiled-test.js
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs testing/provider.js $@ -m -c toplevel,unsafe -o $@
+	bun birimler/bigintCompressor.js $@
 	wc $@
