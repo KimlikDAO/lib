@@ -60,8 +60,9 @@ class MerkleTree {
     const witness = Array(Height);
     while (key) {
       const isLeft = key.slice(-1) == "0";
+      const h = Height - key.length;
       key = key.slice(0, -1);
-      witness[Height - key.length] = {
+      witness[h] = {
         isLeft,
         sibling: this.getNode(key + (isLeft ? "1" : "0"))
       };
