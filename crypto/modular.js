@@ -52,6 +52,16 @@ const exp = (a, x, M) => {
 }
 
 /**
+ * @param {!bigint} b
+ * @param {!bigint} M
+ * @return {!bigint}
+ */
+const pow7 = (b, M) => {
+  const t = (b * b * b) % M;
+  return (t * t * b) % M;
+}
+
+/**
  * Calculates 2^x (mod M).
  *
  * Provides a modest 5% speedup over the `exp(2, x, M)`. May be deprecated
@@ -103,4 +113,4 @@ const expTimesExp = (a, x, b, y, M) => {
   return r;
 }
 
-export { exp, exp2, expTimesExp, inverse };
+export { exp, exp2, expTimesExp, inverse, pow7 };

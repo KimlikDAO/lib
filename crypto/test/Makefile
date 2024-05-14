@@ -1,3 +1,4 @@
+include crypto/test/poseidon/Makefile
 include crypto/test/secp256k1/Makefile
 
 build/crypto/test/integration.compiled-test.js: crypto/test/integration.compiled-test.js \
@@ -18,6 +19,7 @@ build/crypto/test/integration.compiled-test.js: crypto/test/integration.compiled
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs testing/nodejs.js $@ -m -c toplevel,unsafe -o $@
+	bun birimler/bigintCompressor.js $@
 	wc $@
 
 build/crypto/test/modular.compiled-test.js: crypto/test/modular.compiled-test.js \
@@ -36,6 +38,7 @@ build/crypto/test/modular.compiled-test.js: crypto/test/modular.compiled-test.js
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs $@ -m -c toplevel,unsafe -o $@
+	bun birimler/bigintCompressor.js $@
 	wc $@
 
 build/crypto/test/sha3.compiled-test.js: crypto/test/sha3.compiled-test.js crypto/test/sha3_*.js \
@@ -54,6 +57,7 @@ build/crypto/test/sha3.compiled-test.js: crypto/test/sha3.compiled-test.js crypt
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs $@ -m -c toplevel,unsafe -o $@
+	bun birimler/bigintCompressor.js $@
 	wc $@
 
 build/crypto/test/wesolowski.compiled-test.js: crypto/test/wesolowski.compiled-test.js \
@@ -74,6 +78,7 @@ build/crypto/test/wesolowski.compiled-test.js: crypto/test/wesolowski.compiled-t
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs $@ -m -c toplevel,unsafe -o $@
+	bun birimler/bigintCompressor.js $@
 	wc $@
 
 build/crypto/test/primes.compiled-test.js: crypto/test/primes.compiled-test.js \
@@ -92,4 +97,5 @@ build/crypto/test/primes.compiled-test.js: crypto/test/primes.compiled-test.js \
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs $@ -m -c toplevel,unsafe -o $@
+	bun birimler/bigintCompressor.js $@
 	wc $@

@@ -14,6 +14,7 @@ build/crypto/test/secp256k1/unit.compiled-test.js: crypto/test/secp256k1/unit.co
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs testing/nodejs.js $@ -m -c toplevel,unsafe -o $@
+	bun birimler/bigintCompressor.js $@
 	wc $@
 
 build/crypto/test/secp256k1/nobleVectors.compiled-test.js: \
@@ -34,4 +35,5 @@ build/crypto/test/secp256k1/nobleVectors.compiled-test.js: \
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs testing/fsPromises.js $@ -m -c toplevel,unsafe -o $@
+	bun birimler/bigintCompressor.js $@
 	wc $@
