@@ -1,5 +1,5 @@
 build/mina/test/merkleTree.compiled-test.js: mina/test/merkleTree.compiled-test.js \
-    mina/merkleTree.d.js mina/merkleTree.js \
+    mina/mina.d.js mina/merkleTree.d.js mina/merkleTree.js \
     crypto/poseidon.js crypto/modular.js \
     testing/assert.js testing/nodejs.js testing/nodejs.d.js
 	mkdir -p $(dir $@)

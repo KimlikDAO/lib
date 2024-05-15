@@ -4,11 +4,6 @@
  */
 
 /**
- * @const
- */
-const mina = {}
-
-/**
  * @typedef {{
  *   chainId: string
  * }}

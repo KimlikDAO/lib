@@ -1,0 +1,6 @@
+/**
+ * @externs
+ */
+
+/** @const */
+const mina = {};

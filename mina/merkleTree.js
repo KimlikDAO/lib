@@ -1,8 +1,5 @@
 import { poseidon } from "../crypto/poseidon";
 
-/** @const {number} */
-const Height = 32;
-
 /** @typedef {string} */
 const BinaryKey = {};
 
@@ -13,17 +10,22 @@ const BinaryKey = {};
 const hexToBinary = (key) => { }
 
 class MerkleTree {
-  constructor() {
+  /**
+   * @param {number} height
+   */
+  constructor(height) {
+    /** @const {number} */
+    this.height = height;
     /**
      * @private
      * @const {!Object<string, !bigint>}
      */
     this.nodes = {};
     /** @const {!Array<!bigint>} */
-    const zeros = Array(Height + 1);
+    const zeros = Array(height + 1);
     /** @const {!Array<!bigint>} */
-    zeros[32] = 0n;
-    for (let i = Height; i > 0; --i)
+    zeros[height] = 0n;
+    for (let i = height; i > 0; --i)
       zeros[i - 1] = poseidon([zeros[i], zeros[i]]);
     /** @const {!Array<!bigint>} */
     this.zeros = zeros;
@@ -41,14 +43,14 @@ class MerkleTree {
    * @return {!bigint} the root after insertion
    */
   setLeaf(key, val) {
-    while (key) {
+    for (; ;) {
       this.nodes[key] = val;
+      if (!key) return val;
       const isLeft = key.slice(-1) == "0";
       key = key.slice(0, -1);
-      const sibling = this.getNode(key + (isLeft ? "1" : "0"));
+      const sibling = this.getNode(key + (+isLeft));
       val = poseidon(isLeft ? [val, sibling] : [sibling, val]);
     }
-    return val;
   }
 
   /**
@@ -56,15 +58,16 @@ class MerkleTree {
    * @return {!Array<mina.Witness>}
    */
   getWitness(key) {
+    const height = this.height;
     /** @const {!Array<mina.Witness>} */
-    const witness = Array(Height);
+    const witness = Array(height);
     while (key) {
       const isLeft = key.slice(-1) == "0";
-      const h = Height - key.length;
+      const h = height - key.length;
       key = key.slice(0, -1);
       witness[h] = {
         isLeft,
-        sibling: this.getNode(key + (isLeft ? "1" : "0"))
+        sibling: this.getNode(key + (+isLeft))
       };
     }
     return witness;
