@@ -22,16 +22,16 @@ const poseidon = (vals) => {
   for (let /** number */ i = 0; i < n; i += 2) {
     s0 += vals[i]; s0 %= P;
     s1 += vals[i + 1]; s1 %= P;
-    for (let i = 0; i < 55; ++i) {
+    for (let j = 0; j < 55; ++j) {
       s0 = pow7(s0, P);
       s1 = pow7(s1, P);
       s2 = pow7(s2, P);
       t0 = md00 * s0 + md01 * s1 + md02 * s2;
       t1 = md10 * s0 + md11 * s1 + md12 * s2;
       t2 = md20 * s0 + md21 * s1 + md22 * s2;
-      s0 = (t0 + rc0[i]) % P;
-      s1 = (t1 + rc1[i]) % P;
-      s2 = (t2 + rc2[i]) % P;
+      s0 = (t0 + rc0[j]) % P;
+      s1 = (t1 + rc1[j]) % P;
+      s2 = (t2 + rc2[j]) % P;
     }
   }
   return s0;

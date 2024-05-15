@@ -46,7 +46,7 @@ class MerkleTree {
     for (; ;) {
       this.nodes[key] = val;
       if (!key) return val;
-      const isLeft = key.slice(-1) == "0";
+      const isLeft = key.charCodeAt(key.length - 1) == 48;
       key = key.slice(0, -1);
       const sibling = this.getNode(key + (+isLeft));
       val = poseidon(isLeft ? [val, sibling] : [sibling, val]);
@@ -61,7 +61,7 @@ class MerkleTree {
     /** @const {!Array<mina.Witness>} */
     const witness = Array(this.height);
     for (let d = 0; key; ++d) {
-      const isLeft = key.slice(-1) == "0";
+      const isLeft = key.charCodeAt(key.length - 1) == 48;
       key = key.slice(0, -1);
       witness[d] = {
         isLeft,
