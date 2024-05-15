@@ -58,14 +58,12 @@ class MerkleTree {
    * @return {!Array<mina.Witness>}
    */
   getWitness(key) {
-    const height = this.height;
     /** @const {!Array<mina.Witness>} */
-    const witness = Array(height);
-    while (key) {
+    const witness = Array(this.height);
+    for (let d = 0; key; ++d) {
       const isLeft = key.slice(-1) == "0";
-      const h = height - key.length;
       key = key.slice(0, -1);
-      witness[h] = {
+      witness[d] = {
         isLeft,
         sibling: this.getNode(key + (+isLeft))
       };
