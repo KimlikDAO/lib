@@ -1,8 +1,31 @@
+import { transform as swcTransform } from "@swc/core";
 import express from "express";
 import { readFileSync } from "fs";
 import { parse } from "toml";
 import { createServer } from "vite";
-import { sayfaOku } from "./okuyucu.js";
+import { sayfaOku } from "./okuyucu";
+
+const KimlikDAOSwcPlugin = {
+  name: "vite-plugin-kimlikdao-swc",
+  enforce: "pre",
+  transform(code, id) {
+    if (id.includes(".ts"))
+      return swcTransform(code, {
+        jsc: {
+          parser: {
+            syntax: "typescript",
+            tsx: false,
+            decorators: true,
+          },
+          transform: {
+            decoratorMetadata: true,
+            legacyDecorator: true,
+          }
+        }
+      });
+    return code;
+  }
+}
 
 /**
  * @param {{
@@ -16,7 +39,11 @@ import { sayfaOku } from "./okuyucu.js";
  */
 const çalıştır = (seçenekler) => createServer({
   server: { middlewareMode: true },
-  appType: "custom"
+  appType: "custom",
+  plugins: [KimlikDAOSwcPlugin],
+  esbuild: {
+    include: []
+  }
 }).then((vite) => {
   /** @const {string} */
   const sayfaAdı = seçenekler.codebaseLang == "en" ? "/page.html" : "/sayfa.html";
@@ -27,7 +54,7 @@ const çalıştır = (seçenekler) => createServer({
 
   harita["/"] = {
     ad: kök + seçenekler.dizin + sayfaAdı,
-    dil: "tr"
+    dil: "en"
   }
 
   for (const sayfa of seçenekler.sayfalar) {
