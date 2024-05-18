@@ -62,6 +62,37 @@ mina.JsonMessageData;
 mina.SignJsonMessageArgs;
 
 /**
+ * @typedef {{
+ *   onlySign: boolean?,
+ *   transaction: string | object,
+ *   feePayer: {
+ *      fee: number?,
+ *      memo: string? 
+ *   }?
+ * }}
+ */
+mina.SendTransactionArgs;
+
+/**
+ * @typedef {{
+ *   hash: string,
+ * }}
+ */
+mina.SendTransactionHash;
+
+/**
+ * @typedef {{
+ *   signedData: string,
+ * }}
+ */
+mina.SignedZkappCommand;
+
+/**
+ * @typedef {!mina.SendTransactionResult | !mina.SignedZkappCommand}
+ */
+mina.SendZkTransactionResult;
+
+/**
  * @interface
  */
 mina.Provider = function () { }
@@ -98,6 +129,12 @@ mina.Provider.prototype.switchChain = function (switchChainArgs) { };
  * @return {!Promise<!mina.SignedData>}
  */
 mina.Provider.prototype.signJsonMessage = function (jsonMessage) { };
+
+/**
+ * @param {!mina.SendTransactionArgs} sendTransactionArgs
+ * @return {!Promise<!mina.SendZkTransactionResult>}
+ */
+mina.Provider.prototype.sendTransaction = function (sendTransactionArgs) { };
 
 /**
  * @param {string} eventName
