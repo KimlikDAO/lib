@@ -63,12 +63,12 @@ mina.SignJsonMessageArgs;
 
 /**
  * @typedef {{
- *   onlySign: boolean?,
- *   transaction: string | object,
- *   feePayer: {
- *      fee: number?,
- *      memo: string? 
- *   }?
+ *   onlySign: (boolean|undefined),
+ *   transaction: (string|Object),
+ *   feePayer: ({
+ *     fee: number,
+ *     memo: (string|undefined)
+ *   }|undefined)
  * }}
  */
 mina.SendTransactionArgs;
@@ -88,7 +88,7 @@ mina.SendTransactionHash;
 mina.SignedZkappCommand;
 
 /**
- * @typedef {!mina.SendTransactionResult | !mina.SignedZkappCommand}
+ * @typedef {!mina.SendTransactionHash | !mina.SignedZkappCommand}
  */
 mina.SendZkTransactionResult;
 

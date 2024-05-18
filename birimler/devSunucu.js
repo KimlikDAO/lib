@@ -33,6 +33,7 @@ const çalıştır = (seçenekler) => createServer({
   appType: "custom",
   plugins: [KimlikDAOSwcPlugin],
   esbuild: {
+    include: [],
     exclude: ["o1js"]
   }
 }).then((vite) => {
