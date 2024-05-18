@@ -9,20 +9,11 @@ const KimlikDAOSwcPlugin = {
   name: "vite-plugin-kimlikdao-swc",
   enforce: "pre",
   transform(code, id) {
-    if (id.includes(".ts"))
-      return swcTransform(code, {
-        jsc: {
-          parser: {
-            syntax: "typescript",
-            tsx: false,
-            decorators: true,
-          },
-          transform: {
-            decoratorMetadata: true,
-            legacyDecorator: true,
-          }
-        }
-      });
+    if (id.includes(".ts")) {
+      id = id.replace(/\/([^\/]+)\.ts/, '/build/$1.js');
+      console.log(id);
+      return readFileSync(id, "utf8");
+    }
     return code;
   }
 }
@@ -42,7 +33,7 @@ const çalıştır = (seçenekler) => createServer({
   appType: "custom",
   plugins: [KimlikDAOSwcPlugin],
   esbuild: {
-    include: []
+    exclude: ["o1js"]
   }
 }).then((vite) => {
   /** @const {string} */
@@ -68,6 +59,11 @@ const çalıştır = (seçenekler) => createServer({
     }
   }
   const app = express();
+  app.use((req, res, next) => {
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+    res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+    next();
+  });
   app.get("/*.svg", (req, res) => {
     const sayfaAdı = decodeURIComponent(req.path.slice(1));
     const svg = sayfaOku(sayfaAdı, { dil: "en", dev: true })

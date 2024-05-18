@@ -118,13 +118,15 @@ const base64tenSayıya = (str) => BigInt("0x" + hex(base64ten(str)));
  * @param {!Uint8Array} bytes
  * @return {!bigint}
  */
-const uint8ArrayBEtoBigInt = (bytes) => BigInt("0x" + uint8ArrayBEtoHex(bytes));
+const uint8ArrayLEtoBigInt = (bytes) => BigInt("0x" + uint8ArrayLEtoHex(bytes));
+
+const uint8ArrayBEtoBigInt = (bytes) => BigInt("0x" + hex(bytes));
 
 /**
  * @param {!Uint8Array} buff hex'e çevrilecek Uint8Array.
  * @return {string} hex temsil eden dizi.
  */
-const uint8ArrayBEtoHex = (buff) => {
+const uint8ArrayLEtoHex = (buff) => {
   /** @const {number} */
   const n = buff.length;
   /** @const {!Array<string>} */
@@ -144,7 +146,8 @@ export {
   sayıdanBase64e,
   uint32ArrayeHexten,
   uint8ArrayBEtoBigInt,
-  uint8ArrayBEtoHex,
+  uint8ArrayLEtoBigInt,
+  uint8ArrayLEtoHex,
   uint8ArrayeBase64ten,
   uint8ArrayeHexten
 };

@@ -1,5 +1,5 @@
 import base58 from "../util/base58";
-import { uint8ArrayBEtoBigInt } from "../util/çevir";
+import { uint8ArrayLEtoBigInt } from "../util/çevir";
 
 /**
  * @constructor
@@ -20,9 +20,9 @@ const PublicKey = function (x, isOdd) {
  */
 PublicKey.fromBase58 = function (addr) {
   const bytes = base58.toBytes(addr);
-  return new PublicKey(uint8ArrayBEtoBigInt(bytes.subarray(3, 35)), !!bytes[35]);
+  return new PublicKey(uint8ArrayLEtoBigInt(bytes.subarray(3, 35)), !!bytes[35]);
 }
 
 export {
-  PublicKey
+  PublicKey,
 };
