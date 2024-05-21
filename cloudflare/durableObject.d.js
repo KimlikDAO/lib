@@ -6,59 +6,91 @@
  */
 
 /**
- * @interface
- *
- * @param {!cloudflare.DurableObject.State} state
- * @param {!cloudflare.Environment} env
- */
-cloudflare.DurableObject = function (state, env) { }
-
-/**
  * A state of the DurableObject.
  *
  * @interface
  */
-cloudflare.DurableObject.State = function () { }
+cloudflare.DurableObjectState = function () { }
 
-/** @const {!cloudflare.DurableObject.Storage} */
-cloudflare.DurableObject.State.prototype.storage;
+/**
+ * @template T
+ * @param {function():!Promise<T>} callback
+ * @return {!Promise<T>}
+ */
+cloudflare.DurableObjectState.prototype.blockConcurrencyWhile = function (callback) { }
+
+/** @const {!cloudflare.DurableObjectStorage} */
+cloudflare.DurableObjectState.prototype.storage;
 
 /** @const {!cloudflare.DurableObjectId} */
-cloudflare.DurableObject.State.prototype.id;
+cloudflare.DurableObjectState.prototype.id;
 
 /**
  * Transactional storage of the durable object.
  *
  * @interface
- * @see https://developers.cloudflare.com/workers/runtime-apis/durable-objects/#transactional-storage-api
  */
-cloudflare.DurableObject.Storage = function () { }
+cloudflare.DurableObjectStorage = function () { }
 
 /**
  * @nosideeffects
  * @param {string|!Array<string>} key
- * @return {!Promise<*>}
+ * @return {!Promise<?>}
  */
-cloudflare.DurableObject.Storage.prototype.get = function (key) { };
+cloudflare.DurableObjectStorage.prototype.get = function (key) { };
 
 /**
  * @nosideeffects
- * @param {string} key
- * @param {*} value
+ * @param {string|!Object<string, *>} key
+ * @param {*=} val
  * @return {!Promise<void>}
  */
-cloudflare.DurableObject.Storage.prototype.put = function (key, value) { };
+cloudflare.DurableObjectStorage.prototype.put = function (key, val) { };
 
 /**
  * @nosideeffects
  * @param {string} key
  * @return {!Promise<boolean>}
  */
-cloudflare.DurableObject.Storage.prototype.delete = function (key) { };
+cloudflare.DurableObjectStorage.prototype.delete = function (key) { };
+
+/**
+ * @typedef {{
+*   locationHint: string
+* }}
+*/
+cloudflare.DurableObjectStubOptions;
+
+/**
+* @interface
+*/
+cloudflare.DurableObjectStub = function () { }
+
+/**
+* A durable object stub has the same fetch interface as the web api fetch.
+*
+* @param {!RequestInfo} input
+* @param {!RequestInit=} init
+* @return {!Promise<!Response>}
+* @see https://fetch.spec.whatwg.org/#fetch-method
+* @see https://developers.cloudflare.com/workers/runtime-apis/fetch/
+*/
+cloudflare.DurableObjectStub.prototype.fetch = function (input, init) { }
+
+/**
+* @nosideeffects
+* @param {!cloudflare.DurableObjectId} durableObjectId
+* @param {!cloudflare.DurableObjectStubOptions=} options
+* @return {!cloudflare.DurableObjectStub}
+*/
+cloudflare.DurableObjectBinding.prototype.get = function (durableObjectId, options) { }
 
 /**
  * @interface
- *
+ */
+cloudflare.DurableObject = function (state, env) { }
+
+/**
  * @param {!Request} req
  * @return {!Promise<!Response>}
  */
@@ -76,6 +108,14 @@ cloudflare.DurableObjectId = function () { }
 cloudflare.DurableObjectId.prototype.toString = function () { }
 
 /**
+ * @nosideeffects
+ * @return {boolean}
+ */
+cloudflare.DurableObjectId.prototype.equals = function () { }
+
+/**
+ * Called `DurableObjectNamespace` in `@cloudflare/workers-types`.
+ *
  * @interface
  */
 cloudflare.DurableObjectBinding = function () { }
@@ -99,34 +139,3 @@ cloudflare.DurableObjectBinding.prototype.idFromString = function (hexId) { }
  * @return {!cloudflare.DurableObjectId}
  */
 cloudflare.DurableObjectBinding.prototype.newUniqueId = function () { }
-
-/**
- * @typedef {{
- *   locationHint: string
- * }}
- */
-cloudflare.StubOptions;
-
-/**
- * @nosideeffects
- * @param {!cloudflare.DurableObjectId} durableObjectId
- * @param {!cloudflare.StubOptions=} options
- * @return {!cloudflare.DurableObjectStub}
- */
-cloudflare.DurableObjectBinding.prototype.get = function (durableObjectId, options) { }
-
-/**
- * @interface
- */
-cloudflare.DurableObjectStub = function () { }
-
-/**
- * A durable object stub has the same fetch interface as the web api fetch.
- *
- * @param {!RequestInfo} input
- * @param {!RequestInit=} init
- * @return {!Promise<!Response>}
- * @see https://fetch.spec.whatwg.org/#fetch-method
- * @see https://developers.cloudflare.com/workers/runtime-apis/fetch/
- */
-cloudflare.DurableObjectStub.prototype.fetch = function (input, init) { }
