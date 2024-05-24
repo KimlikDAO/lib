@@ -1,15 +1,17 @@
 import { poseidon } from "../crypto/poseidon";
-
-/** @typedef {string} */
-const BinaryKey = {};
+import hex from "../util/hex";
+import {
+  BinaryKey,
+  HexKey,
+  MerkleTree,
+  Value,
+  WitnessElem,
+} from "../util/merkleTree";
 
 /**
- * @param {string} key
- * @return {BinaryKey}
+ * @implements {MerkleTree}
  */
-const hexToBinary = (key) => { }
-
-class MerkleTree {
+class MinaMerkleTree {
   /**
    * @param {number} height
    */
@@ -18,7 +20,7 @@ class MerkleTree {
     this.height = height;
     /**
      * @private
-     * @const {!Object<string, !bigint>}
+     * @const {!Object<string, Value>}
      */
     this.nodes = {};
     /** @const {!Array<!bigint>} */
@@ -32,44 +34,58 @@ class MerkleTree {
   }
 
   /**
+   * @override
+   *
    * @param {BinaryKey} key
-   * @return {!bigint}
+   * @return {Value}
    */
-  getNode(key) { return this.nodes[key] || this.zeros[key.length]; }
+  getNode(key) {
+    return this.nodes[key] || this.zeros[key.length];
+  }
 
   /**
-   * @param {BinaryKey} key
-   * @param {!bigint} val
-   * @return {!bigint} the root after insertion
+   * @override
+   *
+   * @param {HexKey} key
+   * @param {Value} val
+   * @return {Value} the root after insertion
    */
   setLeaf(key, val) {
+    /** @const {number} */
+    const h = this.height;
+    key = hex.toBinary(key).padStart(h, "0").slice(0, h);
     for (; ;) {
       this.nodes[key] = val;
       if (!key) return val;
       const isLeft = key.charCodeAt(key.length - 1) == 48;
       key = key.slice(0, -1);
-      const sibling = this.getNode(key + (+isLeft));
+      const sibling = this.getNode(key + +isLeft);
       val = poseidon(isLeft ? [val, sibling] : [sibling, val]);
     }
   }
 
   /**
-   * @param {BinaryKey} key
-   * @return {!Array<mina.Witness>}
+   * @override
+   *
+   * @param {HexKey} key
+   * @return {!Array<WitnessElem>}
    */
   getWitness(key) {
-    /** @const {!Array<mina.Witness>} */
+    /** @const {number} */
+    const h = this.height;
+    key = hex.toBinary(key).padStart(h, "0").slice(0, h);
+    /** @const {!Array<WitnessElem>} */
     const witness = Array(this.height);
     for (let d = 0; key; ++d) {
       const isLeft = key.charCodeAt(key.length - 1) == 48;
       key = key.slice(0, -1);
       witness[d] = {
         isLeft,
-        sibling: this.getNode(key + (+isLeft))
+        sibling: this.nodes[key] || this.zeros[h - d],
       };
     }
     return witness;
   }
 }
 
-export { BinaryKey, MerkleTree, hexToBinary };
+export { BinaryKey, HexKey, MinaMerkleTree, Value, WitnessElem };

@@ -9,7 +9,7 @@ for (let i = 0; i < 16; ++i)
  * @param {string} hexStr
  * @return {string}
  */
-const toBin = (hexStr) => {
+const toBinary = (hexStr) => {
   const parts = Array(hexStr.length);
   for (let i = 0; i < hexStr.length; ++i)
     parts[i] = NibbleToBinary[hexStr[i]];
@@ -17,5 +17,5 @@ const toBin = (hexStr) => {
 }
 
 export default {
-  toBin,
-}
+  toBinary,
+};

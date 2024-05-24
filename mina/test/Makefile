@@ -1,7 +1,8 @@
 build/mina/test/merkleTree.compiled-test.js: mina/test/merkleTree.compiled-test.js \
-    mina/mina.d.js mina/merkleTree.d.js mina/merkleTree.js \
+    mina/mina.d.js mina/merkleTree.js \
     crypto/poseidon.js crypto/modular.js \
-    testing/assert.js testing/nodejs.d.js
+    testing/assert.js testing/nodejs.d.js \
+    util/merkleTree.js util/hex.js
 	mkdir -p $(dir $@)
 	bun google-closure-compiler -W VERBOSE -O ADVANCED --charset UTF-8 \
                             --jscomp_error=strictCheckTypes \
