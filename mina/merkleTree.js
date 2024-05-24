@@ -23,13 +23,13 @@ class MinaMerkleTree {
      * @const {!Object<string, Value>}
      */
     this.nodes = {};
-    /** @const {!Array<!bigint>} */
+    /** @const {!Array<Value>} */
     const zeros = Array(height + 1);
-    /** @const {!Array<!bigint>} */
+    /** @const {!Array<Value>} */
     zeros[height] = 0n;
     for (let i = height; i > 0; --i)
       zeros[i - 1] = poseidon([zeros[i], zeros[i]]);
-    /** @const {!Array<!bigint>} */
+    /** @const {!Array<Value>} */
     this.zeros = zeros;
   }
 
@@ -51,15 +51,15 @@ class MinaMerkleTree {
    * @return {Value} the root after insertion
    */
   setLeaf(key, val) {
-    /** @const {number} */
-    const h = this.height;
+    /** @type {number} */
+    let h = this.height;
     key = hex.toBinary(key).padStart(h, "0").slice(0, h);
-    for (; ;) {
+    for (; ; --h) {
       this.nodes[key] = val;
       if (!key) return val;
       const isLeft = key.charCodeAt(key.length - 1) == 48;
       key = key.slice(0, -1);
-      const sibling = this.getNode(key + +isLeft);
+      const sibling = this.nodes[key + +isLeft] || this.zeros[h];
       val = poseidon(isLeft ? [val, sibling] : [sibling, val]);
     }
   }
@@ -81,7 +81,7 @@ class MinaMerkleTree {
       key = key.slice(0, -1);
       witness[d] = {
         isLeft,
-        sibling: this.nodes[key] || this.zeros[h - d],
+        sibling: this.nodes[key + (+isLeft)] || this.zeros[h - d],
       };
     }
     return witness;

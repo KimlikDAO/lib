@@ -22,6 +22,13 @@ class DurableObjectState {
         return Promise.resolve(map);
       },
 
+      /**
+       * @override
+       *
+       * @param {string|!Object<string, *>} keys
+       * @param {*=} val
+       * @return {!Promise<void>}
+       */
       put: (keys, val) => {
         if (typeof keys === 'string')
           this.mem[keys] = val;
