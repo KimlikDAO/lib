@@ -95,5 +95,10 @@ cloudflare.KeyValue.prototype.list = function () { }
  */
 const caches = {};
 
+/**
+ * @interface
+ */
+cloudflare.Environment = function () { }
+
 /** @const {!Cache} */
 caches.default;

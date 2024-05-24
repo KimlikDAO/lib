@@ -22,7 +22,7 @@ function MerkleTree() {}
 
 /**
  * @param {HexKey} key
- * @return {!Array<WitnessElem>}
+ * @return {!Array<WitnessElem>|!Promise<!Array<WitnessElem>>}
  */
 MerkleTree.prototype.getWitness = function(key) {};
 

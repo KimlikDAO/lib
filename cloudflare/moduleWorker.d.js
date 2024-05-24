@@ -18,11 +18,6 @@ cloudflare.Context.prototype.waitUntil = function (promise) { }
 /**
  * @interface
  */
-cloudflare.Environment = function () { }
-
-/**
- * @interface
- */
 cloudflare.ModuleWorker = function () { }
 
 /**

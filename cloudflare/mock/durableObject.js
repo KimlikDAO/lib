@@ -1,22 +1,25 @@
 
 /**
- * @implements {!cloudflare.DurableObjectState}
+ * @implements {cloudflare.DurableObjectState}
  */
 class DurableObjectState {
   constructor() {
     /** @const {!cloudflare.DurableObjectId} */
-    this.id = {};
+    this.id = /** @type {!cloudflare.DurableObjectId} */({});
     this.mem = {};
     /** @const {!cloudflare.DurableObjectStorage} */
-    this.storage = {
+    this.storage = /** @type {!cloudflare.DurableObjectStorage} */({
       /**
        * @override
        *
-       * @param {!Array<string>} keys
+       * @param {string|!Array<string>} keys
+       * @return {!Promise<?>}
        */
       get: (keys) => {
-        const map = new Map();
         const mem = this.mem;
+        if (typeof keys === "string")
+          return Promise.resolve(mem[keys]);
+        const map = new Map();
         for (const key of keys)
           if (key in mem) map.set(key, mem[key]);
         return Promise.resolve(map);
@@ -30,15 +33,21 @@ class DurableObjectState {
        * @return {!Promise<void>}
        */
       put: (keys, val) => {
-        if (typeof keys === 'string')
+        if (typeof keys === "string")
           this.mem[keys] = val;
         else
           Object.assign(this.mem, keys);
         return Promise.resolve();
       },
 
+      /**
+       * @override
+       *
+       * @param {string} key
+       * @return {!Promise<boolean>}
+       */
       delete: (key) => Promise.resolve(true)
-    }
+    });
   }
 
   /**
@@ -53,4 +62,23 @@ class DurableObjectState {
   }
 }
 
-export { DurableObjectState };
+/**
+ * @implements {cloudflare.DurableObject}
+ */
+class DurableObject {
+  /**
+   * @param {!cloudflare.DurableObjectState} state
+   * @param {!cloudflare.Environment} env
+   */
+  constructor(state, env) { }
+
+  /**
+   * @override
+   *
+   * @param {!Request} req
+   * @return {!Promise<!Response>}
+   */
+  fetch(req) { return Promise.reject(); }
+};
+
+export { DurableObject, DurableObjectState };
