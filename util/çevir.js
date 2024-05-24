@@ -120,6 +120,10 @@ const base64tenSayıya = (str) => BigInt("0x" + hex(base64ten(str)));
  */
 const uint8ArrayLEtoBigInt = (bytes) => BigInt("0x" + uint8ArrayLEtoHex(bytes));
 
+/**
+ * @param {!Uint8Array} bytes
+ * @return {!bigint}
+ */
 const uint8ArrayBEtoBigInt = (bytes) => BigInt("0x" + hex(bytes));
 
 /**

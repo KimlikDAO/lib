@@ -139,3 +139,18 @@ cloudflare.DurableObjectBinding.prototype.idFromString = function (hexId) { }
  * @return {!cloudflare.DurableObjectId}
  */
 cloudflare.DurableObjectBinding.prototype.newUniqueId = function () { }
+
+
+/**
+ * This is for the RPC interface and the realted import
+ * ```
+ * import {DurableObject} from "cloudflare:workers"
+ * ```
+ *
+ * @constructor
+ * @implements {cloudflare.DurableObject}
+ *
+ * @param {!cloudflare.DurableObjectState} state
+ * @param {!cloudflare.Environment} env
+ */
+const DurableObject = function (state, env) { }
