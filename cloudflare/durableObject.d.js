@@ -55,6 +55,18 @@ cloudflare.DurableObjectStorage.prototype.put = function (key, val) { };
 cloudflare.DurableObjectStorage.prototype.delete = function (key) { };
 
 /**
+ * @nosideeffects
+ * @return {!Promise<?number>}
+ */
+cloudflare.DurableObjectStorage.prototype.getAlarm = function () { };
+
+/**
+ * @param {number|Date} scheduledTime
+ * @return {!Promise<void>}
+ */
+cloudflare.DurableObjectStorage.prototype.setAlarm = function (scheduledTime) {};
+
+/**
  * @typedef {{
 *   locationHint: string
 * }}
