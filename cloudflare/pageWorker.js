@@ -56,7 +56,7 @@ const create = (hostUrl, pages) => /** @type {!cloudflare.ModuleWorker} */({
     const suffix = url.slice(idx + 1);
 
     /** @const {string} */
-    const ext = suffix in COMPRESSED_MIMES
+    const ext = COMPRESSED_MIMES[suffix]
       ? ""
       : enc.includes("br") ? ".br" : enc.includes("gz") ? ".gz" : "";
 

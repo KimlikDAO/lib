@@ -1,4 +1,3 @@
-import { transform as swcTransform } from "@swc/core";
 import express from "express";
 import { readFileSync } from "fs";
 import { parse } from "toml";

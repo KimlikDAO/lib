@@ -11,7 +11,7 @@ function KeyKey() { }
  * @override
  *
  * @param {string} key
- * @param {string} type
+ * @param {string=} type
  * @return {!Promise<ArrayBuffer>}
  */
 KeyKey.prototype.get = (key, type) =>

@@ -1,10 +1,9 @@
 {
   "name": "@kimlikdao/lib",
-  "description": "KimlikDAO JavaScript kitaplığı",
+  "description": "KimlikDAO JavaScript library",
   "author": "KimlikDAO <dao@kimlikdao.org>",
-  "license": "GPL",
-  "private": true,
-  "version": "0.0.0",
+  "license": "MIT",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "test": "bun test"

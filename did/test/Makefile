@@ -9,19 +9,8 @@ build/did/test/decryptedSections.compiled-test.js: did/test/decryptedSections.co
     testing/assert.js testing/nodejs.js testing/nodejs.d.js \
     testing/vm.js testing/crosschain.js \
     util/çevir.js
-	mkdir -p $(dir $@)
-	bun google-closure-compiler -W VERBOSE -O ADVANCED --charset UTF-8 \
-                            --jscomp_error=strictCheckTypes \
-                            --jscomp_error=unusedLocalVariables \
-                            --module_resolution NODE \
-                            --assume_function_wrapper \
-                            --dependency_mode PRUNE \
-                            --entry_point $< \
-                            --js $^ \
-                            --js_output_file $@
-	bun uglifyjs testing/nodejs.js $@ -m -c toplevel,unsafe -o $@
-	bun birimler/bigintCompressor.js $@
-	wc $@
+	bun birimler/js/compiler.js $^ $@ --test
+
 
 build/did/test/section.compiled-test.js: did/test/section.compiled-test.js \
     did/*.d.js did/section.js \
@@ -43,7 +32,6 @@ build/did/test/section.compiled-test.js: did/test/section.compiled-test.js \
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs testing/nodejs.js $@ -m -c toplevel,unsafe -o $@
-	bun birimler/bigintCompressor.js $@
 	wc $@
 
 build/did/test/verifiableID.compiled-test.js: did/test/verifiableID.compiled-test.js \
@@ -67,5 +55,4 @@ build/did/test/verifiableID.compiled-test.js: did/test/verifiableID.compiled-tes
                             --js $^ \
                             --js_output_file $@
 	bun uglifyjs testing/nodejs.js $@ -m -c toplevel,unsafe -o $@
-	bun birimler/bigintCompressor.js $@
 	wc $@

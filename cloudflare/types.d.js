@@ -24,6 +24,11 @@ cloudflare.Request = function () { }
 cloudflare.Request.prototype.cf;
 
 /**
+ * @const {?BodyInit}
+ */
+cloudflare.Request.prototype.body;
+
+/**
  * The Cloudflare Response object contains this convenience method.
  *
  * @nosideeffects

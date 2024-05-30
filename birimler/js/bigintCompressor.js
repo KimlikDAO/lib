@@ -10,8 +10,4 @@ const compress = (decimal) => {
   return diff > 0 ? hexadecimal : decimal;
 }
 
-writeFileSync(
-  process.argv[2],
-  readFileSync(process.argv[2], "utf8").replace(/\d+n/g, (m) => compress(m)),
-  "utf8"
-);
+export const bigIntPass = (code) => code.replace(/\d+n/g, (m) => compress(m));
