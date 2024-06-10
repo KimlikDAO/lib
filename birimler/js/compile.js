@@ -1,15 +1,30 @@
 import ClosureCompiler from "google-closure-compiler";
 import UglifyJS from "uglify-js";
+import { bigintPass } from "./bigintPass";
+import { copyToIsolate } from "./isolate";
 import { Params } from "./params";
 
 /**
  * @param {!Params} params
- * @param {function(string,boolean):string} postprocessFn
  * @return {!Promise<void>}
  */
-const compile = (params, postprocessFn) => {
+const compile = async (params) => {
+  /** @const {string} */
   const isolateDir = params["isolateDir"];
+  /** @const {string} */
   const inverseIsolateDir = "../".repeat(isolateDir.match(/\//g).length);
+  /** @const {!Map<string, !Array<string>>} */
+  const importMap = new Map();
+
+  const preprocessFn = (code, isEntryPoint) => isEntryPoint
+    ? code.replace("export default", "globalThis['ExportDefault']=")
+    : code;
+
+  const postprocessFn = (code) => bigintPass(
+    code.replace("globalThis.ExportDefault=", "export default"));
+
+  await copyToIsolate(params, preprocessFn);
+
   process.chdir(isolateDir);
 
   /** @const {!Array<string>} */

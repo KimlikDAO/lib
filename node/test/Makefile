@@ -1,6 +1,6 @@
 build/node/test/ipfs.compiled-test.js: node/test/ipfs.compiled-test.js \
     node/ipfs.d.js node/ipfs.js node/error.d.js \
-    testing/assert.js testing/nodejs.d.js testing/nodejs.js \
+    testing/assert.js testing/nodejs.d.js \
     util/base58.js util/çevir.js
 	bun birimler/js/compiler.js $^ -o $@
 

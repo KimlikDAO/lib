@@ -4,7 +4,7 @@ include crypto/test/secp256k1/Makefile
 build/crypto/test/integration.compiled-test.js: crypto/test/integration.compiled-test.js \
     crypto/secp256k1.js crypto/sha3.js crypto/modular.js \
     ethereum/evm.js \
-    testing/assert.js testing/nodejs.js testing/nodejs.d.js \
+    testing/assert.js testing/nodejs.d.js \
     testing/vm.js \
     util/çevir.js
 	bun birimler/js/compiler.js $^ -o $@

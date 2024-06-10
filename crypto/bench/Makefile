@@ -1,6 +1,6 @@
 build/crypto/bench/secp256k1.bench.js: crypto/bench/secp256k1.bench.js crypto/secp256k1.js \
     crypto/modular.js \
-    testing/assert.js testing/nodejs.js testing/nodejs.d.js \
+    testing/assert.js testing/nodejs.d.js \
     util/çevir.js
 	bun birimler/js/compiler.js $^ -o $@
 

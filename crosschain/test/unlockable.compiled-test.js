@@ -46,5 +46,5 @@ const testEncryptDecryptLarge = () => {
     .then((/** @type {string} */ decrypted) => assertEq(decrypted, text));
 }
 
-testEncryptDecryptSmall()
-testEncryptDecryptLarge()
+testEncryptDecryptSmall();
+testEncryptDecryptLarge();
