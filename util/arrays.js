@@ -1,6 +1,6 @@
 /**
  * @template T
- * @param {!Array<T>}
+ * @param {!Array<T>} arr
  * @return {!Array<T>}
  */
 const shuffle = (arr) => {

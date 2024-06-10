@@ -2,15 +2,16 @@ build/crypto/test/secp256k1/unit.compiled-test.js: crypto/test/secp256k1/unit.co
     crypto/secp256k1.js crypto/modular.js \
     testing/assert.js testing/nodejs.js testing/nodejs.d.js \
     util/çevir.js
-	bun birimler/js/compiler.js $^ $@ --test
+	bun birimler/js/compiler.js $^ -o $@
 
 
 build/crypto/test/secp256k1/nobleVectors.compiled-test.js: \
     crypto/test/secp256k1/nobleVectors.compiled-test.js \
-		crypto/secp256k1.js crypto/modular.js \
-		testing/assert.js testing/fsPromises.d.js \
-		testing/nodejs.d.js \
-		util/çevir.js
+    crypto/secp256k1.js crypto/modular.js \
+    crypto/sha3.js \
+    testing/assert.js testing/fsPromises.d.js \
+    testing/nodejs.d.js \
+    util/çevir.js
 	mkdir -p $(dir $@)
 	bun google-closure-compiler -W VERBOSE -O ADVANCED --charset UTF-8 \
                             --jscomp_error=strictCheckTypes \

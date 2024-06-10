@@ -1,6 +1,7 @@
 import ClosureCompiler from "google-closure-compiler";
 import UglifyJS from "uglify-js";
-import { bigIntPass } from "./bigintCompressor";
+import { Params, argsToParams } from "./argsParser";
+import { bigintPass } from "./bigintPass";
 
 /**
  * @param {string} fileName
@@ -20,34 +21,22 @@ const preprocessExports = (code) => code.replace("export default", "globalThis['
 
 const postprocessExports = (code) => code.replace("globalThis.ExportDefault=", "export default");
 
-/** @const {!Array<string>} */
-const args = process.argv;
-
-let IsTest = false;
-if (args[args.length - 1] == "--test") {
-  IsTest = true;
-  args.pop();
-}
-
-let Strict = false;
-if (args[args.length - 1] == "--strict") {
-  console.info("Strict mode");
-  Strict = true;
-  args.pop();
-}
+/**
+ * @const
+ * @type {!Params}
+ */
+const params = argsToParams(process.argv.slice(2));
 
 /** @const {string} */
-const outputFile = args.pop();
-/** @const {!Array<string>} */
-const sourceFiles = args.slice(2);
+const outputFile = params["output"];
 /** @const {string} */
 const outputDir = getDir(outputFile);
 /** @const {string} */
 const isolateDir = outputDir + "/input/";
 /** @const {string} */
-const entryFile = sourceFiles[0];
+const entryFile = params["inputs"][0];
 
-await copyToIsolate(sourceFiles.slice(1), isolateDir);
+await copyToIsolate(params["inputs"].slice(1), isolateDir);
 await Bun.write(
   isolateDir + entryFile,
   preprocessExports(await Bun.file(entryFile).text())
@@ -60,10 +49,11 @@ const JsCompErrors = [
   "unusedLocalVariables",
   "missingProperties"
 ];
-if (Strict) JsCompErrors.push("reportUnknownTypes");
+if (params["strict"])
+  JsCompErrors.push("reportUnknownTypes");
 
 const cc = new ClosureCompiler.compiler({
-  js: sourceFiles,
+  js: params["inputs"],
   compilation_level: "ADVANCED",
   charset: "utf-8",
   warning_level: "verbose",
@@ -74,6 +64,7 @@ const cc = new ClosureCompiler.compiler({
   jscomp_error: JsCompErrors,
   language_in: "ECMASCRIPT_NEXT",
   module_resolution: "NODE",
+  dependency_mode: "PRUNE",
   entry_point: entryFile,
 });
 
@@ -85,11 +76,11 @@ cc.run(async (exitCode, output, errors) => {
       toplevel: true,
       passes: 3,
       unsafe: true,
-      drop_console: !IsTest,
+      drop_console: params["nologs"],
     },
     warnings: "verbose",
   });
-  const code = bigIntPass(postprocessExports(uglified.code));
+  const code = bigintPass(postprocessExports(uglified.code));
   console.log("Size:", code.length);
   console.log(uglified.warnings, uglified.error);
   await Bun.write(

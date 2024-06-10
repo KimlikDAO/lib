@@ -9,7 +9,7 @@ build/did/test/decryptedSections.compiled-test.js: did/test/decryptedSections.co
     testing/assert.js testing/nodejs.js testing/nodejs.d.js \
     testing/vm.js testing/crosschain.js \
     util/çevir.js
-	bun birimler/js/compiler.js $^ $@ --test
+	bun birimler/js/compiler.js $^ -o $@
 
 
 build/did/test/section.compiled-test.js: did/test/section.compiled-test.js \
