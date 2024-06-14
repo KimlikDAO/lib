@@ -7,4 +7,4 @@ build/crosschain/test/unlockable.compiled-test.js: crosschain/test/unlockable.co
     testing/assert.js testing/nodejs.d.js \
     testing/vm.js testing/crosschain.js \
     util/çevir.js
-	bun birimler/js/compiler.js $^ -o $@
+	bun kdc/kdc.js $^ -o $@

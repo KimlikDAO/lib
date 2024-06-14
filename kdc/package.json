@@ -1,0 +1,10 @@
+{
+  "name": "@kimlikdao/kdc",
+  "bin": {
+    "kdc": "./kdc/kdc.js"
+  },
+  "dependencies": {
+    "google-closure-compiler": "^20240317.0.0",
+    "uglify-js": "3.18.0"
+  }
+}

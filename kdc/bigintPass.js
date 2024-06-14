@@ -4,9 +4,12 @@
  * is released.
  */
 
-const bigintPass = (code) => code.replace(/\d+n/g, (decimal) => {
-  const numberPart = decimal.slice(0, -1);
-  const bigintNumber = BigInt(numberPart);
+/**
+ * @param {string} code
+ * @return {string}
+ */
+const bigintPass = (code) => code.replace(/\d+n/g, (/** string */ decimal) => {
+  const bigintNumber = BigInt(decimal.slice(0, -1));
   const hexadecimal = "0x" + bigintNumber.toString(16) + "n";
   const diff = decimal.length - hexadecimal.length;
   if (diff > 0)

@@ -1,22 +1,16 @@
 /**
- * @constructor
- * @dict
- */
-const CliArgs = function () { };
-
-/**
  * @param {!Array<string>} args
  * @param {string} defaultArgKey
  * @param {!Object<string, string>} shortArgKeys
- * @return {!CliArgs}
+ * @return {!Object}
  */
 const parseArgs = (args, defaultArgKey, shortArgKeys) => {
   /** @type {string} */
   let key = defaultArgKey;
   /** @type {!Array<string>} */
   let values = [];
-  /** @type {!CliArgs} */
-  const params = new CliArgs();
+  /** @type {!Object} */
+  const params = {};
 
   args.push("--");
   for (const arg of args) {
@@ -31,6 +25,5 @@ const parseArgs = (args, defaultArgKey, shortArgKeys) => {
 }
 
 export {
-  CliArgs,
   parseArgs
 };

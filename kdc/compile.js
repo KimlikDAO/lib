@@ -2,7 +2,15 @@ import ClosureCompiler from "google-closure-compiler";
 import UglifyJS from "uglify-js";
 import { bigintPass } from "./bigintPass";
 import { copyToIsolate } from "./isolate";
-import { Params } from "./params";
+
+/**
+ * @param {string} fileName
+ * @return {string} directory of the fileName
+ */
+const getDir = (fileName) => fileName.slice(0, fileName.lastIndexOf("/"));
+
+/** @typedef {!CliArgs} */
+const Params = {};
 
 /**
  * @param {!Params} params
@@ -10,9 +18,7 @@ import { Params } from "./params";
  */
 const compile = async (params) => {
   /** @const {string} */
-  const isolateDir = params["isolateDir"];
-  /** @const {string} */
-  const inverseIsolateDir = "../".repeat(isolateDir.match(/\//g).length);
+  const isolateDir = getDir(params["output"]) + "/isolate/";
   /** @const {!Map<string, !Array<string>>} */
   const importMap = new Map();
 
@@ -23,9 +29,7 @@ const compile = async (params) => {
   const postprocessFn = (code) => bigintPass(
     code.replace("globalThis.ExportDefault=", "export default"));
 
-  await copyToIsolate(params, preprocessFn);
-
-  process.chdir(isolateDir);
+  await copyToIsolate(params["inputs"], isolateDir, preprocessFn);
 
   /** @const {!Array<string>} */
   const jsCompErrors = [
@@ -53,27 +57,34 @@ const compile = async (params) => {
     entry_point: params["inputs"][0],
   });
 
-  closureCompiler.run(async (exitCode, output, errors) => {
-    console.log("Returned", exitCode, errors);
-    const uglified = UglifyJS.minify(output, {
-      toplevel: true,
-      compress: {
+  closureCompiler.spawnOptions = {
+    "cwd": isolateDir
+  };
+
+  return new Promise((resolve, reject) => {
+    closureCompiler.run((exitCode, output, errors) => {
+      if (exitCode || errors) {
+        reject(errors);
+        return;
+      }
+      const uglified = UglifyJS.minify(output, {
         toplevel: true,
-        passes: 3,
-        unsafe: true,
-        drop_console: params["nologs"],
-      },
-      warnings: "verbose",
+        compress: {
+          module: false,
+          toplevel: true,
+          passes: 3,
+          unsafe: true,
+          drop_console: params["nologs"],
+        },
+        warnings: "verbose",
+      });
+      const code = postprocessFn(uglified.code);
+      console.log("Size:", code.length);
+      console.log(uglified.warnings, uglified.error);
+      return Bun.write(params["output"], code)
+        .then(() => resolve(params["output"]))
     });
-    const code = postprocessFn(uglified.code);
-    console.log("Size:", code.length);
-    console.log(uglified.warnings, uglified.error);
-    await Bun.write(
-      inverseIsolateDir + params["output"],
-      code
-    );
-    process.chdir(inverseIsolateDir);
-  });
+  })
 }
 
 export { compile };

@@ -2,7 +2,7 @@ build/crypto/test/secp256k1/unit.compiled-test.js: crypto/test/secp256k1/unit.co
     crypto/secp256k1.js crypto/modular.js \
     testing/assert.js testing/nodejs.d.js \
     util/çevir.js
-	bun birimler/js/compiler.js $^ -o $@
+	bun kdc/kdc.js $^ -o $@
 
 
 build/crypto/test/secp256k1/nobleVectors.compiled-test.js: \
@@ -13,5 +13,5 @@ build/crypto/test/secp256k1/nobleVectors.compiled-test.js: \
     testing/nodejs.d.js \
     util/çevir.js
 	mkdir -p $(dir $@)
-	bun birimler/js/compiler.js $^ -o $@.tmp
+	bun kdc/kdc.js $^ -o $@.tmp
 	cat testing/fsPromises.js $@.tmp > $@

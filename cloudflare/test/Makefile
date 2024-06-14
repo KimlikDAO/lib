@@ -2,4 +2,4 @@ build/cloudflare/test/pageWorker.compiled-test.js: cloudflare/test/pageWorker.co
     cloudflare/pageWorker.d.js cloudflare/pageWorker.js \
     cloudflare/types.d.js cloudflare/moduleWorker.d.js \
     testing/assert.js testing/nodejs.d.js
-	bun birimler/js/compiler.js $^ -o $@
+	bun kdc/kdc.js $^ -o $@

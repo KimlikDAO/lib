@@ -4,4 +4,4 @@ build/api/test/jsonrpc.compiled-test.js: api/test/jsonrpc.compiled-test.js \
     ethereum/evm.js \
     testing/assert.js testing/nodejs.d.js \
     util/çevir.js
-	bun birimler/js/compiler.js $^ -o $@
+	bun kdc/kdc.js $^ -o $@

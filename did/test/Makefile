@@ -9,7 +9,7 @@ build/did/test/decryptedSections.compiled-test.js: did/test/decryptedSections.co
     testing/assert.js testing/nodejs.d.js \
     testing/vm.js testing/crosschain.js \
     util/çevir.js
-	bun birimler/js/compiler.js $^ -o $@
+	bun kdc/kdc.js $^ -o $@
 
 
 build/did/test/section.compiled-test.js: did/test/section.compiled-test.js \
@@ -22,7 +22,7 @@ build/did/test/section.compiled-test.js: did/test/section.compiled-test.js \
     testing/vm.js \
     util/çevir.js
 	mkdir -p $(dir $@)
-	bun birimler/js/compiler.js $^ -o $@
+	bun kdc/kdc.js $^ -o $@
 
 build/did/test/verifiableID.compiled-test.js: did/test/verifiableID.compiled-test.js \
     crosschain/unlockable.d.js crosschain/unlockable.js \
@@ -34,4 +34,4 @@ build/did/test/verifiableID.compiled-test.js: did/test/verifiableID.compiled-tes
     testing/assert.js testing/nodejs.d.js \
     util/çevir.js
 	mkdir -p $(dir $@)
-	bun birimler/js/compiler.js $^ -o $@
+	bun kdc/kdc.js $^ -o $@
