@@ -119,3 +119,12 @@ eth.WatchAssetParam.prototype.type;
  * }}
  */
 eth.WatchAssetParam.prototype.options;
+
+/**
+ * @typedef {{
+ *   message: string,
+ *   code: number,
+ *   data: *
+ * }}
+ */
+eth.ProviderRpcError = {};

@@ -305,7 +305,9 @@ const revokeFriend = (chainId, address, friend) =>
  *
  * @param {ChainId} chainId
  * @param {string} revoker
- * @return {!Promise<*>}
+ * @return {!Promise<!Array<{
+ *   topics: !Array<string>
+ * }>>}
  */
 const getRevokeeAddresses = (chainId, revoker) =>
   Provider.request(/** @type {!eth.Request} */({

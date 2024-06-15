@@ -1,4 +1,4 @@
-import { tagYaz } from "../util/html.js";
+import { tagYaz } from "../../util/html.js";
 
 export const jsx = (type, props = {}) => {
   // Extract children from props, if present

@@ -48,12 +48,11 @@ const adlaGöster = (ad) => adla(ad).style.display = "";
 const adlaGösterGizle = (ad, göster) => gösterGizle(adla(ad), göster);
 
 /**
- * @param {Element} buton Durdurulacak düğme.
+ * @param {!HTMLAnchorElement} düğme Durdurulacak düğme.
  */
-const düğmeDurdur = (buton) => {
-  buton.onclick = null;
-  buton.disabled = true;
-  buton.classList.add("dis");
+const düğmeDurdur = (düğme) => {
+  düğme.onclick = null;
+  düğme.classList.add("dis");
 }
 
 /**

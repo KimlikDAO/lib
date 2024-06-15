@@ -34,16 +34,18 @@ const compile = async (params) => {
   /** @const {!Array<string>} */
   const jsCompErrors = [
     "checkTypes",
-    "strictCheckTypes",
     "unusedLocalVariables",
-    "missingProperties"
+    "missingProperties",
+    "strictCheckTypes",
   ];
   /** @const {!Array<string>} */
   const jsCompWarnings = [];
   if (params["strict"])
     jsCompWarnings.push("reportUnknownTypes");
+  if (params["loose"])
+    jsCompErrors.pop();
 
-  const closureCompiler = new ClosureCompiler.compiler({
+  const options = {
     js: params["inputs"],
     compilation_level: "ADVANCED",
     charset: "utf-8",
@@ -58,8 +60,11 @@ const compile = async (params) => {
     module_resolution: "NODE",
     dependency_mode: "PRUNE",
     entry_point: params["inputs"][0],
-  });
+  };
+  if (params["define"])
+    options.define = params["define"];
 
+  const closureCompiler = new ClosureCompiler.compiler(options);
   closureCompiler.spawnOptions = {
     "cwd": isolateDir
   };
