@@ -70,7 +70,7 @@ const compile = async (params) => {
       const uglified = UglifyJS.minify(output, {
         toplevel: true,
         compress: {
-          module: false,
+          module: true,
           toplevel: true,
           passes: 3,
           unsafe: true,

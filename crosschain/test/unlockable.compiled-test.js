@@ -1,5 +1,5 @@
 import { assertEq } from "../../testing/assert";
-import { FakeSigner } from "../../testing/crosschain";
+import { MockSigner } from "../mock/signer";
 import { decrypt, encrypt } from "../unlockable";
 
 /**
@@ -8,8 +8,8 @@ import { decrypt, encrypt } from "../unlockable";
 const testEncryptDecryptSmall = () => {
   /** @const {!bigint} */
   const privKey = 0x1337ACCn;
-  /** @const {!FakeSigner} */
-  const signer = new FakeSigner(privKey);
+  /** @const {!MockSigner} */
+  const signer = new MockSigner(privKey);
   /** @const {string} */
   const text = "Text to encrypt";
   return encrypt(
@@ -30,8 +30,8 @@ const testEncryptDecryptSmall = () => {
 const testEncryptDecryptLarge = () => {
   /** @const {!bigint} */
   const privKey = 0x1337ADD3n;
-  /** @const {!FakeSigner} */
-  const signer = new FakeSigner(privKey);
+  /** @const {!MockSigner} */
+  const signer = new MockSigner(privKey);
   /** @const {string} */
   const text = "Text to encrypt".repeat(1000);
   return encrypt(

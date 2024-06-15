@@ -1,15 +1,15 @@
 import { compile } from "../../kdc/compile";
 
-export default Promise.all([
+export default [
   compile({
     inputs: [
       "ethereum/test/evm.compiled-test.js",
+      "crypto/modular.js",
       "crypto/secp256k1.js",
       "crypto/sha3.js",
-      "crypto/modular.js",
       "ethereum/evm.js",
+      "kdc/externs/nodejs.d.js",
       "testing/assert.js",
-      "testing/nodejs.d.js",
       "util/çevir.js",
     ],
     output: "build/ethereum/test/evm.compiled-test.js"
@@ -19,8 +19,8 @@ export default Promise.all([
       "ethereum/test/eravm.compiled-test.js",
       "crypto/sha3.js",
       "ethereum/eravm.js",
+      "kdc/externs/nodejs.d.js",
       "testing/assert.js",
-      "testing/nodejs.d.js",
       "util/çevir.js"
     ],
     output: "build/ethereum/test/eravm.compiled-test.js"
@@ -42,10 +42,10 @@ export default Promise.all([
       "ethereum/provider.d.js",
       "ethereum/provider.js",
       "ethereum/transaction.d.js",
+      "kdc/externs/nodejs.d.js",
       "testing/assert.js",
-      "testing/nodejs.d.js",
       "util/çevir.js",
     ],
     output: "build/ethereum/test/KPass.compiled-test.js"
-  })]
-);
+  })
+];

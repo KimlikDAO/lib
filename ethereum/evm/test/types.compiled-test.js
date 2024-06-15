@@ -1,7 +1,7 @@
 import { assertArrayEq, assertEq } from "../../../testing/assert";
 import { hexten } from "../../../util/çevir";
 import { Op, OpData } from "../opcodes";
-import { byteLength, evm, pushBytes, pushNumber, toOpData, concat } from "../types";
+import { byteLength, concat, evm, pushBytes, pushNumber, toOpData } from "../types";
 
 const testByteLength = () => {
   assertEq(byteLength([1]), 1);

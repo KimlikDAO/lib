@@ -1,6 +1,6 @@
-import { Signer } from "../crosschain/signer";
-import evm from "../ethereum/evm";
-import vm from "./vm";
+import evm from "../../ethereum/evm";
+import vm from "../../testing/vm";
+import { Signer } from "../signer";
 
 /**
  * @constructor
@@ -8,7 +8,7 @@ import vm from "./vm";
  *
  * @param {!bigint} privKey
  */
-function FakeSigner(privKey) {
+function MockSigner(privKey) {
   /** @const {!bigint} */
   this.privKey = privKey
 }
@@ -18,7 +18,7 @@ function FakeSigner(privKey) {
  * @param {string} address
  * @return {!Promise<string>} the signature
  */
-FakeSigner.prototype.signMessage = function (message, address) {
+MockSigner.prototype.signMessage = function (message, address) {
   if (address.toLowerCase() != vm.addr(this.privKey))
     return Promise.reject();
   /** @const {!bigint} */
@@ -29,8 +29,8 @@ FakeSigner.prototype.signMessage = function (message, address) {
 /**
  * @return {string}
  */
-FakeSigner.prototype.getAddress = function () {
+MockSigner.prototype.getAddress = function () {
   return vm.addr(this.privKey);
 }
 
-export { FakeSigner, Signer };
+export { MockSigner };

@@ -1,5 +1,6 @@
-import { G } from "/crypto/secp256k1";
-import { assertEq } from "/testing/assert";
+// import { readFile } from "fs/promises";
+import { assertEq } from "../../../testing/assert";
+import { G } from "../../secp256k1";
 
 const testNobleVectors = () => readFile("crypto/test/secp256k1/nobleVectors.txt", "utf8")
   .then((/** string */ vectors) => {

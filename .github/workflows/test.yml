@@ -34,19 +34,4 @@ jobs:
       - name: Google Closure Compiled tests with bun
         run: |
           bun i
-          make test.bun  
-
-  check_compiled_node:
-    name: Compiled tests with node
-    strategy:
-      fail-fast: true
-
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: oven-sh/setup-bun@v1
-      - uses: actions/setup-node@v3
-      - name: Run Google Closure Compiled tests
-        run: |
-          bun i
-          make test.node
+          bun build.js test

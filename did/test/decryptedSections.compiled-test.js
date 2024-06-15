@@ -1,6 +1,7 @@
+import { MockSigner } from "../../crosschain/mock/signer";
+import { Signer } from "../../crosschain/signer";
 import { keccak256Uint8 } from "../../crypto/sha3";
 import { assert, assertElemEq, assertEq } from "../../testing/assert";
-import { FakeSigner, Signer } from "../../testing/crosschain";
 import vm from "../../testing/vm";
 import { base64 } from "../../util/çevir";
 import {
@@ -260,7 +261,7 @@ const testCombineMultipleInsufficient = () => {
  */
 const testToNFTfromNFT = () => {
   /** @const {!Signer} */
-  const signer = new FakeSigner(1337n);
+  const signer = new MockSigner(1337n);
 
   return toUnlockableNFT(/** @type {!eth.ERC721Metadata} */({
     name: "Halıcıoğlu NFT",
@@ -296,7 +297,7 @@ const testToNFTfromNFTMultiple = () => {
    * @type {!Signer}
    * @const
    */
-  const signer = new FakeSigner(1338n);
+  const signer = new MockSigner(1338n);
 
   return toUnlockableNFT(/** @type {!eth.ERC721Metadata} */({
     name: "Halıcıoğlu NFT",

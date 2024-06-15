@@ -2,7 +2,7 @@
  * @param {!Array<string>} args
  * @param {string} defaultArgKey
  * @param {!Object<string, string>} shortArgKeys
- * @return {!Object}
+ * @return {!Object<string, (string|boolean)>}
  */
 const parseArgs = (args, defaultArgKey, shortArgKeys) => {
   /** @type {string} */
