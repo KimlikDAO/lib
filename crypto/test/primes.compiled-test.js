@@ -12,7 +12,7 @@ const testMillerRabin = () => {
 
 const testGetNonsmooth = () => {
   assertEq(getNonsmooth("14c0657979dc9e9ee4efc484d3ebd0e1b9bac788baa47108d976c0a2c48e7"),
-    BigInt("0x14c0657979dc9e9ee4efc484d3ebd0e1b9bac788baa47108d976c0a2c48e7141"));
+    0x14c0657979dc9e9ee4efc484d3ebd0e1b9bac788baa47108d976c0a2c48e7141n);
 }
 
 const testSieve = () => {

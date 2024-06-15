@@ -13,7 +13,7 @@ export default [
       "util/hex.js",
       "util/merkleTree.js",
     ],
-    output: "build/mina/test/merkleTree.compiled-test.js:"
+    output: "build/mina/test/merkleTree.compiled-test.js"
   }),
   compile({
     inputs: [

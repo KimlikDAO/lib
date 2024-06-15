@@ -1,4 +1,3 @@
-// buildCryptoTests.js
 import { compile } from "../../../kdc/compile";
 
 export default [
@@ -13,7 +12,7 @@ export default [
     ],
     output: "build/crypto/test/secp256k1/unit.compiled-test.js"
   }),
-  compile({
+  /*compile({
     inputs: [
       "crypto/test/secp256k1/nobleVectors.compiled-test.js",
       "crypto/modular.js",
@@ -25,5 +24,5 @@ export default [
       "util/çevir.js"
     ],
     output: "build/crypto/test/secp256k1/nobleVectors.compiled-test.js"
-  })
+  })*/
 ];

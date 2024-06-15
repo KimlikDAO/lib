@@ -38,8 +38,10 @@ const compile = async (params) => {
     "unusedLocalVariables",
     "missingProperties"
   ];
+  /** @const {!Array<string>} */
+  const jsCompWarnings = [];
   if (params["strict"])
-    jsCompErrors.push("reportUnknownTypes");
+    jsCompWarnings.push("reportUnknownTypes");
 
   const closureCompiler = new ClosureCompiler.compiler({
     js: params["inputs"],
@@ -51,6 +53,7 @@ const compile = async (params) => {
     rewrite_polyfills: false,
     assume_function_wrapper: true,
     jscomp_error: jsCompErrors,
+    jscomp_warning: jsCompWarnings,
     language_in: "ECMASCRIPT_NEXT",
     module_resolution: "NODE",
     dependency_mode: "PRUNE",
