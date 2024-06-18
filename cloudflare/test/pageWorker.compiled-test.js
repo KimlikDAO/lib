@@ -1,46 +1,6 @@
 import { assertEq } from "../../testing/assert";
+import { MockKeyValue } from "../mock/keyValue";
 import { create } from "../pageWorker";
-
-/**
- * @constructor
- * @implements {cloudflare.KeyValue}
- */
-function KeyKey() { }
-
-/**
- * @override
- *
- * @param {string} key
- * @param {string=} type
- * @return {!Promise<ArrayBuffer>}
- */
-KeyKey.prototype.get = (key, type) =>
-  Promise.resolve(new TextEncoder().encode(key).buffer);
-
-/**
- * @override
- *
- * @param {string} key
- * @param {string|!ArrayBuffer} value
- * @return {!Promise<void>}
- */
-KeyKey.prototype.put = (key, value) => Promise.resolve()
-  .then(() => console.log(key, value));
-
-/**
- * @override
- *
- * @param {string} key
- * @return {!Promise<void>}
- */
-KeyKey.prototype.delete = (key) => Promise.resolve();
-
-/**
- * @override
- *
- * @return {!Promise<!cloudflare.KeyValueList>}
- */
-KeyKey.prototype.list = () => Promise.resolve(new cloudflare.KeyValueList());
 
 globalThis["caches"] = {};
 globalThis["caches"]["default"] = /** @type {!Cache} */({
@@ -62,7 +22,7 @@ globalThis["caches"]["default"] = /** @type {!Cache} */({
 
 /** @const {!cloudflare.PageWorkerEnv} */
 const env = /** @type {!cloudflare.PageWorkerEnv} */({
-  KV: new KeyKey()
+  KV: new MockKeyValue()
 });
 
 /** @const {!cloudflare.Context} */
