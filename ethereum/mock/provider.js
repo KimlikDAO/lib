@@ -8,7 +8,7 @@ import { hexten } from "/util/çevir";
  *
  * @param {!bigint} privKey
  */
-function FakeProvider(privKey) {
+function MockProvider(privKey) {
   /** @const {!bigint} */
   this.privKey = privKey;
 }
@@ -19,7 +19,7 @@ function FakeProvider(privKey) {
  * @param {!eth.Request} req
  * @return {!Promise<string>|!Promise<!Array<string>>}
  */
-FakeProvider.prototype.request = function (req) {
+MockProvider.prototype.request = function (req) {
   switch (req.method) {
     case "personal_sign":
       if (/** @type {string} */(req.params[1]).toLowerCase()
@@ -42,8 +42,8 @@ FakeProvider.prototype.request = function (req) {
 /**
  * @return {string}
  */
-FakeProvider.prototype.getAddress = function () {
+MockProvider.prototype.getAddress = function () {
   return vm.addr(this.privKey);
 }
 
-export { FakeProvider };
+export { MockProvider };

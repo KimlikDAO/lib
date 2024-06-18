@@ -18,6 +18,6 @@ export default [
       "ethereum/provider.d.js",
       "ethereum/transaction.d.js",
     ],
-    output: "build/ethereum/test/KPass.compiled-test.js"
+    output: "build/ethereum/test/KPass.compiled-test.js",
   })
 ];

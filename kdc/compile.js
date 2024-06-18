@@ -110,6 +110,7 @@ const compile = async (params) => {
         },
         warnings: "verbose",
       });
+      console.log(params["entry"]);
       console.log(`Uglified size:\t${uglified.code.length}\nGCC size:\t${output.length}`);
       const code = uglified.code.length < output.length ? uglified.code : output;
       console.log(uglified.warnings, uglified.error);

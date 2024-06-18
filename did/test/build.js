@@ -14,7 +14,7 @@ export default [
       "ethereum/eth.d.js",
       "node/nvi.d.js",
     ],
-    output: "build/did/test/decryptedSections.compiled-test.js"
+    output: "build/did/test/decryptedSections.compiled-test.js",
   }),
   compile({
     entry: "did/test/section.compiled-test.js",

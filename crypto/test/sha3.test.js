@@ -1,8 +1,8 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { keccak256 } from "../sha3";
 
 describe("keccak256 tests", () => {
-  test("should output correct string value", () => {
+  it("should output correct string value", () => {
     expect(keccak256("a"))
       .toBe("3ac225168df54212a25c1c01fd35bebfea408fdac2e31ddd6f80a4bbf9a5f1cb");
 

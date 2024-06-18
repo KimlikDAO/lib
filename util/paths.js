@@ -29,4 +29,3 @@ export {
   getDir,
   combine
 };
-

@@ -1,5 +1,5 @@
 import { ProjectivePoint as NoblePoint } from "@noble/secp256k1";
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { G, Point } from "../../secp256k1";
 
 /**
@@ -14,13 +14,13 @@ const derogate = (p) => {
 };
 
 describe("Point <> JacobianPoint equivalence", () => {
-  test("should be pointwise equal", () => {
+  it("should be pointwise equal", () => {
     expect(G).toEqual(derogate(NoblePoint.BASE));
   })
 });
 
 describe("Double tests", () => {
-  test("should be pointwise equal", () => {
+  it("should be pointwise equal", () => {
     /** @const {!Point} */
     const nG = G.copy().double().project();
 
@@ -35,7 +35,7 @@ describe("Double tests", () => {
 });
 
 describe("Add tests", () => {
-  test("should be pointwise equal", () => {
+  it("should be pointwise equal", () => {
     /** @const {!Point} */
     const nG = G.copy().increment(G).project();
     expect(nG).toEqual(derogate(NoblePoint.BASE.add(NoblePoint.BASE)));
