@@ -1,32 +1,32 @@
-# Nedir?
+# What is kimlikdao-js?
 
-kimlikdao-js, KimlikDAO projeleri için gerekli olan javascript modüllerinin tutulduğu repodur.
+kimlikdao-js is a repository containing JavaScript modules essential for KimlikDAO projects.
 
-# Dizin yapısı
+# Directory Structure
 
-`api`: Standart protokol tanımları (örneğin: jsonrpc, oauth2)
+`api`: Definitions of standard protocols (e.g., jsonrpc, oauth2)
 
-`birimler`: Birim sistemi ile ilgili araçlar ve tanımlar
+`units`: Tools and definitions related to the unit system
 
-`cloudflare`: Cloudflare Workers platformu ile ilgili tanımlar
+`cloudflare`: Definitions related to the Cloudflare Workers platform
 
-`crosschain`: Tüm blokzincirlerde geçerli tanımlar ve yapılar
+`crosschain`: Definitions and structures valid across all blockchains
 
-`crypto`: Kriptografik fonksiyonlar ve kitaplıklar
+`crypto`: Cryptographic functions and libraries
 
-`did`: KimlikDAO'nun DID ve KPass tanımları
+`did`: Definitions of DID and KPass by KimlikDAO
 
-`ethereum`: Ethereum node'ları ile etkileşim araçları
+`ethereum`: Tools for interacting with Ethereum nodes
 
-`kdc`: KimlikDAO js derleyici
+`kdc`: KimlikDAO JavaScript compiler
 
-`node`: KimlikDAO protocol node'larıyla konuşurken gerekli tanımlar
+`node`: Definitions needed when communicating with KimlikDAO protocol nodes
 
-`testing`: Test yazma kütüphaneleri
+`testing`: Libraries for writing tests
 
-`util`: Çevirme araçları ve extern tanımları
+`util`: Conversion tools and external definitions
 
-# Nasıl klonlanır?
+# How to Clone?
 
 ```shell
 git clone https://github.com/KimlikDAO/kimlikdao-js
@@ -34,42 +34,34 @@ cd kimlikdao-js
 bun i
 ```
 
-komutları ile repoyu yerel geliştirme ortamına klonlanıp sonra reponun çalışması için gerekli olan paketler indirilir.
+These commands will clone the repository into your local development environment and download the packages necessary for the repository to function.
 
-# Testler
+Tests
 
-Bu repoda iki tür test var:
+There are two types of tests in this repository:
 
-- `compiled-test`: kdc (KimlikDAO Compiler) ile derlenip bun veya tarayıcı ortamında çalıştırılan testler.
-- `bun test`: Bun test koşucusu ile bun ortamında çalıştırılan testler.
-
-### compiled-test'ler nasıl çalıştırılır?
-
-`compiled-test`'ler hem `kdc` ile derlenerek hem de doğrudan `bun` ortamında
-çalıştırılabilir.
-Örnek olarak `crypto/test/modular.compiled-test.js`'i çalıştırmak için ya
+compiled-test: tests compiled with kdc (KimlikDAO Compiler) and run in either Bun or a browser environment.
+bun test: tests run in the Bun environment using the Bun test runner.
+How to run compiled-tests?
+compiled-test can be compiled with kdc and also run directly in the bun environment. For example, to run crypto/test/modular.compiled-test.js you can either use:
 
 ```shell
 bun crypto/test/build.js
 bun build/crypto/test/modular.compiled-test.js
 ```
 
-yazabiliriz ya da doğrudan
+or directly:
 
 ```shell
 bun crypto/test/modular.compiled-test.js
 ```
 
-yazabiliriz. Sorunsuz çalıştırılması durumunda aşağıdaki gibi bir çıktı oluşur:
+If executed without issues, the output will look like this:
 
 ![](.github/img/modular.compiled-test.png "Örnek modular.compiled-test.js çıktısı")
 
-### Bun testler nasıl çalıştırılır?
+### How to run Bun tests?
 
-Bun testleri çalıştırmak için `bun test` komutunu çalıştırmak yeterli olacaktır. Sorunsuz çalıştırılması durumunda aşağıdaki gibi bir çıktı oluşur:
+To run the Bun tests, simply execute the bun test command. If executed without issues, the output will look like this:
 
 ![](.github/img/secp256k1.test.png "Örnek sepc256k1/unit.test.js çıktısı")
-
-# Yeni modüller
-
-Yeni bir modül eklenmesi durumunda eğer modül [dizin yapısı](#Dizin-yapısı) kısmında bahsedilen dizin içeriklerden birisine uygun ise o dizinin içine koyulabilir; değil ise, yeni bir dizin oluşturulmalı ve modül yeni dizine eklenmelidir.

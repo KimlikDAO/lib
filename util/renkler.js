@@ -10,7 +10,7 @@ const Renk = {};
 
 /**
  * @param {string} renk
- * @return {!Renk}
+ * @return {Renk}
  */
 const hexten = (renk) => {
   if (renk[0] == "#")
@@ -27,7 +27,7 @@ const hexten = (renk) => {
 }
 
 /**
- * @param {!Renk} renk
+ * @param {Renk} renk
  * @return {string}
  */
 const hex = (renk) => "#" + renk.r.toString(16).padStart(2, '0')

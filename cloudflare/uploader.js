@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from "fs";
+import { readFileSync, readdirSync } from "node:fs";
 import toml from "toml";
 import { CompressedMimes } from "../birimler/ayarlar.js";
 import { base64 } from "../util/çevir.js";

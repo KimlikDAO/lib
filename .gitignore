@@ -2,5 +2,5 @@
 .vscode
 *lock*
 /build
-bun*
+bun.lockb
 node_modules*

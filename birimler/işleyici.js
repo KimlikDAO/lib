@@ -1,5 +1,5 @@
-import { writeFileSync } from "fs";
 import { minify } from "html-minifier";
+import { writeFileSync } from "node:fs";
 import { optimize } from "svgo";
 import htmlMinifierConfig from "./htmlMinifierConfig.js";
 import { sayfaOku } from "./okuyucu.js";

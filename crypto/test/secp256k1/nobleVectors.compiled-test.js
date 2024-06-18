@@ -1,4 +1,4 @@
-// import { readFile } from "fs/promises";
+import { readFile } from "node:fs/promises";
 import { assertEq } from "../../../testing/assert";
 import { G } from "../../secp256k1";
 

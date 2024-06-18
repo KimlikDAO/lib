@@ -26,10 +26,12 @@ const darboğaz = (enFazla) => {
     if (sıra.length > 0 && enFazla > 0) {
       --enFazla;
       const { sözVer, sonuç, hata } = sıra.shift();
-      sözVer().then(sonuç, hata).finally(() => {
-        ++enFazla;
-        adım();
-      });
+      sözVer()
+        .finally(() => {
+          ++enFazla;
+          adım();
+        })
+        .then(sonuç, hata);
     }
   }
 

@@ -97,8 +97,8 @@ const create = (hostUrl, pages) => /** @type {!cloudflare.ModuleWorker} */({
         headers: response.headers,
         "encodeBody": "manual"
       });
-      const cachedEnc = response.headers.get("content-encoding");
-      response.headers.set("content-encoding", cachedEnc.slice(1))
+      response.headers.set("content-encoding",
+        response.headers.get("content-encoding").slice(1));
       if (idx == hostUrl.lastIndexOf("."))
         response.headers.set("cache-control", PAGE_CACHE_CONTROL);
       return response;

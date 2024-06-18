@@ -4,5 +4,7 @@ Primarily wraps Google Closure Compiler (GCC) and UglifyJS but adds additional f
 to GCC such as ability to compile es6 modules.
 
 ```shell
-bun kdc/kdc.js input1.js input2.js -o output.js
+bun kdc/kdc.js entry.js
 ```
+
+`kdc` will automatically crawl all the imported files from the entry.js and include the externs files for libraries that it recognizes.

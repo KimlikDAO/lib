@@ -1,3 +1,5 @@
+import process from "node:process";
+
 /** @type {number} */
 let TrueAsserts = 0;
 /** @type {number} */

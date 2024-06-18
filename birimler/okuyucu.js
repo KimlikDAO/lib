@@ -1,5 +1,5 @@
-import { existsSync, readFileSync } from "fs";
 import { Parser } from "htmlparser2";
+import { existsSync, readFileSync } from "node:fs";
 import { KapalıTagler, tagYaz } from "../util/html.js";
 import { renderParagraph } from "./latex.js";
 

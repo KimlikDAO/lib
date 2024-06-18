@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { copyFile, readFile, writeFile } from "fs/promises";
+import { copyFile, readFile, writeFile } from "node:fs/promises";
 import path from "path";
 import process from "process";
 import { CompressedMimes } from "./ayarlar.js";

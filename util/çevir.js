@@ -1,9 +1,12 @@
-/** @const {!Array<string>} */
+/**
+ * @const {!Array<string>}
+ */
 const Uint8denHexe = Array(255);
 for (let /** number */ i = 0; i < 256; ++i)
   Uint8denHexe[i] = i.toString(16).padStart(2, "0");
 
 /**
+ * @nosideeffects
  * @noinline
  * @param {!Uint8Array} buff hex'e çevrilecek Uint8Array.
  * @return {string} hex temsil eden dizi.
@@ -17,6 +20,7 @@ const hex = (buff) => {
 }
 
 /**
+ * @nosideeffects
  * @param {string} str hex olarak kodlanmış veri.
  * @return {!Uint8Array} byte dizisi
  */
