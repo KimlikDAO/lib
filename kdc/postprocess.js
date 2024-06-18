@@ -1,7 +1,6 @@
 import { parse } from "acorn";
 import { simple } from "acorn-walk";
 import { generate } from "astring";
-import { bigintPass } from "./bigintPass";
 import { ImportStatement, writeImportStatement } from "./modules";
 import { Update, update } from "./textual";
 
@@ -18,7 +17,6 @@ const generateImports = (imports) => {
  * @param {!Map<string, ImportStatement>} missingImports
  */
 const postprocess = (content, missingImports) => {
-  content = bigintPass(content);
   const ast = parse(content, {
     ecmaVersion: "latest",
     sourceType: "module"
@@ -33,6 +31,18 @@ const postprocess = (content, missingImports) => {
   let exportCode = "";
 
   simple(ast, {
+    Literal(node) {
+      if (typeof node.value === 'bigint') {
+        const decimal = node.value.toString();
+        const hexadecimal = '0x' + node.value.toString(16);
+        if (hexadecimal.length < decimal.length)
+          updates.push({
+            beg: node.start,
+            end: node.end,
+            put: hexadecimal + "n"
+          })
+      }
+    },
     AssignmentExpression(node) {
       if (node.left.type === 'MemberExpression' &&
         node.left.object.name === 'globalThis' &&
