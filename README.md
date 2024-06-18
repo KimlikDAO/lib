@@ -36,14 +36,16 @@ bun i
 
 These commands will clone the repository into your local development environment and download the packages necessary for the repository to function.
 
-Tests
+# Tests
 
 There are two types of tests in this repository:
 
-compiled-test: tests compiled with kdc (KimlikDAO Compiler) and run in either Bun or a browser environment.
+compiled-tests: tests compiled with `kdc` (KimlikDAO Compiler) and run in either Bun or a browser environment.
 bun test: tests run in the Bun environment using the Bun test runner.
-How to run compiled-tests?
-compiled-test can be compiled with kdc and also run directly in the bun environment. For example, to run crypto/test/modular.compiled-test.js you can either use:
+
+## How to run compiled-tests?
+
+`compiled-test`s can be compiled with kdc and also run directly in the bun environment. For example, to run crypto/test/modular.compiled-test.js you can either use:
 
 ```shell
 bun crypto/test/build.js
@@ -58,10 +60,10 @@ bun crypto/test/modular.compiled-test.js
 
 If executed without issues, the output will look like this:
 
-![](.github/img/modular.compiled-test.png "Örnek modular.compiled-test.js çıktısı")
+![](.github/img/modular.compiled-test.png "Example modular.compiled-test.js output")
 
 ### How to run Bun tests?
 
 To run the Bun tests, simply execute the bun test command. If executed without issues, the output will look like this:
 
-![](.github/img/secp256k1.test.png "Örnek sepc256k1/unit.test.js çıktısı")
+![](.github/img/secp256k1.test.png "Example sepc256k1/unit.test.js output")

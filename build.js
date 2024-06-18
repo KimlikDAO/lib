@@ -7,6 +7,7 @@ const args = parseArgs(process.argv.slice(2), "command", { "-f": "filter" });
 /** @const {!Array<string>} */
 const Tests = [
   "api",
+  "cloudflare",
   "crosschain",
   "crypto",
   "did",

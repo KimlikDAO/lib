@@ -1,8 +1,8 @@
-import { compile } from "../kdc/compile";
+import { compile } from "../../kdc/compile";
 
 export default compile({
   entry: "cloudflare/test/pageWorker.compiled-test.js",
-  inputs: [
+  externs: [
     "cloudflare/moduleWorker.d.js",
     "cloudflare/pageWorker.d.js",
     "cloudflare/types.d.js",
