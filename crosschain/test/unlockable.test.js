@@ -1,11 +1,8 @@
-import { assertEq } from "../../testing/assert";
+import { expect, it } from "bun:test";
 import { MockSigner } from "../mock/signer";
 import { decrypt, encrypt } from "../unlockable";
 
-/**
- * @return {!Promise<boolean>}
- */
-const testEncryptDecryptSmall = () => {
+it("should encrypt / decrypt small text", () => {
   /** @const {!bigint} */
   const privKey = 0x1337ACCn;
   /** @const {!MockSigner} */
@@ -21,13 +18,10 @@ const testEncryptDecryptSmall = () => {
   )
     .then((unlockable) =>
       decrypt(unlockable, signer, signer.getAddress()))
-    .then((/** @type {string} */ decrypted) => assertEq(decrypted, text));
-}
+    .then((/** @type {string} */ decrypted) => expect(decrypted).toBe(text));
+});
 
-/**
- * @return {!Promise<boolean>}
- */
-const testEncryptDecryptLarge = () => {
+it("should encrypt / decrypt large text", () => {
   /** @const {!bigint} */
   const privKey = 0x1337ADD3n;
   /** @const {!MockSigner} */
@@ -43,8 +37,5 @@ const testEncryptDecryptLarge = () => {
   )
     .then((unlockable) =>
       decrypt(unlockable, signer, signer.getAddress()))
-    .then((/** @type {string} */ decrypted) => assertEq(decrypted, text));
-}
-
-testEncryptDecryptSmall();
-testEncryptDecryptLarge();
+    .then((/** @type {string} */ decrypted) => expect(decrypted).toBe(text));
+});

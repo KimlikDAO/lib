@@ -8,7 +8,7 @@ const describe = function (description, run) { };
 
 /**
  * @param {string} invariant
- * @param {function():void} run
+ * @param {function():void|function():!Promise<void>} run
  */
 const it = function (invariant, run) { };
 
@@ -36,12 +36,14 @@ Matcher.prototype.toBe = function (expected) { }
  */
 Matcher.prototype.toEqual = function (expected) { }
 
+Matcher.prototype.toBeFalse = function () { }
+
+Matcher.prototype.toBeFalsy = function () { }
+
+Matcher.prototype.toBeNull = function () { }
+
 Matcher.prototype.toBeNull = function () { }
 
 Matcher.prototype.toBeTrue = function () { }
 
 Matcher.prototype.toBeTruthy = function () { }
-
-Matcher.prototype.toBeFalsy = function () { }
-
-Matcher.prototype.toBeFalse = function () { }

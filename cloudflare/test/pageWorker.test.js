@@ -1,4 +1,4 @@
-import { assertEq } from "../../testing/assert";
+import { expect, it } from "bun:test";
 import { MockKeyValue } from "../mock/keyValue";
 import { create } from "../pageWorker";
 
@@ -67,11 +67,14 @@ const PageWorker = create("https://kimlikdao.org/", {
   "revoke": "iptal-en.html"
 });
 
-const testKvName = (url, acceptEncoding, cookie, kvName) => /** @type {!Promise<Response>} */(
-  PageWorker.fetch(
-    createRequest(url, acceptEncoding, cookie), env, ctx))
-  .then((res) => res.text())
-  .then((res) => assertEq(res, kvName));
+const testKvName = (url, acceptEncoding, cookie, kvName) => it(
+  `returns the correct result for ${acceptEncoding}, ${cookie}, ${kvName}`,
+  () => /** @type {!Promise<Response>} */(
+    PageWorker.fetch(
+      createRequest(url, acceptEncoding, cookie), env, ctx))
+    .then((res) => res.text())
+    .then((res) => expect(res).toBe(kvName))
+);
 
 testKvName("https://kimlikdao.org/", "br", "l=tr", "ana-tr.html.br");
 testKvName("https://kimlikdao.org/", "br", null, "ana-en.html.br");

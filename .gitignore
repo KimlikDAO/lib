@@ -1,6 +1,6 @@
 .DS_Store
 .vscode
-*lock*
 /build
 bun.lockb
 node_modules*
+yarn.lock
