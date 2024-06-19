@@ -1,8 +1,10 @@
-import { spawn } from "bun";
+import { runSimple } from "./testing/testRunner";
 import { parseArgs } from "./util/cli";
-import { darboğaz as bottleneck } from "./util/promises";
 
-const args = parseArgs(process.argv.slice(2), "command", { "-f": "filter" });
+const args = parseArgs(process.argv.slice(2), "command", {
+  "-f": "filter",
+  "-j": "concurrency"
+});
 
 /** @const {!Array<string>} */
 const Tests = [
@@ -24,25 +26,6 @@ const Benches = [
 ];
 
 /**
- * @param {!Array<string>} files
- * @return {!Promise<boolean>}
- */
-const runSimple = (files) => {
-  files = files.filter((file) => !file.includes("ipfs"));
-  const bn = bottleneck(6);
-  return Promise.all(
-    files.map((file) =>
-      bn(() =>
-        spawn(["bun", file]).exited.then((exitCode) => {
-          console.log(`${file} with exit code ${exitCode}`);
-          return exitCode;
-        })
-      )
-    )
-  ).then((retValues) => retValues.every((val) => val == 0));
-};
-
-/**
  * @param {!Array<string>} targetFiles
  * @param {string} type
  * @return {!Promise<!Array<string>>}
@@ -58,17 +41,23 @@ const buildTargets = (targetFiles, type) =>
     )
   ).then((targets) => targets.flat());
 
+/**
+ * Run at most `args["concurrency"]` tests in parallel.
+ *
+ * @const {number}
+ */
+const concurrency = args["concurrency"] || 6;
+
 switch (args["command"]) {
   case "test":
     buildTargets(Tests, "test")
-      .then(runSimple)
+      .then((files) => runSimple(
+        files.filter((file) => !file.includes("ipfs")), concurrency))
       .then((success) => process.exit(1 - +success));
     break;
   case "bench":
     buildTargets(Benches, "bench")
-      .then(runSimple)
+      .then((files) => runSimple(files, concurrency))
       .then((success) => process.exit(1 - +success));
     break;
-  case "pp":
-    runSimple(["node/test/ipfs.compiled-test.js"]);
 }

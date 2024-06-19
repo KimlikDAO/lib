@@ -1,4 +1,7 @@
 import process from "node:process";
+import { Clear, Green, Red } from "../util/cli";
+
+console.time("test");
 
 /** @type {number} */
 let TrueAsserts = 0;
@@ -16,9 +19,7 @@ const updateCounters = (value) => value ? TrueAsserts += 1 : FalseAsserts += 1;
  */
 const assert = (value) => {
   updateCounters(value);
-  if (!value) {
-    console.error("Hata");
-  }
+  if (!value) console.error("Hata");
   return value;
 }
 
@@ -86,19 +87,24 @@ const assertElemEq = (given, expected) => {
 }
 
 const assertStats = () => {
-  const color = FalseAsserts == 0 ? "\x1b[42m" : "\x1b[41m";
   console.log(
-    `${color}${TrueAsserts} / ${TrueAsserts + FalseAsserts} asserts true\x1b[0m ` +
+    `${FalseAsserts == 0 ? Green : Red}${TrueAsserts} / ${TrueAsserts + FalseAsserts} asserts true${Clear} ` +
     `(${(performance.now() | 0) / 1000} seconds)`);
   console.timeEnd("test");
-  process.exit(FalseAsserts);
+  if (FalseAsserts != 0) process.exitCode = FalseAsserts;
+  if (process.exitCode != 0)
+    console.log(`${Red}Test failed${Clear}`);
 }
 
+const fail = () => process.exitCode = -1;
+
+process.on("uncaughtException", fail);
+process.on("unhandledRejection", fail);
 process.on("exit", assertStats);
 
 export {
   assert,
   assertArrayEq,
   assertElemEq,
-  assertEq,
+  assertEq
 };

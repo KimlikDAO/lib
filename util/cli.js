@@ -1,3 +1,10 @@
+/** @const {string} */
+const Red = "\x1b[41m";
+/** @const {string} */
+const Green = "\x1b[42m";
+/** @const {string} */
+const Clear = "\x1b[0m";
+
 /**
  * @param {!Array<string>} args
  * @param {string} defaultArgKey
@@ -25,5 +32,8 @@ const parseArgs = (args, defaultArgKey, shortArgKeys) => {
 }
 
 export {
+  Red,
+  Green,
+  Clear,
   parseArgs
 };
