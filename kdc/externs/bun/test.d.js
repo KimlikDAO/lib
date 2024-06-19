@@ -32,6 +32,9 @@ const expect = function (actual) { }
  */
 function Matcher(actual) { }
 
+/** @const {!Matcher<T>} */
+Matcher.prototype.not;
+
 /**
  * @param {T} expected
  */

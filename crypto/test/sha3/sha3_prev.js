@@ -1,4 +1,4 @@
-import { hex } from '../../util/çevir';
+import { hex } from '../../../util/çevir';
 
 /** @const {Array<number>} */
 const KECCAK_PADDING = [1, 256, 65536, 16777216];

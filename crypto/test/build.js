@@ -1,9 +1,11 @@
 import { compile } from "../../kdc/compile";
 import poseidon from "./poseidon/build";
 import secp256k1 from "./secp256k1/build";
+import sha3 from "./sha3/build";
 
 export default [
   poseidon,
+  ...sha3,
   ...secp256k1,
   compile({
     entry: "crypto/test/integration.compiled-test.js",
@@ -18,11 +20,7 @@ export default [
     output: "build/crypto/test/primes.compiled-test.js",
   }),
   compile({
-    entry: "crypto/test/sha3.compiled-test.js",
-    output: "build/crypto/test/sha3.compiled-test.js",
-  }),
-  compile({
-    entry: "crypto/test/wesolowski.compiled-test.js",
-    output: "build/crypto/test/wesolowski.compiled-test.js",
+    entry: "crypto/test/wesolowski.test.js",
+    output: "build/crypto/test/wesolowski.test.js",
   }),
 ];
