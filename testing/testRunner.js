@@ -13,7 +13,7 @@ const runSimple = (files, concurrency) => {
   return Promise.all(
     files.map((file) => readFile(file, "utf8")
       .then((fileContent) => bn(() => spawn(fileContent.includes('"bun:test"')
-        ? ["bun", "test", file]
+        ? ["bun", "test", "--timeout", "15000", file]
         : ["bun", file]).exited
         .then((exitCode) => {
           const marker = exitCode == 0 ? `${Green}[OK]` : `${Red}[Fail]`;

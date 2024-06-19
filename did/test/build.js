@@ -2,7 +2,7 @@ import { compile } from "../../kdc/compile";
 
 export default [
   compile({
-    entry: "did/test/decryptedSections.compiled-test.js",
+    entry: "did/test/decryptedSections.test.js",
     externs: [
       "crosschain/unlockable.d.js",
       "did/decryptedSections.d.js",
@@ -14,10 +14,10 @@ export default [
       "ethereum/eth.d.js",
       "node/nvi.d.js",
     ],
-    output: "build/did/test/decryptedSections.compiled-test.js",
+    output: "build/did/test/decryptedSections.test.js",
   }),
   compile({
-    entry: "did/test/section.compiled-test.js",
+    entry: "did/test/section.test.js",
     externs: [
       "crosschain/unlockable.d.js",
       "did/decryptedSections.d.js",
@@ -28,10 +28,10 @@ export default [
       "ethereum/eth.d.js",
       "node/nvi.d.js",
     ],
-    output: "build/did/test/section.compiled-test.js"
+    output: "build/did/test/section.test.js"
   }),
   compile({
-    entry: "did/test/verifiableID.compiled-test.js",
+    entry: "did/test/verifiableID.test.js",
     externs: [
       "crosschain/unlockable.d.js",
       "did/decryptedSections.d.js",
@@ -42,6 +42,6 @@ export default [
       "ethereum/eth.d.js",
       "node/nvi.d.js",
     ],
-    output: "build/did/test/verifiableID.compiled-test.js"
+    output: "build/did/test/verifiableID.test.js"
   })
 ];

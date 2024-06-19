@@ -8,16 +8,16 @@ export default [
   ...sha3,
   ...secp256k1,
   compile({
-    entry: "crypto/test/integration.compiled-test.js",
-    output: "build/crypto/test/integration.compiled-test.js",
+    entry: "crypto/test/integration.test.js",
+    output: "build/crypto/test/integration.test.js",
   }),
   compile({
-    entry: "crypto/test/modular.compiled-test.js",
-    output: "build/crypto/test/modular.compiled-test.js",
+    entry: "crypto/test/modular.test.js",
+    output: "build/crypto/test/modular.test.js",
   }),
   compile({
-    entry: "crypto/test/primes.compiled-test.js",
-    output: "build/crypto/test/primes.compiled-test.js",
+    entry: "crypto/test/primes.test.js",
+    output: "build/crypto/test/primes.test.js",
   }),
   compile({
     entry: "crypto/test/wesolowski.test.js",

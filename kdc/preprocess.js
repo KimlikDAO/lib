@@ -80,7 +80,12 @@ const preprocessAndIsolate = async (entryFile, isolateDir, splitSet, externsSet)
               break;
             }
             if (splitSet.has(importedFile)) break;
-            throw "Node modules not implemented yet.";
+            const maybeNodeModule = `node_modules/${importedFile}/index.js`;
+            if (existsSync(maybeNodeModule)) {
+              importedFile = maybeNodeModule;
+              break;
+            }
+            throw "nodejs support is limited at this point";
         }
         if (markedMissing || splitSet.has(importedFile) || !existsSync(importedFile)) {
           let importStmt = missingImports.get(importedFile);

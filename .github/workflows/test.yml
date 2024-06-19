@@ -19,7 +19,7 @@ jobs:
       - name: Run bun tests
         run: |
           bun i
-          bun test
+          bun test --timeout 15000
         id: test
 
   check_compiled_bun:

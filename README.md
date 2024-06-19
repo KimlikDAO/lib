@@ -6,7 +6,7 @@ kimlikdao-js is a repository containing JavaScript modules essential for KimlikD
 
 `api`: Definitions of standard protocols (e.g., jsonrpc, oauth2)
 
-`units`: Tools and definitions related to the unit system
+`birimler`: UI module system
 
 `cloudflare`: Definitions related to the Cloudflare Workers platform
 
@@ -38,32 +38,20 @@ These commands will clone the repository into your local development environment
 
 # Tests
 
-There are two types of tests in this repository:
+The tests can be run in two different modes:
 
-compiled-tests: tests compiled with `kdc` (KimlikDAO Compiler) and run in either Bun or a browser environment.
-bun test: tests run in the Bun environment using the Bun test runner.
+- Uncompiled
+  ```shell
+  bun test crypto/test/modular.test.js
+  ```
+- Compiled (using `kdc`)
+  ```shell
+  bun run crypto/test/build.js
+  bun test build/crypto/test/modular.test.js
+  ```
 
-## How to run compiled-tests?
-
-`compiled-test`s can be compiled with kdc and also run directly in the bun environment. For example, to run crypto/test/modular.compiled-test.js you can either use:
-
-```shell
-bun crypto/test/build.js
-bun build/crypto/test/modular.compiled-test.js
-```
-
-or directly:
-
-```shell
-bun crypto/test/modular.compiled-test.js
-```
-
-If executed without issues, the output will look like this:
+When run, output will look like this:
 
 ![](.github/img/modular.compiled-test.png "Example modular.compiled-test.js output")
-
-### How to run Bun tests?
-
-To run the Bun tests, simply execute the bun test command. If executed without issues, the output will look like this:
 
 ![](.github/img/secp256k1.test.png "Example sepc256k1/unit.test.js output")

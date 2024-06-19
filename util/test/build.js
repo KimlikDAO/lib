@@ -1,16 +1,16 @@
-import { compile } from "../../kdc/compile"
+import { compile } from "../../kdc/compile";
 
 export default [
   compile({
-    entry: "util/test/çevir.compiled-test.js",
-    output: "build/util/test/çevir.compiled-test.js"
+    entry: "util/test/çevir.test.js",
+    output: "build/util/test/çevir.test.js"
   }),
   compile({
-    entry: "util/test/base58.compiled-test.js",
-    output: "build/util/test/base58.compiled-test.js"
+    entry: "util/test/base58.test.js",
+    output: "build/util/test/base58.test.js"
   }),
   compile({
-    entry: "util/test/promises.compiled-test.js",
-    output: "build/util/test/promises.compiled-test.js",
+    entry: "util/test/promises.test.js",
+    output: "build/util/test/promises.test.js",
   })
 ];

@@ -1,11 +1,11 @@
-import { ProjectivePoint as NoblePoint } from "@noble/secp256k1";
+import { ProjectivePoint } from "@noble/secp256k1";
 import { describe, expect, it } from "bun:test";
 import { G, Point } from "../../secp256k1";
 
 /**
  * Remove the nobility of the point :/
  *
- * @param {!NoblePoint} p
+ * @param {!ProjectivePoint} p
  * @return {!Point}
  */
 const derogate = (p) => {
@@ -15,7 +15,7 @@ const derogate = (p) => {
 
 describe("Point <> JacobianPoint equivalence", () => {
   it("should be pointwise equal", () => {
-    expect(G).toEqual(derogate(NoblePoint.BASE));
+    expect(G).toEqual(derogate(ProjectivePoint.BASE));
   })
 });
 
@@ -24,13 +24,13 @@ describe("Double tests", () => {
     /** @const {!Point} */
     const nG = G.copy().double().project();
 
-    expect(nG).toEqual(derogate(NoblePoint.BASE.double()));
+    expect(nG).toEqual(derogate(ProjectivePoint.BASE.double()));
 
     nG.double().project();
-    expect(nG).toEqual(derogate(NoblePoint.BASE.double().double()));
+    expect(nG).toEqual(derogate(ProjectivePoint.BASE.double().double()));
 
     nG.double().project();
-    expect(nG).toEqual(derogate(NoblePoint.BASE.double().double().double()));
+    expect(nG).toEqual(derogate(ProjectivePoint.BASE.double().double().double()));
   })
 });
 
@@ -38,9 +38,9 @@ describe("Add tests", () => {
   it("should be pointwise equal", () => {
     /** @const {!Point} */
     const nG = G.copy().increment(G).project();
-    expect(nG).toEqual(derogate(NoblePoint.BASE.add(NoblePoint.BASE)));
+    expect(nG).toEqual(derogate(ProjectivePoint.BASE.add(ProjectivePoint.BASE)));
 
     nG.increment(G).project();
-    expect(nG).toEqual(derogate(NoblePoint.BASE.add(NoblePoint.BASE).add(NoblePoint.BASE)));
+    expect(nG).toEqual(derogate(ProjectivePoint.BASE.add(ProjectivePoint.BASE).add(ProjectivePoint.BASE)));
   })
 });

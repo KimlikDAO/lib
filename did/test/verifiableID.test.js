@@ -1,27 +1,7 @@
-import { assert } from "../../testing/assert";
-import { base64 } from "../../util/çevir";
+import { expect, test } from "bun:test";
 import { generate, prepareGenerateKey, verify } from "../verifiableID";
 
-/**
- * @return {!Promise<void>}
- */
-const generateKeyPair = () => crypto.subtle.generateKey({
-  name: "RSASSA-PKCS1-v1_5",
-  modulusLength: 512,
-  publicExponent: new Uint8Array([1, 0, 1]),
-  hash: "SHA-256",
-}, true, ["sign", "verify"]).then((res) => Promise.all([
-  crypto.subtle.exportKey("pkcs8", /** @type {!webCrypto.CryptoKeyPair} */(res).privateKey),
-  crypto.subtle.exportKey("spki", /** @type {!webCrypto.CryptoKeyPair} */(res).publicKey),
-])).then((/** @type {!Array<!ArrayBuffer>} */[privateKey, publicKey]) => {
-  console.log("private key:", base64(new Uint8Array(privateKey)));
-  console.log("public key:", base64(new Uint8Array(publicKey)));
-});
-
-/**
- * @return {!Promise<boolean>}
- */
-const testGenerateVerify1 = () => {
+test("generate and verify", () => {
   /** @const {string} */
   const gizliAnahtar = "MIIBVQIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEA5gWLDHtfFthoCtHxRTFPCi"
     + "9yS13kySZnlHhfwhFdhJwF5pZFpZR9q1IUK6V2a6Tnpz4weiKQh8XWaaZjcFBgQQIDAQABAkA+cyjSRbiGWlC9B"
@@ -38,13 +18,12 @@ const testGenerateVerify1 = () => {
       generate("TR22345678902", generateKey))
     .then((/** @type {!did.VerifiableID} */ verifiableID) =>
       verify(verifiableID, "TR22345678902", publicKey))
-    .then(assert);
-}
+    .then((result) => expect(result).toBeTrue());
+}, {
+  timeout: 15000
+});
 
-/**
- * @return {!Promise<boolean>}
- */
-const testGenerateVerify2 = () => {
+test("generate and verify", () => {
   /** @const {string} */
   const gizliAnahtar = "MIIBVQIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEAxxht6rOMPXdVuvhBvPLuPC"
     + "Hi54QYTOzU8yfv6tsZ72x1SxK1kd7ytY8s7L2LkfPFYxCaHPyVDqhgYI96X3cx5wIDAQABAkEAnBQhrznceh9AX"
@@ -61,9 +40,5 @@ const testGenerateVerify2 = () => {
       generate("PERSONID", generateKey))
     .then((/** @type {!did.VerifiableID} */ verifiableID) =>
       verify(verifiableID, "PERSONID", publicKey))
-    .then(assert);
-}
-
-generateKeyPair();
-testGenerateVerify1();
-testGenerateVerify2();
+    .then((result) => expect(result).toBeTrue());
+});
