@@ -13,6 +13,12 @@ const describe = function (description, run) { };
 const it = function (invariant, run) { };
 
 /**
+ * @param {string} invariant
+ * @param {function():void|function():!Promise<void>} run
+ */
+const test = function (invariant, run) { };
+
+/**
  * @template T
  * @param {T} actual
  * @return {!Matcher<T>}
