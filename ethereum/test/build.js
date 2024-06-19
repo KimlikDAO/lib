@@ -10,7 +10,7 @@ export default [
     output: "build/ethereum/test/eravm.compiled-test.js"
   }),
   compile({
-    entry: "ethereum/test/KPass.compiled-test.js",
+    entry: "ethereum/test/KPass.test.js",
     externs: [
       "api/jsonrpc.d.js",
       "ethereum/eth.d.js",
@@ -18,6 +18,6 @@ export default [
       "ethereum/provider.d.js",
       "ethereum/transaction.d.js",
     ],
-    output: "build/ethereum/test/KPass.compiled-test.js",
+    output: "build/ethereum/test/KPass.test.js",
   })
 ];

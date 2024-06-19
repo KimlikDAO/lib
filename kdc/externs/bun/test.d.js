@@ -15,16 +15,33 @@ const it = function (invariant, run) { };
 /**
  * @template T
  * @param {T} actual
- * @return {Matcher<T>}
+ * @return {!Matcher<T>}
  */
 const expect = function (actual) { }
 
 /**
  * @template T
+ * @constructor
+ * @param {T} actual
  */
-function Matcher() { }
+function Matcher(actual) { }
 
 /**
  * @param {T} expected
  */
 Matcher.prototype.toBe = function (expected) { }
+
+/**
+ * @param {T} expected
+ */
+Matcher.prototype.toEqual = function (expected) { }
+
+Matcher.prototype.toBeNull = function () { }
+
+Matcher.prototype.toBeTrue = function () { }
+
+Matcher.prototype.toBeTruthy = function () { }
+
+Matcher.prototype.toBeFalsy = function () { }
+
+Matcher.prototype.toBeFalse = function () { }
