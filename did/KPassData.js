@@ -3,6 +3,7 @@
  */
 
 import { ChainId } from "../crosschain/chains";
+import "../ethereum/ERC721Unlockable.d";
 import KPass from "../ethereum/KPassLite";
 import dom from "../util/dom";
 import { hex } from "../util/çevir";

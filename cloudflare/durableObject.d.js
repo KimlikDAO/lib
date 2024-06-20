@@ -5,6 +5,8 @@
  * @externs
  */
 
+import cloudflare from "./cloudflare.d";
+
 /**
  * A state of the DurableObject.
  *
@@ -64,7 +66,7 @@ cloudflare.DurableObjectStorage.prototype.getAlarm = function () { };
  * @param {number|Date} scheduledTime
  * @return {!Promise<void>}
  */
-cloudflare.DurableObjectStorage.prototype.setAlarm = function (scheduledTime) {};
+cloudflare.DurableObjectStorage.prototype.setAlarm = function (scheduledTime) { };
 
 /**
  * @typedef {{
@@ -151,7 +153,6 @@ cloudflare.DurableObjectBinding.prototype.idFromString = function (hexId) { }
  * @return {!cloudflare.DurableObjectId}
  */
 cloudflare.DurableObjectBinding.prototype.newUniqueId = function () { }
-
 
 /**
  * This is for the RPC interface and the realted import

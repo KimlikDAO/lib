@@ -5,8 +5,7 @@
  * @externs
  */
 
-/** @const */
-const node = {};
+import node from "./node.d";
 
 /**
  * @struct
@@ -15,7 +14,7 @@ const node = {};
  * @param {number} kod
  * @param {!Array<string>=} ek
  */
-node.HataBildirimi = function(kod, ek) {
+node.HataBildirimi = function (kod, ek) {
   /** @const {number} */
   this.kod = kod;
   /** @const {!Array<string>|undefined} */

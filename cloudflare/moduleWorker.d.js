@@ -5,6 +5,9 @@
  * @externs
  */
 
+import "./cache.d";
+import cloudflare from "./cloudflare.d";
+
 /**
  * @interface
  */

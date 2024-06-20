@@ -11,6 +11,7 @@ import {
   base64, hexten,
   uint8ArrayeBase64ten, uint8ArrayeHexten
 } from "../util/çevir";
+import "./section.d";
 
 /** @const {string} */
 const KIMLIKDAO_HASH_PREFIX = "\x19KimlikDAO hash\n";
@@ -128,5 +129,6 @@ export {
   commit,
   hash,
   recoverSectionSigners,
-  signSection,
+  signSection
 };
+

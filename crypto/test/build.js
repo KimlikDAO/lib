@@ -1,4 +1,4 @@
-import { compile } from "../../kdc/compile";
+import { compile } from "../../kdjs/compile";
 import poseidon from "./poseidon/build";
 import secp256k1 from "./secp256k1/build";
 import sha3 from "./sha3/build";

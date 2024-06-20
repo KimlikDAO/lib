@@ -1,3 +1,5 @@
+import "./provider.d";
+
 /**
  * @param {!eth.Provider} provider
  * @param {string} contract Contract adddress given with the 0x prefix

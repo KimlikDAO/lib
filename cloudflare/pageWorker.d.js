@@ -3,6 +3,8 @@
  * @externs
  */
 
+import cloudflare from "./cloudflare.d";
+
 /**
  * @interface
  * @extends {cloudflare.Environment}

@@ -10,12 +10,6 @@
  */
 function ProjectivePoint() { }
 
-/** @type {!bigint} */
-ProjectivePoint.prototype.x;
-
-/** @type {!bigint} */
-ProjectivePoint.prototype.y;
-
 /** @const {!ProjectivePoint} */
 ProjectivePoint.BASE;
 

@@ -3,6 +3,8 @@
  * @externs
  */
 
+import node from "./node.d";
+
 /** @const */
 node.ipfs = {};
 

@@ -5,6 +5,8 @@
  * @externs
  */
 
+import "./cache.d";
+
 /**
  * @param {string} eventName
  * @param {function(Object)} listener

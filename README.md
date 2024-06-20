@@ -18,7 +18,7 @@ kimlikdao-js is a repository containing JavaScript modules essential for KimlikD
 
 `ethereum`: Tools for interacting with Ethereum nodes
 
-`kdc`: KimlikDAO JavaScript compiler
+`kdjs`: KimlikDAO JavaScript compiler
 
 `node`: Definitions needed when communicating with KimlikDAO protocol nodes
 
@@ -44,7 +44,7 @@ The tests can be run in two different modes:
   ```shell
   bun test crypto/test/modular.test.js
   ```
-- Compiled (using `kdc`)
+- Compiled (using `kdjs`)
   ```shell
   bun run crypto/test/build.js
   bun test build/crypto/test/modular.test.js

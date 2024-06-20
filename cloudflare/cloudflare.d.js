@@ -96,14 +96,8 @@ cloudflare.KeyValueList = {};
 cloudflare.KeyValue.prototype.list = function () { }
 
 /**
- * @const
- */
-const caches = {};
-
-/**
  * @interface
  */
 cloudflare.Environment = function () { }
 
-/** @const {!Cache} */
-caches.default;
+export default cloudflare;

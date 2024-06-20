@@ -1,5 +1,7 @@
 import { Signer } from "../crosschain/signer";
 import { decrypt, encrypt } from "../crosschain/unlockable";
+import "../ethereum/ERC721Unlockable.d";
+import "./decryptedSections.d";
 import { hash, signSection } from "./section";
 
 /**

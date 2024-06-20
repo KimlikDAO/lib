@@ -7,6 +7,7 @@
 import { keccak256Uint32, keccak256Uint32ToHex } from "../crypto/sha3";
 import { evaluate, generateChallenge, reconstructY } from "../crypto/wesolowski";
 import { base64, base64ten, base64tenSayıya, sayıdanBase64e } from "../util/çevir";
+import "./verifiableID.d";
 
 /** @const {number} */
 const KIMLIKDAO_VERIFIABLE_ID_LOG_ITERATIONS = 20;

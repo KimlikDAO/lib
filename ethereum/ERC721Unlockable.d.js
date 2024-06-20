@@ -6,6 +6,8 @@
  * @externs
  */
 
+import eth from "./eth.d";
+
 /**
  * @interface
  * @struct

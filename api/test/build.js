@@ -1,7 +1,6 @@
-import { compile } from "../../kdc/compile";
+import { compile } from "../../kdjs/compile";
 
 export default compile({
   entry: "api/test/jsonrpc.test.js",
-  externs: ["api/jsonrpc.d.js"],
   output: "build/api/test/jsonrpc.test.js",
 });

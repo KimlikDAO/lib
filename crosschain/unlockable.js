@@ -5,7 +5,8 @@
  */
 
 import { base64, base64ten, hexten } from "../util/çevir";
-import { Signer } from "./signer.js";
+import { Signer } from "./signer";
+import "./unlockable.d";
 
 /**
  * @param {!crosschain.Unlockable} unlockable

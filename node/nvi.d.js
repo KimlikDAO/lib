@@ -5,10 +5,10 @@
  * @externs
  */
 
-/**
- * @const
- */
-var nvi = {};
+import node from "./node.d";
+
+/** @const */
+node.nvi = {};
 
 /**
  * @typedef {{
@@ -20,7 +20,7 @@ var nvi = {};
  *   cinsiyet: string
  * }}
  */
-nvi.TemelBilgileri;
+node.nvi.TemelBilgileri;
 
 /**
  * @typedef {{
@@ -36,7 +36,7 @@ nvi.TemelBilgileri;
  *   mhali: string
  * }}
  */
-nvi.KutukBilgileri;
+node.nvi.KutukBilgileri;
 
 /**
  * @typedef {{
@@ -46,7 +46,7 @@ nvi.KutukBilgileri;
  *   UETS: string,
  * }}
  */
-nvi.IletisimBilgileri;
+node.nvi.IletisimBilgileri;
 
 /**
  * @typedef {{
@@ -58,4 +58,4 @@ nvi.IletisimBilgileri;
  *   içKapı: string,
  * }}
  */
-nvi.AdresBilgileri;
+node.nvi.AdresBilgileri;

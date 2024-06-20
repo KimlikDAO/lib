@@ -5,6 +5,8 @@
  * @externs
  */
 
+import cloudflare from "./cloudflare.d";
+
 /**
  * @interface
  * @struct

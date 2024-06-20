@@ -1,3 +1,4 @@
+import "../provider.d";
 import evm from "/ethereum/evm";
 import vm from "/testing/vm";
 import { hexten } from "/util/çevir";

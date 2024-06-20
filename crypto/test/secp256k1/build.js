@@ -1,9 +1,9 @@
-import { compile } from "../../../kdc/compile";
+import { compile } from "../../../kdjs/compile";
 
 export default [
   compile({
     entry: "crypto/test/secp256k1/unit.test.js",
-    output: "build/crypto/test/secp256k1/unit.test.js"
+    output: "build/crypto/test/secp256k1/unit.test.js",
   }),
   compile({
     entry: "crypto/test/secp256k1/nobleVectors.test.js",

@@ -1,4 +1,5 @@
 import base58 from "../util/base58";
+import "./ipfs.d";
 
 /**
  * Write an integer in the Continue-Bit-Encoding.

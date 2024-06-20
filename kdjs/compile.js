@@ -34,7 +34,7 @@ const Bottleneck = bottleneck(8);
  */
 const compile = async (params) => {
   /** @const {string} */
-  const isolateDir = combine(getDir(params["output"]), params["isolateDir"] || ".kdc_isolate");
+  const isolateDir = combine(getDir(params["output"]), params["isolateDir"] || ".kdjs_isolate");
   /** @const {!Set<string>} */
   const splitSet = new Set(params["split"] || []);
   /** @const {!Set<string>} */

@@ -5,6 +5,8 @@
  * @externs
  */
 
+import eth from "./eth.d";
+
 /**
  * Represents a `eth_getLogs` request parameters.
  *

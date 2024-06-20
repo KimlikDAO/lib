@@ -4,6 +4,8 @@
  * @author KimlikDAO
  */
 
+import "./error.d";
+
 /** @enum {number} */
 const ErrorCode = {
   DOCUMENT_EXPIRED: 0,

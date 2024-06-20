@@ -3,7 +3,7 @@
  * 
  * @typedef {{
  *   unnamed: (string|undefined),
- *   named: (!Object<string, string>|undefined)
+ *   named: !Object<string, string>,
  *   source: (string|undefined)
  * }}
  */
@@ -30,7 +30,7 @@ const writeImportStatement = (importStmt, source) => {
     out += " " + importStmt.unnamed
   const named = Object.entries(importStmt.named);
   if (named.length) {
-    named.sort((a, b) => a[0] > b[0]);
+    named.sort((a, b) => +(a[0] > b[0]));
     out += importStmt.unnamed ? ",{" : "{";
     out += named.map((dec) => !dec[1] || dec[0] == dec[1]
       ? dec[0] : `${dec[1]} as ${dec[0]}`)

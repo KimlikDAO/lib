@@ -1,3 +1,6 @@
+import "./moduleWorker.d";
+import "./pageWorker.d";
+
 /** @const {!Object<string, string>} */
 const MIMES = {
   "css": "text/css",

@@ -4,7 +4,9 @@
 import { ChainId } from "../crosschain/chains";
 import KPass from "./KPassLite";
 import evm from './evm';
+import "./logs.d";
 import { callMethod } from "./provider";
+import "./transaction.d";
 
 /**
  * @const {string}

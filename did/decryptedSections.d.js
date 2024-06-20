@@ -5,6 +5,9 @@
  * @externs
  */
 
+import "../crosschain/unlockable.d";
+import did from "./did.d";
+
 /**
  * A collection of `did.Sections` keyed by a string name.
  *

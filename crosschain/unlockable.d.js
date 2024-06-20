@@ -6,6 +6,8 @@
  * @externs
  */
 
+import "../ethereum/encryptedData.d";
+
 /**
  * @const
  */

@@ -1,6 +1,7 @@
 import jsonrpc from "../api/jsonrpc";
 import { ChainId } from "../crosschain/chains";
 import { address, callMethod, isNonzero } from "./provider";
+import "./transaction.d";
 
 /** @const {!Array<string>} */
 const KPASS_ADDRS = [

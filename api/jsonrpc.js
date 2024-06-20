@@ -1,3 +1,5 @@
+import "./jsonrpc.d";
+
 /** @const {!Object<string, string>} */
 const HEADERS = { "content-type": "application/json" };
 

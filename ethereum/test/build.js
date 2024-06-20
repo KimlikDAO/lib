@@ -1,4 +1,4 @@
-import { compile } from "../../kdc/compile";
+import { compile } from "../../kdjs/compile";
 
 export default [
   compile({
@@ -11,13 +11,6 @@ export default [
   }),
   compile({
     entry: "ethereum/test/KPass.test.js",
-    externs: [
-      "api/jsonrpc.d.js",
-      "ethereum/eth.d.js",
-      "ethereum/logs.d.js",
-      "ethereum/provider.d.js",
-      "ethereum/transaction.d.js",
-    ],
     output: "build/ethereum/test/KPass.test.js",
   })
 ];

@@ -5,6 +5,8 @@
  * @externs
  */
 
+import did from "./did.d";
+
 /**
  * A 256 bit ID generated for a person that has unique privacy properties:
  *

@@ -104,17 +104,33 @@ const preprocessAndIsolate = async (entryFile, isolateDir, splitSet, externsSet)
             end: node.end,
             put: ";"
           })
-        } else
+        } else {
+          // GGC currently does not support import from externs.
+          if (file.endsWith(".d.js")) {
+            updates.push({
+              beg: node.start,
+              end: node.end,
+              put: ";"
+            })
+          }
           files.push(importedFile);
+        }
       },
       ExportDefaultDeclaration(node) {
-        if (file != entryFile) return;
-        exportStmt.unnamed = node.declaration.name;
-        updates.push({
-          beg: node.start,
-          end: node.end,
-          put: ";"
-        })
+        if (file == entryFile) {
+          exportStmt.unnamed = node.declaration.name;
+          updates.push({
+            beg: node.start,
+            end: node.end,
+            put: ";"
+          });
+        } else if (file.endsWith("d.js")) {
+          updates.push({
+            beg: node.start,
+            end: node.end,
+            put: ";"
+          });
+        }
       },
       ExportNamedDeclaration(node) {
         if (file != entryFile) return;

@@ -5,6 +5,8 @@
  * @externs
  */
 
+import eth from "./eth.d";
+
 /**
  * Represents an ethereum transaction, to be sent to a provider.
  *

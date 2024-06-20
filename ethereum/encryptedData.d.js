@@ -5,7 +5,9 @@
  * @externs
  */
 
- /**
+import eth from "./eth.d";
+
+/**
  * An encrypted data blob. Can be unencrypted with an `eth_decrypt` provider
  * call.
  *

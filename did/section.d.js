@@ -5,8 +5,8 @@
  * @externs
  */
 
-/** @const */
-const did = {};
+import did from "./did.d";
+import "./verifiableID.d";
 
 /**
  * A signed section of user data (e.g., geo address, contact info).
@@ -163,3 +163,55 @@ did.ExposureReport = function () { }
  * @extends {did.VerifiableID}
  */
 did.HumanID = function () { }
+
+import "../node/nvi.d";
+
+/**
+ * @interface
+ * @extends {did.AddressInfo}
+ * @extends {node.nvi.AdresBilgileri}
+ */
+did.TürkiyeAdresi = function () { }
+
+/**
+ * Kişinin kütük bilgilerini içerir bilgi kartı.
+ *
+ * @interface
+ * @extends {did.Section}
+ * @extends {node.nvi.KutukBilgileri}
+ */
+did.KütükBilgileri = function () { }
+
+/**
+ * @interface
+ * @extends {did.Section}
+ */
+did.SoyZinciri = function () { }
+
+/**
+ * Sağ ebeveynler için `symmetricKey` tutuyoruz.
+ *
+ * @type {string}
+ */
+did.SoyZinciri.prototype.anneSymmetricKey;
+
+/**
+ * Sağ ebeveynler için `symmetricKey` tutuyoruz.
+ *
+ * @type {string}
+ */
+did.SoyZinciri.prototype.annePrivateKey;
+
+/**
+ * Sağ ebeveynler için `symmetricKey` tutuyoruz.
+ *
+ * @type {string}
+ */
+did.SoyZinciri.prototype.babaSymmetricKey;
+
+/**
+ * Sağ ebeveynler için `symmetricKey` tutuyoruz.
+ *
+ * @type {string}
+ */
+did.SoyZinciri.prototype.babaPrivateKey;
