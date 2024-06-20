@@ -85,7 +85,7 @@ const preprocessAndIsolate = async (entryFile, isolateDir, splitSet, externsSet)
               importedFile = maybeNodeModule;
               break;
             }
-            throw "nodejs support is limited at this point";
+            throw `nodejs support is limited at this point (${file})`;
         }
         if (markedMissing || splitSet.has(importedFile) || !existsSync(importedFile)) {
           let importStmt = missingImports.get(importedFile);

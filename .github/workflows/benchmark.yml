@@ -16,4 +16,4 @@ jobs:
       - name: Run crypto benchmarks
         run: |
           bun i
-          bun build.js bench
+          bun run.js bench

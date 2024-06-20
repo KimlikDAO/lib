@@ -31,7 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: oven-sh/setup-bun@v1
-      - name: Google Closure Compiled tests with bun
+      - name: "`kdjs` compiled tests with bun"
         run: |
           bun i
-          bun build.js test
+          bun run.js test

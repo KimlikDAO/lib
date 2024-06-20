@@ -2,7 +2,6 @@ import ClosureCompiler from "google-closure-compiler";
 import { copyFile, mkdir, writeFile } from "node:fs/promises";
 import UglifyJS from "uglify-js";
 import { combine, getDir } from "../util/paths";
-import { darboğaz as bottleneck } from "../util/promises";
 import { PACKAGE_EXTERNS, translateToLocal } from "./packageExterns";
 import { postprocess } from "./postprocess";
 import { preprocessAndIsolate } from "./preprocess";
@@ -24,9 +23,6 @@ const copyToDir = (inputs, isolateDir) => Promise.all(
 
 /** @typedef {!CliArgs} */
 const Params = {};
-
-// Never run more than 8 instances of GCC in parallel.
-const Bottleneck = bottleneck(8);
 
 /**
  * @param {!Params} params
@@ -87,7 +83,7 @@ const compile = async (params) => {
     "cwd": isolateDir
   };
 
-  return Bottleneck(() => new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     closureCompiler.run((exitCode, output, errors) => {
       if (exitCode || errors) {
         reject(errors);
@@ -116,7 +112,7 @@ const compile = async (params) => {
       console.log(uglified.warnings, uglified.error);
       return writeFile(params["output"], code).then(() => resolve(params["output"]))
     });
-  }))
+  })
 }
 
 export { compile };
