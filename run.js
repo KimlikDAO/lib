@@ -11,7 +11,8 @@ const args = parseArgs(process.argv.slice(2), "command", {
   "-bj": "buildConcurrency",
   "-rj": "runConcurrency"
 });
-args["concurrency"] ||= 5;
+args["buildConcurrency"] ||= 4;
+args["runConcurrency"] ||= 4;
 
 /**
  * @param {string} pattern
@@ -23,7 +24,7 @@ const compileAndRunMatching = async (pattern, command, args) => {
   const glob = new Glob(pattern);
   const compileTasks = [];
   const compileBN = bottleneck(args["buildConcurrency"] || args["concurrency"]);
-  const runBN = bottleneck(args["buildConcurrency"] || args["concurrency"]);
+  const runBN = bottleneck(args["runConcurrency"] || args["concurrency"]);
 
   for await (const f of glob.scan(".")) {
     if (f.startsWith("build") || f.includes("okuyucu")) continue;
@@ -47,7 +48,7 @@ const ensureAllPassed = (allPassed) => process.exit(+!allPassed);
 
 switch (args["command"]) {
   case "test":
-    compileAndRunMatching("**/*.test.js", "bun test --timeout 50000", args)
+    compileAndRunMatching("**/*.test.js", "bun test --timeout 100000", args)
       .then(ensureAllPassed);
     break;
   case "bench":

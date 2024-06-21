@@ -1,10 +1,10 @@
 /**
  * @template T
- * @param {T} cevap
  * @param {number} süre
+ * @param {T=} cevap
  * @return {!Promise<T>}
  */
-const bekle = (cevap, süre) => new Promise(
+const bekle = (süre, cevap) => new Promise(
   (/** @type {function(T):void} */ resolve) => setTimeout(() => resolve(cevap), süre));
 
 /**
