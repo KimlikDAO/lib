@@ -5,6 +5,9 @@ const Green = "\x1b[42m";
 /** @const {string} */
 const Clear = "\x1b[0m";
 
+/** @typedef {!Object<string, (string|boolean|number)>} */
+const CliArgs = {};
+
 /**
  * @param {!Array<string>} args
  * @param {string} defaultArgKey
@@ -32,8 +35,10 @@ const parseArgs = (args, defaultArgKey, shortArgKeys) => {
 }
 
 export {
-  Red,
-  Green,
   Clear,
+  CliArgs,
+  Green,
+  Red,
   parseArgs
 };
+

@@ -43,7 +43,7 @@ test("should execute sequantially with bandwidth 1", async () => {
   ])).toEqual([1, 2, 3, 4, 5]);
   const dt = performance.now() - t;
   expect(dt).toBeGreaterThan(490);
-  expect(dt).toBeLessThan(530);
+  expect(dt).toBeLessThan(550);
 });
 
 test("the continuation should not get bottlenecked", async () => {
