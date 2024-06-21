@@ -1,6 +1,7 @@
 import { parse } from "acorn";
 import { simple } from "acorn-walk";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync } from "node:fs";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { combine, getDir } from "../util/paths";
 import { ExportStatement, ImportStatement } from "./modules";
 import { PACKAGE_EXTERNS, translateToLocal } from "./packageExterns";
@@ -46,7 +47,7 @@ const preprocessAndIsolate = async (entryFile, isolateDir, splitSet, externsSet)
     if (allFiles.has(file)) continue;
     allFiles.add(file);
     /** @const {string} */
-    const content = readFileSync(file, "utf8");
+    const content = await readFile(file, "utf8");
     /** @const {!Program} */
     const ast = parse(content, {
       ecmaVersion: "latest",
@@ -165,8 +166,8 @@ const preprocessAndIsolate = async (entryFile, isolateDir, splitSet, externsSet)
     });
     const newContent = update(content, updates) + exportStmtToExportMap(exportStmt);
     const outFile = combine(isolateDir, file);
-    mkdirSync(getDir(outFile), { recursive: true });
-    writeFileSync(outFile, newContent);
+    await mkdir(getDir(outFile), { recursive: true });
+    await writeFile(outFile, newContent);
   }
   return {
     missingImports,

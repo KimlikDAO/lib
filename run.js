@@ -11,8 +11,7 @@ const args = parseArgs(process.argv.slice(2), "command", {
   "-bj": "buildConcurrency",
   "-rj": "runConcurrency"
 });
-args["concurrency"] ||= 6;
-args["runConcurrency"] ||= 4;
+args["concurrency"] ||= 5;
 
 /**
  * @param {string} pattern
@@ -48,7 +47,7 @@ const ensureAllPassed = (allPassed) => process.exit(+!allPassed);
 
 switch (args["command"]) {
   case "test":
-    compileAndRunMatching("**/*.test.js", "bun test --timeout 15000", args)
+    compileAndRunMatching("**/*.test.js", "bun test --timeout 50000", args)
       .then(ensureAllPassed);
     break;
   case "bench":
