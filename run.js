@@ -1,4 +1,5 @@
 import { Glob, spawn } from "bun";
+import process from "node:process";
 import { compile } from "./kdjs/compile";
 import { Clear, Green, Red, parseArgs } from "./util/cli";
 import { darboğaz as bottleneck } from "./util/promises";
@@ -39,6 +40,8 @@ const compileAndRunMatching = async (pattern, concurrency) => {
 
 switch (args["command"]) {
   case "test":
-    compileAndRunMatching("**/*.test.js").then((allPassed) => { })
+    compileAndRunMatching("**/*.test.js").then((allPassed) => {
+      if (!allPassed) process.exit(1);
+    })
     break;
 }
