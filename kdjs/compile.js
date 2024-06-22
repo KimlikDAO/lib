@@ -2,9 +2,9 @@ import ClosureCompiler from "google-closure-compiler";
 import { writeFile } from "node:fs/promises";
 import UglifyJS from "uglify-js";
 import { combine, getDir } from "../util/paths";
+import { ImportStatement } from "./modules";
 import { postprocess } from "./postprocess";
 import { preprocessAndIsolate } from "./preprocess";
-import { ImportStatement } from "./modules";
 
 /** @typedef {!Object<string, (string|boolean)>} */
 const Params = {};

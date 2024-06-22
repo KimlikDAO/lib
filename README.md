@@ -42,12 +42,11 @@ The tests can be run in two different modes:
 
 - Uncompiled
   ```shell
-  bun test crypto/test/modular.test.js
+  bun test
   ```
 - Compiled (using `kdjs`)
   ```shell
-  bun run crypto/test/build.js
-  bun test build/crypto/test/modular.test.js
+  bun run.js test
   ```
 
 When run, output will look like this:
