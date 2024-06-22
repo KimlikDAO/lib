@@ -2,7 +2,7 @@
   "name": "@kimlikdao/kdjs",
   "description": "A JavaScript to JavaScript compiler focused on advanced optimizations.",
   "author": "KimlikDAO <dao@kimlikdao.org>",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -16,7 +16,7 @@
   "main": "compile.js",
   "scripts": {
     "postinstall": "mkdir -p node_modules/@kimlikdao/kdjs && ln -sfn ../../../externs ./node_modules/@kimlikdao/kdjs/externs",
-    "build": "bun kdjs.js kdjs.js",
+    "build": "bun kdjs.js kdjs.js --isolateDir .kdjs_isolate/kdjs --emit_shebang && chmod +x kdjs.out.js",
     "prepublishOnly": "bun run build"
   },
   "keywords": [

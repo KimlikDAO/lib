@@ -36,24 +36,24 @@ const compile = async (params) => {
   if (params["loose"])
     jsCompErrors.pop();
 
+  /** @const {ClosureCompiler.Options} */
   const options = {
-    js: Array.from(allFiles),
-    compilation_level: "ADVANCED",
-    charset: "utf-8",
-    warning_level: "verbose",
-
-    emit_use_strict: false,
-    rewrite_polyfills: false,
-    assume_function_wrapper: true,
-    jscomp_error: jsCompErrors,
-    jscomp_warning: jsCompWarnings,
-    language_in: "ECMASCRIPT_NEXT",
-    module_resolution: "NODE",
-    dependency_mode: "PRUNE",
-    entry_point: /** @type {string} */(params["entry"]),
+    "js": Array.from(allFiles),
+    "compilation_level": "ADVANCED",
+    "charset": "utf-8",
+    "warning_level": "verbose",
+    "emit_use_strict": false,
+    "rewrite_polyfills": false,
+    "assume_function_wrapper": true,
+    "jscomp_error": jsCompErrors,
+    "jscomp_warning": jsCompWarnings,
+    "language_in": "ECMASCRIPT_NEXT",
+    "module_resolution": "NODE",
+    "dependency_mode": "PRUNE",
+    "entry_point": /** @type {string} */(params["entry"]),
   };
   if (params["define"])
-    options.define = params["define"];
+    options["define"] = params["define"];
 
   const closureCompiler = new ClosureCompiler.compiler(options);
   closureCompiler.spawnOptions = {
@@ -85,7 +85,9 @@ const compile = async (params) => {
       });
       console.log(params["entry"]);
       console.log(`Uglified size:\t${uglified.code.length}\nGCC size:\t${output.length}`);
-      const code = uglified.code.length < output.length ? uglified.code : output;
+      let code = uglified.code.length < output.length ? uglified.code : output;
+      if (/** @type {boolean} */(params["emit_shebang"]))
+        code = "#!/usr/bin/env node\n" + code;
       console.log(uglified.warnings, uglified.error);
       writeFile(/** @type {string} */(params["output"]), code)
         .then(() => resolve(params["output"]))

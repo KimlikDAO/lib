@@ -37,7 +37,7 @@ jobs:
           bun run.js test
 
   compile_kdjs_with_kdjs:
-    name: Compiled `kdjs` with `kdjs`
+    name: Compile `kdjs` with `kdjs`
     strategy:
       fail-fast: true
 
@@ -45,7 +45,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: oven-sh/setup-bun@v1
-      - name: "`kdjs` compiled tests with bun"
+      - name: "Compile `kdjs` with `kdjs`"
         run: |
           cd kdjs
           bun i

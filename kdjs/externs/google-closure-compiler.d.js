@@ -7,8 +7,14 @@
 const ClosureCompiler = {};
 
 /**
+ * @dict
+ * @typedef {!Object<string, (string|boolean|!Array<string>)>}
+ */
+ClosureCompiler.Options;
+
+/**
  * @constructor
- * @param {!Object<string, string>} options
+ * @param {ClosureCompiler.Options} options
  */
 ClosureCompiler.compiler = (options) => { }
 
