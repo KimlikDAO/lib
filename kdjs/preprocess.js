@@ -4,8 +4,9 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { combine, getDir } from "../util/paths";
 import { ExportStatement, ImportStatement } from "./modules";
-import { PACKAGE_EXTERNS, translateToLocal } from "./packageExterns";
 import { Update, update } from "./textual";
+
+const PACKAGE_EXTERNS = "node_modules/@kimlikdao/kdjs/externs/";
 
 /**
  * @param {string} fileName
@@ -18,10 +19,11 @@ const ensureDotJs = (fileName) => fileName.endsWith(".js") ? fileName : fileName
  * @return {string}
  */
 const exportStmtToExportMap = (exportStmt) => {
-  if (!exportStmt.unnamed && !exportStmt.named.length)
+  const named = Object.entries(exportStmt.named);
+  if (!exportStmt.unnamed && !named.length)
     return "";
   let out = '\nglobalThis["KimlikDAOCompiler_exports"] = {\n';
-  out += exportStmt.named.map((s) => `  "${s.exported}": ${s.local},\n`).join('');
+  out += named.map(([exported, local]) => `  "${exported}": ${local},\n`).join('');
   out += `  "KDdefault": ${exportStmt.unnamed}\n};\n`;
   return out;
 }
@@ -29,26 +31,27 @@ const exportStmtToExportMap = (exportStmt) => {
 /**
  * @param {string} entryFile
  * @param {string} isolateDir
- * @param {!Set<string>} splitSet
- * @param {!Set<string>} externsSet
  * @return {!Promise<{
  *   missingImports: !Map<string, ImportStatement>,
  *   allFiles: !Set<string>
  * }>}
  */
-const preprocessAndIsolate = async (entryFile, isolateDir, splitSet, externsSet) => {
+const preprocessAndIsolate = async (entryFile, isolateDir) => {
   const missingImports = new Map();
   /** @const {!Array<string>} */
   const files = [entryFile];
   /** @const {!Set<string>} */
   const allFiles = new Set();
 
+  /** @const {!Array<!Promise<void>>} */
+  const writePromises = [];
+
   for (let file; file = files.pop();) {
     if (allFiles.has(file)) continue;
     allFiles.add(file);
     /** @const {string} */
     const content = await readFile(file, "utf8");
-    /** @const {!Program} */
+    /** @const {!acorn.Program} */
     const ast = parse(content, {
       ecmaVersion: "latest",
       sourceType: "module",
@@ -66,33 +69,41 @@ const preprocessAndIsolate = async (entryFile, isolateDir, splitSet, externsSet)
       named: []
     };
 
-    simple(ast, {
+    simple(ast, /** @type {!acorn.SimpleVisitor} */({
       ImportDeclaration(node) {
-        let importedFile = node.source.value;
-        let markedMissing = false;
-        switch (importedFile.at(0)) {
-          case "/": importedFile = ensureDotJs(importedFile.slice(1)); break;
-          case ".": importedFile = ensureDotJs(combine(getDir(file), importedFile)); break;
+        /** @const {string} */
+        const sourceName = node.source.value;
+        /** @type {string} */
+        let nextFile = "";
+        /** @type {boolean} */
+        let addBack = false;
+        switch (sourceName.at(0)) {
+          case "/": nextFile = ensureDotJs(sourceName.slice(1)); return;
+          case ".": nextFile = ensureDotJs(combine(getDir(file), sourceName)); break;
           default:
-            const maybeExtern = PACKAGE_EXTERNS + importedFile.replaceAll(":", "/") + ".d.js";
-            if (existsSync(translateToLocal(maybeExtern))) {
-              externsSet.add(maybeExtern);
-              markedMissing = true;
+            const t = PACKAGE_EXTERNS + sourceName.replaceAll(":", "/") + ".d.js";
+            if (existsSync(t)) {
+              nextFile = t;
+              addBack = true;
               break;
             }
-            if (splitSet.has(importedFile)) break;
-            const maybeNodeModule = `node_modules/${importedFile}/index.js`;
-            if (existsSync(maybeNodeModule)) {
-              importedFile = maybeNodeModule;
-              break;
-            }
-            throw `nodejs support is limited at this point (${file})`;
+            if (!nextFile.startsWith("node_modules"))
+              throw `nodejs support is not yet implemented (${file}, ${t})`;
         }
-        if (markedMissing || splitSet.has(importedFile) || !existsSync(importedFile)) {
-          let importStmt = missingImports.get(importedFile);
+        files.push(nextFile);
+
+        if (file.endsWith(".d.js") || nextFile.endsWith(".d.js")) {
+          updates.push({
+            beg: node.start,
+            end: node.end,
+            put: ";"
+          });
+        }
+        if (addBack) {
+          let importStmt = missingImports.get(sourceName);
           if (!importStmt) {
             importStmt = { named: {} };
-            missingImports.set(importedFile, importStmt);
+            missingImports.set(sourceName, importStmt);
           }
           for (const spec of node.specifiers) {
             if (spec.type == "ImportDefaultSpecifier")
@@ -100,21 +111,6 @@ const preprocessAndIsolate = async (entryFile, isolateDir, splitSet, externsSet)
             else
               importStmt.named[spec.local.name] = spec.imported.name;
           }
-          updates.push({
-            beg: node.start,
-            end: node.end,
-            put: ";"
-          })
-        } else {
-          // GGC currently does not support import from externs.
-          if (file.endsWith(".d.js")) {
-            updates.push({
-              beg: node.start,
-              end: node.end,
-              put: ";"
-            })
-          }
-          files.push(importedFile);
         }
       },
       ExportDefaultDeclaration(node) {
@@ -125,7 +121,7 @@ const preprocessAndIsolate = async (entryFile, isolateDir, splitSet, externsSet)
             end: node.end,
             put: ";"
           });
-        } else if (file.endsWith("d.js")) {
+        } else if (file.endsWith(".d.js")) {
           updates.push({
             beg: node.start,
             end: node.end,
@@ -136,23 +132,25 @@ const preprocessAndIsolate = async (entryFile, isolateDir, splitSet, externsSet)
       ExportNamedDeclaration(node) {
         if (file != entryFile) return;
         if (node.declaration) {
+          /** @const {!acorn.Declaration} */
           const decl = node.declaration;
           switch (decl.type) {
             case "FunctionDeclaration":
+              exportStmt.named[/** @type {!acorn.FunctionDeclaration} */(decl).id.name] =
+                /** @type {!acorn.FunctionDeclaration} */(decl).id.name;
+              break;
             case "ClassDeclaration":
-              exportStmt.named.push({ exported: decl.id.name, local: decl.id.name });
+              exportStmt.named[/** @type {!acorn.ClassDeclaration} */(decl).id.name] =
+                /** @type {!acorn.ClassDeclaration} */(decl).id.name;
               break;
             case "VariableDeclaration":
-              exportStmt.push(...decl.declarations.map((dec) => ({
-                exported: dec.id.name,
-                local: dec.id.name,
-              })));
+              for (const dec of /** @type {!acorn.VariableDeclaration} */(decl).declarations)
+                exportStmt.named[dec.id.name] = dec.id.name;
+              break;
           }
         } else {
-          exportStmt.named.push(...node.specifiers.map((spec) => ({
-            exported: spec.exported.name,
-            local: spec.local.name
-          })));
+          for (const spec of node.specifiers)
+            exportStmt.named[spec.exported.name] = spec.local.name;
           updates.push({
             beg: node.start,
             end: node.end,
@@ -160,19 +158,16 @@ const preprocessAndIsolate = async (entryFile, isolateDir, splitSet, externsSet)
           })
         }
       },
-      ExportSpecifier(node) {
-        throw "Not supported yet"; // TODO(KimlikDAO-bot): Evaluate whether to implement
-      }
-    });
+    }));
     const newContent = update(content, updates) + exportStmtToExportMap(exportStmt);
     const outFile = combine(isolateDir, file);
-    await mkdir(getDir(outFile), { recursive: true });
-    await writeFile(outFile, newContent);
+    writePromises.push(mkdir(getDir(outFile), { recursive: true })
+      .then(() => writeFile(outFile, newContent)));
   }
-  return {
+  return Promise.all(writePromises).then(() => ({
     missingImports,
     allFiles
-  }
+  }));
 }
 
 export { preprocessAndIsolate };

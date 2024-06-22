@@ -2,10 +2,11 @@
   "name": "@kimlikdao/lib",
   "description": "KimlikDAO JavaScript library",
   "author": "KimlikDAO <dao@kimlikdao.org>",
-  "license": "MIT",
   "version": "0.0.1",
+  "license": "MIT",
   "type": "module",
   "scripts": {
+    "postinstall": "mkdir -p ./node_modules/@kimlikdao && ln -sfn ../../kdjs ./node_modules/@kimlikdao/kdjs",
     "test": "bun test"
   },
   "devDependencies": {

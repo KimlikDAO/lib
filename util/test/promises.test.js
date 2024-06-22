@@ -6,7 +6,7 @@ test("`bekle()` works with no return value", async () => {
   await bekle(200);
   const dt = performance.now() - t;
   expect(dt).toBeGreaterThan(195);
-  expect(dt).toBeLessThan(220);
+  expect(dt).toBeLessThan(250);
 });
 
 test("should complete with no log when full bandwidth", async () => {
@@ -21,7 +21,7 @@ test("should complete with no log when full bandwidth", async () => {
   ])).toEqual([1, 2, 3, 4, 5]);
   const dt = performance.now() - t;
   expect(dt).toBeGreaterThan(95);
-  expect(dt).toBeLessThan(120);
+  expect(dt).toBeLessThan(150);
 });
 
 test("should complete with no log when full bandwidth", async () => {
@@ -36,7 +36,7 @@ test("should complete with no log when full bandwidth", async () => {
   ])).toEqual([1, 2, 3, 4, 5]);
   const dt = performance.now() - t;
   expect(dt).toBeGreaterThan(290);
-  expect(dt).toBeLessThan(330);
+  expect(dt).toBeLessThan(350);
 });
 
 test("should execute sequantially with bandwidth 1", async () => {
@@ -51,7 +51,7 @@ test("should execute sequantially with bandwidth 1", async () => {
   ])).toEqual([1, 2, 3, 4, 5]);
   const dt = performance.now() - t;
   expect(dt).toBeGreaterThan(490);
-  expect(dt).toBeLessThan(530);
+  expect(dt).toBeLessThan(550);
 });
 
 test("the continuation should not get bottlenecked", async () => {

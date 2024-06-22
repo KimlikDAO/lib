@@ -1,14 +1,35 @@
 {
   "name": "@kimlikdao/kdjs",
+  "description": "A JavaScript to JavaScript compiler focused on advanced optimizations.",
+  "author": "KimlikDAO <dao@kimlikdao.org>",
+  "version": "0.0.1",
+  "license": "MIT",
+  "type": "module",
   "bin": {
-    "kdjs": "./kdjs/kdjs.js"
+    "kdjs": "./kdjs.out.js"
   },
+  "files": [
+    "kdjs.out.js",
+    "externs/",
+    "*.js"
+  ],
+  "main": "compile.js",
+  "scripts": {
+    "postinstall": "mkdir -p node_modules/@kimlikdao/kdjs && ln -sfn ../../../externs ./node_modules/@kimlikdao/kdjs/externs",
+    "build": "bun kdjs.js kdjs.js",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": [
+    "compiler",
+    "JavaScript",
+    "minify",
+    "optimize"
+  ],
   "dependencies": {
     "acorn": "^8.12.0",
     "acorn-walk": "^8.3.3",
     "astring": "^1.8.6",
     "google-closure-compiler": "^20240317.0.0",
     "uglify-js": "^3.18.0"
-  },
-  "type": "module"
+  }
 }

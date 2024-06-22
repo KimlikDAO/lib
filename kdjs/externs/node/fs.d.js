@@ -5,4 +5,10 @@
  * @param {string=} outputType
  * @return {!Uint8Array|string}
  */
-function readFile(fileName, outputType) { }
+const readFileSync = (fileName, outputType) => { }
+
+/**
+ * @param {string} fileName
+ * @return {boolean}
+ */
+const existsSync = (fileName) => { }

@@ -35,3 +35,18 @@ jobs:
         run: |
           bun i
           bun run.js test
+
+  compile_kdjs_with_kdjs:
+    name: Compiled `kdjs` with `kdjs`
+    strategy:
+      fail-fast: true
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: oven-sh/setup-bun@v1
+      - name: "`kdjs` compiled tests with bun"
+        run: |
+          cd kdjs
+          bun i
+          bun kdjs.js kdjs.js

@@ -1,5 +1,7 @@
 .DS_Store
+.kdjs_isolate
 .vscode
+*.out.js
 /build
 bun.lockb
 node_modules*

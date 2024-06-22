@@ -6,7 +6,7 @@ import { Update, update } from "./textual";
 
 const generateImports = (imports) => {
   const entries = Array.from(imports.entries());
-  entries.sort((a, b) => a[0] > b[0]);
+  entries.sort((a, b) => a[0].localeCompare(b[0]));
   return entries
     .map(([source, importStmt]) => writeImportStatement(importStmt, source))
     .join("");
@@ -17,11 +17,11 @@ const generateImports = (imports) => {
  * @param {!Map<string, ImportStatement>} missingImports
  */
 const postprocess = (content, missingImports) => {
+  /** @const {!acorn.Program} */
   const ast = parse(content, {
     ecmaVersion: "latest",
     sourceType: "module"
   });
-
   /**
    * @const
    * @type {!Array<Update>}
@@ -30,7 +30,7 @@ const postprocess = (content, missingImports) => {
   let assignmentCode = "";
   let exportCode = "";
 
-  simple(ast, {
+  simple(ast, /** @type {!acorn.SimpleVisitor} */({
     Literal(node) {
       if (typeof node.value === 'bigint') {
         const decimal = node.value.toString();
@@ -69,7 +69,7 @@ const postprocess = (content, missingImports) => {
         })
       }
     }
-  });
+  }));
   const newContent = generateImports(missingImports) + update(content, updates);
   return newContent + assignmentCode + exportCode;
 }

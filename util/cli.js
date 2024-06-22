@@ -5,7 +5,7 @@ const Green = "\x1b[42m";
 /** @const {string} */
 const Clear = "\x1b[0m";
 
-/** @typedef {!Object<string, (string|boolean|number)>} */
+/** @typedef {!Object<string, (string|boolean)>} */
 const CliArgs = {};
 
 /**

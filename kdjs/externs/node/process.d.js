@@ -6,10 +6,13 @@ const process = {};
 /**
  * @param {number} exitCode
  */
-process.exit = function (exitCode) { }
+process.exit = (exitCode) => { }
 
 /**
  * @param {string} event
  * @param {function(*)} handler
  */
-process.on = function (event, handler) { }
+process.on = (event, handler) => { }
+
+/** @const {!Array<string>} */
+process.argv;

@@ -1,27 +1,12 @@
 import ClosureCompiler from "google-closure-compiler";
-import { copyFile, mkdir, writeFile } from "node:fs/promises";
+import { writeFile } from "node:fs/promises";
 import UglifyJS from "uglify-js";
 import { combine, getDir } from "../util/paths";
-import { PACKAGE_EXTERNS, translateToLocal } from "./packageExterns";
 import { postprocess } from "./postprocess";
 import { preprocessAndIsolate } from "./preprocess";
+import { ImportStatement } from "./modules";
 
-/**
- * @param {!Array<string>} inputs
- * @param {string} isolateDir
- * @return {!Promise<void>}
- */
-const copyToDir = (inputs, isolateDir) => Promise.all(
-  inputs.map((input) => {
-    const outFile = combine(isolateDir, input);
-    if (input.startsWith(PACKAGE_EXTERNS))
-      input = translateToLocal(input);
-    return mkdir(getDir(outFile), { recursive: true })
-      .then(() => copyFile(input, outFile));
-  })
-);
-
-/** @typedef {!CliArgs} */
+/** @typedef {!Object<string, (string|boolean)>} */
 const Params = {};
 
 /**
@@ -30,18 +15,12 @@ const Params = {};
  */
 const compile = async (params) => {
   /** @const {string} */
-  const isolateDir = combine(getDir(params["output"]), params["isolateDir"] || ".kdjs_isolate");
-  /** @const {!Set<string>} */
-  const splitSet = new Set(params["split"] || []);
-  /** @const {!Set<string>} */
-  const externsSet = new Set(params["externs"] || []);
-  /** @const {!Map<string, ImportDeclarations>} */
+  const isolateDir = combine(getDir(/** @type {string} */(params["output"])),
+    /** @type {string} */(params["isolateDir"]) || ".kdjs_isolate");
   const {
-    missingImports,
-    allFiles
-  } = await preprocessAndIsolate(params["entry"], isolateDir, splitSet, externsSet);
-
-  await copyToDir(Array.from(externsSet), isolateDir);
+    /** @const {!Map<string, ImportStatement>} */ missingImports,
+    /** @const {!Set<string>} */ allFiles
+  } = await preprocessAndIsolate(/** @type {string} */(params["entry"]), isolateDir);
 
   /** @const {!Array<string>} */
   const jsCompErrors = [
@@ -71,10 +50,8 @@ const compile = async (params) => {
     language_in: "ECMASCRIPT_NEXT",
     module_resolution: "NODE",
     dependency_mode: "PRUNE",
-    entry_point: params["entry"],
+    entry_point: /** @type {string} */(params["entry"]),
   };
-  if (externsSet.size)
-    options.externs = Array.from(externsSet);
   if (params["define"])
     options.define = params["define"];
 
@@ -102,7 +79,7 @@ const compile = async (params) => {
           toplevel: true,
           passes: 3,
           unsafe: true,
-          drop_console: params["nologs"],
+          drop_console: /** @type {boolean} */(params["nologs"]),
         },
         warnings: "verbose",
       });
@@ -110,7 +87,8 @@ const compile = async (params) => {
       console.log(`Uglified size:\t${uglified.code.length}\nGCC size:\t${output.length}`);
       const code = uglified.code.length < output.length ? uglified.code : output;
       console.log(uglified.warnings, uglified.error);
-      return writeFile(params["output"], code).then(() => resolve(params["output"]))
+      writeFile(/** @type {string} */(params["output"]), code)
+        .then(() => resolve(params["output"]))
     });
   })
 }

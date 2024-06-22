@@ -17,7 +17,7 @@ const combine = (basePath, subPath) => {
   let j = 0;
   for (let i = 0; i < parts.length; ++i) {
     const /** string */ part = parts[i];
-    if (part === "..") --j;
+    if (part == ".." && j > 0 && parts[j - 1] != "..") --j;
     else if (part !== "." && part !== "")
       parts[j++] = part;
   }
