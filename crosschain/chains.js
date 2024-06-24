@@ -8,15 +8,15 @@ const ChainId = {
   xa4b1: "0xa4b1",
   xa86a: "0xa86a",
   xfa: "0xfa",
-  MinaBerkeley: "m:berkeley",
-  MinaMainnet: "m:mainnet",
-  MinaDevnet: "m:devnet",
+  MinaBerkeley: "mina:berkeley",
+  MinaMainnet: "mina:mainnet",
+  MinaDevnet: "mina:devnet",
 };
 
 /** @enum {string} */
 const ChainGroup = {
   EVM: "0x",
-  MINA: "m:"
+  MINA: "mi"
 };
 
 /**

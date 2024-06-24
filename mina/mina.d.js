@@ -12,3 +12,5 @@ const mina = {};
  * }}
  */
 mina.Witness = {};
+
+export default mina;

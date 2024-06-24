@@ -3,16 +3,18 @@
  * @author KimlikDAO
  */
 
+import mina from "./mina.d";
+
 /**
  * @typedef {{
- *   chainId: string
+ *   networkID: string
  * }}
  */
 mina.SwitchChainArgs;
 
 /**
  * @typedef {{
- *   chainId: string,
+ *   networkID: string,
  *   name: string
  * }}
  */

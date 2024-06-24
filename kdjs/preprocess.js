@@ -78,7 +78,7 @@ const preprocessAndIsolate = async (entryFile, isolateDir) => {
         /** @type {boolean} */
         let addBack = false;
         switch (sourceName.at(0)) {
-          case "/": nextFile = ensureDotJs(sourceName.slice(1)); return;
+          case "/": nextFile = ensureDotJs(sourceName.slice(1)); break;
           case ".": nextFile = ensureDotJs(combine(getDir(file), sourceName)); break;
           default:
             const t = PACKAGE_EXTERNS + sourceName.replaceAll(":", "/") + ".d.js";

@@ -11,9 +11,10 @@ const Params = {};
 
 /**
  * @param {!Params} params
- * @return {!Promise<void>}
+ * @param {function(!Array<string>):!Promise<boolean>=} checkFreshFn
+ * @return {!Promise<string>}
  */
-const compile = async (params) => {
+const compile = async (params, checkFreshFn) => {
   /** @const {string} */
   const isolateDir = combine(getDir(/** @type {string} */(params["output"])),
     /** @type {string} */(params["isolateDir"]) || ".kdjs_isolate");
@@ -21,6 +22,10 @@ const compile = async (params) => {
     /** @const {!Map<string, ImportStatement>} */ missingImports,
     /** @const {!Set<string>} */ allFiles
   } = await preprocessAndIsolate(/** @type {string} */(params["entry"]), isolateDir);
+  /** @const {!Array<string>} */
+  const allFilesArray = Array.from(allFiles).sort();
+  if (checkFreshFn && await checkFreshFn(allFilesArray))
+    return /** @type {string} */(params["output"]);
 
   /** @const {!Array<string>} */
   const jsCompErrors = [
@@ -38,7 +43,7 @@ const compile = async (params) => {
 
   /** @const {ClosureCompiler.Options} */
   const options = {
-    "js": Array.from(allFiles),
+    "js": allFilesArray,
     "compilation_level": "ADVANCED",
     "charset": "utf-8",
     "warning_level": "verbose",

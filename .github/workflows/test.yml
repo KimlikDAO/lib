@@ -47,6 +47,5 @@ jobs:
       - uses: oven-sh/setup-bun@v1
       - name: "Compile `kdjs` with `kdjs`"
         run: |
-          cd kdjs
           bun i
-          bun kdjs.js kdjs.js
+          bun kdjs/kdjs.js kdjs/kdjs.js

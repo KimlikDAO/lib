@@ -6,6 +6,7 @@
  * @externs
  */
 
+import "../crosschain/unlockable.d";
 import eth from "./eth.d";
 
 /**

@@ -21,7 +21,7 @@ const getAddress = (chainId) => KPASS_ADDRS[+(chainId == ChainId.x144)];
  * @param {string} addr
  * @return {!Promise<string>}
  */
-const handleOf = (provider, chainId, addr) => chainId.startsWith("m:")
+const handleOf = (provider, chainId, addr) => chainId.startsWith("mi")
   ? fetch("//demo-mapping.kimlikdao.org/" + addr).then((res) => res.text())
   : callMethod(provider, getAddress(chainId), "0xc50a1514" + address(addr));
 

@@ -7,6 +7,7 @@
 
 import "../crosschain/unlockable.d";
 import did from "./did.d";
+import "./section.d";
 
 /**
  * A collection of `did.Sections` keyed by a string name.

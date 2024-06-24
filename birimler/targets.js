@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { keccak256Uint8 } from "../crypto/sha3";
 import { hex } from "../util/çevir";
 
@@ -8,8 +8,7 @@ import { hex } from "../util/çevir";
  * @param {function():void} run
  * @param {!Promise<{ fresh: boolean, hash: string}>}
  */
-const runIfStale = async (output, deps, run) => {
-  deps.sort();
+const checkFresh = async (output, deps, run) => {
   const hashesArr = await Promise.all(deps.map((dep) => readFile(dep)
     .then((depContent) => keccak256Uint8(depContent))));
   const computedArr = new Uint8Array(32);
@@ -24,5 +23,66 @@ const runIfStale = async (output, deps, run) => {
     return { fresh: false, hash: computedHash };
   }
 }
+
+/**
+ * @typedef {function(!Array<string>):!Promise<boolean>}
+ */
+const CheckFreshFn = {};
+
+/**
+ * @typedef {!Object<string, (string|boolean|!Array<string>)>}
+ */
+const Params = {};
+
+/**
+ * @param {!Array<string>} deps
+ * @param {Params} params
+ * @return {!Promise<string>} hash of all the dependencies and params
+ */
+const hashDepsAndParams = (deps, params) => Promise.all(
+  deps.map((dep) => readFile(dep)
+    .then((depContent) => keccak256Uint8(depContent))))
+  .then((hashesArr) => {
+    const encoder = new TextEncoder();
+    const computedArr = keccak256Uint8(encoder.encode(
+      JSON.stringify(params, Object.keys(params).sort())
+    ));
+    for (const h of hashesArr)
+      for (let i = 0; i < 32; ++i)
+        computedArr[i] += h[i]
+    return hex(computedArr);
+  });
+
+/**
+ * @param {function(Params, CheckFreshFn):!Promise<string>} actionFn
+ * @param {Params>} params
+ * @return {!Promise<string>}
+ */
+const runIfStale = (actionFn, params) => {
+  /** @type {?string} */
+  let hash;
+  /** @type {?boolean} */
+  let isFresh;
+  /** @const {string} */
+  const output = /** @type {string} */(params["output"]);
+  /** @const {string} */
+  const hashFile = output + ".hash";
+  /** @const {!Promise<string>} */
+  const readHashPromise = readFile(hashFile, "utf8").then(
+    (content) => content,
+    (_) => ""
+  );
+  return actionFn(params, (allDeps) => Promise.all([
+    hashDepsAndParams(allDeps, params),
+    readHashPromise
+  ]).then(([computedHash, readHash]) => {
+    hash = computedHash;
+    return isFresh = (computedHash == readHash)
+  }))
+    .then((output) => isFresh
+      ? output
+      : writeFile(hashFile, hash).then(() => output)
+    );
+};
 
 export { runIfStale };

@@ -10,10 +10,8 @@
   },
   "files": [
     "kdjs.out.js",
-    "externs/",
-    "*.js"
+    "externs/"
   ],
-  "main": "compile.js",
   "scripts": {
     "postinstall": "mkdir -p node_modules/@kimlikdao/kdjs && ln -sfn ../../../externs ./node_modules/@kimlikdao/kdjs/externs",
     "build": "bun kdjs.js kdjs.js --isolateDir .kdjs_isolate/kdjs --emit_shebang && chmod +x kdjs.out.js",
