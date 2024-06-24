@@ -1,7 +1,7 @@
 /**
  * @const {!Array<string>}
  */
-const Uint8denHexe = Array(255);
+const Uint8denHexe = new Array(255);
 for (let /** number */ i = 0; i < 256; ++i)
   Uint8denHexe[i] = i.toString(16).padStart(2, "0");
 

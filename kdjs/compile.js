@@ -21,7 +21,11 @@ const compile = async (params, checkFreshFn) => {
   const {
     /** @const {!Map<string, ImportStatement>} */ missingImports,
     /** @const {!Set<string>} */ allFiles
-  } = await preprocessAndIsolate(/** @type {string} */(params["entry"]), isolateDir);
+  } = await preprocessAndIsolate(
+    /** @type {string} */(params["entry"]),
+    isolateDir,
+    [].concat(params["externs"] || [])
+  );
   /** @const {!Array<string>} */
   const allFilesArray = Array.from(allFiles).sort();
   if (checkFreshFn && await checkFreshFn(allFilesArray))

@@ -31,18 +31,18 @@ const exportStmtToExportMap = (exportStmt) => {
 /**
  * @param {string} entryFile
  * @param {string} isolateDir
+ * @param {!Array<string>=} externs
  * @return {!Promise<{
  *   missingImports: !Map<string, ImportStatement>,
  *   allFiles: !Set<string>
  * }>}
  */
-const preprocessAndIsolate = async (entryFile, isolateDir) => {
+const preprocessAndIsolate = async (entryFile, isolateDir, externs) => {
   const missingImports = new Map();
   /** @const {!Array<string>} */
-  const files = [entryFile];
+  const files = [entryFile].concat(externs || []);
   /** @const {!Set<string>} */
   const allFiles = new Set();
-
   /** @const {!Array<!Promise<void>>} */
   const writePromises = [];
 
