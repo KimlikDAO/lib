@@ -25,9 +25,7 @@ const keymap = (filePath) => {
 /**
  * @const {!Object<string, string>}
  */
-const Replace = {
-  ',{type:"module"}': "",
-};
+const Replace = {};
 
 /** @const {!Array<string>} */
 const args = process.argv.slice(2);

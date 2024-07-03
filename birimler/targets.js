@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { keccak256Uint8 } from "../crypto/sha3";
 import { hex } from "../util/çevir";
+import { getHash } from "./fileCache";
 
 /**
  * @param {string} output
@@ -39,19 +40,18 @@ const Params = {};
  * @param {Params} params
  * @return {!Promise<string>} hash of all the dependencies and params
  */
-const hashDepsAndParams = (deps, params) => Promise.all(
-  deps.map((dep) => readFile(dep)
-    .then((depContent) => keccak256Uint8(depContent))))
-  .then((hashesArr) => {
-    const encoder = new TextEncoder();
-    const computedArr = keccak256Uint8(encoder.encode(
-      JSON.stringify(params, Object.keys(params).sort())
-    ));
-    for (const h of hashesArr)
-      for (let i = 0; i < 32; ++i)
-        computedArr[i] += h[i]
-    return hex(computedArr);
-  });
+const hashDepsAndParams = (deps, params) =>
+  Promise.all(deps.map((dep) => getHash(dep)))
+    .then((hashesArr) => {
+      const encoder = new TextEncoder();
+      const computedArr = keccak256Uint8(encoder.encode(
+        JSON.stringify(params, Object.keys(params).sort())
+      ));
+      for (const h of hashesArr)
+        for (let i = 0; i < 32; ++i)
+          computedArr[i] += h[i]
+      return hex(computedArr);
+    });
 
 /**
  * @param {function(Params, CheckFreshFn):!Promise<string>} actionFn
@@ -67,14 +67,13 @@ const runIfStale = (actionFn, params) => {
   const output = /** @type {string} */(params["output"]);
   /** @const {string} */
   const hashFile = output + ".hash";
-  /** @const {!Promise<string>} */
-  const readHashPromise = readFile(hashFile, "utf8").then(
-    (content) => content,
-    (_) => ""
-  );
+
   return actionFn(params, (allDeps) => Promise.all([
     hashDepsAndParams(allDeps, params),
-    readHashPromise
+    readFile(hashFile, "utf8").then(
+      (content) => content,
+      (_) => ""
+    )
   ]).then(([computedHash, readHash]) => {
     hash = computedHash;
     return isFresh = (computedHash == readHash)
