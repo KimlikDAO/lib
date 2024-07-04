@@ -92,8 +92,8 @@ const assertStats = () => {
     `(${(performance.now() | 0) / 1000} seconds)`);
   console.timeEnd("test");
   if (FalseAsserts != 0) process.exitCode = FalseAsserts;
-  if (process.exitCode != 0)
-    console.log(`${Red}Test failed${Clear}`);
+  if (process.exitCode && process.exitCode != 0)
+    console.log(`${Red}Test failed ${process.exitCode}${Clear}`);
 }
 
 const fail = () => process.exitCode = -1;

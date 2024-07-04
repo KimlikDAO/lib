@@ -10,7 +10,7 @@ const ChainId = {
   xfa: "0xfa",
   MinaBerkeley: "mina:berkeley",
   MinaMainnet: "mina:mainnet",
-  MinaDevnet: "mina:devnet",
+  MinaTestnet: "mina:testnet",
 };
 
 /** @enum {string} */

@@ -15,7 +15,6 @@ mina.SwitchChainArgs;
 /**
  * @typedef {{
  *   networkID: string,
- *   name: string
  * }}
  */
 mina.ChainInfoArgs;

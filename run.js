@@ -5,7 +5,7 @@ import { Clear, CliArgs, Green, Red, parseArgs } from "./util/cli";
 import { darboğaz as bottleneck } from "./util/promises";
 
 /** @const {CliArgs} */
-const args = parseArgs(process.argv.slice(2), "command", {
+const args = parseArgs(process.argv.slice(2), "target", {
   "-f": "filter",
   "-j": "concurrency",
   "-bj": "buildConcurrency",
@@ -37,22 +37,23 @@ const compileAndRunMatching = async (pattern, command, args) => {
           const marker = exitCode == 0 ? `${Green}[OK]` : `${Red}[Fail]`;
           console.log(`${marker}${Clear}, ${exitCode}: ${compiled}`);
           return exitCode;
-        })))));
+        })
+      ))
+    ));
   }
 
   return Promise.all(compileTasks)
-    .then((exitCodes) => exitCodes.every((code) => code == 0));
+    .finally((exitCodes) => exitCodes && exitCodes.every((code) => code == 0));
 }
 
 const ensureAllPassed = (allPassed) => process.exit(+!allPassed);
 
-switch (args["command"]) {
-  case "test":
-    compileAndRunMatching("**/*.test.js", "bun test --timeout 100000", args)
-      .then(ensureAllPassed);
-    break;
-  case "bench":
-    compileAndRunMatching("**/*.bench.js", "bun", args)
-      .then(ensureAllPassed);
-    break;
-}
+const testCommand = "bun test --timeout 100000";
+const benchCommad = "bun";
+
+let target = args["target"];
+if (target == "test") target = "**/*.test.js";
+else if (target == "bench") target = "**/*.bench.js";
+
+compileAndRunMatching(target, target.includes("bench") ? benchCommad : testCommand, args)
+  .then(ensureAllPassed);
