@@ -113,7 +113,6 @@ const SIGMA82 = new Uint8Array(
 
 // Compression function. 'last' flag indicates last block.
 // Note we're representing 16 uint64s as 32 uint32s
-
 function blake2bCompress(ctx, last) {
   let i = 0
 
@@ -330,7 +329,6 @@ function blake2bHex(input, key, outlen, salt, personal) {
   const output = blake2b(input, key, outlen, salt, personal)
   return util.toHex(output)
 }
-
 
 /** @const {!Uint32Array} */
 const RC = new Uint32Array([
