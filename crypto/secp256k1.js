@@ -11,6 +11,7 @@
  */
 
 import { hex } from "../util/çevir";
+import { arfCurve, Point as IPoint } from "./arfCurve";
 import { inverse } from "./modular";
 
 /**
@@ -25,20 +26,8 @@ const P = (1n << 256n) - (1n << 32n) - 977n;
  */
 const N = P - 0x14551231950b75fc4402da1722fc9baeen;
 
-/**
- * Unlike the % operation, modP always returns a positive number y such that
- *
- *   0 <= y < P  and  x = y (mod P).
- *
- * If positivity is not required, prefer the % operator.
- *
- * @param {!bigint} x
- * @return {!bigint} y such that x = y (mod P) and 0 <= y < P.
- */
-const modP = (x) => {
-  let res = x % P;
-  return res >= 0n ? res : res + P;
-}
+/** @const {function(new:IPoint, !bigint, !bigint, !bigint)} */
+const Point = arfCurve(P);
 
 /**
  * @param {!bigint} n
@@ -72,29 +61,6 @@ const sqrt = (n) => {
 }
 
 /**
- * We work with a lifting of the secp256k1 curve defined as
- *
- *   y^2 = x^3 + 7z^6
- *
- * over (F_P)^3. The projection onto the z = 1 plane gives the regular
- * sepck256k1.
- *
- * @constructor
- * @struct
- * @param {!bigint} x
- * @param {!bigint} y
- * @param {!bigint} z
- */
-function Point(x, y, z) {
-  /** @type {!bigint} */
-  this.x = x;
-  /** @type {!bigint} */
-  this.y = y;
-  /** @type {!bigint} */
-  this.z = z;
-}
-
-/**
  * If x^3 + 7 is a quadratic residue, returns the point (x, y, 1) with the
  * provided x and y having yParity; otherwise returns null.
  *
@@ -102,7 +68,7 @@ function Point(x, y, z) {
  * @param {boolean} yParity whether the y coordinate is odd.
  * @return {Point}
  */
-Point.from = (x, yParity) => {
+const pointFrom = (x, yParity) => {
   /** @const {!bigint} */
   const x2 = (x * x) % P;
   /** @const {!bigint} */
@@ -134,127 +100,6 @@ const G = new Point(
  * @const {!Point}
  */
 const O = new Point(0n, 0n, 0n);
-
-/**
- * Project onto the z = 1 plane. Leaves `O`, the point at infinity intact.
- *
- * @return {!Point}
- */
-Point.prototype.project = function () {
-  if (this.z != 0n) {
-    /** @const {!bigint} */
-    const iz = inverse(this.z, P);
-    /** @const {!bigint} */
-    const iz2 = (iz * iz) % P;
-    /** @const {!bigint} */
-    const iz3 = (iz2 * iz) % P;
-    this.x = (this.x * iz2) % P;
-    this.y = (this.y * iz3) % P;
-    this.z = 1n;
-  }
-  return this;
-}
-
-/**
- * @return {!Point}
- */
-Point.prototype.negate = function () {
-  this.y = P - this.y;
-  return this;
-}
-
-/**
- * Multiplies the point by 2, in-place.
- *
- * @see https://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html#doubling-dbl-2009-l
- * @return {!Point}
- */
-Point.prototype.double = function () {
-  const { x, y, z } = this;
-  const a = (x * x) % P;
-  const b = (y * y) % P;
-  const c = (b * b) % P;
-  const xb = x + b;
-  const d = 2n * (xb * xb - a - c) % P;
-  const e = 3n * a;
-  const f = (e * e) % P;
-  const X = modP(f - 2n * d);
-  this.y = modP(e * (d - X) - 8n * c);
-  this.z = (2n * y * z) % P;
-  this.x = X;
-  return this;
-}
-
-/**
- * Increments the point by `other`.
- *
- * @param {!Point} other
- * @return {!Point}
- */
-Point.prototype.increment = function (other) {
-  const { x: x1, y: y1, z: z1 } = this;
-  const { x: x2, y: y2, z: z2 } = other;
-
-  const z1z1 = (z1 * z1) % P;
-  const z2z2 = (z2 * z2) % P;
-  const u1 = (x1 * z2z2) % P;
-  const u2 = (x2 * z1z1) % P;
-  const s1 = (((y1 * z2) % P) * z2z2) % P;
-  const s2 = (((y2 * z1) % P) * z1z1) % P;
-  const h = (u2 - u1) % P;
-  const r = (s2 - s1) % P;
-
-  if (h === 0n) {
-    if (r === 0n) {
-      if (z2 == 0n) { }
-      else if (z1 == 0n) { this.x = x2; this.y = y2; this.z = z2; }
-      else this.double();
-    } else
-      this.x = this.y = this.z = 0n;
-  } else {
-    const h2 = (h * h) % P;
-    const h3 = (h * h2) % P;
-    const v = (u1 * h2) % P;
-    const X = modP(r * r - h3 - 2n * v);
-    this.y = modP(r * (v - X) - s1 * h3);
-    this.z = modP(z1 * z2 * h);
-    this.x = X;
-  }
-  return this;
-}
-
-/**
- * Creates a copy of the `Point`.
- *
- * @return {!Point}
- */
-Point.prototype.copy = function () {
-  return new Point(this.x, this.y, this.z);
-}
-
-/**
- * Multiplies the point by the scalar `n` in-place.
- *
- * @param {!bigint} n
- * @return {!Point}
- */
-Point.prototype.multiply = function (n) {
-  if (!n) {
-    this.x = this.y = this.z = 0n;
-    return this;
-  }
-  /** @const {string} */
-  const nBits = n.toString(2);
-  /** @const {!Point} */
-  const d = this.copy();
-
-  for (let i = 1; i < nBits.length; ++i) {
-    this.double();
-    if (nBits.charCodeAt(i) == 49)
-      this.increment(d);
-  }
-  return this;
-}
 
 /**
  * @param {!bigint} a
@@ -346,19 +191,19 @@ const recoverSigner = (digest, r, s, yParity) => {
   /** @const {!bigint} */
   const ir = inverse(r, N);
   /** @const {Point} */
-  const K = Point.from(r, yParity);
+  const K = pointFrom(r, yParity);
   if (!K) return O;
   return aGbH(N - (digest * ir % N), s * ir % N, K).project();
 }
 
 export {
-  equal,
   G,
   N,
   O,
   P,
   Point,
+  equal,
   recoverSigner,
   sign,
-  verify,
+  verify
 };

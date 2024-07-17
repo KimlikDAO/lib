@@ -22,7 +22,7 @@ const PublicKey = function (x, isOdd) {
  * @param {string} addr
  * @return {!PublicKey}
  */
-PublicKey.fromBase58 = function (addr) {
+PublicKey.fromBase58 = (addr) => {
   const bytes = base58.toBytes(addr);
   return new PublicKey(uint8ArrayLEtoBigInt(bytes.subarray(3, 35)), !!bytes[35]);
 }
@@ -31,7 +31,7 @@ PublicKey.fromBase58 = function (addr) {
  * @param {!Uint8Array} bytes
  * @return {!PublicKey}
  */
-PublicKey.fromBytes = function (bytes) {
+PublicKey.fromBytes = (bytes) => {
   return new PublicKey(uint8ArrayBEtoBigInt(bytes.subarray(0, 32)), !!bytes[32]);
 }
 

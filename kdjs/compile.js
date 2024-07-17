@@ -56,7 +56,7 @@ const compile = async (params, checkFreshFn) => {
     "assume_function_wrapper": true,
     "jscomp_error": jsCompErrors,
     "jscomp_warning": jsCompWarnings,
-    "language_in": "ECMASCRIPT_NEXT",
+    "language_in": "UNSTABLE",
     "module_resolution": "NODE",
     "dependency_mode": "PRUNE",
     "entry_point": /** @type {string} */(params["entry"]),

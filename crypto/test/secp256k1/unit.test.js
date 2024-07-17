@@ -31,7 +31,7 @@ test("`O` behaves as identity", () => {
   expect(equal(V, O)).toBeTrue();
 });
 
-test("`O` behaves as identity", () => {
+test("G + O == G", () => {
   for (let i = 0; i < 1000; ++i) {
     const iG = G.copy().multiply(BigInt(i) + 1231283129313123123n);
     const iGG = iG.copy().increment(O);
@@ -39,7 +39,7 @@ test("`O` behaves as identity", () => {
   }
 });
 
-test("normalize preserves equality", () => {
+test("A = B => proj(A) = proj(B)", () => {
   const OO = O.copy().project();
   expect(equal(OO, O)).toBeTrue();
 
@@ -47,7 +47,7 @@ test("normalize preserves equality", () => {
   expect(equal(GG, G)).toBeTrue();
 });
 
-test("group wraps around in `N` steps", () => {
+test("N.G = O", () => {
   let nG = G.copy().multiply(N);
   expect(equal(nG, O)).toBeTrue();
 });

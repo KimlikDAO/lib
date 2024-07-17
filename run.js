@@ -29,6 +29,7 @@ const compileAndRunMatching = async (pattern, command, args) => {
   for await (const f of glob.scan(".")) {
     if (f.startsWith("build") || f.includes("okuyucu")) continue;
     compileTasks.push(compileBN(() => compile({
+      ...args,
       entry: f,
       output: `build/${f}`
     }).then((compiled) =>
