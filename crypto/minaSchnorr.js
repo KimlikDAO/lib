@@ -11,7 +11,7 @@ const P = (1n << 254n) + 0x224698fc094cf91b992d30ed00000001n;
  * @noinline
  * @const {!bigint}
  */
-const Q = (1n << 254n) + 0x224698fc0994a8dd8c46eb2100000001n;
+const Q = P + 0x47afc1f319ba3400000000n;
 /**
  * @const {function(new:IPoint, !bigint, !bigint, !bigint)}
  */
@@ -38,8 +38,9 @@ const hashMessage = (message, X, r) => {
     r
   ];
   const encoder = new TextEncoder();
-  const bits = Array.from(encoder.encode(message)).map(
-    (c) => c.toString(2).padStart(8, "0").split("").reverse().join(""))
+  const bits = Array.from(encoder.encode(message), (c) => c.toString(2).padStart(8, "0"))
+    .join("")
+    .split("")
     .reverse()
     .join("");
   for (let i = bits.length; i > 0; i -= 254)
