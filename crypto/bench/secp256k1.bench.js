@@ -1,5 +1,5 @@
 import { assert, assertEq } from "../../testing/assert";
-import { equal, G, N, O, P, Point } from "../secp256k1";
+import { equal, G, O, P, Point, Q } from "../secp256k1";
 
 /**
  * @param {!Point} R
@@ -21,8 +21,8 @@ const benchMultiplyBeginEnd = () => {
   for (let i = 0; i < 1000; ++i) {
     const k = BigInt(i);
     const R = G.copy().multiply(k);
-    const Q = G.copy().multiply(N - k);
-    R.increment(Q);
+    const S = G.copy().multiply(Q - k);
+    R.increment(S);
 
     assert(equal(R, O));
   }
@@ -33,8 +33,8 @@ const testMultiply = () => {
   for (let i = 0; i < 500; ++i) {
     const k = BigInt(i) + 8098234098230498234n;
     const R = multiplyBitIntMask(G.copy(), k);
-    const Q = multiplyBitIntMask(G.copy(), N - k);
-    R.increment(Q);
+    const S = multiplyBitIntMask(G.copy(), Q - k);
+    R.increment(S);
 
     assert(equal(R, O));
   }
@@ -44,13 +44,13 @@ testMultiply();
 
 const benchMultiplyMiddle = () => {
   /** @const {!bigint} */
-  const delta = N / 2n;
+  const delta = Q / 2n;
   console.time("multiplyBigIntMask(N/2) (1k multiply's)");
   for (let i = 0; i < 1000; ++i) {
     const k = BigInt(i) + delta;
     const R = multiplyBitIntMask(G.copy(), k);
-    const Q = multiplyBitIntMask(G.copy(), N - k);
-    R.increment(Q);
+    const S = multiplyBitIntMask(G.copy(), Q - k);
+    R.increment(S);
 
     assert(equal(R, O));
   }
@@ -60,8 +60,8 @@ const benchMultiplyMiddle = () => {
   for (let i = 0; i < 1000; ++i) {
     const k = BigInt(i) + delta;
     const R = G.copy().multiply(k);
-    const Q = G.copy().multiply(N - k);
-    R.increment(Q);
+    const S = G.copy().multiply(Q - k);
+    R.increment(S);
 
     assert(equal(R, O));
   }

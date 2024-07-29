@@ -19,14 +19,14 @@ import { inverse } from "./modular";
  * @noinline
  */
 const P = (1n << 256n) - (1n << 32n) - 977n;
-
 /**
  * @const {!bigint}
  * @noinline
  */
-const N = P - 0x14551231950b75fc4402da1722fc9baeen;
-
-/** @const {function(new:IPoint, !bigint, !bigint, !bigint)} */
+const Q = P - 0x14551231950b75fc4402da1722fc9baeen;
+/**
+ * @const {function(new:IPoint, !bigint, !bigint, !bigint)}
+ */
 const Point = arfCurve(P);
 
 /**
@@ -134,19 +134,19 @@ const sign = (digest, privKey) => {
     /** @const {!bigint} */
     const k = BigInt("0x" + hex(/** @type {!Uint8Array} */(
       crypto.getRandomValues(new Uint8Array(32)))));
-    if (k <= 0 || N <= k) continue; // probability ~2^{-128}, i.e., a near impossibility.
+    if (k <= 0 || Q <= k) continue; // probability ~2^{-128}, i.e., a near impossibility.
     /** @const {!Point} */
     const K = G.copy().multiply(k).project();
     /** @const {!bigint} */
     const r = K.x;
-    if (r >= N) continue; // probability ~2^{-128}, i.e., a near impossibility.
+    if (r >= Q) continue; // probability ~2^{-128}, i.e., a near impossibility.
     /** @type {!bigint} */
-    let s = (inverse(k, N) * ((digest + r * privKey) % N)) % N;
+    let s = (inverse(k, Q) * ((digest + r * privKey) % Q)) % Q;
     if (s == 0n) continue; // probability ~2^{-256}
     /** @type {boolean} */
     let yParity = !!(K.y & 1n);
-    if (s > (N >> 1n)) {
-      s = N - s;
+    if (s > (Q >> 1n)) {
+      s = Q - s;
       yParity = !yParity;
     }
     return { r, s, yParity }
@@ -161,17 +161,17 @@ const sign = (digest, privKey) => {
  * @return {boolean}
  */
 const verify = (digest, r, s, pubKey) => {
-  if (r <= 0n || N <= r) return false;
-  if (s <= 0n || N <= s) return false;
+  if (r <= 0n || Q <= r) return false;
+  if (s <= 0n || Q <= s) return false;
   /** @const {!bigint} */
-  const is = inverse(s, N);
+  const is = inverse(s, Q);
   /** @const {!Point} */
-  const U = aGbH(digest * is % N, r * is % N, pubKey.copy());
+  const U = aGbH(digest * is % Q, r * is % Q, pubKey.copy());
   /** @const {!bigint} */
   const z2 = (U.z * U.z) % P;
   if (!z2) return false;
   if ((r * z2) % P === U.x) return true;
-  r += N;
+  r += Q;
   return (r < P) && (r * z2) % P === U.x;
 }
 
@@ -186,21 +186,21 @@ const verify = (digest, r, s, pubKey) => {
  * @return {!Point} the signer public key or O.
  */
 const recoverSigner = (digest, r, s, yParity) => {
-  if (r <= 0n || N <= r) return O;
-  if (s <= 0n || N <= s) return O;
+  if (r <= 0n || Q <= r) return O;
+  if (s <= 0n || Q <= s) return O;
   /** @const {!bigint} */
-  const ir = inverse(r, N);
+  const ir = inverse(r, Q);
   /** @const {Point} */
   const K = pointFrom(r, yParity);
   if (!K) return O;
-  return aGbH(N - (digest * ir % N), s * ir % N, K).project();
+  return aGbH(Q - (digest * ir % Q), s * ir % Q, K).project();
 }
 
 export {
   G,
-  N,
   O,
   P,
+  Q,
   Point,
   equal,
   recoverSigner,

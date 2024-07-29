@@ -31,9 +31,8 @@ PublicKey.fromBase58 = (addr) => {
  * @param {!Uint8Array} bytes
  * @return {!PublicKey}
  */
-PublicKey.fromBytes = (bytes) => {
-  return new PublicKey(uint8ArrayBEtoBigInt(bytes.subarray(0, 32)), !!bytes[32]);
-}
+PublicKey.fromBytes = (bytes) =>
+  new PublicKey(uint8ArrayBEtoBigInt(bytes.subarray(0, 32)), !!bytes[32]);
 
 /**
  * @param {!Uint8Array} buff a buffer of length at least 33
@@ -44,6 +43,14 @@ PublicKey.prototype.serializeInto = function (buff) {
   buff[32] = +this.isOdd;
 }
 
+/**
+ * @param {string} privateKeyStr
+ * @return {!bigint}
+ */
+const parsePrivateKey = (privateKeyStr) =>
+  uint8ArrayLEtoBigInt(base58.toBytes(privateKeyStr).subarray(2, 34))
+
 export {
   PublicKey,
+  parsePrivateKey
 };

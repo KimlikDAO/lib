@@ -9,7 +9,7 @@ test("`bekle()` works with no return value", async () => {
   expect(dt).toBeLessThan(250);
 });
 
-test("should complete with no log when full bandwidth", async () => {
+test("should complete with no lag when full bandwidth", async () => {
   const db = darboğaz(5);
   const t = performance.now();
   expect(await Promise.all([
@@ -24,7 +24,7 @@ test("should complete with no log when full bandwidth", async () => {
   expect(dt).toBeLessThan(150);
 });
 
-test("should complete with no log when full bandwidth", async () => {
+test("should complete with no lag when full bandwidth", async () => {
   const db = darboğaz(2);
   const t = performance.now();
   expect(await Promise.all([

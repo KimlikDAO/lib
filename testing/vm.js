@@ -1,5 +1,5 @@
 import { inverse } from "../crypto/modular";
-import { G, N, Point } from "../crypto/secp256k1";
+import { G, Q, Point } from "../crypto/secp256k1";
 import { keccak256Uint32, keccak256Uint32ToHex } from "../crypto/sha3";
 import evm from "../ethereum/evm";
 import { hex, hexten } from "../util/çevir";
@@ -40,19 +40,19 @@ const sign = (digest, privKey) => {
   for (; ; ++buff[0]) {
     /** @const {!bigint} */
     const k = BigInt("0x" + keccak256Uint32ToHex(buff));
-    if (k <= 0 || N <= k) continue; // probability ~2^{-128}, i.e., a near impossibility.
+    if (k <= 0 || Q <= k) continue; // probability ~2^{-128}, i.e., a near impossibility.
     /** @type {!Point} */
     const K = G.copy().multiply(k).project();
     /** @const {!bigint} */
     const r = K.x;
-    if (r >= N) continue; // probability ~2^{-128}, i.e., a near impossibility.
+    if (r >= Q) continue; // probability ~2^{-128}, i.e., a near impossibility.
     /** @type {!bigint} */
-    let s = (inverse(k, N) * ((digest + r * privKey) % N)) % N;
+    let s = (inverse(k, Q) * ((digest + r * privKey) % Q)) % Q;
     if (s == 0n) continue; // probability ~2^{-256}
     /** @type {boolean} */
     let yParity = !!(K.y & 1n);
-    if (s > (N >> 1n)) {
-      s = N - s;
+    if (s > (Q >> 1n)) {
+      s = Q - s;
       yParity = !yParity;
     }
     return { r, s, yParity }

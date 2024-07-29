@@ -56,6 +56,16 @@ const exp = (a, x, M) => {
  * @param {!bigint} M
  * @return {!bigint}
  */
+const pow5 = (b, M) => {
+  const t = (b * b) % M;
+  return (b * t * t) % M;
+}
+
+/**
+ * @param {!bigint} b
+ * @param {!bigint} M
+ * @return {!bigint}
+ */
 const pow7 = (b, M) => {
   const t = (b * b * b) % M;
   return (t * t * b) % M;
@@ -113,4 +123,4 @@ const expTimesExp = (a, x, b, y, M) => {
   return r;
 }
 
-export { exp, exp2, expTimesExp, inverse, pow7 };
+export { exp, exp2, expTimesExp, inverse, pow5, pow7 };

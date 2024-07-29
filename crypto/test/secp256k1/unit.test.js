@@ -1,5 +1,5 @@
-import { test, expect } from "bun:test";
-import { equal, G, N, O, recoverSigner, sign, verify } from "../../secp256k1";
+import { expect, test } from "bun:test";
+import { equal, G, O, Q, recoverSigner, sign, verify } from "../../secp256k1";
 
 test("copies of points are equal", () => {
   const P = G.copy();
@@ -48,7 +48,7 @@ test("A = B => proj(A) = proj(B)", () => {
 });
 
 test("N.G = O", () => {
-  let nG = G.copy().multiply(N);
+  let nG = G.copy().multiply(Q);
   expect(equal(nG, O)).toBeTrue();
 });
 
@@ -74,14 +74,14 @@ test("8G == 2.2.2G", () => {
   expect(equal(P, Q)).toBeTrue();
 });
 
-test("aG + bG = (a+b)G", () => {
+test("aG + (Q-a)G = O", () => {
   for (let i = 0; i < 500; ++i) {
-    const k = BigInt(i) + 8098234098230498234n;
-    const P = G.copy().multiply(k);
-    const Q = G.copy().multiply(N - k);
-    P.increment(Q);
+    const a = BigInt(i) + 8098234098230498234n;
+    const A = G.copy().multiply(a);
+    const B = G.copy().multiply(Q - a);
+    A.increment(B);
 
-    expect(equal(P, O)).toBeTrue();
+    expect(equal(A, O)).toBeTrue();
   }
 });
 

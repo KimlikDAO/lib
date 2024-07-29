@@ -1,4 +1,4 @@
-import { poseidon } from "../crypto/poseidon";
+import { poseidon } from "../crypto/minaPoseidon";
 import hex from "../util/hex";
 import {
   BinaryKey,

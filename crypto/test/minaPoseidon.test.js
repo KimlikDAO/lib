@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
-import { P, poseidon } from "../../poseidon";
+import { P, poseidon } from "../minaPoseidon";
 
-test("agrees to mina-poseidon on select values", () => {
+test("agrees with mina poseidon on select values", () => {
   expect(P).toBe(0x40000000000000000000000000000000224698fc094cf91b992d30ed00000001n);
 
   expect(poseidon([1n])).toBe(0x10b41a5d3139ef0802e5faf6a7776aab079e44e99ec5b306ddddd88e15fe9e6dn);

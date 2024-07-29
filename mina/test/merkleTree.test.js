@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { poseidon } from "../../crypto/poseidon";
+import { poseidon } from "../../crypto/minaPoseidon";
 import { BinaryKey, HexKey, MinaMerkleTree } from "../merkleTree";
 
 test("test set and get leaf", () => {
