@@ -30,6 +30,15 @@ minaSigner.Signature;
 minaSigner.SignedMessage;
 
 /**
+ * @typedef {{
+ *   signature: string,
+ *   publicKey: string,
+ *   data: !Array<!bigint>
+ * }}
+ */
+minaSigner.SignedFields;
+
+/**
  * @param {string} message
  * @param {string} privKey
  * @return {minaSigner.SignedMessage}
@@ -41,6 +50,19 @@ Client.prototype.signMessage = function (message, privKey) { }
  * @return {boolean}
 */
 Client.prototype.verifyMessage = function (signedMessage) { }
+
+/**
+ * @param {!Array<!bigint>} fields
+ * @param {string} privKey
+ * @return {minaSigner.SignedFields}
+ */
+Client.prototype.signFields = function (fields, privKey) { }
+
+/**
+ * @param {minaSigner.SignedFields} signedFields
+ * @return {boolean}
+ */
+Client.prototype.verifyFields = function (signedFields) { }
 
 /**
  * @param {string} privKey

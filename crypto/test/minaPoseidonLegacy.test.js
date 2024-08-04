@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { P, poseidon } from "../minaPoseidon63";
+import { P, poseidon } from "../minaPoseidonLegacy";
 
 test("agrees with mina 'poseidonLegacy' on select values", () => {
   expect(P).toBe(0x40000000000000000000000000000000224698fc094cf91b992d30ed00000001n);

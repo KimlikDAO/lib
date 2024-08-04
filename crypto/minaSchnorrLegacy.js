@@ -1,6 +1,6 @@
 import hex from "../util/hex";
 import { Point as IPoint, arfCurve } from "./arfCurve";
-import { P, poseidon } from "./minaPoseidon";
+import { P, poseidon } from "./minaPoseidonLegacy";
 
 /**
  * @noinline
@@ -18,23 +18,33 @@ const Point = arfCurve(P);
 const G = new Point(1n, 0x1b74b5a30a12937c53dfa9f06378ee548f655bd4333d477119cf7a23caed2abbn, 1n);
 
 /**
- * @param {!Array<!bigint>} fields
+ * @param {string} message
  * @param {!Point} X
  * @param {!bigint} r
  * @return {!bigint}
  */
-const hashFields = (fields, X, r) =>
-  poseidon([
-    0x2a2a2a2a2a2a2a65727574616e67695361646f43n,
+const hashMessage = (message, X, r) => {
+  /** @const {!Array<!bigint>} */
+  const fields = [
+    0x74656e6e69614d65727574616e676953616e694dn,
     0n,
-    ...fields,
     X.x,
     X.y,
     r
-  ]);
+  ];
+  const encoder = new TextEncoder();
+  const bits = Array.from(encoder.encode(message), (c) => c.toString(2).padStart(8, "0"))
+    .join("")
+    .split("")
+    .reverse()
+    .join("");
+  for (let i = bits.length; i > 0; i -= 254)
+    fields.push(BigInt("0b" + bits.substring(i - 254, i)));
+  return poseidon(fields);
+}
 
 /**
- * @param {!Array<!bigint>} fields
+ * @param {string} message
  * @param {!bigint} privKey
  * @param {!Point=} pubKey which may be given as a hint.
  * @return {{
@@ -42,7 +52,7 @@ const hashFields = (fields, X, r) =>
  *   s: !bigint
  * }}
  */
-const signFields = (fields, privKey, pubKey) => {
+const signMessage = (message, privKey, pubKey) => {
   pubKey ||= G.copy().multiply(privKey).project();
   /** @type {!bigint} */
   let k = BigInt("0x" + hex.from(/** @type {!Uint8Array} */(
@@ -50,24 +60,24 @@ const signFields = (fields, privKey, pubKey) => {
   const K = G.copy().multiply(k).project();
   if (K.y & 1n) k = Q - k;
   /** @const {!bigint} */
-  const e = hashFields(fields, pubKey, K.x);
+  const e = hashMessage(message, pubKey, K.x)
   /** @const {!bigint} */
   const s = (k + e * privKey) % Q;
   return { r: K.x, s };
 }
 
 /**
- * @param {!Array<!bigint>} fields
+ * @param {string} message
  * @param {!bigint} r
  * @param {!bigint} s
  * @param {!Point} pubKey
  */
-const verifyFields = (fields, r, s, pubKey) => {
+const verifyMessage = (message, r, s, pubKey) => {
   /**
    * Here we use the fact that Q > P and reinterpret the field element
    * as a scalar.
    * @const {!bigint} */
-  const ne = Q - hashFields(fields, pubKey, r);
+  const ne = Q - hashMessage(message, pubKey, r);
   /**
    * s.G = K + pubKey.e
    * @const {!Point}
@@ -81,7 +91,7 @@ export {
   G,
   P,
   Q,
-  hashFields,
-  signFields,
-  verifyFields,
+  hashMessage,
+  signMessage,
+  verifyMessage
 };

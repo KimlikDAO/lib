@@ -50,7 +50,23 @@ PublicKey.prototype.serializeInto = function (buff) {
 const parsePrivateKey = (privateKeyStr) =>
   uint8ArrayLEtoBigInt(base58.toBytes(privateKeyStr).subarray(2, 34))
 
+/**
+ * @param {string} signatureStr
+ * @return {{
+ *   r: !bigint,
+ *   s: !bigint
+ * }}
+ */
+const parseSignature = (signatureStr) => {
+  const bytes = base58.toBytes(signatureStr);
+  return {
+    r: uint8ArrayLEtoBigInt(bytes.subarray(2, 34)),
+    s: uint8ArrayLEtoBigInt(bytes.subarray(34, 66))
+  };
+}
+
 export {
   PublicKey,
-  parsePrivateKey
+  parsePrivateKey,
+  parseSignature,
 };
