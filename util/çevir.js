@@ -1,9 +1,4 @@
-/**
- * @const {!Array<string>}
- */
-const Uint8denHexe = new Array(255);
-for (let /** number */ i = 0; i < 256; ++i)
-  Uint8denHexe[i] = i.toString(16).padStart(2, "0");
+import hexadecimal from "./hex";
 
 /**
  * @nosideeffects
@@ -11,37 +6,20 @@ for (let /** number */ i = 0; i < 256; ++i)
  * @param {!Uint8Array} buff hex'e çevrilecek Uint8Array.
  * @return {string} hex temsil eden dizi.
  */
-const hex = (buff) => {
-  /** @const {!Array<string>} */
-  const ikililer = new Array(buff.length);
-  for (let /** number */ i = 0; i < buff.length; ++i)
-    ikililer[i] = Uint8denHexe[buff[i]];
-  return ikililer.join("");
-}
+const hex = hexadecimal.from;
 
 /**
  * @nosideeffects
  * @param {string} str hex olarak kodlanmış veri.
  * @return {!Uint8Array} byte dizisi
  */
-const hexten = (str) => {
-  if (str.length & 1) str = "0" + str;
-  /** @const {!Uint8Array} */
-  const buff = new Uint8Array(str.length / 2);
-  for (let i = 0, j = 0; i < str.length; ++j, i += 2)
-    buff[j] = parseInt(str.slice(i, i + 2), 16);
-  return buff;
-}
+const hexten = hexadecimal.toUint8Array;
 
 /**
  * @param {!Uint8Array} buff
  * @param {string} str
  */
-const uint8ArrayeHexten = (buff, str) => {
-  if (str.length & 1) str = "0" + str;
-  for (let i = 0, j = 0; i < str.length; ++j, i += 2)
-    buff[j] = parseInt(str.slice(i, i + 2), 16);
-}
+const uint8ArrayeHexten = hexadecimal.intoUint8Array;
 
 /**
  * Verilen bir hex dizisini Uint32Array'e yazar.
@@ -52,10 +30,7 @@ const uint8ArrayeHexten = (buff, str) => {
  * @param {!Uint32Array} buff
  * @param {string} str
  */
-const uint32ArrayeHexten = (buff, str) => {
-  for (let i = 0, j = 0; i < str.length; ++j, i += 8)
-    buff[j] = parseInt(str.slice(i, i + 8), 16);
-}
+const uint32ArrayeHexten = hexadecimal.intoUint32Array;
 
 /**
  * @param {!Uint8Array|!Array<number>} bytes base64'e dönüştürülecek buffer.
@@ -140,12 +115,11 @@ const uint8ArrayLEtoHex = (buff) => {
   /** @const {!Array<string>} */
   const ikililer = new Array(n);
   for (let /** number */ i = n; i > 0; --i)
-    ikililer[n - i] = Uint8denHexe[buff[i - 1]];
+    ikililer[n - i] = hexadecimal.FromUint8[buff[i - 1]];
   return ikililer.join("");
 }
 
 export {
-  Uint8denHexe,
   base64,
   base64ten,
   base64tenSayıya,

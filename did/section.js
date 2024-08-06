@@ -4,11 +4,13 @@
  * @author KimlikDAO
  */
 
+import { signFields } from "../crypto/minaSchnorr";
 import { sign } from "../crypto/secp256k1";
 import { keccak256, keccak256Uint32, keccak256Uint32ToHex } from "../crypto/sha3";
 import evm from "../ethereum/evm";
 import {
-  base64, hexten,
+  base64, base64tenSayıya,
+  hexten,
   uint8ArrayeBase64ten, uint8ArrayeHexten
 } from "../util/çevir";
 import "./section.d";
@@ -122,7 +124,27 @@ const signSection = (sectionName, section, commitment, signatureTs, privateKey) 
   const d = BigInt("0x" + hash(sectionName, section));
   let { r, s, yParity } = sign(d, privateKey);
   if (yParity) s += (1n << 255n);
-  section.secp256k1 = section.minaSchnorr = [evm.uint256(r) + evm.uint256(s)];
+  section.secp256k1 = [evm.uint256(r) + evm.uint256(s)];
+
+  if (sectionName == "humanID") {
+    /** @const {!did.HumanID} */
+    const humanID = /** @type {!did.HumanID} */(section);
+    /**
+     * The `humanID` is hashed in an o1js friendly way.
+     * [
+     *   signatureTs,
+     *   commitment,
+     *   humanID.id
+     * ]
+     */
+    section.minaSchnorr = [
+      signFields([
+        BigInt(signatureTs),
+        base64tenSayıya(humanID.commitment),
+        BigInt("0x" + humanID.id)
+      ], privateKey)
+    ];
+  }
 }
 
 export {
