@@ -1,4 +1,4 @@
-import hex from "../util/hex";
+import { uint8ArrayBEtoBigInt } from "../util/çevir";
 import { Point as IPoint, arfCurve } from "./arfCurve";
 import { P, poseidon } from "./minaPoseidonLegacy";
 
@@ -55,8 +55,8 @@ const hashMessage = (message, X, r) => {
 const signMessage = (message, privKey, pubKey) => {
   pubKey ||= G.copy().multiply(privKey).project();
   /** @type {!bigint} */
-  let k = BigInt("0x" + hex.from(/** @type {!Uint8Array} */(
-    crypto.getRandomValues(new Uint8Array(32))))) % Q;
+  let k = uint8ArrayBEtoBigInt(/** @type {!Uint8Array} */(
+    crypto.getRandomValues(new Uint8Array(32)))) % Q;
   const K = G.copy().multiply(k).project();
   if (K.y & 1n) k = Q - k;
   /** @const {!bigint} */
