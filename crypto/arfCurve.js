@@ -27,6 +27,7 @@ class Point {
   z;
 
   /**
+   * @pureOrBreakMyCode
    * @param {!bigint} x
    * @param {!bigint} y
    * @param {!bigint} z
@@ -70,6 +71,7 @@ class Point {
 
 /**
  * @nosideeffects
+ * @pureOrBreakMyCode
  * @param {!bigint} P
  * @return {function(new:Point, !bigint, !bigint, !bigint)}
  */
@@ -94,6 +96,7 @@ const arfCurve = (P) => {
    */
   class CurvePoint {
     /**
+     * @nosideeffects
      * @param {!bigint} x
      * @param {!bigint} y
      * @param {!bigint} z

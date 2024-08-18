@@ -1,27 +1,36 @@
 /**
  * @const {!Object<string, string>}
  */
-const NibbleToBinary = {};
+const ToBinary = {};
 
-for (let i = 0; i < 16; ++i)
-  NibbleToBinary[i.toString(16).toUpperCase()] = NibbleToBinary[i.toString(16)]
-    = i.toString(2).padStart(4, "0");
+/** @return {!Object<string, string>} */
+const toBinaryMap = () => {
+  if (!ToBinary["A"]) {
+    for (let i = 0; i < 16; ++i) {
+      /** @const {string} */
+      const h = i.toString(16);
+      ToBinary[h.toUpperCase()] = ToBinary[h]
+        = i.toString(2).padStart(4, "0");
+    }
+  }
+  return ToBinary;
+}
 
 /**
+ * @nosideeffects
  * @param {string} hexStr
  * @return {string}
  */
 const toBinary = (hexStr) => {
-  const parts = Array(hexStr.length);
-  for (let i = 0; i < hexStr.length; ++i)
-    parts[i] = NibbleToBinary[hexStr[i]];
-  return parts.join("");
+  /** @const {!Object<string, string>} */
+  const toBinary = toBinaryMap();
+  return Array.from(hexStr, (s) => toBinary[s]).join("");
 }
 
 /** @const {!Array<string>} */
 const FromUint8 = Array(255);
 for (let /** number */ i = 0; i < 256; ++i)
-  FromUint8[i] = /** @pureOrBreakMyCode */(i.toString(16).padStart(2, "0"));
+  FromUint8[i] = /** @pureOrBreakMyCode */(i.toString(16)).padStart(2, "0");
 
 /**
  * @nosideeffects
@@ -76,5 +85,6 @@ export default {
   intoUint8Array,
   intoUint32Array,
   toBinary,
-  FromUint8
+  toBinaryMap,
+  FromUint8,
 };

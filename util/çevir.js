@@ -33,6 +33,7 @@ const uint8ArrayeHexten = hexadecimal.intoUint8Array;
 const uint32ArrayeHexten = hexadecimal.intoUint32Array;
 
 /**
+ * @nosideeffects
  * @param {!Uint8Array|!Array<number>} bytes base64'e dönüştürülecek buffer.
  * @return {string} base64 temsil eden dizi.
  */

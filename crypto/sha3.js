@@ -7,26 +7,23 @@ import { hex } from '../util/çevir';
 /**
  * Computes the keccak256 of an Uint32Array.
  *
- * @param {!Uint32Array} words A typed array of `u32`s to be hashed.
+ * @param {!Uint32Array} words A typed array of `uint32`s to be hashed.
  * @return {!Uint32Array} hash as a Uint32Arrray of length 8.
  */
 const keccak256Uint32 = (words) => {
   /** @const {!Uint32Array} */
   const s = new Uint32Array(50);
-  /** @const {number} */
-  const end = words.length - 34;
   /** @type {number} */
   let i = 0;
-  for (; i <= end; i += 34) {
+  for (const end = words.length - 33; i < end; i += 34) {
     for (let j = 0; j < 34; ++j)
       s[j] ^= words[i + j];
     f(s);
   }
   /** @type {number} */
   let j = 0;
-  for (; i < words.length; ++i, ++j) {
+  for (; i < words.length; ++i, ++j)
     s[j] ^= words[i];
-  }
   s[j] ^= 1;
   s[33] ^= 1 << 31;
   f(s);
@@ -57,20 +54,17 @@ const keccak256Uint8 = (bytes) => {
   const words = new Uint32Array(bytes.buffer, 0, bytes.length >> 2);
   /** @const {!Uint32Array} */
   const s = new Uint32Array(50);
-  /** @const {number} */
-  const end = words.length - 34;
   /** @type {number} */
   let i = 0;
-  for (; i <= end; i += 34) {
+  for (const end = words.length - 33; i < end; i += 34) {
     for (let j = 0; j < 34; ++j)
       s[j] ^= words[i + j];
     f(s);
   }
   /** @type {number} */
   let j = 0;
-  for (; i < words.length; ++i, ++j) {
+  for (; i < words.length; ++i, ++j)
     s[j] ^= words[i];
-  }
   /** @const {number} */
   const mod = bytes.length & 3;
   /** @const {number} */
@@ -98,7 +92,7 @@ const RC = [1, 0, 32898, 0, 32906, 2147483648, 2147516416, 2147483648, 32907, 0,
   2147516545, 2147483648, 32896, 2147483648, 2147483649, 0, 2147516424, 2147483648];
 
 /**
- * @param {!Uint32Array} s
+ * @param {!Uint32Array|!Array<number>} s
  */
 const f = (s) => {
   let h, l, c0, c1, c2, c3, c4, c5, c6, c7, c8, c9,
