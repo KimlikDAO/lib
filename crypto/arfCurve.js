@@ -91,10 +91,7 @@ const arfCurve = (P) => {
     return res >= 0n ? res : res + P;
   }
 
-  /**
-   * @implements {Point}
-   */
-  class CurvePoint {
+  return /** @implements {Point} */ class CurvePoint {
     /**
      * @nosideeffects
      * @param {!bigint} x
@@ -222,7 +219,6 @@ const arfCurve = (P) => {
       return this;
     }
   }
-  return CurvePoint;
 }
 
 export { Point, arfCurve };

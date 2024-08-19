@@ -1,9 +1,6 @@
 import { IC, f as sha256F } from "../crypto/sha2";
 import base58 from "../util/base58";
-import {
-  uint8ArrayLEtoBigInt,
-  uint8ArrayLEyeSayıdan
-} from "../util/çevir";
+import { uint8ArrayLEtoBigInt, uint8ArrayLEyeSayıdan } from "../util/çevir";
 
 /**
  * @param {!Uint8Array} buff bytes array of which the last 4 bytes will be
@@ -60,6 +57,7 @@ const PublicKey = function (x, isOdd) {
  * @return {!PublicKey}
  */
 PublicKey.fromBase58 = (addr) => {
+  /** @const {!Uint8Array} */
   const bytes = base58.toBytes(addr);
   return new PublicKey(uint8ArrayLEtoBigInt(bytes.subarray(3, 35)), !!bytes[35]);
 }
@@ -68,6 +66,7 @@ PublicKey.fromBase58 = (addr) => {
  * @return {string}
  */
 PublicKey.prototype.toBase58 = function () {
+  /** @const {!Uint8Array} */
   const buff = new Uint8Array(40);
   buff[0] = 203;
   buff[1] = buff[2] = 1;
@@ -113,6 +112,7 @@ function Signature(r, s) {
 }
 
 Signature.fromBase58 = function (sig) {
+  /** @const {!Uint8Array} */
   const bytes = base58.toBytes(sig);
   return new Signature(
     uint8ArrayLEtoBigInt(bytes.subarray(2, 34)),
@@ -121,6 +121,7 @@ Signature.fromBase58 = function (sig) {
 }
 
 Signature.prototype.toBase58 = function () {
+  /** @const {!Uint8Array} */
   const buff = new Uint8Array(70);
   buff[0] = 154;
   buff[1] = 1;
