@@ -9,9 +9,9 @@ import { assertEq } from "./assert";
  */
 const compareImpls = (fs, repeat, args, expected) => {
   for (const f of fs) {
-    console.time(f.name);
+    console.time(f["name"]);
     for (let i = 0; i < repeat; ++i) assertEq(f.apply(null, args), expected);
-    console.timeEnd(f.name);
+    console.timeEnd(f["name"]);
   }
 }
 

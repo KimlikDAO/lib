@@ -3,7 +3,7 @@
  *
  * @author KimlikDAO
  */
-import { recoverSigner } from "../crypto/secp256k1";
+import { Point, recoverSigner, sign } from "../crypto/secp256k1";
 import { keccak256, keccak256Uint32, keccak256Uint8 } from '../crypto/sha3';
 import { hex, hexten } from "../util/çevir";
 
@@ -115,6 +115,19 @@ const personalDigest = (msg) => {
 }
 
 /**
+ * @param {!Point} Q
+ * @return {string} address
+ */
+const pointToAddress = (Q) => {
+  /** @const {!Uint8Array} */
+  const buff = hexten(uint256(Q.x) + uint256(Q.y));
+  /** @const {!Uint8Array} */
+  const hash = new Uint8Array(
+    keccak256Uint32(new Uint32Array(buff.buffer)).buffer, 12, 20);
+  return "0x" + hex(hash);
+}
+
+/**
  * Given a digest and a signature, recovers the signer address if the signature
  * is valid; outputs an arbitrary value otherwise.
  *
@@ -134,15 +147,18 @@ const signerAddress = (digest, signature) => {
     ? (highNibble - 8).toString(16) + signature.slice(65)
     : signature.slice(64))
   );
+  return pointToAddress(
+    recoverSigner(BigInt("0x" + digest), r, s, yParity));
+}
 
-  const Q = recoverSigner(BigInt("0x" + digest), r, s, yParity);
-
-  /** @const {!Uint8Array} */
-  const buff = hexten(uint256(Q.x) + uint256(Q.y));
-  /** @const {!Uint8Array} */
-  const hash = new Uint8Array(
-    keccak256Uint32(new Uint32Array(buff.buffer)).buffer, 12, 20);
-  return "0x" + hex(hash);
+/**
+ * @param {string} digest
+ * @param {!bigint} privateKey
+ * @return {string}
+ */
+const signCompact = (digest, privateKey) => {
+  const { r, s, yParity } = sign(BigInt("0x" + digest), privateKey);
+  return uint256(r) + uint256(yParity ? s + (1n << 255n) : s);
 }
 
 /**
@@ -193,7 +209,9 @@ export default {
   isZero,
   packedAddress,
   personalDigest,
+  pointToAddress,
   signerAddress,
+  signCompact,
   uint160,
   uint256,
   Uint256Max,

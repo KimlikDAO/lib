@@ -1,9 +1,46 @@
+import { IC, f as sha256F } from "../crypto/sha2";
 import base58 from "../util/base58";
 import {
-  uint8ArrayBEtoBigInt,
   uint8ArrayLEtoBigInt,
-  uint8ArrayeHexten
+  uint8ArrayLEyeSayıdan
 } from "../util/çevir";
+
+/**
+ * @param {!Uint8Array} buff bytes array of which the last 4 bytes will be
+ *                           written the checksum
+ */
+const addChecksum = (buff) => {
+  /** @const {number} */
+  const n = buff.length;
+  /** @const {!Uint32Array} */
+  const s = new Uint32Array(IC);
+  /** @const {!Uint32Array} */
+  const t = new Uint32Array(64);
+  buff[n - 4] = 128;
+  /** @type {number} */
+  let j = 0;
+  for (let end = n - 1, i = 0; i < end; i += 4) {
+    t[j] = (buff[i + 0] << 24) | (buff[i + 1] << 16) | (buff[i + 2] << 8) | buff[i + 3];
+    if (j > 14) {
+      sha256F(s, t);
+      j = 0;
+    } else ++j;
+  }
+  t.fill(0, j, 15);
+  t[15] = (n - 4) << 3;
+  sha256F(s, t);
+  t.set(s);
+  t.fill(0, 9, 15);
+  t[8] = 1 << 31;
+  t[15] = 256;
+  s.set(IC);
+  sha256F(s, t);
+  const v = s[0];
+  buff[n - 1] = v & 255;
+  buff[n - 2] = (v >> 8) & 255;
+  buff[n - 3] = (v >> 16) & 255;
+  buff[n - 4] = (v >> 24) & 255;
+}
 
 /**
  * @constructor
@@ -28,45 +65,73 @@ PublicKey.fromBase58 = (addr) => {
 }
 
 /**
+ * @return {string}
+ */
+PublicKey.prototype.toBase58 = function () {
+  const buff = new Uint8Array(40);
+  buff[0] = 203;
+  buff[1] = buff[2] = 1;
+  buff[35] = +this.isOdd;
+  uint8ArrayLEyeSayıdan(buff.subarray(3), this.x);
+  addChecksum(buff);
+  return base58.from(buff);
+}
+
+/**
  * @param {!Uint8Array} bytes
  * @return {!PublicKey}
  */
 PublicKey.fromBytes = (bytes) =>
-  new PublicKey(uint8ArrayBEtoBigInt(bytes.subarray(0, 32)), !!bytes[32]);
+  new PublicKey(uint8ArrayLEtoBigInt(bytes.subarray(0, 32)), !!bytes[32]);
 
 /**
  * @param {!Uint8Array} buff a buffer of length at least 33
  */
 PublicKey.prototype.serializeInto = function (buff) {
-  const xHex = this.x.toString(16).padStart(64, "0");
-  uint8ArrayeHexten(buff, xHex);
+  uint8ArrayLEyeSayıdan(buff, this.x);
   buff[32] = +this.isOdd;
 }
 
 /**
- * @param {string} privateKeyStr
+ * @param {string} privateKey
  * @return {!bigint}
  */
-const parsePrivateKey = (privateKeyStr) =>
-  uint8ArrayLEtoBigInt(base58.toBytes(privateKeyStr).subarray(2, 34))
+const parsePrivateKey = (privateKey) =>
+  uint8ArrayLEtoBigInt(base58.toBytes(privateKey).subarray(2, 34));
 
 /**
- * @param {string} signatureStr
- * @return {{
- *   r: !bigint,
- *   s: !bigint
- * }}
+ * @constructor
+ * @struct
+ * @param {!bigint} r
+ * @param {!bigint} s
  */
-const parseSignature = (signatureStr) => {
-  const bytes = base58.toBytes(signatureStr);
-  return {
-    r: uint8ArrayLEtoBigInt(bytes.subarray(2, 34)),
-    s: uint8ArrayLEtoBigInt(bytes.subarray(34, 66))
-  };
+function Signature(r, s) {
+  /** @const {!bigint} */
+  this.r = r;
+  /** @const {!bigint} */
+  this.s = s;
+}
+
+Signature.fromBase58 = function (sig) {
+  const bytes = base58.toBytes(sig);
+  return new Signature(
+    uint8ArrayLEtoBigInt(bytes.subarray(2, 34)),
+    uint8ArrayLEtoBigInt(bytes.subarray(34, 66))
+  );
+}
+
+Signature.prototype.toBase58 = function () {
+  const buff = new Uint8Array(70);
+  buff[0] = 154;
+  buff[1] = 1;
+  uint8ArrayLEyeSayıdan(buff.subarray(2), this.r);
+  uint8ArrayLEyeSayıdan(buff.subarray(34), this.s);
+  addChecksum(buff);
+  return base58.from(buff);
 }
 
 export {
   PublicKey,
+  Signature,
   parsePrivateKey,
-  parseSignature,
 };

@@ -47,6 +47,7 @@ const signFields = (fields, privKey, pubKey) => {
   /** @type {!bigint} */
   let k = uint8ArrayBEtoBigInt(/** @type {!Uint8Array} */(
     crypto.getRandomValues(new Uint8Array(32)))) % Q;
+  /** @const {!Point} */
   const K = G.copy().multiply(k).project();
   if (K.y & 1n) k = Q - k;
   /** @const {!bigint} */

@@ -77,6 +77,29 @@ const uint8ArrayeBase64ten = (buffer, b64) => {
 }
 
 /**
+ * @param {!Uint8Array} buff
+ * @param {number} bits
+ * @param {!bigint} n
+ */
+const uint8ArrayBEyeSayıdan = (buff, bits, n) => {
+  /** @const {string} */
+  const str = n.toString(16);
+  for (let /** number */ i = str.length, j = (bits / 8) - 1; i > 0; i -= 2, --j)
+    buff[j] = parseInt(str.substring(i - 2, i), 16);
+}
+
+/**
+ * @param {!Uint8Array} buff
+ * @param {!bigint} n
+ */
+const uint8ArrayLEyeSayıdan = (buff, n) => {
+  /** @const {string} */
+  const str = n.toString(16);
+  for (let /** number */ i = str.length, j = 0; i > 0; i -= 2, ++j)
+    buff[j] = parseInt(str.substring(i - 2, i), 16);
+}
+
+/**
  * TODO(KimlikDAO-bot): Try microbenchmarking to determine whether to use
  * `toString(8)` and concat adjacent characters into base64.
  *
@@ -114,7 +137,7 @@ const uint8ArrayLEtoHex = (buff) => {
   /** @const {number} */
   const n = buff.length;
   /** @const {!Array<string>} */
-  const ikililer = new Array(n);
+  const ikililer = Array(n);
   for (let /** number */ i = n; i > 0; --i)
     ikililer[n - i] = hexadecimal.FromUint8[buff[i - 1]];
   return ikililer.join("");
@@ -129,8 +152,10 @@ export {
   sayıdanBase64e,
   uint32ArrayeHexten,
   uint8ArrayBEtoBigInt,
+  uint8ArrayBEyeSayıdan,
   uint8ArrayLEtoBigInt,
   uint8ArrayLEtoHex,
+  uint8ArrayLEyeSayıdan,
   uint8ArrayeBase64ten,
   uint8ArrayeHexten
 };

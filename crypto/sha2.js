@@ -119,5 +119,7 @@ const f = (s, t) => {
 }
 
 export {
+  IC,
+  f,
   sha256Uint32
 };
