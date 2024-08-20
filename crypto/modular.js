@@ -3,20 +3,20 @@
  *
  * Requires that b < P and P is a prime.
  *
- * @param {!bigint} b
- * @param {!bigint} P
- * @return {!bigint} x such that bx + Py = 1 and 0 < x < P.
+ * @param {bigint} b
+ * @param {bigint} P
+ * @return {bigint} x such that bx + Py = 1 and 0 < x < P.
  */
 const inverse = (b, P) => {
-  /** @type {!bigint} */
+  /** @type {bigint} */
   let a = P;
-  /** @type {!bigint} */
+  /** @type {bigint} */
   let x = 0n;
-  /** @type {!bigint} */
+  /** @type {bigint} */
   let y = 1n;
-  /** @type {!bigint} */
+  /** @type {bigint} */
   let t;
-  /** @type {!bigint} */
+  /** @type {bigint} */
   let q;
   while (b !== 0n) {
     q = a / b;
@@ -32,17 +32,17 @@ const inverse = (b, P) => {
  * The function is not constant time and should not be used in cases where
  * side-channel attacks are possible.
  *
- * @param {!bigint} a
- * @param {!bigint} x
- * @param {!bigint} M
- * @return {!bigint} a^x (mod M)
+ * @param {bigint} a
+ * @param {bigint} x
+ * @param {bigint} M
+ * @return {bigint} a^x (mod M)
  */
 const exp = (a, x, M) => {
   /** @const {string} */
   const xBits = x.toString(2);
   if (xBits.charCodeAt(0) == 48) return 1n;
   a %= M;
-  /** @type {!bigint} */
+  /** @type {bigint} */
   let r = a;
   for (let i = 1; i < xBits.length; ++i) {
     r = r * r % M;
@@ -52,9 +52,9 @@ const exp = (a, x, M) => {
 }
 
 /**
- * @param {!bigint} b
- * @param {!bigint} M
- * @return {!bigint}
+ * @param {bigint} b
+ * @param {bigint} M
+ * @return {bigint}
  */
 const pow5 = (b, M) => {
   const t = (b * b) % M;
@@ -62,9 +62,9 @@ const pow5 = (b, M) => {
 }
 
 /**
- * @param {!bigint} b
- * @param {!bigint} M
- * @return {!bigint}
+ * @param {bigint} b
+ * @param {bigint} M
+ * @return {bigint}
  */
 const pow7 = (b, M) => {
   const t = (b * b * b) % M;
@@ -77,14 +77,14 @@ const pow7 = (b, M) => {
  * Provides a modest 5% speedup over the `exp(2, x, M)`. May be deprecated
  * later since the speedup is miniscule.
  *
- * @param {!bigint} x
- * @param {!bigint} M
- * @return {!bigint} 2^x (mod M)
+ * @param {bigint} x
+ * @param {bigint} M
+ * @return {bigint} 2^x (mod M)
  */
 const exp2 = (x, M) => {
   /** @const {string} */
   const xDigits = x.toString(16);
-  /** @type {!bigint} */
+  /** @type {bigint} */
   let r = BigInt(1 << parseInt(xDigits[0], 16)) % M;
   for (let i = 1; i < xDigits.length; ++i) {
     r = r * r % M;
@@ -96,12 +96,12 @@ const exp2 = (x, M) => {
 }
 
 /**
- * @param {!bigint} a
- * @param {!bigint} x
- * @param {!bigint} b
- * @param {!bigint} y
- * @param {!bigint} M
- * @return {!bigint} a^x b^y (mod M)
+ * @param {bigint} a
+ * @param {bigint} x
+ * @param {bigint} b
+ * @param {bigint} y
+ * @param {bigint} M
+ * @return {bigint} a^x b^y (mod M)
  */
 const expTimesExp = (a, x, b, y, M) => {
   /** @type {string} */
@@ -112,9 +112,9 @@ const expTimesExp = (a, x, b, y, M) => {
     yBits = yBits.padStart(xBits.length, "0");
   else if (yBits.length > xBits.length)
     xBits = xBits.padStart(yBits.length, "0");
-  /** @const {!Array<!bigint>} */
+  /** @const {!Array<bigint>} */
   const d = [1n, a, b, a * b % M];
-  /** @type {!bigint} */
+  /** @type {bigint} */
   let r = d[(xBits.charCodeAt(0) - 48) + 2 * (yBits.charCodeAt(0) - 48)];
   for (let i = 1; i < xBits.length; ++i) {
     r = r * r % M;
@@ -123,4 +123,44 @@ const expTimesExp = (a, x, b, y, M) => {
   return r;
 }
 
-export { exp, exp2, expTimesExp, inverse, pow5, pow7 };
+/**
+ * Tonelli-Shanks square root algorithm.
+ * https://en.wikipedia.org/wiki/Tonelli–Shanks_algorithm
+ *
+ * @param {bigint} n
+ * @param {bigint} P
+ * @param {bigint} Q the odd factor of P-1 satisfying Q.2^M = P-1
+ * @param {bigint} c
+ * @param {bigint} M so that Q.2^M == P-1.
+ * @return {?bigint} returns sqrt(n) if n is a quadratic residue,
+ *                   returns null otherwise.
+ */
+const tonelliShanks = (n, P, Q, c, M) => {
+  if (n == 0n) return 0n;
+  /**@type {bigint} */
+  let t = exp(n, (Q - 1n) >> 1n, P);
+  /** @type {bigint} */
+  let R = t * n % P;
+  t = t * R % P;
+  for (; t != 1n;) {
+    let i = 0n;
+    for (let tt = t; tt != 1n; ++i)
+      tt = tt * tt % P;
+
+    if (i == M) return null; // n is not a quadratic residue
+    /** @type {bigint} */
+    let b = exp(c, 1n << (M - i - 1n), P);
+    M = i;
+    c = b * b % P;
+    t *= c; t %= P;
+    R *= b; R %= P;
+  }
+  return R;
+}
+
+export {
+  exp, exp2, expTimesExp,
+  inverse,
+  pow5, pow7,
+  tonelliShanks
+};

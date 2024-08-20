@@ -26,8 +26,8 @@ ProjectivePoint.prototype.add = function (other) { }
 
 /**
  * @return {{
- *   x: !bigint,
- *   y: !bigint
+ *   x: bigint,
+ *   y: bigint
  * }}
  */
 ProjectivePoint.prototype.toAffine = function () { }

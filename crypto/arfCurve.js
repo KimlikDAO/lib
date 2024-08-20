@@ -19,18 +19,18 @@ import { inverse } from "./modular";
  * @interface
  */
 class Point {
-  /** @type {!bigint} */
+  /** @type {bigint} */
   x;
-  /** @type {!bigint} */
+  /** @type {bigint} */
   y;
-  /** @type {!bigint} */
+  /** @type {bigint} */
   z;
 
   /**
    * @pureOrBreakMyCode
-   * @param {!bigint} x
-   * @param {!bigint} y
-   * @param {!bigint} z
+   * @param {bigint} x
+   * @param {bigint} y
+   * @param {bigint} z
    */
   constructor(x, y, z) { }
 
@@ -58,7 +58,7 @@ class Point {
   increment(other) { }
 
   /**
-   * @param {!bigint} n
+   * @param {bigint} n
    * @return {!Point}
    */
   multiply(n) { }
@@ -72,8 +72,8 @@ class Point {
 /**
  * @nosideeffects
  * @pureOrBreakMyCode
- * @param {!bigint} P
- * @return {function(new:Point, !bigint, !bigint, !bigint)}
+ * @param {bigint} P
+ * @return {function(new:Point, bigint, bigint, bigint)}
  */
 const arfCurve = (P) => {
   /**
@@ -83,8 +83,8 @@ const arfCurve = (P) => {
    *
    * If positivity is not required, prefer the % operator.
    *
-   * @param {!bigint} x
-   * @return {!bigint} y such that x = y (mod P) and 0 <= y < P.
+   * @param {bigint} x
+   * @return {bigint} y such that x = y (mod P) and 0 <= y < P.
    */
   const modP = (x) => {
     let res = x % P;
@@ -94,16 +94,16 @@ const arfCurve = (P) => {
   return /** @implements {Point} */ class CurvePoint {
     /**
      * @nosideeffects
-     * @param {!bigint} x
-     * @param {!bigint} y
-     * @param {!bigint} z
+     * @param {bigint} x
+     * @param {bigint} y
+     * @param {bigint} z
      */
     constructor(x, y, z) {
-      /** @type {!bigint} */
+      /** @type {bigint} */
       this.x = x;
-      /** @type {!bigint} */
+      /** @type {bigint} */
       this.y = y;
-      /** @type {!bigint} */
+      /** @type {bigint} */
       this.z = z;
     }
 
@@ -115,11 +115,11 @@ const arfCurve = (P) => {
     /** @return {!Point} */
     project() {
       if (this.z != 0n) {
-        /** @const {!bigint} */
+        /** @const {bigint} */
         const iz = inverse(this.z, P);
-        /** @const {!bigint} */
+        /** @const {bigint} */
         const iz2 = (iz * iz) % P;
-        /** @const {!bigint} */
+        /** @const {bigint} */
         const iz3 = (iz2 * iz) % P;
         this.x = (this.x * iz2) % P;
         this.y = (this.y * iz3) % P;
@@ -198,7 +198,7 @@ const arfCurve = (P) => {
      * Multiplies the point by the scalar `n` in-place.
      * TODO(KimlikDAO-bot) consider method copying from the interface for `multiply`
      *
-     * @param {!bigint} n
+     * @param {bigint} n
      * @return {!Point}
      */
     multiply(n) {

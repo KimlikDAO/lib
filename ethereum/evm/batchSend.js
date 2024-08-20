@@ -4,7 +4,7 @@ import { evm, toOpData } from "./types";
 /** @type {{ addr: evm.address, kpass: boolean }} */
 const AddressWithKPass = {};
 
-/** @const {!bigint} */
+/** @const {bigint} */
 const SZABO = 10n ** 12n;
 
 /**

@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { G, signMessage, verifyMessage } from "../../minaSchnorrLegacy";
+import { G, signMessage, verifyMessage } from "../../minaSchnorr";
 
 test("sign verify", () => {
   const { r, s } = signMessage("abc", 100n);

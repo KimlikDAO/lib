@@ -2,7 +2,7 @@
  * @fileoverview A fast and tiny keccak256 implementation using `TypedArray`s.
  * @author KimlikDAO
  */
-import { hex } from '../util/çevir';
+import hex from '../util/hex';
 
 /**
  * Computes the keccak256 of an Uint32Array.
@@ -36,14 +36,14 @@ const keccak256Uint32 = (words) => {
  * @param {!Uint32Array} words A typed array of `u32`s to be hashed.
  * @return {string} hash as a hex string.
  */
-const keccak256Uint32ToHex = (words) => hex(
+const keccak256Uint32ToHex = (words) => hex.from(
   new Uint8Array(keccak256Uint32(words).buffer, 0, 32));
 
 /**
  * @param {string} str A string to be hashed.
  * @return {string} hex encoded hash.
  */
-const keccak256 = (str) => hex(keccak256Uint8(new TextEncoder().encode(str)));
+const keccak256 = (str) => hex.from(keccak256Uint8(new TextEncoder().encode(str)));
 
 /**
  * @param {!Uint8Array} bytes A byte array to be hashed. Could be of any length.

@@ -16,7 +16,7 @@ const REVOKER_ASSIGNMENT = "0x4e686c76ade52af6305355f15cc098a1ca686d24a8c183f148
 /** @const {number} */
 const MILLION = 1_000_000;
 
-/** @const {!bigint} */
+/** @const {bigint} */
 const TRILLION = 10n ** 12n;
 
 /**

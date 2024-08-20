@@ -5,7 +5,7 @@ import evm from "../ethereum/evm";
 import { hex, hexten } from "../util/çevir";
 
 /**
- * @param {!bigint} privKey
+ * @param {bigint} privKey
  * @return {string}
  */
 const addr = (privKey) => {
@@ -24,11 +24,11 @@ const addr = (privKey) => {
  *
  * TODO(KimlikDAO-bot): Implement standard deterministic signatures.
  *
- * @param {!bigint} digest
- * @param {!bigint} privKey
+ * @param {bigint} digest
+ * @param {bigint} privKey
  * @return {{
- *   r: !bigint,
- *   s: !bigint,
+ *   r: bigint,
+ *   s: bigint,
  *   yParity: boolean
  * }}
  */
@@ -38,15 +38,15 @@ const sign = (digest, privKey) => {
     hexten(evm.uint256(digest) + evm.uint256(privKey)).buffer);
 
   for (; ; ++buff[0]) {
-    /** @const {!bigint} */
+    /** @const {bigint} */
     const k = BigInt("0x" + keccak256Uint32ToHex(buff));
     if (k <= 0 || Q <= k) continue; // probability ~2^{-128}, i.e., a near impossibility.
     /** @type {!Point} */
     const K = G.copy().multiply(k).project();
-    /** @const {!bigint} */
+    /** @const {bigint} */
     const r = K.x;
     if (r >= Q) continue; // probability ~2^{-128}, i.e., a near impossibility.
-    /** @type {!bigint} */
+    /** @type {bigint} */
     let s = (inverse(k, Q) * ((digest + r * privKey) % Q)) % Q;
     if (s == 0n) continue; // probability ~2^{-256}
     /** @type {boolean} */
@@ -61,8 +61,8 @@ const sign = (digest, privKey) => {
 
 /**
  * @param {{
- *   r: !bigint,
- *   s: !bigint,
+ *   r: bigint,
+ *   s: bigint,
  *   yParity: boolean
  * }} sig
  * @return {string}
@@ -72,8 +72,8 @@ const toWideSignature = (sig) =>
 
 /**
 * @param {{
-*   r: !bigint,
-*   s: !bigint,
+*   r: bigint,
+*   s: bigint,
 *   yParity: boolean
 * }} sig
 * @return {string}
@@ -82,15 +82,15 @@ const toCompactSignature = (sig) => evm.uint256(sig.r) +
   evm.uint256(sig.yParity ? sig.s + (1n << 255n) : sig.s);
 
 /**
- * @param {!bigint} digest as bigint
- * @param {!bigint} privKey as bigint
+ * @param {bigint} digest as bigint
+ * @param {bigint} privKey as bigint
  * @return {string}
  */
 const signWide = (digest, privKey) => toWideSignature(sign(digest, privKey));
 
 /**
- * @param {!bigint} digest as bigint
- * @param {!bigint} privKey as bigint
+ * @param {bigint} digest as bigint
+ * @param {bigint} privKey as bigint
  * @return {string}
  */
 const signCompact = (digest, privKey) => toCompactSignature(sign(digest, privKey));

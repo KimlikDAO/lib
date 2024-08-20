@@ -79,7 +79,7 @@ const uint8ArrayeBase64ten = (buffer, b64) => {
 /**
  * @param {!Uint8Array} buff
  * @param {number} bits
- * @param {!bigint} n
+ * @param {bigint|number} n
  */
 const uint8ArrayBEyeSayıdan = (buff, bits, n) => {
   /** @const {string} */
@@ -90,7 +90,7 @@ const uint8ArrayBEyeSayıdan = (buff, bits, n) => {
 
 /**
  * @param {!Uint8Array} buff
- * @param {!bigint} n
+ * @param {bigint|number} n
  */
 const uint8ArrayLEyeSayıdan = (buff, n) => {
   /** @const {string} */
@@ -103,7 +103,7 @@ const uint8ArrayLEyeSayıdan = (buff, n) => {
  * TODO(KimlikDAO-bot): Try microbenchmarking to determine whether to use
  * `toString(8)` and concat adjacent characters into base64.
  *
- * @param {!bigint|number} sayı
+ * @param {bigint|number} sayı
  * @return {string} base64 olarak yazılmış sayı.
  */
 const sayıdanBase64e = (sayı) => base64(hexten(sayı.toString(16)));
@@ -113,19 +113,19 @@ const sayıdanBase64e = (sayı) => base64(hexten(sayı.toString(16)));
  * `toString(8)` and concat adjacent characters into base64.
  *
  * @param {string} str
- * @return {!bigint}
+ * @return {bigint}
  */
 const base64tenSayıya = (str) => BigInt("0x" + hex(base64ten(str)));
 
 /**
  * @param {!Uint8Array} bytes
- * @return {!bigint}
+ * @return {bigint}
  */
 const uint8ArrayLEtoBigInt = (bytes) => BigInt("0x" + uint8ArrayLEtoHex(bytes));
 
 /**
  * @param {!Uint8Array} bytes
- * @return {!bigint}
+ * @return {bigint}
  */
 const uint8ArrayBEtoBigInt = (bytes) => BigInt("0x" + hex(bytes));
 

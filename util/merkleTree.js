@@ -4,7 +4,7 @@ const HexKey = String;
 /** @typedef {string} */
 const BinaryKey = String;
 
-/** @typedef {!bigint} */
+/** @typedef {bigint} */
 const Value = BigInt;
 
 /**

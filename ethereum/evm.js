@@ -140,9 +140,9 @@ const signerAddress = (digest, signature) => {
   const highNibble = parseInt(signature[64], 16);
   /** @const {boolean} */
   const yParity = highNibble >= 8;
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const r = BigInt("0x" + signature.slice(0, 64));
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const s = BigInt("0x" + (yParity
     ? (highNibble - 8).toString(16) + signature.slice(65)
     : signature.slice(64))
@@ -153,7 +153,7 @@ const signerAddress = (digest, signature) => {
 
 /**
  * @param {string} digest
- * @param {!bigint} privateKey
+ * @param {bigint} privateKey
  * @return {string}
  */
 const signCompact = (digest, privateKey) => {
@@ -174,7 +174,7 @@ const packedAddress = (addr) => addr.slice(2).toLowerCase();
 const address = (addr) => "0".repeat(24) + packedAddress(addr)
 
 /**
- * @param {number|!bigint} sayı
+ * @param {number|bigint} sayı
  * @return {string}
  */
 const uint256 = (sayı) => sayı.toString(16).padStart(64, "0");

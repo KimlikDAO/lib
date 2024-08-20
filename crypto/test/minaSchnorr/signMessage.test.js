@@ -1,20 +1,20 @@
 import { expect, test } from "bun:test";
 import { Client } from "mina-signer";
 import { parsePrivateKey } from "../../../mina/mina";
-import { G, signMessage, verifyMessage } from "../../minaSchnorrLegacy";
+import { G, signMessage, verifyMessage } from "../../minaSchnorr";
 
 test("sign with mina-signer, verify with ours", () => {
   const client = new Client({ network: "mainnet" });
   const privKey58 = "EKF5WGqhkg3yQyiRU2gWC1W1KLw2xLuRgwtQNEbZ5qWqGYpktw8S";
 
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const privKey = parsePrivateKey(privKey58);
   const pubKey = G.copy().multiply(privKey).project();
 
   const sig = client.signMessage("abcd", privKey58);
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const r = BigInt(sig.signature.field);
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const s = BigInt(sig.signature.scalar);
 
   expect(client.verifyMessage(sig)).toBeTrue();

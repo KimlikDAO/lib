@@ -11,7 +11,7 @@ const ethers = {};
  * @typedef {{
  *   name: string,
  *   version: string,
- *   chainId: (!bigint|string),
+ *   chainId: (bigint|string),
  *   verifyingContract: string
  * }}
  */

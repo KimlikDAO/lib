@@ -26,14 +26,14 @@ const OddPrimes = [
 /**
  * Performs a single round of Miller-Rabin test to the base 2.
  *
- * @param {!bigint} N
- * @param {!bigint} d It should satisfy d.2^s = N
+ * @param {bigint} N
+ * @param {bigint} d It should satisfy d.2^s = N
  * @param {number} s
  * @return {boolean}
  */
 const millerRabinBase2 = (N, d, s) => {
   if (N == 3n) return true;
-  /** @type {!bigint} */
+  /** @type {bigint} */
   let x = exp2(d, N);
   if (x == 1n || x == N - 1n) return true;
 
@@ -48,14 +48,14 @@ const millerRabinBase2 = (N, d, s) => {
 /**
  * @param {string} seed Random seed for the non-smooth number generation.
  *                      A hex string of 64 characters.
- * @return {!bigint}
+ * @return {bigint}
  */
 const getNonsmooth = (seed) => {
   /**
    * The most significant 244 bits of the generated number are from the seed.
    * The rest will be chosen by a search.
    *
-   * @const {!bigint}
+   * @const {bigint}
    */
   const h = BigInt(`0x${seed}000`);
 
@@ -81,9 +81,9 @@ const getNonsmooth = (seed) => {
     /** @type {number} */
     let j = i;
     for (; (j & 1) == 0; j >>= 1) ++s;
-    /** @const {!bigint} */
+    /** @const {bigint} */
     const d = (h >> BigInt(s)) + BigInt(j);
-    /** @const {!bigint} */
+    /** @const {bigint} */
     const N = h + BigInt(2 * i + 1);
 
     if (millerRabinBase2(N, d, s))

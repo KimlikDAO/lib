@@ -3,7 +3,7 @@ import { equal, G, O, P, Point, Q } from "../secp256k1";
 
 /**
  * @param {!Point} R
- * @param {!bigint} n
+ * @param {bigint} n
  */
 const multiplyBitIntMask = (R, n) => {
   let d = R.copy();
@@ -43,7 +43,7 @@ const testMultiply = () => {
 testMultiply();
 
 const benchMultiplyMiddle = () => {
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const delta = Q / 2n;
   console.time("multiplyBigIntMask(N/2) (1k multiply's)");
   for (let i = 0; i < 1000; ++i) {
@@ -69,14 +69,14 @@ const benchMultiplyMiddle = () => {
 }
 
 /**
- * @param {!bigint} n
- * @return {!bigint}
+ * @param {bigint} n
+ * @return {bigint}
  */
 const sqrt1 = (n) => {
   /**
-   * @param {!bigint} b
+   * @param {bigint} b
    * @param {number} pow
-   * @return {!bigint}
+   * @return {bigint}
    */
   const tower = (b, pow) => {
     while (pow-- > 0)
@@ -100,8 +100,12 @@ const sqrt1 = (n) => {
 }
 
 /**
- * @param {!bigint} n
- * @return {!bigint}
+ * In secp256k1, P = 3 (mod 4) so the square root of n is simply n^((P+1)/4).
+ * In this sqrt alternative, we compute this exponent through a standard
+ * algorithm.
+ *
+ * @param {bigint} n
+ * @return {bigint}
  */
 const sqrt2 = (n) => {
   let r = 1n;

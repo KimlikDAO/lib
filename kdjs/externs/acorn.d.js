@@ -50,7 +50,7 @@ acorn.Identifier.prototype.name;
  */
 acorn.Literal = function () { }
 
-/** @const {!bigint|string|number} */
+/** @const {bigint|string|number} */
 acorn.Literal.value;
 
 /**

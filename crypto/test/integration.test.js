@@ -12,9 +12,9 @@ test("address derivation from private key", () => {
 });
 
 test("compact signature conversion methods", () => {
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const d = 123123n;
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const pk = 456456n;
 
   expect(evm.compactSignature("0x" + vm.signWide(d, pk)))
@@ -22,7 +22,7 @@ test("compact signature conversion methods", () => {
 });
 
 it("should recover signer address correctly", () => {
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const digest = 103n;
   expect(evm.signerAddress(evm.uint256(digest), vm.signCompact(digest, 101n)))
     .toBe(vm.addr(101n));

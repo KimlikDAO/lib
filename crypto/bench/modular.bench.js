@@ -2,16 +2,16 @@ import { assertEq } from "../../testing/assert";
 import { exp, exp2, expTimesExp } from "../modular";
 
 /**
- * @param {!bigint} a
- * @param {!bigint} x
- * @param {!bigint} M
- * @return {!bigint} a^x (mod M)
+ * @param {bigint} a
+ * @param {bigint} x
+ * @param {bigint} M
+ * @return {bigint} a^x (mod M)
  */
 const expLTRBinary = (a, x, M) => {
   /** @const {string} */
   const xBits = x.toString(2);
   a %= M;
-  /** @type {!bigint} */
+  /** @type {bigint} */
   let r = xBits[0] == '1' ? a : 1n;
   for (let i = 1; i < xBits.length; ++i) {
     r = r * r % M;
@@ -21,13 +21,13 @@ const expLTRBinary = (a, x, M) => {
 }
 
 /**
- * @param {!bigint} a
- * @param {!bigint} x
- * @param {!bigint} M
- * @return {!bigint} a^x (mod M)
+ * @param {bigint} a
+ * @param {bigint} x
+ * @param {bigint} M
+ * @return {bigint} a^x (mod M)
  */
 const expViaBigInt = (a, x, M) => {
-  /** @type {!bigint} */
+  /** @type {bigint} */
   let res = 1n;
   a %= M;
   for (; x; x >>= 1n) {
@@ -38,16 +38,16 @@ const expViaBigInt = (a, x, M) => {
 }
 
 /**
- * @param {!bigint} a
- * @param {!bigint} x
- * @param {!bigint} M
- * @return {!bigint} a^x (mod M)
+ * @param {bigint} a
+ * @param {bigint} x
+ * @param {bigint} M
+ * @return {bigint} a^x (mod M)
  */
 const expLTRBinary2 = (a, x, M) => {
   /** @const {string} */
   const xBits = x.toString(2);
   a %= M;
-  /** @type {!bigint} */
+  /** @type {bigint} */
   let r = xBits[0] == '1' ? a : 1n;
   /** @const {number} */
   const n = xBits.length;
@@ -61,16 +61,16 @@ const expLTRBinary2 = (a, x, M) => {
 }
 
 /**
- * @param {!bigint} a
- * @param {!bigint} x
- * @param {!bigint} M
- * @return {!bigint} a^x (mod M)
+ * @param {bigint} a
+ * @param {bigint} x
+ * @param {bigint} M
+ * @return {bigint} a^x (mod M)
  */
 const expRTLBinary = (a, x, M) => {
   /** @const {string} */
   const xBits = x.toString(2);
   a %= M;
-  /** @type {!bigint} */
+  /** @type {bigint} */
   let r = 1n;
   for (let i = xBits.length - 1; i >= 0; --i) {
     if (xBits.charCodeAt(i) == 49) r = r * a % M;
@@ -81,9 +81,9 @@ const expRTLBinary = (a, x, M) => {
 
 const testExpLocal = () => {
   const expLocal = expLTRBinary2;
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const P = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2Fn;
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const Q = 0xDAD19B08F618992D3A5367F0E730B97C6DD113B6A2A493C9EDB0B68DBB1AEC020FB2A64C9644397AB016ABA5B40FA22655060824D9F308984D6734E2439BA08Fn;
 
   assertEq(expLocal(7n, 5n, 11n), 10n);
@@ -103,9 +103,9 @@ const testExpLocal = () => {
 }
 
 const benchExp = () => {
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const Q = 0xDAD19B08F618992D3A5367F0E730B97C6DD113B6A2A493C9EDB0B68DBB1AEC020FB2A64C9644397AB016ABA5B40FA22655060824D9F308984D6734E2439BA08Fn;
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const R = (Q - 1n) >> 1n;
 
   console.time("1k exp()");
@@ -165,15 +165,15 @@ const benchExp = () => {
 }
 
 /**
- * @param {!bigint} a
- * @param {!bigint} x
- * @param {!bigint} b
- * @param {!bigint} y
- * @param {!bigint} M
- * @return {!bigint} a^x b^y (mod M)
+ * @param {bigint} a
+ * @param {bigint} x
+ * @param {bigint} b
+ * @param {bigint} y
+ * @param {bigint} M
+ * @return {bigint} a^x b^y (mod M)
  */
 const expTimesExpViaBigIntMask = (a, x, b, y, M) => {
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const c = a * b % M;
   /** @const {number} */
   const xLen = x.toString(2).length;
@@ -181,16 +181,16 @@ const expTimesExpViaBigIntMask = (a, x, b, y, M) => {
   const yLen = y.toString(2).length;
   /** @const {number} */
   const len = Math.max(xLen, yLen);
-  /** @type {!bigint} */
+  /** @type {bigint} */
   let mask = 1n << BigInt(len - 1);
-  /** @type {!bigint} */
+  /** @type {bigint} */
   let r = (x & mask)
     ? (y & mask) ? c : a
     : (y & mask) ? b : 1n;
   mask >>= 1n;
   for (; mask; mask >>= 1n) {
     r = r * r % M;
-    /** @const {!bigint} */
+    /** @const {bigint} */
     const d = (x & mask)
       ? (y & mask) ? c : a
       : (y & mask) ? b : 1n;
@@ -200,12 +200,12 @@ const expTimesExpViaBigIntMask = (a, x, b, y, M) => {
 }
 
 /**
- * @param {!bigint} a
- * @param {!bigint} x
- * @param {!bigint} b
- * @param {!bigint} y
- * @param {!bigint} M
- * @return {!bigint} a^x b^y (mod M)
+ * @param {bigint} a
+ * @param {bigint} x
+ * @param {bigint} b
+ * @param {bigint} y
+ * @param {bigint} M
+ * @return {bigint} a^x b^y (mod M)
  */
 const expTimesExpW = (a, x, b, y, M) => {
   /** @type {string} */
@@ -216,9 +216,9 @@ const expTimesExpW = (a, x, b, y, M) => {
     yBits = yBits.padStart(xBits.length, "0");
   else if (yBits.length > xBits.length)
     xBits = xBits.padStart(yBits.length, "0");
-  /** @const {!Array<!bigint>} */
+  /** @const {!Array<bigint>} */
   const d = [1n, a, b, a * b % M];
-  /** @type {!bigint} */
+  /** @type {bigint} */
   let r = d[(xBits.charCodeAt(0) - 48) + 2 * (yBits.charCodeAt(0) - 48)];
   for (let i = 1; i < xBits.length; ++i) {
     r = r * r % M;
@@ -238,15 +238,15 @@ const testExpTimesExpLocal = () => {
 }
 
 const benchExpTimesExp = () => {
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const Q = 0xDAD19B08F618992D3A5367F0E730B97C6DD113B6A2A493C9EDB0B68DBB1AEC020FB2A64C9644397AB016ABA5B40FA22655060824D9F308984D6734E2439BA08Fn;
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const M = (Q - 1n) >> 1n;
 
   console.time("1k with two exp() round1");
 
   for (let i = 0; i < 1000; ++i) {
-    /** @const {!bigint} */
+    /** @const {bigint} */
     const r1 = exp(123n, Q - 1n, Q);
     const r2 = exp(15129n, M, Q);
     assertEq(r1 * r2 % Q, 1n);
@@ -256,7 +256,7 @@ const benchExpTimesExp = () => {
 
   console.time("1k with two exp()");
   for (let i = 0; i < 1000; ++i) {
-    /** @const {!bigint} */
+    /** @const {bigint} */
     const r1 = exp(123n, Q - 1n, Q);
     const r2 = exp(15129n, M, Q);
     assertEq(r1 * r2 % Q, 1n);
@@ -282,7 +282,7 @@ const benchExpTimesExp = () => {
 }
 
 const benchExp2 = () => {
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const Q = 0xDAD19B08F618992D3A5367F0E730B97C6DD113B6A2A493C9EDB0B68DBB1AEC020FB2A64C9644397AB016ABA5B40FA22655060824D9F308984D6734E2439BA08Fn;
 
   console.time("1k 512-bit exp()");
@@ -295,7 +295,7 @@ const benchExp2 = () => {
     assertEq(exp2(Q - 1n, Q), 1n);
   console.timeEnd("1k 512-bit exp2()");
 
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const QQ = 0xE43EFFD0D073B6876F71618F0F3BDB81A73A64DD2291F563263EEEABA7121CA381F222ADCCC3C8C674AB74BD4B5DB36AB6D92A15E3D797B97BCB82A85AAC09E22DB7C7FE0373AEC07A38BB27FE46CB05F17DA98BFB3CF3DF932F985156B3A77D189456BC78D0FC5CD6A331A3F2D20EF1B73B98B97396CDBFE747FB95E53C4067n;
 
   console.time("1k 1024-bit exp()");

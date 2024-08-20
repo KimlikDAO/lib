@@ -70,7 +70,7 @@ const pushAddress = (addr) => {
 }
 
 /**
- * @param {!bigint|number} n
+ * @param {bigint|number} n
  * @return {OpData}
  */
 const pushNumber = (n) => {

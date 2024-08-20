@@ -13,4 +13,12 @@ const mina = {};
  */
 mina.Witness = {};
 
+/**
+ * @typedef {{
+ *   signer: string,
+ *   signature: string
+ * }}
+ */
+mina.SignerSignature = {}
+
 export default mina;

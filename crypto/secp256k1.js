@@ -15,35 +15,36 @@ import { arfCurve, Point as IPoint } from "./arfCurve";
 import { inverse } from "./modular";
 
 /**
- * @const {!bigint}
+ * @const {bigint}
  * @noinline
  */
 const P = (1n << 256n) - (1n << 32n) - 977n;
 /**
- * @const {!bigint}
+ * @const {bigint}
  * @noinline
  */
 const Q = P - 0x14551231950b75fc4402da1722fc9baeen;
 /**
- * @const {function(new:IPoint, !bigint, !bigint, !bigint)}
+ * @const {function(new:IPoint, bigint, bigint, bigint)}
  */
 const Point = arfCurve(P);
 
 /**
- * @param {!bigint} n
- * @return {!bigint}
+ * @param {bigint} b
+ * @param {number} pow
+ * @return {bigint}
+ */
+const tower = (b, pow) => {
+  while (pow-- > 0)
+    b = b * b % P;
+  return b;
+}
+
+/**
+ * @param {bigint} n
+ * @return {bigint}
  */
 const sqrt = (n) => {
-  /**
-   * @param {!bigint} b
-   * @param {number} pow
-   * @return {!bigint}
-   */
-  const tower = (b, pow) => {
-    while (pow-- > 0)
-      b = b * b % P;
-    return b;
-  }
   const b2 = (((n * n) % P) * n) % P;
   const b3 = (b2 * b2 * n) % P;
   const b6 = (tower(b3, 3) * b3) % P;
@@ -64,16 +65,16 @@ const sqrt = (n) => {
  * If x^3 + 7 is a quadratic residue, returns the point (x, y, 1) with the
  * provided x and y having yParity; otherwise returns null.
  *
- * @param {!bigint} x coordinate of the curve point.
+ * @param {bigint} x coordinate of the curve point.
  * @param {boolean} yParity whether the y coordinate is odd.
  * @return {Point}
  */
 const pointFrom = (x, yParity) => {
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const x2 = (x * x) % P;
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const y2 = (x2 * x + 7n) % P
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const y = sqrt(y2);
   return (y * y) % P == y2
     ? new Point(x, ((y & 1n) == yParity) ? y : P - y, 1n)
@@ -102,8 +103,8 @@ const G = new Point(
 const O = new Point(0n, 0n, 0n);
 
 /**
- * @param {!bigint} a
- * @param {!bigint} b
+ * @param {bigint} a
+ * @param {bigint} b
  * @param {!Point} H
  * @return {!Point} a.G + b.H
  */
@@ -121,26 +122,26 @@ const equal = (p, q) => {
 }
 
 /**
- * @param {!bigint} digest
- * @param {!bigint} privKey
+ * @param {bigint} digest
+ * @param {bigint} privKey
  * @return {{
- *   r: !bigint,
- *   s: !bigint,
+ *   r: bigint,
+ *   s: bigint,
  *   yParity: boolean
  * }}
  */
 const sign = (digest, privKey) => {
   for (; ;) {
-    /** @const {!bigint} */
+    /** @const {bigint} */
     const k = BigInt("0x" + hex(/** @type {!Uint8Array} */(
       crypto.getRandomValues(new Uint8Array(32)))));
     if (k <= 0 || Q <= k) continue; // probability ~2^{-128}, i.e., a near impossibility.
     /** @const {!Point} */
     const K = G.copy().multiply(k).project();
-    /** @const {!bigint} */
+    /** @const {bigint} */
     const r = K.x;
     if (r >= Q) continue; // probability ~2^{-128}, i.e., a near impossibility.
-    /** @type {!bigint} */
+    /** @type {bigint} */
     let s = (inverse(k, Q) * ((digest + r * privKey) % Q)) % Q;
     if (s == 0n) continue; // probability ~2^{-256}
     /** @type {boolean} */
@@ -154,20 +155,20 @@ const sign = (digest, privKey) => {
 }
 
 /**
- * @param {!bigint} digest
- * @param {!bigint} r
- * @param {!bigint} s
+ * @param {bigint} digest
+ * @param {bigint} r
+ * @param {bigint} s
  * @param {!Point} pubKey
  * @return {boolean}
  */
 const verify = (digest, r, s, pubKey) => {
   if (r <= 0n || Q <= r) return false;
   if (s <= 0n || Q <= s) return false;
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const is = inverse(s, Q);
   /** @const {!Point} */
   const U = aGbH(digest * is % Q, r * is % Q, pubKey.copy());
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const z2 = (U.z * U.z) % P;
   if (!z2) return false;
   if ((r * z2) % P === U.x) return true;
@@ -179,16 +180,16 @@ const verify = (digest, r, s, pubKey) => {
  * Recovers the signer public key (a `!Point`) for a given signed digest
  * if the signature is valid; otherwise returns `O`, the point at infinity.
  *
- * @param {!bigint} digest
- * @param {!bigint} r
- * @param {!bigint} s
+ * @param {bigint} digest
+ * @param {bigint} r
+ * @param {bigint} s
  * @param {boolean} yParity
  * @return {!Point} the signer public key or O.
  */
 const recoverSigner = (digest, r, s, yParity) => {
   if (r <= 0n || Q <= r) return O;
   if (s <= 0n || Q <= s) return O;
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const ir = inverse(r, Q);
   /** @const {Point} */
   const K = pointFrom(r, yParity);
@@ -203,6 +204,7 @@ export {
   Q,
   Point,
   equal,
+  pointFrom,
   recoverSigner,
   sign,
   verify

@@ -7,10 +7,10 @@ import { hexten } from "/util/çevir";
  * @constructor
  * @implements {eth.Provider}
  *
- * @param {!bigint} privKey
+ * @param {bigint} privKey
  */
 function MockProvider(privKey) {
-  /** @const {!bigint} */
+  /** @const {bigint} */
   this.privKey = privKey;
 }
 
@@ -33,7 +33,7 @@ MockProvider.prototype.request = function (req) {
       const decoder = new TextDecoder();
       /** @const {string} */
       const message = decoder.decode(hexten(/** @type {string} */(req.params[0]).slice(2)));
-      /** @const {!bigint} */
+      /** @const {bigint} */
       const digest = BigInt("0x" + evm.personalDigest(message));
       return Promise.resolve("0x" + vm.signWide(digest, this.privKey));
   }

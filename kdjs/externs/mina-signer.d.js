@@ -33,7 +33,7 @@ minaSigner.SignedMessage;
  * @typedef {{
  *   signature: string,
  *   publicKey: string,
- *   data: !Array<!bigint>
+ *   data: !Array<bigint>
  * }}
  */
 minaSigner.SignedFields;
@@ -52,7 +52,7 @@ Client.prototype.signMessage = function (message, privKey) { }
 Client.prototype.verifyMessage = function (signedMessage) { }
 
 /**
- * @param {!Array<!bigint>} fields
+ * @param {!Array<bigint>} fields
  * @param {string} privKey
  * @return {minaSigner.SignedFields}
  */

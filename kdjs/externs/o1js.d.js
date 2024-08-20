@@ -7,7 +7,7 @@
 function InternalField() { }
 
 /**
- * @param {!bigint} bi
+ * @param {bigint} bi
  * @return {!InternalField}
  */
 const Field = (bi) => { }
@@ -19,7 +19,7 @@ const Field = (bi) => { }
 function Scalar() { }
 
 /**
- * @param {!bigint} bi
+ * @param {bigint} bi
  * @return {!Scalar}
  */
 Scalar.from = (bi) => { }

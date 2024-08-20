@@ -7,7 +7,7 @@ test("sign with mina-signer, verify with ours", () => {
   const client = new Client({ network: "mainnet" });
   const privKey58 = "EKF5WGqhkg3yQyiRU2gWC1W1KLw2xLuRgwtQNEbZ5qWqGYpktw8S";
 
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const privKey = parsePrivateKey(privKey58);
   const pubKey = G.copy().multiply(privKey).project();
 
@@ -22,7 +22,7 @@ test("sign with mina-signer, verify with ours", () => {
   const client = new Client({ network: "mainnet" });
   const privKey58 = "EKF5WGqhkg3yQyiRU2gWC1W1KLw2xLuRgwtQNEbZ5qWqGYpktw8S";
 
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const privKey = parsePrivateKey(privKey58);
   const pubKey = G.copy().multiply(privKey).project();
 

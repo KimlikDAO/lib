@@ -3,7 +3,7 @@ import { MockSigner } from "../mock/signer";
 import { decrypt, encrypt } from "../unlockable";
 
 it("should encrypt / decrypt small text", () => {
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const privKey = 0x1337ACCn;
   /** @const {!MockSigner} */
   const signer = new MockSigner(privKey);
@@ -22,7 +22,7 @@ it("should encrypt / decrypt small text", () => {
 });
 
 it("should encrypt / decrypt large text", () => {
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const privKey = 0x1337ADD3n;
   /** @const {!MockSigner} */
   const signer = new MockSigner(privKey);

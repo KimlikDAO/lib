@@ -6,10 +6,10 @@ import { Signer } from "../signer";
  * @constructor
  * @implements {Signer}
  *
- * @param {!bigint} privKey
+ * @param {bigint} privKey
  */
 function MockSigner(privKey) {
-  /** @const {!bigint} */
+  /** @const {bigint} */
   this.privKey = privKey
 }
 
@@ -21,7 +21,7 @@ function MockSigner(privKey) {
 MockSigner.prototype.signMessage = function (message, address) {
   if (address.toLowerCase() != vm.addr(this.privKey))
     return Promise.reject();
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const digest = BigInt("0x" + evm.personalDigest(message));
   return Promise.resolve("0x" + vm.signWide(digest, this.privKey));
 }
