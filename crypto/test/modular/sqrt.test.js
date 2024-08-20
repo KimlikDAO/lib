@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, fail, test } from "bun:test";
 import { tonelliShanks } from "../../modular";
 
 describe("tonelliShanks()", () => {
@@ -11,7 +11,7 @@ describe("tonelliShanks()", () => {
   /** @param {bigint} n */
   const check = (n) => {
     const r = sqrt(n);
-    if (r) expect(r * r % P).toBe(n);
+    if (r) expect(r * r % P).toBe(n); else fail();
   }
   test("smoke tests", () => {
     check(0x123123123n * 0x123123123n);

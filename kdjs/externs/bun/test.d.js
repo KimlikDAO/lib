@@ -37,6 +37,11 @@ const test = function (invariant, run, testOptions) { };
 const expect = function (actual) { }
 
 /**
+ * @param {string=} message
+ */
+const fail = function (message) { }
+
+/**
  * @template T
  * @constructor
  * @param {T} actual

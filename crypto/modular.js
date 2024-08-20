@@ -141,18 +141,15 @@ const tonelliShanks = (n, P, Q, c, M) => {
   let t = exp(n, (Q - 1n) >> 1n, P);
   /** @type {bigint} */
   let R = t * n % P;
-  t = t * R % P;
-  for (; t != 1n;) {
+  for (t = t * R % P; t != 1n; t = t * c % P) {
     let i = 0n;
     for (let tt = t; tt != 1n; ++i)
       tt = tt * tt % P;
-
     if (i == M) return null; // n is not a quadratic residue
     /** @type {bigint} */
     let b = exp(c, 1n << (M - i - 1n), P);
     M = i;
     c = b * b % P;
-    t *= c; t %= P;
     R *= b; R %= P;
   }
   return R;

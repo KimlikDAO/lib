@@ -88,7 +88,7 @@ const signFields = (fields, privKey, pubKey) => {
  * @param {!Array<bigint>} fields
  * @param {bigint} r
  * @param {bigint} s
- * @param {!Point} pubKey
+ * @param {!Point} pubKey which is modified during the verification
  */
 const verifyFields = (fields, r, s, pubKey) => {
   /**
@@ -100,7 +100,7 @@ const verifyFields = (fields, r, s, pubKey) => {
    * s.G = K + pubKey.e
    * @const {!Point}
    */
-  const K = G.copy().multiply(s).increment(pubKey.copy().multiply(ne)).project();
+  const K = G.copy().multiply(s).increment(pubKey.multiply(ne)).project();
   return (K.y & 1n) == 0n && K.x == r;
 }
 
@@ -154,10 +154,12 @@ const signMessage = (message, privKey, pubKey) => {
 }
 
 /**
+ * Modifies the `pubKey` parameter.
+ *
  * @param {string} message
  * @param {bigint} r
  * @param {bigint} s
- * @param {!Point} pubKey
+ * @param {!Point} pubKey which is modified during verification
  */
 const verifyMessage = (message, r, s, pubKey) => {
   /**
@@ -169,7 +171,7 @@ const verifyMessage = (message, r, s, pubKey) => {
    * s.G = K + pubKey.e
    * @const {!Point}
    */
-  const K = G.copy().multiply(s).increment(pubKey.copy().multiply(ne)).project();
+  const K = G.copy().multiply(s).increment(pubKey.multiply(ne)).project();
   return (K.y & 1n) == 0n && K.x == r;
 }
 
