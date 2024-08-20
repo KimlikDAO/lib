@@ -1,7 +1,9 @@
 import { describe, expect, it, test } from "bun:test";
 import {
+  base64tenSayıya,
   hex,
   hexten,
+  sayıdanBase64e,
   uint32ArrayeHexten,
   uint8ArrayBEyeSayıdan,
   uint8ArrayeHexten,
@@ -90,41 +92,48 @@ describe("uint8ArrayeSayıdan", () => {
 describe("uint8ArrayBEyeSayıdan", () => {
   it("should write in correct index", () => {
     const buff2 = new Uint8Array(8);
-    uint8ArrayBEyeSayıdan(buff2, 64, 1234567890n);
+    uint8ArrayBEyeSayıdan(buff2, 8, 1234567890n);
     expect(buff2).toEqual(new Uint8Array([0, 0, 0, 0, 73, 150, 2, 210]));
   })
 
   it("should correctly convert big-endian", () => {
     // Test with a 32-bit number
     const buff = new Uint8Array(4);
-    uint8ArrayBEyeSayıdan(buff, 32, 0x12345678n);
+    uint8ArrayBEyeSayıdan(buff, 4, 0x12345678n);
     expect(buff).toEqual(new Uint8Array([0x12, 0x34, 0x56, 0x78]));
 
     // Test with a 16-bit number
     const buff16 = new Uint8Array(2);
-    uint8ArrayBEyeSayıdan(buff16, 16, 0xABCDn);
+    uint8ArrayBEyeSayıdan(buff16, 2, 0xABCDn);
     expect(buff16).toEqual(new Uint8Array([0xAB, 0xCD]));
 
     // Test with a 64-bit number
     const buff64 = new Uint8Array(8);
-    uint8ArrayBEyeSayıdan(buff64, 64, 0x123456789ABCDEF0n);
+    uint8ArrayBEyeSayıdan(buff64, 8, 0x123456789ABCDEF0n);
     expect(buff64).toEqual(new Uint8Array([0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0]));
 
     // Test with an odd number of bytes (3 bytes for 24 bits)
     const buff24 = new Uint8Array(3);
-    uint8ArrayBEyeSayıdan(buff24, 24, 0x123456n);
+    uint8ArrayBEyeSayıdan(buff24, 3, 0x123456n);
     expect(buff24).toEqual(new Uint8Array([0x12, 0x34, 0x56]));
   });
 
   it("should handle zero", () => {
     const buff = new Uint8Array(1);
-    uint8ArrayBEyeSayıdan(buff, 8, 0n);
+    uint8ArrayBEyeSayıdan(buff, 1, 0n);
     expect(buff).toEqual(new Uint8Array([0]));
   });
 
   it("should handle the maximum value for 8 bits", () => {
     const buff = new Uint8Array(1);
-    uint8ArrayBEyeSayıdan(buff, 8, 255n);
+    uint8ArrayBEyeSayıdan(buff, 1, 255n);
     expect(buff).toEqual(new Uint8Array([255]));
   });
+});
+
+describe("BigInt serialization", () => {
+  test("base64TenSayıya(sayıdanBase64E(n)) == n", () => {
+    for (let i = 1n; i < 1000n; ++i)
+      expect(base64tenSayıya(sayıdanBase64e(i))).toBe(i);
+  })
 });

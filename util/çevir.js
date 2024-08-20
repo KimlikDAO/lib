@@ -78,13 +78,13 @@ const uint8ArrayeBase64ten = (buffer, b64) => {
 
 /**
  * @param {!Uint8Array} buff
- * @param {number} bits
+ * @param {number} bytes
  * @param {bigint|number} n
  */
-const uint8ArrayBEyeSayıdan = (buff, bits, n) => {
+const uint8ArrayBEyeSayıdan = (buff, bytes, n) => {
   /** @const {string} */
   const str = n.toString(16);
-  for (let /** number */ i = str.length, j = (bits / 8) - 1; i > 0; i -= 2, --j)
+  for (let /** number */ i = str.length, j = bytes - 1; i > 0; i -= 2, --j)
     buff[j] = parseInt(str.substring(i - 2, i), 16);
 }
 

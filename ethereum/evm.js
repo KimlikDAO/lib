@@ -5,7 +5,7 @@
  */
 import { Point, recoverSigner, sign } from "../crypto/secp256k1";
 import { keccak256, keccak256Uint32, keccak256Uint8 } from '../crypto/sha3';
-import { hex, hexten } from "../util/çevir";
+import { hex, uint8ArrayBEyeSayıdan } from "../util/çevir";
 
 /**
  * Verilen bir adresin checksum'ı yoksa ekler, varsa sağlamasını yapar.
@@ -120,7 +120,9 @@ const personalDigest = (msg) => {
  */
 const pointToAddress = (Q) => {
   /** @const {!Uint8Array} */
-  const buff = hexten(uint256(Q.x) + uint256(Q.y));
+  const buff = new Uint8Array(64);
+  uint8ArrayBEyeSayıdan(buff, 32, Q.x);
+  uint8ArrayBEyeSayıdan(buff, 64, Q.y);
   /** @const {!Uint8Array} */
   const hash = new Uint8Array(
     keccak256Uint32(new Uint32Array(buff.buffer)).buffer, 12, 20);

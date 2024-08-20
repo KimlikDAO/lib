@@ -1,6 +1,11 @@
 import { describe, expect, it, test } from "bun:test";
-import { hex } from "../../../util/çevir";
-import { keccak256, keccak256Uint32 } from "../../sha3";
+import { hex, hexten } from "../../../util/çevir";
+import {
+  keccak256,
+  keccak256Uint32,
+  keccak256Uint32ToHex,
+  keccak256Uint8
+} from "../../sha3";
 
 describe("`keccak256()` tests", () => {
   it("should output correct string value", () => {
@@ -35,7 +40,7 @@ describe("`keccak256()` tests", () => {
   })
 });
 
-describe("`keccak256Uint32` tests", () => {
+describe("keccak256Uint32() tests", () => {
   test("against precomputed values", () => {
     expect(keccak256Uint32(new Uint32Array([1, 2, 3, 4, 5])))
       .toEqual(new Uint32Array([
@@ -55,4 +60,15 @@ describe("`keccak256Uint32` tests", () => {
     expect(hex(new Uint8Array(keccak256Uint32(new Uint32Array([0, 0, 0, 0xFF000000])).buffer, 0, 32)))
       .toBe("83c1ba322bb919d20c2e09ca70fd27bc245617a9e9abd5315b8afaebc4136044");
   });
+});
+
+test("keccak256Uint32ToHex() and keccak256Uint32() consistency", () => {
+  const input = Uint32Array.from("123123123123");
+  expect(hexten(keccak256Uint32ToHex(input)))
+    .toEqual(new Uint8Array(keccak256Uint32(input).buffer, 0, 32));
+});
+
+test("keccak256Uint32() and keccak256Uint8() consistentcy", () => {
+  expect(new Uint8Array(keccak256Uint32(new Uint32Array(14)).buffer, 0, 32))
+    .toEqual(keccak256Uint8(new Uint8Array(14 * 4)))
 });

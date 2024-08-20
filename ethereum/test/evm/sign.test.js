@@ -57,3 +57,7 @@ test("signerAddress(d, signCompact(d, s)) == pointToAddress(s.G)", () => {
     expect(evm.signerAddress(digest, evm.signCompact(digest, i)))
       .toBe(evm.pointToAddress(G.copy().multiply(i).project()));
 });
+
+test("pointToAddress()", () => {
+  expect(evm.pointToAddress(G)).toBe("0x7e5f4552091a69125d5dfcb7b8c2659029395bdf");
+});
