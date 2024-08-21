@@ -24,6 +24,21 @@ describe("PublicKey", () => {
     const pk = PublicKey.fromPoint(X);
     expect(pk.toPoint()).toEqual(X);
   });
+
+  test("serialize into / deserialize from bytes", () => {
+    /** @const {!Point} */
+    const X = G.copy().multiply(0x13371337n).project();
+    /** @const {!PublicKey} */
+    const pk = PublicKey.fromPoint(X);
+    /** @const {!Uint8Array} */
+    const buff = new Uint8Array(32);
+
+    pk.serializeInto(buff);
+    /** @const {!PublicKey} */
+    const pk2 = PublicKey.fromBytes(buff);
+
+    expect(pk2).toEqual(pk);
+  })
 });
 
 describe("sign/verify fields", () => {

@@ -5,6 +5,7 @@
  * @externs
  */
 
+import "../mina/mina.d";
 import did from "./did.d";
 import "./verifiableID.d";
 
@@ -56,14 +57,30 @@ did.Section.prototype.bls12_381;
 did.Section.prototype.secp256k1;
 
 /**
- * The Schnorr signatures kept as a list of 64 bytes compact signatures,
- * sorted in lex order.
+ * The Schnorr signatures kept as a list of `mina.SignerSignature`s since
+ * the signer cannot be derived from a mina signature alone.
  * 
- * Each signature must be from a different (valid) signer node.
- * 
- * @type {Array<string>}
+ * @type {!Array<mina.SignerSignature>|undefined}
  */
 did.Section.prototype.minaSchnorr;
+
+/**
+ * @interface
+ * @struct
+ *
+ * @extends {did.Section}
+ * @extends {did.VerifiableID}
+ */
+did.HumanID = function () { }
+
+/**
+ * @interface
+ * @struct
+ *
+ * @extends {did.Section}
+ * @extends {did.VerifiableID}
+ */
+did.ExposureReport = function () { }
 
 /**
  * Contains the fundamental identification data of a person such as
@@ -146,24 +163,6 @@ did.AddressInfo = function () { }
  */
 did.AddressInfo.prototype.country;
 
-/**
- * @interface
- * @struct
- *
- * @extends {did.Section}
- * @extends {did.VerifiableID}
- */
-did.ExposureReport = function () { }
-
-/**
- * @interface
- * @struct
- *
- * @extends {did.Section}
- * @extends {did.VerifiableID}
- */
-did.HumanID = function () { }
-
 import "../node/nvi.d";
 
 /**
@@ -183,35 +182,9 @@ did.TürkiyeAdresi = function () { }
 did.KütükBilgileri = function () { }
 
 /**
- * @interface
- * @extends {did.Section}
- */
-did.SoyZinciri = function () { }
-
-/**
- * Sağ ebeveynler için `symmetricKey` tutuyoruz.
+ * A collection of `did.Sections` keyed by a string name.
  *
- * @type {string}
+ * @dict
+ * @typedef {!Object<string, !did.Section>}
  */
-did.SoyZinciri.prototype.anneSymmetricKey;
-
-/**
- * Sağ ebeveynler için `symmetricKey` tutuyoruz.
- *
- * @type {string}
- */
-did.SoyZinciri.prototype.annePrivateKey;
-
-/**
- * Sağ ebeveynler için `symmetricKey` tutuyoruz.
- *
- * @type {string}
- */
-did.SoyZinciri.prototype.babaSymmetricKey;
-
-/**
- * Sağ ebeveynler için `symmetricKey` tutuyoruz.
- *
- * @type {string}
- */
-did.SoyZinciri.prototype.babaPrivateKey;
+did.DecryptedSections;

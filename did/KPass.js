@@ -1,8 +1,9 @@
 import { Signer } from "../crosschain/signer";
 import { decrypt, encrypt } from "../crosschain/unlockable";
 import "../ethereum/ERC721Unlockable.d";
-import "./decryptedSections.d";
-import { hash, signSection } from "./section";
+import { bekle } from "../util/promises";
+import { hash } from "./section";
+import { verify } from "./verifiableID";
 
 /**
  * Given an array of `did.EncryptedSections` keys, determines a minimal set of
@@ -114,7 +115,7 @@ const selectEncryptedSections = (encryptedSectionsKeys, sectionKeys) => {
  * @param {!Array<string>} sectionNames
  * @param {!Signer} signer
  * @param {string} address
- * @return {!Promise<!did.DecryptedSections>}
+ * @return {!Promise<did.DecryptedSections>}
  */
 const fromUnlockableNFT = async (nft, sectionNames, signer, address) => {
   /** @const {!Array<string>} */
@@ -123,28 +124,62 @@ const fromUnlockableNFT = async (nft, sectionNames, signer, address) => {
     sectionNames
   );
 
-  /** @const {!did.DecryptedSections} */
+  /** @const {did.DecryptedSections} */
   const decryptedSections = {};
 
   for (let i = 0; i < encryptedSectionsKeys.length; ++i) {
     if (i > 0)
-      await new Promise((/** @type {function():void} */ resolve) =>
-        setTimeout(() => resolve(), 100));
-    /** @type {!did.EncryptedSections} */
-    const encryptedSections = /** @type {!did.EncryptedSections} */(
+      await bekle(100);
+    /** @type {!crosschain.Unlockable} */
+    const encryptedSections = /** @type {!crosschain.Unlockable} */(
       nft.unlockables[encryptedSectionsKeys[i]]);
-    delete encryptedSections.merkleRoot;
     /** @const {?string} */
     const decryptedText = await decrypt(encryptedSections, signer, address);
     if (decryptedText)
       Object.assign(decryptedSections,
-          /** @type {!did.DecryptedSections} */(JSON.parse(decryptedText)));
+          /** @type {did.DecryptedSections} */(JSON.parse(decryptedText)));
   }
   /** @const {!Set<string>} */
   const sectionNamesSet = new Set(sectionNames);
   for (const section in decryptedSections)
     if (!sectionNamesSet.has(section)) delete decryptedSections[section];
   return decryptedSections;
+}
+
+/**
+ * Verifies the `did.VerifiableID`'s and removes the ones that fail to verify.
+ * Further, strips the proofs from those that were succesfully verified.
+ *
+ * @param {did.DecryptedSections} decryptedSections
+ * @param {!Object<string, string>} verifyKeys
+ * @return {!Promise<did.DecryptedSections>}
+ */
+const checkVerifiableIDs = (decryptedSections, verifyKeys) => {
+  /** @const {string} */
+  const localIdNumber = /** @type {!did.PersonInfo} */(
+    decryptedSections["personInfo"]).localIdNumber;
+
+  /**
+   * @param {string} name
+   * @return {!Promise<void>}
+   */
+  const verifySingle = (name) => {
+    /** @const {did.VerifiableID} */
+    const verifiableID = /** @type {did.VerifiableID} */(decryptedSections[name]);
+    return verifiableID
+      ? verify(verifiableID, localIdNumber, verifyKeys[name])
+        .then((isValid) => {
+          if (isValid) {
+            delete verifiableID.wesolowskiL;
+            delete verifiableID.wesolowskiP;
+            delete verifiableID.x;
+          } else
+            delete decryptedSections[name];
+        })
+      : Promise.resolve();
+  }
+  return Promise.all([verifySingle("exposureReport"), verifySingle("humanID")])
+    .then(() => decryptedSections);
 }
 
 /**
@@ -157,8 +192,8 @@ const SectionGroup = {};
 
 /**
  * @param {!eth.ERC721Metadata} metadata
- * @param {!did.DecryptedSections} decryptedSections
- * @param {!Array<!SectionGroup>} sectionGroups
+ * @param {did.DecryptedSections} decryptedSections
+ * @param {!Array<SectionGroup>} sectionGroups
  * @param {!Signer} signer
  * @param {string} address
  * @return {!Promise<!eth.ERC721Unlockable>}
@@ -168,8 +203,8 @@ const toUnlockableNFT = async (metadata, decryptedSections, sectionGroups, signe
   const unlockables = {};
   for (let i = 0; i < sectionGroups.length; ++i) {
     /** @const {!Promise<void>} */
-    const duraklatıcı = new Promise((resolve) => setTimeout(resolve, 2000));
-    /** @const {!did.DecryptedSections} */
+    const duraklatıcı = bekle(2000);
+    /** @const {did.DecryptedSections} */
     const sections = {};
     for (const /** @type {string} */ name of sectionGroups[i].sectionNames)
       sections[name] = decryptedSections[name];
@@ -191,30 +226,11 @@ const toUnlockableNFT = async (metadata, decryptedSections, sectionGroups, signe
 }
 
 /**
- * Signs a given `did.DecryptedSections` in-place.
- *
- * @param {!did.DecryptedSections} decryptedSections
- * @param {string} commitment
- * @param {string} commitmentAnon
- * @param {number} signatureTs
- * @param {!bigint} privateKey
- * @return {!did.DecryptedSections}
- */
-const sign = (decryptedSections, commitment, commitmentAnon, signatureTs, privateKey) => {
-  for (const key in decryptedSections)
-    signSection(key, decryptedSections[key],
-      key == "humanID" ? commitmentAnon : commitment,
-      signatureTs, privateKey
-    );
-  return decryptedSections;
-}
-
-/**
- * @param {!Array<!did.DecryptedSections>} decryptedSectionsList
+ * @param {!Array<did.DecryptedSections>} decryptedSectionsList
  * @param {string} commitmentR
  * @param {string} commitmentAnonR
  * @param {number} signerCountNeeded
- * @return {!did.DecryptedSections}
+ * @return {did.DecryptedSections}
  */
 const combineMultiple = (
   decryptedSectionsList,
@@ -222,7 +238,7 @@ const combineMultiple = (
   commitmentAnonR,
   signerCountNeeded
 ) => {
-  /** @const {!did.DecryptedSections} */
+  /** @const {did.DecryptedSections} */
   const combined = {};
   if (decryptedSectionsList.length < signerCountNeeded)
     return combined;
@@ -261,6 +277,10 @@ const combineMultiple = (
       for (let i = 1; i < mostFreq.length; ++i)
         combined[key].secp256k1.push(
           .../** @type {!Array<string>} */(mostFreq[i].secp256k1));
+
+      if (combined[key].minaSchnorr)
+        for (let i = 1; i < mostFreq.length; ++i)
+          combined[key].minaSchnorr.push(...(mostFreq[i].minaSchnorr || []));
     }
   }
   return combined;
@@ -268,9 +288,9 @@ const combineMultiple = (
 
 export {
   SectionGroup,
+  checkVerifiableIDs,
   combineMultiple,
   fromUnlockableNFT,
   selectEncryptedSections,
-  sign,
   toUnlockableNFT
 };

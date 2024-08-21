@@ -59,9 +59,9 @@ const verify = (verifiableID, personKey, publicKey) => {
   const x = new Uint32Array(base64ten(verifiableID.x).buffer);
   /** @const {!Uint32Array} */
   const g = keccak256Uint32(x);
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const π = base64tenSayıya(verifiableID.wesolowskiP);
-  /** @const {!bigint} */
+  /** @const {bigint} */
   const l = base64tenSayıya(verifiableID.wesolowskiL);
   /** @const {!Uint32Array} */
   const y = reconstructY(

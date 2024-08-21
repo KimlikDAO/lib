@@ -58,18 +58,23 @@ PublicKey.prototype.toPoint = function () {
 }
 
 /**
+ * Modifies the input bytes
+ *
  * @param {!Uint8Array} bytes
  * @return {!PublicKey}
  */
-PublicKey.fromBytes = (bytes) =>
-  new PublicKey(uint8ArrayLEtoBigInt(bytes.subarray(0, 32)), !!bytes[32]);
+PublicKey.fromBytes = (bytes) => {
+  const isOdd = bytes[31] >= 128;
+  if (isOdd) bytes[31] -= 128;
+  return new PublicKey(uint8ArrayLEtoBigInt(bytes.subarray(0, 32)), isOdd);
+}
 
 /**
- * @param {!Uint8Array} buff a buffer of length at least 33
+ * @param {!Uint8Array} buff a buffer of length at least 32
  */
 PublicKey.prototype.serializeInto = function (buff) {
   uint8ArrayLEyeSayıdan(buff, this.x);
-  buff[32] = +this.isOdd;
+  if (this.isOdd) buff[31] += 128;
 }
 
 /**

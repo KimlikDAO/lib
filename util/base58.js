@@ -7,7 +7,7 @@ const Base58Chars = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 /**
  * @const {!Array<number>}
  */
-const Base58Map = Array(256).fill(-1);
+const Base58Map = Array(256);
 for (let i = 0; i < Base58Chars.length; ++i)
   Base58Map[Base58Chars.charCodeAt(i)] = i;
 
