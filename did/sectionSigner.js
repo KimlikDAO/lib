@@ -103,8 +103,9 @@ const signDecryptedSections = (decryptedSections, signParams) => {
 }
 
 export {
+  SignParams,
   recoverHumanIDSigners,
   recoverSectionSigners,
-  signDecryptedSections, SignParams, signSection
+  signDecryptedSections,
+  signSection
 };
-

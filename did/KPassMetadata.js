@@ -7,7 +7,7 @@ import "../ethereum/ERC721Unlockable.d";
 import KPass from "../ethereum/KPassLite";
 import dom from "../util/dom";
 import { hex } from "../util/çevir";
-import { SectionGroup } from "./decryptedSections";
+import { SectionGroup } from "./KPass";
 
 /**
  * @const {string}
@@ -119,7 +119,7 @@ const VerificationKeys = {
 };
 
 export {
-  VerificationKeys,
   metadataAndSections,
-  signPrompt
+  signPrompt,
+  VerificationKeys
 };
