@@ -24,7 +24,7 @@ const toBinaryMap = () => {
 const toBinary = (hexStr) => {
   /** @const {!Object<string, string>} */
   const toBinary = toBinaryMap();
-  return Array.from(hexStr, (s) => toBinary[s]).join("");
+  return Array.from(hexStr, (/** string */ s) => toBinary[s]).join("");
 }
 
 /** @const {!Array<string>} */

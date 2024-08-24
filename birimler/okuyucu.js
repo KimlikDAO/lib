@@ -41,7 +41,7 @@ const keymapOku = (dosyaAdı, harita) => {
 /**
  * @param {string} birimAdı
  * @param {!Seçimler} seçimler
- * @param {!Object<string, string>}  anaNitelikler
+ * @param {!Object<string, string>}  anaNitelikler Kök birimin nitelikleri
  * @return {{
 *   html: string,
 *   cssler: !Set<string>
@@ -74,7 +74,12 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
 
   seçimler.kök ||= "";
 
-  /** @const {!Object<string, string>} */
+  /**
+   * Bütün `Seçimler`i değerlere de kopyalıyoruz, böylelikle html
+   * içerisinde de seçimlere ulaşabiliyoruz.
+   *
+   * @const {!Object<string, string>}
+   */
   const değerler = Object.assign({}, seçimler);
   for (const nitelik in anaNitelikler)
     if (nitelik.startsWith("data-")) {

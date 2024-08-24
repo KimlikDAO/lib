@@ -28,15 +28,16 @@ const compileAndRunMatching = async (pattern, command, args) => {
 
   for await (const f of glob.scan(".")) {
     if (f.startsWith("build") || f.includes("okuyucu") || f.includes("node_modules")) continue;
+    const output = `build/${f}`;
     compileTasks.push(compileBN(() => compile({
       ...args,
       entry: f,
-      output: `build/${f}`
-    }).then((compiled) =>
-      runBN(() => spawn(command.split(" ").concat(compiled)).exited
+      output
+    }).then(() =>
+      runBN(() => spawn(command.split(" ").concat(output)).exited
         .then((exitCode) => {
           const marker = exitCode == 0 ? `${Green}[OK]` : `${Red}[Fail]`;
-          console.log(`${marker}${Clear}, ${exitCode}: ${compiled}`);
+          console.log(`${marker}${Clear}, ${exitCode}: ${output}`);
           return exitCode;
         })
       ))

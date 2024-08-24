@@ -1,6 +1,9 @@
 import { expect, it } from "bun:test";
+import { create } from "../kvPageWorker";
+import { Env } from "../kvPageWorker.d";
 import { MockKeyValue } from "../mock/keyValue";
-import { create } from "../pageWorker";
+import { Context, ModuleWorker } from "../moduleWorker.d";
+import { CfRequest } from "../types.d";
 
 globalThis["caches"] = {};
 globalThis["caches"]["default"] = /** @type {!Cache} */({
@@ -20,13 +23,13 @@ globalThis["caches"]["default"] = /** @type {!Cache} */({
   put(key, res) { return Promise.resolve(); },
 });
 
-/** @const {!cloudflare.PageWorkerEnv} */
-const env = /** @type {!cloudflare.PageWorkerEnv} */({
+/** @const {Env} */
+const env = /** @type {Env} */({
   KV: new MockKeyValue()
 });
 
-/** @const {!cloudflare.Context} */
-const ctx = /** @type {!cloudflare.Context} */({
+/** @const {!Context} */
+const ctx = /** @type {!Context} */({
   /**
    * @param {!Promise<*>} promise
    */
@@ -37,9 +40,9 @@ const ctx = /** @type {!cloudflare.Context} */({
  * @param {string} url
  * @param {string} encoding
  * @param {string} cookie
- * @return {!cloudflare.Request}
+ * @return {!CfRequest}
  */
-const createRequest = (url, encoding, cookie) => /** @type {!cloudflare.Request} */({
+const createRequest = (url, encoding, cookie) => /** @type {!CfRequest} */({
   url,
   headers: {
     /**
@@ -53,8 +56,8 @@ const createRequest = (url, encoding, cookie) => /** @type {!cloudflare.Request}
   }
 });
 
-/** @const {!cloudflare.ModuleWorker} */
-const PageWorker = create("https://kimlikdao.org/", {
+/** @const {!ModuleWorker} */
+const KvPageWorker = create("https://kimlikdao.org/", {
   "?tr": "ana-tr.html",
   "?en": "ana-en.html",
   "al": "al-tr.html",
@@ -70,7 +73,7 @@ const PageWorker = create("https://kimlikdao.org/", {
 const testKvName = (url, acceptEncoding, cookie, kvName) => it(
   `returns the correct result for ${acceptEncoding}, ${cookie}, ${kvName}`,
   () => /** @type {!Promise<Response>} */(
-    PageWorker.fetch(
+    KvPageWorker.fetch(
       createRequest(url, acceptEncoding, cookie), env, ctx))
     .then((res) => res.text())
     .then((res) => expect(res).toBe(kvName))

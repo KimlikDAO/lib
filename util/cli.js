@@ -5,16 +5,16 @@ const Green = "\x1b[42m";
 /** @const {string} */
 const Clear = "\x1b[0m";
 
-/** @typedef {!Object<string, (string|boolean)>} */
+/** @typedef {!Object<string, (string|boolean|!Array<string>)>} */
 const CliArgs = {};
 
 /**
  * @param {!Array<string>} args
  * @param {string} defaultArgKey
- * @param {!Object<string, string>} shortArgKeys
+ * @param {!Object<string, string>} shortArgMap
  * @return {!Object<string, (string|boolean)>}
  */
-const parseArgs = (args, defaultArgKey, shortArgKeys) => {
+const parseArgs = (args, defaultArgKey, shortArgMap) => {
   /** @type {string} */
   let key = defaultArgKey;
   /** @type {!Array<string>} */
@@ -26,7 +26,7 @@ const parseArgs = (args, defaultArgKey, shortArgKeys) => {
   for (const arg of args) {
     if (arg.startsWith("-")) {
       params[key] = values.length ? values.length == 1 ? values[0] : values : true;
-      key = arg.startsWith("--") ? arg.slice(2) : shortArgKeys[arg];
+      key = arg.startsWith("--") ? arg.slice(2) : shortArgMap[arg];
       values = [];
     } else
       values.push(arg)

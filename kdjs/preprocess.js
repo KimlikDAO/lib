@@ -114,22 +114,24 @@ const preprocessAndIsolate = async (entryFile, isolateDir, externs) => {
         }
       },
       ExportDefaultDeclaration(node) {
-        if (file == entryFile) {
+        if (file == entryFile)
           exportStmt.unnamed = node.declaration.name;
+        if (file == entryFile || file.endsWith(".d.js"))
           updates.push({
             beg: node.start,
             end: node.end,
             put: ";"
           });
-        } else if (file.endsWith(".d.js")) {
-          updates.push({
-            beg: node.start,
-            end: node.end,
-            put: ";"
-          });
-        }
       },
       ExportNamedDeclaration(node) {
+        if (file.endsWith(".d.js")) {
+          updates.push({
+            beg: node.start,
+            end: node.end,
+            put: ";"
+          });
+          return;
+        }
         if (file != entryFile) return;
         if (node.declaration) {
           /** @const {!acorn.Declaration} */

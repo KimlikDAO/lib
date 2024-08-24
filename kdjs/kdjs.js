@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { writeFile } from "node:fs/promises";
 import process from "node:process";
 import { parseArgs } from "../util/cli";
 import { compile } from "./compile";

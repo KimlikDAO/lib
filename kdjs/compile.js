@@ -16,7 +16,8 @@ const Params = {};
  */
 const compile = async (params, checkFreshFn) => {
   /** @const {string} */
-  const isolateDir = combine(getDir(/** @type {string} */(params["output"])),
+  const isolateDir = combine(
+    getDir(/** @type {string} */(params["output"] || /** @type {string} */(params["entry"]))),
     /** @type {string} */(params["isolateDir"]) || ".kdjs_isolate");
   const {
     /** @const {!Map<string, ImportStatement>} */ missingImports,
@@ -98,8 +99,10 @@ const compile = async (params, checkFreshFn) => {
       if (/** @type {boolean} */(params["emit_shebang"]))
         code = "#!/usr/bin/env node\n" + code;
       console.log(uglified.warnings, uglified.error);
-      writeFile(/** @type {string} */(params["output"]), code)
-        .then(() => resolve(params["output"]))
+      if (params["output"])
+        writeFile(/** @type {string} */(params["output"]), code)
+          .then(() => resolve(code))
+      else resolve(code);
     });
   })
 }

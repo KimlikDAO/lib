@@ -1,6 +1,8 @@
+import { KeyValue, KeyValueList } from "../types.d";
+
 /**
  * @constructor
- * @implements {cloudflare.KeyValue}
+ * @implements {KeyValue}
  */
 function MockKeyValue() { }
 
@@ -35,8 +37,12 @@ MockKeyValue.prototype.delete = (key) => Promise.resolve();
 /**
  * @override
  *
- * @return {!Promise<!cloudflare.KeyValueList>}
+ * @return {!Promise<KeyValueList>}
  */
-MockKeyValue.prototype.list = () => Promise.resolve(new cloudflare.KeyValueList());
+MockKeyValue.prototype.list = () => Promise.resolve({
+  cursor: "",
+  keys: [],
+  list_complete: true
+});
 
 export { MockKeyValue };

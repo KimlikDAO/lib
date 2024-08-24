@@ -4,7 +4,7 @@
  * @author KimlikDAO
  */
 
-import { base64, base64ten, hexten } from "../util/çevir";
+import { base64, base64ten } from "../util/çevir";
 import { Signer } from "./signer";
 import "./unlockable.d";
 
@@ -17,11 +17,9 @@ import "./unlockable.d";
 const decrypt = (unlockable, signer, address) => {
   switch (unlockable.version) {
     case "promptsign-sha256-aes-ctr": {
-      return signer.signMessage(unlockable.userPrompt, address)
-        .then((/** @type {string} */ signature) =>
-          crypto.subtle.digest("SHA-256", hexten(signature.slice(2))))
-        .then((/** @type {!ArrayBuffer} */ hash) =>
-          crypto.subtle.importKey("raw", hash, "AES-CTR", false, ["decrypt"]))
+      return signer.deriveSecret(unlockable.userPrompt, address)
+        .then((/** @type {!ArrayBuffer} */ secret) =>
+          crypto.subtle.importKey("raw", secret, "AES-CTR", false, ["decrypt"]))
         .then((/** @type {!webCrypto.CryptoKey}*/ key) =>
           crypto.subtle.decrypt({
             name: "AES-CTR",
@@ -52,13 +50,11 @@ const encrypt = (text, userPrompt, version, signer, address) => {
   switch (version) {
     case "promptsign-sha256-aes-ctr": {
       /**
-       * @param {string} signature
+       * @param {!ArrayBuffer} secret
        * @return {!Promise<!crosschain.Unlockable>}
        */
-      const encryptWithSignature = (signature) =>
-        crypto.subtle.digest("SHA-256", hexten(signature.slice(2)))
-          .then((/** @type {!ArrayBuffer} */ hash) =>
-            crypto.subtle.importKey("raw", hash, "AES-CTR", false, ["encrypt"]))
+      const encryptWithSecret = (secret) =>
+        crypto.subtle.importKey("raw", secret, "AES-CTR", false, ["encrypt"])
           .then((/** @type {!webCrypto.CryptoKey} */ key) =>
             crypto.subtle.encrypt({
               name: "AES-CTR",
@@ -85,14 +81,14 @@ const encrypt = (text, userPrompt, version, signer, address) => {
       /** @const {!Uint8Array} */
       const counter = /** @type {!Uint8Array} */(crypto.getRandomValues(new Uint8Array(16)));
 
-      /** @return {!Promise<string>} */
-      const requestSignature = () => signer.signMessage(userPrompt, address);
+      /** @return {!Promise<!ArrayBuffer>} */
+      const requestSecret = () => signer.deriveSecret(userPrompt, address);
 
-      return requestSignature()
-        .then(encryptWithSignature)
-        .catch(() => requestSignature().then((signature) => new Promise(
+      return requestSecret()
+        .then(encryptWithSecret)
+        .catch(() => requestSecret().then((signature) => new Promise(
           (/** @type {function(!Promise<!crosschain.Unlockable>):void} */ resolve) =>
-            setTimeout(() => resolve(encryptWithSignature(signature)), 200)))
+            setTimeout(() => resolve(encryptWithSecret(signature)), 200)))
         );
     }
   }

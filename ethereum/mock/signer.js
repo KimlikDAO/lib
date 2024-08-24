@@ -1,8 +1,8 @@
-import { inverse } from "../crypto/modular";
-import { G, Q, Point } from "../crypto/secp256k1";
-import { keccak256Uint32, keccak256Uint32ToHex } from "../crypto/sha3";
-import evm from "../ethereum/evm";
-import { hex, hexten } from "../util/çevir";
+import { inverse } from "../../crypto/modular";
+import { G, Point, Q } from "../../crypto/secp256k1";
+import { keccak256Uint32, keccak256Uint32ToHex } from "../../crypto/sha3";
+import evm from "../evm";
+import { hex, hexten } from "../../util/çevir";
 
 /**
  * @param {bigint} privKey
@@ -27,11 +27,11 @@ const addr = (privKey) => {
  * @param {bigint} digest
  * @param {bigint} privKey
  * @return {{
- *   r: bigint,
- *   s: bigint,
- *   yParity: boolean
- * }}
- */
+*   r: bigint,
+*   s: bigint,
+*   yParity: boolean
+* }}
+*/
 const sign = (digest, privKey) => {
   /** @type {!Uint32Array} */
   let buff = new Uint32Array(
@@ -95,10 +95,36 @@ const signWide = (digest, privKey) => toWideSignature(sign(digest, privKey));
  */
 const signCompact = (digest, privKey) => toCompactSignature(sign(digest, privKey));
 
-export default {
+class Signer {
+  /** @param {bigint} privKey */
+  constructor(privKey) {
+    /** @const {bigint} */
+    this.privKey = privKey;
+  }
+
+  /**
+   * @param {string} message
+   * @param {string} address
+   * @return {?string} the signature
+   */
+  signMessage(message, address) {
+    if (address.toLowerCase() != addr(this.privKey))
+      return null;
+    /** @const {bigint} */
+    const digest = BigInt("0x" + evm.personalDigest(message));
+    return "0x" + signWide(digest, this.privKey);
+  }
+
+  /** @return {string} */
+  getAddress() { return addr(this.privKey); }
+}
+
+export {
+  Signer,
   addr,
   sign,
   signCompact,
   signWide,
+  toCompactSignature,
+  toWideSignature
 };
-

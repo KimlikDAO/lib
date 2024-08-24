@@ -6,27 +6,17 @@
  */
 
 /**
- * @const
- */
-const cloudflare = {};
-
-/**
  * @constructor
  * @extends {Request}
  */
-cloudflare.Request = function () { }
+function CfRequest() { }
 
 /**
  * @const {{
  *   clientAcceptEncoding: ?string
  * }}
  */
-cloudflare.Request.prototype.cf;
-
-/**
- * @const {?BodyInit}
- */
-cloudflare.Request.prototype.body;
+CfRequest.prototype.cf;
 
 /**
  * The Cloudflare Response object contains this convenience method.
@@ -51,7 +41,7 @@ FormData.prototype.values = function () { }
 /**
  * @interface
  */
-cloudflare.KeyValue = function () { }
+function KeyValue() { }
 
 /**
  * @nosideeffects
@@ -59,7 +49,7 @@ cloudflare.KeyValue = function () { }
  * @param {string=} type
  * @return {!Promise<ArrayBuffer>}
  */
-cloudflare.KeyValue.prototype.get = function (key, type) { }
+KeyValue.prototype.get = function (key, type) { }
 
 /**
  * @param {string} key
@@ -69,13 +59,13 @@ cloudflare.KeyValue.prototype.get = function (key, type) { }
  * }=} options
  * @return {!Promise<void>}
  */
-cloudflare.KeyValue.prototype.put = function (key, value, options) { }
+KeyValue.prototype.put = function (key, value, options) { }
 
 /**
  * @param {string} key
  * @return {!Promise<void>}
  */
-cloudflare.KeyValue.prototype.delete = function (key) { }
+KeyValue.prototype.delete = function (key) { }
 
 /**
  * @typedef {{
@@ -87,17 +77,12 @@ cloudflare.KeyValue.prototype.delete = function (key) { }
  *   cursor: string,
  * }}
  */
-cloudflare.KeyValueList = {};
+const KeyValueList = {};
 
 /**
  * @nosideeffects
- * @return {!Promise<!cloudflare.KeyValueList>}
+ * @return {!Promise<KeyValueList>}
  */
-cloudflare.KeyValue.prototype.list = function () { }
+KeyValue.prototype.list = function () { }
 
-/**
- * @interface
- */
-cloudflare.Environment = function () { }
-
-export default cloudflare;
+export { CfRequest, KeyValue, KeyValueList };

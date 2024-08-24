@@ -1,5 +1,6 @@
-import "./moduleWorker.d";
-import "./pageWorker.d";
+import { Env } from "./kvPageWorker.d";
+import { ModuleWorker } from "./moduleWorker.d";
+import { CfRequest } from "./types.d";
 
 /** @const {!Object<string, string>} */
 const MIMES = {
@@ -37,15 +38,15 @@ const err = () => new Response("NAPİM?", {
 /**
  * @param {string} hostUrl
  * @param {!Object<string, string>} pages
- * @return {!cloudflare.ModuleWorker}
+ * @return {!ModuleWorker}
  */
-const create = (hostUrl, pages) => /** @type {!cloudflare.ModuleWorker} */({
+const create = (hostUrl, pages) => /** @type {!ModuleWorker} */({
   /**
    * @override
    *
-   * @param {!cloudflare.Request} req
-   * @param {!cloudflare.PageWorkerEnv} env
-   * @param {!cloudflare.Context} ctx
+   * @param {!CfRequest} req
+   * @param {Env} env
+   * @param {!Context} ctx
    * @return {!Promise<!Response>|!Response}
    */
   fetch(req, env, ctx) {

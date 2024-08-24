@@ -1,8 +1,8 @@
 import { expect, test } from "bun:test";
 import { ChainGroup } from "../../crosschain/chains";
+import { addr as evmAddr } from "../../ethereum/mock/signer";
 import { PublicKey } from "../../mina/mina";
-import { addr } from "../../mina/mock/signer";
-import vm from "../../testing/vm";
+import { addr as minaAddr } from "../../mina/mock/signer";
 import { base64 } from "../../util/çevir";
 import { commit } from "../commitment";
 import {
@@ -54,19 +54,19 @@ test("sign section", () => {
   expect(humanID1.secp256k1.length).toBe(1);
   expect(humanID2.secp256k1.length).toBe(1);
   expect(recoverSectionSigners("humanID", humanID1, ChainGroup.MINA, ownerAddress)[0])
-    .toBe(vm.addr(11n));
+    .toBe(evmAddr(11n));
   expect(recoverSectionSigners("humanID", humanID2, ChainGroup.MINA, ownerAddress)[0])
-    .toBe(vm.addr(12n));
+    .toBe(evmAddr(12n));
 
   humanID1.secp256k1.push(humanID2.secp256k1[0]);
 
   expect(new Set(recoverSectionSigners("humanID", humanID1, ChainGroup.MINA, ownerAddress)))
-    .toEqual(new Set([vm.addr(11n), vm.addr(12n)]));
+    .toEqual(new Set([evmAddr(11n), evmAddr(12n)]));
 
   humanID1.secp256k1.push(humanID2.secp256k1[0]);
 
   expect(new Set(recoverSectionSigners("humanID", humanID1, ChainGroup.MINA, ownerAddress)))
-    .toEqual(new Set([vm.addr(11n), vm.addr(12n)]))
+    .toEqual(new Set([evmAddr(11n), evmAddr(12n)]))
 });
 
 test("humanID minaSchnorr signature", () => {
@@ -109,12 +109,12 @@ test("humanID minaSchnorr signature", () => {
   const signers = recoverHumanIDSigners(humanID1, ChainGroup.MINA, ownerAddress);
 
   expect(signers.length).toBe(1);
-  expect(signers[0]).toBe(addr(111n));
+  expect(signers[0]).toBe(minaAddr(111n));
 
   humanID2.minaSchnorr.push(...(humanID1.minaSchnorr || []));
 
   const signers2 = recoverHumanIDSigners(humanID2, ChainGroup.MINA, ownerAddress);
 
   expect(signers2.length).toBe(2);
-  expect(new Set(signers2)).toEqual(new Set([addr(111n), addr(112n)]));
+  expect(new Set(signers2)).toEqual(new Set([minaAddr(111n), minaAddr(112n)]));
 });

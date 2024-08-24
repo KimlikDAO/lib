@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { ChainGroup } from "../../../crosschain/chains";
 import { keccak256Uint8 } from "../../../crypto/sha3";
-import vm from "../../../testing/vm";
+import { addr as evmAddr } from "../../../ethereum/mock/signer";
 import { base64 } from "../../../util/çevir";
 import { commit } from "../../commitment";
 import { combineMultiple } from "../../KPass";
@@ -12,7 +12,7 @@ describe("Combinig multiple KPass'es", () => {
     /** @const {!TextEncoder} */
     const encoder = new TextEncoder();
     /** @const {string} */
-    const ownerAddress = vm.addr(1n);
+    const ownerAddress = evmAddr(1n);
     /** @const {string} */
     const commitmentR = base64(keccak256Uint8(encoder.encode("commitmentR")));
     /** @const {string} */
@@ -56,11 +56,11 @@ describe("Combinig multiple KPass'es", () => {
     expect(combined["personInfo"].commitmentR).toBe(commitmentR);
     /** @const {!Array<string>} */
     const signers = [
-      vm.addr(10n),
-      vm.addr(11n),
-      vm.addr(12n),
-      vm.addr(13n),
-      vm.addr(14n),
+      evmAddr(10n),
+      evmAddr(11n),
+      evmAddr(12n),
+      evmAddr(13n),
+      evmAddr(14n),
     ];
     expect(recoverSectionSigners(
       "humanID", combined["humanID"], ChainGroup.EVM, ownerAddress
@@ -76,7 +76,7 @@ describe("Combinig multiple KPass'es", () => {
     /** @const {!TextEncoder} */
     const encoder = new TextEncoder();
     /** @const {string} */
-    const ownerAddress = vm.addr(1n);
+    const ownerAddress = evmAddr(1n);
 
     /** @const {string} */
     const commitmentR = base64(keccak256Uint8(encoder.encode("commitmentR")));
@@ -137,15 +137,15 @@ describe("Combinig multiple KPass'es", () => {
 
     expect(recoverSectionSigners(
       "humanID", combined["humanID"], ChainGroup.EVM, ownerAddress
-    )).toEqual([vm.addr(12n), vm.addr(13n), vm.addr(14n)]);
+    )).toEqual([evmAddr(12n), evmAddr(13n), evmAddr(14n)]);
     expect(recoverSectionSigners(
       "personInfo", combined["personInfo"], ChainGroup.EVM, ownerAddress
     )).toEqual([
-      vm.addr(10n),
-      vm.addr(11n),
-      vm.addr(12n),
-      vm.addr(13n),
-      vm.addr(14n),
+      evmAddr(10n),
+      evmAddr(11n),
+      evmAddr(12n),
+      evmAddr(13n),
+      evmAddr(14n),
     ]);
   });
 
@@ -153,7 +153,7 @@ describe("Combinig multiple KPass'es", () => {
     /** @const {!TextEncoder} */
     const encoder = new TextEncoder();
     /** @const {string} */
-    const ownerAddress = vm.addr(1n);
+    const ownerAddress = evmAddr(1n);
     /** @const {string} */
     const commitmentR = base64(keccak256Uint8(encoder.encode("commitmentR")));
     /** @const {string} */
@@ -223,11 +223,11 @@ describe("Combinig multiple KPass'es", () => {
         ownerAddress
       )
     ).toEqual([
-      vm.addr(10n),
-      vm.addr(11n),
-      vm.addr(12n),
-      vm.addr(13n),
-      vm.addr(14n),
+      evmAddr(10n),
+      evmAddr(11n),
+      evmAddr(12n),
+      evmAddr(13n),
+      evmAddr(14n),
     ]);
   });
 });

@@ -57,12 +57,12 @@ const hasKPasses = (providerURLs, addresses) => {
   ).then((/** @type {!Array<string>} */ handles) => handles.map(isNonzero))
   ));
 
-  return tableByChainPromise.then((tableByChain) =>
+  return tableByChainPromise.then((/** !Array<!Array<boolean>> */ tableByChain) =>
     tableByChain.reduce(
-      (acc, row) => row.map((item, index) => acc[index] || item),
-      new Array(addresses.length).fill(false)
-    )
-  );
+      /** @type {function(!Array<boolean>):!Array<boolean>} */(
+        (/** !Array<boolean> */ acc, /** !Array<boolean> */ row) => row.map((item, index) => acc[index] || item)),
+      /** @type {!Array<boolean>} */(new Array(addresses.length).fill(false))
+    ));
 }
 
 export default {

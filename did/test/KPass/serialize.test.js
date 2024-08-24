@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { MockSigner } from "../../../crosschain/mock/signer";
 import { Signer } from "../../../crosschain/signer";
-import vm from "../../../testing/vm";
+import { addr as evmAddr } from "../../../ethereum/mock/signer";
 import { SectionGroup, fromUnlockableNFT, toUnlockableNFT } from "../../KPass";
 
 describe("`toUnlockableNFT()` tests", () => {
@@ -22,9 +22,9 @@ describe("`toUnlockableNFT()` tests", () => {
       sectionNames: ["contactInfo"]
     })],
       signer,
-      vm.addr(1337n)
+      evmAddr(1337n)
     ).then((/** @type {!eth.ERC721Unlockable} */ nft) => fromUnlockableNFT(
-      nft, ["contactInfo"], signer, vm.addr(1337n))
+      nft, ["contactInfo"], signer, evmAddr(1337n))
     ).then((/** @type {!did.DecryptedSections} */ decryptedSections) => {
       expect("contactInfo" in decryptedSections).toBeTrue();
       /** @const {!did.ContactInfo} */
@@ -59,9 +59,9 @@ describe("`toUnlockableNFT()` tests", () => {
       sectionNames: ["contactInfo", "personInfo"]
     })],
       signer,
-      vm.addr(1338n)
+      evmAddr(1338n)
     ).then((/** @type {!eth.ERC721Unlockable} */ nft) => fromUnlockableNFT(
-      nft, ["contactInfo", "personInfo"], signer, vm.addr(1338n))
+      nft, ["contactInfo", "personInfo"], signer, evmAddr(1338n))
     ).then((/** @type {!did.DecryptedSections} */ decryptedSections) => {
       expect(Object.keys(decryptedSections)).toEqual(["contactInfo", "personInfo"]);
       /** @const {!did.ContactInfo} */

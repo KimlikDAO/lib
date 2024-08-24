@@ -1,36 +1,25 @@
-import evm from "../../ethereum/evm";
-import vm from "../../testing/vm";
+import { Signer as EvmSigner } from "../../ethereum/mock/signer";
+import hex from "../../util/hex";
 import { Signer } from "../signer";
 
 /**
- * @constructor
+ * @extends {EvmSigner}
  * @implements {Signer}
- *
- * @param {bigint} privKey
  */
-function MockSigner(privKey) {
-  /** @const {bigint} */
-  this.privKey = privKey
-}
-
-/**
- * @param {string} message
- * @param {string} address
- * @return {!Promise<string>} the signature
- */
-MockSigner.prototype.signMessage = function (message, address) {
-  if (address.toLowerCase() != vm.addr(this.privKey))
-    return Promise.reject();
-  /** @const {bigint} */
-  const digest = BigInt("0x" + evm.personalDigest(message));
-  return Promise.resolve("0x" + vm.signWide(digest, this.privKey));
-}
-
-/**
- * @return {string}
- */
-MockSigner.prototype.getAddress = function () {
-  return vm.addr(this.privKey);
+class MockSigner extends EvmSigner {
+  /**
+   * @override
+   *
+   * @param {string} message
+   * @param {string} address
+   * @return {!Promise<!ArrayBuffer>}
+   */
+  deriveSecret(message, address) {
+    /** @const {?string} */
+    const sig = this.signMessage(message, address)
+    if (!sig) return Promise.reject();
+    return crypto.subtle.digest("SHA-256", hex.toUint8Array(sig.slice(2)));
+  }
 }
 
 export { MockSigner };
