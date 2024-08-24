@@ -31,9 +31,9 @@ const signHumanID = (humanID, privateKey) => {
  * @param {!did.HumanID} humanID
  * @return {!Array<string>}
  */
-const recoverHumanIDSigners = (humanID, chainGroup, ownerAddress) => {
+const recoverHumanIDSigners = (humanID, ownerAddress) => {
   if (!humanID.commitment)
-    humanID.commitment = commit(chainGroup, ownerAddress, humanID.commitmentR);
+    humanID.commitment = commit(ChainGroup.MINA, ownerAddress, humanID.commitmentR);
   /** @const {!Set<string>} */
   const signers = new Set();
   /** @const {!Array<bigint>} */

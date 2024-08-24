@@ -8,8 +8,6 @@ kimlikdao-js is a repository containing JavaScript modules essential for KimlikD
 
 `birimler`: UI module system
 
-`cloudflare`: Definitions related to the Cloudflare Workers platform
-
 `crosschain`: Definitions and structures valid across all blockchains
 
 `crypto`: Cryptographic functions and libraries

@@ -106,14 +106,14 @@ test("humanID minaSchnorr signature", () => {
   delete humanID1.commitment;
   humanID1.commitmentR = commitmentR;
 
-  const signers = recoverHumanIDSigners(humanID1, ChainGroup.MINA, ownerAddress);
+  const signers = recoverHumanIDSigners(humanID1, ownerAddress);
 
   expect(signers.length).toBe(1);
   expect(signers[0]).toBe(minaAddr(111n));
 
   humanID2.minaSchnorr.push(...(humanID1.minaSchnorr || []));
 
-  const signers2 = recoverHumanIDSigners(humanID2, ChainGroup.MINA, ownerAddress);
+  const signers2 = recoverHumanIDSigners(humanID2, ownerAddress);
 
   expect(signers2.length).toBe(2);
   expect(new Set(signers2)).toEqual(new Set([minaAddr(111n), minaAddr(112n)]));
