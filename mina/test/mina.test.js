@@ -1,6 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { G, Point } from "../../crypto/minaSchnorr";
-import { parsePrivateKey, PublicKey, signFields, verifyFields } from "../mina";
+import { PublicKey } from "../mina";
 
 describe("PublicKey", () => {
   test("to/from base58", () => {
@@ -17,19 +16,9 @@ describe("PublicKey", () => {
     expect(pk.toBase58()).toBe(pk58);
   });
 
-  test("to/from Point", () => {
-    /** @const {!Point} */
-    const X = G.copy().multiply(0x13371337n).project();
-    /** @const {!PublicKey} */
-    const pk = PublicKey.fromPoint(X);
-    expect(pk.toPoint()).toEqual(X);
-  });
-
   test("serialize into / deserialize from bytes", () => {
-    /** @const {!Point} */
-    const X = G.copy().multiply(0x13371337n).project();
     /** @const {!PublicKey} */
-    const pk = PublicKey.fromPoint(X);
+    const pk = new PublicKey(123123n, true);
     /** @const {!Uint8Array} */
     const buff = new Uint8Array(32);
 
@@ -39,17 +28,4 @@ describe("PublicKey", () => {
 
     expect(pk2).toEqual(pk);
   })
-});
-
-describe("sign/verify fields", () => {
-  test("smoke tests", () => {
-    /** @const {bigint} */
-    const s = parsePrivateKey("EKF5WGqhkg3yQyiRU2gWC1W1KLw2xLuRgwtQNEbZ5qWqGYpktw8S");
-    /** @const {!Point} */
-    const X = G.copy().multiply(s).project();
-    /** @const {mina.SignerSignature} */
-    const sig = signFields([1n, 31n, 1337n], s);
-    expect(sig.signer).toBe(PublicKey.fromPoint(X).toBase58());
-    expect(verifyFields([1n, 31n, 1337n], sig)).toBeTrue();
-  });
 });

@@ -3,9 +3,8 @@
  *
  * @author KimlikDAO
  */
-import { Point, recoverSigner, sign } from "../crypto/secp256k1";
-import { keccak256, keccak256Uint32, keccak256Uint8 } from '../crypto/sha3';
-import { hex, uint8ArrayBEyeSayıdan } from "../util/çevir";
+import { keccak256, keccak256Uint8 } from '../crypto/sha3';
+import { hex } from "../util/çevir";
 import eth from "./eth.d";
 
 /**
@@ -116,57 +115,8 @@ const personalDigest = (msg) => {
 }
 
 /**
- * @param {!Point} Q
- * @return {string} address
- */
-const pointToAddress = (Q) => {
-  /** @const {!Uint8Array} */
-  const buff = new Uint8Array(64);
-  uint8ArrayBEyeSayıdan(buff, 32, Q.x);
-  uint8ArrayBEyeSayıdan(buff, 64, Q.y);
-  /** @const {!Uint8Array} */
-  const hash = new Uint8Array(
-    keccak256Uint32(new Uint32Array(buff.buffer)).buffer, 12, 20);
-  return "0x" + hex(hash);
-}
-
-/**
- * Given a digest and a signature, recovers the signer address if the signature
- * is valid; outputs an arbitrary value otherwise.
- *
- * @param {string} digest as a length 64 hex string
- * @param {eth.CompactSignature} signature as a length 128 compact signature
- * @return {string} 42 characters long EVM address
- */
-const signerAddress = (digest, signature) => {
-  /** @const {number} */
-  const highNibble = parseInt(signature[64], 16);
-  /** @const {boolean} */
-  const yParity = highNibble >= 8;
-  /** @const {bigint} */
-  const r = BigInt("0x" + signature.slice(0, 64));
-  /** @const {bigint} */
-  const s = BigInt("0x" + (yParity
-    ? (highNibble - 8).toString(16) + signature.slice(65)
-    : signature.slice(64))
-  );
-  return pointToAddress(
-    recoverSigner(BigInt("0x" + digest), r, s, yParity));
-}
-
-/**
- * @param {string} digest
- * @param {bigint} privateKey
- * @return {eth.CompactSignature}
- */
-const signCompact = (digest, privateKey) => {
-  const { r, s, yParity } = sign(BigInt("0x" + digest), privateKey);
-  return uint256(r) + uint256(yParity ? s + (1n << 255n) : s);
-}
-
-/**
  * @param {string} addr EVM adresi; 0x ile başlamalı.
- * @return {string} 80 uzunluğunde hex kodlanmış adres
+ * @return {eth.PackedAddress} 80 uzunluğunde hex kodlanmış adres
  */
 const packedAddress = (addr) => addr.slice(2).toLowerCase();
 
@@ -212,9 +162,6 @@ export default {
   isZero,
   packedAddress,
   personalDigest,
-  pointToAddress,
-  signerAddress,
-  signCompact,
   uint160,
   uint256,
   Uint256Max,

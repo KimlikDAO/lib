@@ -1,7 +1,7 @@
 import evm from "../../ethereum/evm";
 import { Signer as EvmSigner } from "../../ethereum/mock/signer";
-import { signMessage } from "../../mina/mina";
 import { addr as minaAddr } from "../../mina/mock/signer";
+import { signMessage } from "../../mina/signer";
 import { assertEq } from "../../testing/assert";
 import base58 from "../../util/base58";
 import hex from "../../util/hex";

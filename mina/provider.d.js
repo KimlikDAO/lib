@@ -109,31 +109,31 @@ mina.Provider.prototype.getAccounts = function () { };
 mina.Provider.prototype.requestAccounts = function () { };
 
 /**
- * @return {!Promise<!mina.ChainInfoArgs>}
+ * @return {!Promise<mina.ChainInfoArgs>}
  */
 mina.Provider.prototype.requestNetwork = function () { };
 
 /**
- * @param {!mina.SignMessageArgs} signMessageArgs
- * @return {!Promise<!mina.SignedData>}
+ * @param {mina.SignMessageArgs} signMessageArgs
+ * @return {!Promise<mina.SignedData>}
  */
 mina.Provider.prototype.signMessage = function (signMessageArgs) { };
 
 /**
- * @param {!mina.SwitchChainArgs} switchChainArgs
- * @return {!Promise<!mina.ChainInfoArgs>}
+ * @param {mina.SwitchChainArgs} switchChainArgs
+ * @return {!Promise<mina.ChainInfoArgs>}
  */
 mina.Provider.prototype.switchChain = function (switchChainArgs) { };
 
 /**
  * @param {!mina.SignJsonMessageArgs} jsonMessage
- * @return {!Promise<!mina.SignedData>}
+ * @return {!Promise<mina.SignedData>}
  */
 mina.Provider.prototype.signJsonMessage = function (jsonMessage) { };
 
 /**
- * @param {!mina.SendTransactionArgs} sendTransactionArgs
- * @return {!Promise<!mina.SendZkTransactionResult>}
+ * @param {mina.SendTransactionArgs} sendTransactionArgs
+ * @return {!Promise<mina.SendZkTransactionResult>}
  */
 mina.Provider.prototype.sendTransaction = function (sendTransactionArgs) { };
 

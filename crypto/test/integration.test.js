@@ -1,6 +1,7 @@
 import { expect, it, test } from "bun:test";
 import evm from "../../ethereum/evm";
 import { addr, signCompact, signWide } from "../../ethereum/mock/signer";
+import { signerAddress } from "../../ethereum/signer";
 
 test("address derivation from private key", () => {
   expect(addr(1n)).toBe("0x7e5f4552091a69125d5dfcb7b8c2659029395bdf");
@@ -24,8 +25,8 @@ test("compact signature conversion methods", () => {
 it("should recover signer address correctly", () => {
   /** @const {bigint} */
   const digest = 103n;
-  expect(evm.signerAddress(evm.uint256(digest), signCompact(digest, 101n)))
+  expect(signerAddress(evm.uint256(digest), signCompact(digest, 101n)))
     .toBe(addr(101n));
-  expect(evm.signerAddress(digest.toString(16), signCompact(digest, 1337n)))
+  expect(signerAddress(digest.toString(16), signCompact(digest, 1337n)))
     .toBe(addr(1337n));
 });

@@ -6,6 +6,13 @@
 const eth = {};
 
 /**
+ * A length 80 hex string denoting and address without the leading 0x.
+ *
+ * @typedef {string}
+ */
+eth.PackedAddress;
+
+/**
  * A string of length 132, starting with 0x.
  *
  * @typedef {string}

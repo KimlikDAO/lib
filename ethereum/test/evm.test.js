@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import evm from "../../evm";
+import evm from "../evm";
 
 describe("adresDüzelt testleri", () => {
   it("should add checksum to lower case address", () => {

@@ -1,6 +1,6 @@
 import { ChainGroup } from "../crosschain/chains";
-import evm from "../ethereum/evm";
-import { signFields, verifyFields } from "../mina/mina";
+import { signCompact, signerAddress } from "../ethereum/signer";
+import { signFields, verifyFields } from "../mina/signer";
 import { base64tenSayıya } from "../util/çevir";
 import { commit } from "./commitment";
 import { hash } from "./section";
@@ -59,7 +59,7 @@ const signSection = (sectionName, section, signParams) => {
     : signParams.commitment;
   section.signatureTs = signParams.signatureTs;
   section.secp256k1 = [
-    evm.signCompact(hash(sectionName, section), signParams.privateKey)
+    signCompact(hash(sectionName, section), signParams.privateKey)
   ];
   if (sectionName == "humanID")
     signHumanID(/** @type {!did.HumanID} */(section), signParams.privateKeyPallas);
@@ -84,8 +84,7 @@ const recoverSectionSigners = (sectionName, section, chainGroup, ownerAddress) =
   /** @const {string} */
   const h = hash(sectionName, section);
   /** @const {!Array<string>} */
-  const signers = section.secp256k1.map((signature) =>
-    evm.signerAddress(h, signature));
+  const signers = section.secp256k1.map((signature) => signerAddress(h, signature));
   return [...new Set(signers)];
 }
 
@@ -103,9 +102,9 @@ const signDecryptedSections = (decryptedSections, signParams) => {
 }
 
 export {
-  SignParams,
   recoverHumanIDSigners,
   recoverSectionSigners,
   signDecryptedSections,
+  SignParams,
   signSection
 };

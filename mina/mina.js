@@ -1,16 +1,7 @@
-import {
-  G,
-  Point,
-  pointFrom,
-  signFields as signFieldsBigInt,
-  signMessage as signMessageBigInt,
-  verifyFields as verifyFieldsBigInt,
-  verifyMessage as verifyMessageBigInt
-} from "../crypto/minaSchnorr";
-import { IC, f as sha256F } from "../crypto/sha2";
+
+import { IC, g as sha256F } from "../crypto/sha2";
 import base58 from "../util/base58";
 import { uint8ArrayLEtoBigInt, uint8ArrayLEyeSayıdan } from "../util/çevir";
-import "./mina.d";
 
 /**
  * @constructor
@@ -35,12 +26,6 @@ PublicKey.fromBase58 = (addr) => {
   return new PublicKey(uint8ArrayLEtoBigInt(bytes.subarray(3, 35)), !!bytes[35]);
 }
 
-/**
- * @param {!Point} X
- * @return {!PublicKey}
- */
-PublicKey.fromPoint = (X) => new PublicKey(X.x, !!(X.y & 1n));
-
 /** @return {string} */
 PublicKey.prototype.toBase58 = function () {
   /** @const {!Uint8Array} */
@@ -51,12 +36,6 @@ PublicKey.prototype.toBase58 = function () {
   uint8ArrayLEyeSayıdan(buff.subarray(3), this.x);
   addChecksum(buff);
   return base58.from(buff);
-}
-
-/** @return {!Point} */
-PublicKey.prototype.toPoint = function () {
-  // Public keys are always assumed to be valid point on the curve.
-  return /** @type {!Point} */(pointFrom(this.x, this.isOdd));
 }
 
 /**
@@ -125,61 +104,6 @@ Signature.prototype.toBase58 = function () {
 }
 
 /**
- * @param {!Array<bigint>} fields
- * @param {bigint} privKey
- * @return {mina.SignerSignature}
- */
-const signFields = (fields, privKey) => {
-  /** @const {!Point} */
-  const X = G.copy().multiply(privKey).project();
-  const { r, s } = signFieldsBigInt(fields, privKey, X);
-  return /** @type {mina.SignerSignature} */({
-    signer: PublicKey.fromPoint(X).toBase58(),
-    signature: new Signature(r, s).toBase58()
-  });
-}
-
-/**
- * @param {!Array<bigint>} fields
- * @param {mina.SignerSignature} sig
- * @return {boolean}
- */
-const verifyFields = (fields, sig) => {
-  const { r, s } = Signature.fromBase58(sig.signature);
-  /** @const {!Point} */
-  const X = PublicKey.fromBase58(sig.signer).toPoint();
-  return verifyFieldsBigInt(fields, r, s, X);
-}
-
-
-/**
- * @param {string} message
- * @param {bigint} privKey
- * @return {mina.SignerSignature}
- */
-const signMessage = (message, privKey) => {
-  /** @const {!Point} */
-  const X = G.copy().multiply(privKey).project();
-  const { r, s } = signMessageBigInt(message, privKey, X);
-  return /** @type {mina.SignerSignature} */({
-    signer: PublicKey.fromPoint(X).toBase58(),
-    signature: new Signature(r, s).toBase58()
-  });
-}
-
-/**
- * @param {string} message
- * @param {mina.SignerSignature} sig
- * @return {boolean}
- */
-const verifyMessage = (message, sig) => {
-  const { r, s } = Signature.fromBase58(sig.signature);
-  /** @const {!Point} */
-  const X = PublicKey.fromBase58(sig.signer).toPoint();
-  return verifyMessageBigInt(message, r, s, X);
-}
-
-/**
  * @param {!Uint8Array} buff bytes array of which the last 4 bytes will be
  *                           written the checksum
  */
@@ -217,11 +141,7 @@ const addChecksum = (buff) => {
 }
 
 export {
-  PublicKey,
-  Signature,
   parsePrivateKey,
-  signFields,
-  signMessage,
-  verifyFields,
-  verifyMessage
+  PublicKey,
+  Signature
 };
