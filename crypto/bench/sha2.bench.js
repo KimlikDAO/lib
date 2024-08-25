@@ -1,4 +1,5 @@
 import { compareImpls } from "../../testing/bench";
+import { f, g } from "../sha2";
 
 const f1 = () => {
   const a = new Uint32Array(8);
@@ -51,3 +52,20 @@ const g2 = () => {
 g1();
 
 compareImpls([g1, g2], 100, [], 9);
+
+const s = Uint32Array.from("01234567");
+const t = new Uint32Array(64);
+
+compareImpls([
+  () => {
+    const ss = new Uint32Array(s);
+    const tt = new Uint32Array(t);
+    f(ss, tt);
+  },
+  () => {
+    const ss = new Uint32Array(s);
+    const tt = new Uint32Array(t);
+    g(ss, tt);
+  }],
+  1000, [], null
+);

@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { sha256 } from "js-sha256";
-import { sha256Uint32 } from "../sha2";
+import { sha256Uint32 } from "../../sha2";
 
 /**
  * @param {!Uint32Array} uint32Arr
@@ -25,7 +25,7 @@ const check = (itr1, itr2) =>
   expect(toUint8Arr(sha256Uint32(Uint32Array.from(itr1))))
     .toEqual(Uint8Array.from(sha256.array(Uint8Array.from(itr2))));
 
-test("", () => {
+test("agrees with js-sha256 on select values", () => {
   check("1", "0001");
   check("123456", "000100020003000400050006");
   check("0".repeat(14), "0".repeat(4 * 14));

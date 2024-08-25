@@ -1,6 +1,6 @@
 import { expect, it } from "bun:test";
 import { create } from "../kvPageWorker";
-import { Env } from "../kvPageWorker.d";
+import { KvPageWorkerEnv } from "../kvPageWorker.d";
 import { MockKeyValue } from "../mock/keyValue";
 import { Context, ModuleWorker } from "../moduleWorker.d";
 import { CfRequest } from "../types.d";
@@ -23,8 +23,8 @@ globalThis["caches"]["default"] = /** @type {!Cache} */({
   put(key, res) { return Promise.resolve(); },
 });
 
-/** @const {Env} */
-const env = /** @type {Env} */({
+/** @const {KvPageWorkerEnv} */
+const env = /** @type {KvPageWorkerEnv} */({
   KV: new MockKeyValue()
 });
 

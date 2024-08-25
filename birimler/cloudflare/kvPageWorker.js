@@ -1,4 +1,4 @@
-import { Env } from "./kvPageWorker.d";
+import { KvPageWorkerEnv } from "./kvPageWorker.d";
 import { ModuleWorker } from "./moduleWorker.d";
 import { CfRequest } from "./types.d";
 
@@ -45,7 +45,7 @@ const create = (hostUrl, pages) => /** @type {!ModuleWorker} */({
    * @override
    *
    * @param {!CfRequest} req
-   * @param {Env} env
+   * @param {KvPageWorkerEnv} env
    * @param {!Context} ctx
    * @return {!Promise<!Response>|!Response}
    */

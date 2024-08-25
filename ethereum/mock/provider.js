@@ -1,7 +1,7 @@
+import hex from "../../util/hex";
+import evm from "../evm";
 import "../provider.d";
-import evm from "/ethereum/evm";
-import vm from "/testing/vm";
-import { hexten } from "/util/çevir";
+import { addr, signWide } from "./signer";
 
 /**
  * @constructor
@@ -23,8 +23,7 @@ function MockProvider(privKey) {
 MockProvider.prototype.request = function (req) {
   switch (req.method) {
     case "personal_sign":
-      if (/** @type {string} */(req.params[1]).toLowerCase()
-        != vm.addr(this.privKey))
+      if (/** @type {string} */(req.params[1]).toLowerCase() != addr(this.privKey))
         return Promise.reject(/** @type {!eth.ProviderError} */({
           code: -32602,
           message: "from should be same as current address"
@@ -32,10 +31,10 @@ MockProvider.prototype.request = function (req) {
       /** @const {!TextDecoder} */
       const decoder = new TextDecoder();
       /** @const {string} */
-      const message = decoder.decode(hexten(/** @type {string} */(req.params[0]).slice(2)));
+      const message = decoder.decode(hex.toUint8Array(/** @type {string} */(req.params[0]).slice(2)));
       /** @const {bigint} */
       const digest = BigInt("0x" + evm.personalDigest(message));
-      return Promise.resolve("0x" + vm.signWide(digest, this.privKey));
+      return Promise.resolve("0x" + signWide(digest, this.privKey));
   }
   return Promise.reject();
 }
@@ -44,7 +43,7 @@ MockProvider.prototype.request = function (req) {
  * @return {string}
  */
 MockProvider.prototype.getAddress = function () {
-  return vm.addr(this.privKey);
+  return addr(this.privKey);
 }
 
 export { MockProvider };

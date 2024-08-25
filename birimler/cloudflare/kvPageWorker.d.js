@@ -10,6 +10,6 @@ import { KeyValue } from "./types.d";
  *   KV: KeyValue
  * }}
  */
-const Env = {};
+const KvPageWorkerEnv = {};
 
-export { Env };
+export { KvPageWorkerEnv };

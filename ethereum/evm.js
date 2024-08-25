@@ -6,6 +6,7 @@
 import { Point, recoverSigner, sign } from "../crypto/secp256k1";
 import { keccak256, keccak256Uint32, keccak256Uint8 } from '../crypto/sha3';
 import { hex, uint8ArrayBEyeSayıdan } from "../util/çevir";
+import eth from "./eth.d";
 
 /**
  * Verilen bir adresin checksum'ı yoksa ekler, varsa sağlamasını yapar.
@@ -80,8 +81,8 @@ const adresGeçerli = (adres) => {
 /**
  * @see https://eips.ethereum.org/EIPS/eip-2098
  *
- * @param {string} signature of length 2 + 64 + 64 + 2 = 132
- * @return {string} compactSignature as a string of length 128 (64 bytes).
+ * @param {eth.WideSignature} signature of length 2 + 64 + 64 + 2 = 132
+ * @return {eth.CompactSignature} compactSignature as a string of length 128 (64 bytes).
  */
 const compactSignature = (signature) => {
   /** @const {boolean} */
@@ -134,7 +135,7 @@ const pointToAddress = (Q) => {
  * is valid; outputs an arbitrary value otherwise.
  *
  * @param {string} digest as a length 64 hex string
- * @param {string} signature as a length 128 compact signature
+ * @param {eth.CompactSignature} signature as a length 128 compact signature
  * @return {string} 42 characters long EVM address
  */
 const signerAddress = (digest, signature) => {
@@ -156,7 +157,7 @@ const signerAddress = (digest, signature) => {
 /**
  * @param {string} digest
  * @param {bigint} privateKey
- * @return {string}
+ * @return {eth.CompactSignature}
  */
 const signCompact = (digest, privateKey) => {
   const { r, s, yParity } = sign(BigInt("0x" + digest), privateKey);

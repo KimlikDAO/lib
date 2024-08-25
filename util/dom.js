@@ -76,6 +76,22 @@ const menüYarat = (düğme, menü) => {
 }
 
 /**
+ * @param {string} url
+ * @param {number} en
+ * @param {number} boy
+ */
+const pencere = (url, en, boy) => {
+  /** @const {number} */
+  const sol = window.screenX + window.outerWidth - en;
+  /** @const {Window} */
+  const p = window.open(url, "_blank",
+    `menubar=no,toolbar=no,status=no,width=${en},height=${boy},` +
+    `left=${sol},top=${window.screenY}`
+  );
+  if (p) p.focus();
+}
+
+/**
  * @param {number} para
  * @return {string} metin olarak yazılmış para miktarı
  */
@@ -102,6 +118,7 @@ export default {
   gösterGizle,
   menüYarat,
   paradanMetne,
+  pencere,
   telefondanMetne,
   TR,
 };

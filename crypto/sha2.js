@@ -62,11 +62,8 @@ const sha256Uint32 = (words) => {
   return s;
 }
 
-/**
- * @param {!Uint32Array} s The 8 word working tape, which is also the final out
- * @param {!Uint32Array} t The 64 word working tape.
- */
-const f = (s, t) => {
+/** @param {!Uint32Array} t */
+const extend = (t) => {
   for (let i = 16, t1, s0, s1; i < 64; ++i) {
     t1 = t[i - 15];
     s0 = ((t1 >>> 7) | (t1 << 25)) ^ ((t1 >>> 18) | (t1 << 14)) ^ (t1 >>> 3);
@@ -74,6 +71,38 @@ const f = (s, t) => {
     s1 = ((t1 >>> 17) | (t1 << 15)) ^ ((t1 >>> 19) | (t1 << 13)) ^ (t1 >>> 10);
     t[i] = t[i - 16] + s0 + t[i - 7] + s1 << 0;
   }
+}
+
+/**
+ * The sha256 compression function, implemented 1:1 without loop unrolling.
+ *
+ * @param {!Uint32Array} s The 8 word working tape, which is also the final out.
+ * @param {!Uint32Array} t The 64 word working tape.
+ */
+const g = (s, t) => {
+  extend(t);
+  let [a, b, c, d, e, f, g, h] = s;
+  for (let i = 0, s0, s1, t1, ch, maj; i < 64; ++i) {
+    s0 = ((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10));
+    s1 = ((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^ ((e >>> 25) | (e << 7));
+    ch = (e & f) ^ (~e & g);
+    t1 = h + s1 + ch + RC[i] + t[i];
+    maj = (a & b) ^ (a & c) ^ (b & c);
+    h = g; g = f; f = e; e = d + t1 << 0;
+    d = c; c = b; b = a; a = t1 + s0 + maj << 0;
+  }
+  s[0] += a; s[1] += b; s[2] += c; s[3] += d;
+  s[4] += e; s[5] += f; s[6] += g; s[7] += h;
+}
+
+/**
+ * The sha256 compression function, with 4 rounds unrolled.
+ *
+ * @param {!Uint32Array} s The 8 word working tape, which is also the final out.
+ * @param {!Uint32Array} t The 64 word working tape.
+ */
+const f = (s, t) => {
+  extend(t);
   let [a, b, c, d, e, f, g, h] = s;
   for (let i = 0, s0, s1, maj, t1, t2, ch, ab, da, cd, bc = b & c; i < 64; i += 4) {
     s0 = ((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10));
@@ -121,5 +150,6 @@ const f = (s, t) => {
 export {
   IC,
   f,
+  g,
   sha256Uint32
 };

@@ -3,7 +3,9 @@ import {
   Point,
   pointFrom,
   signFields as signFieldsBigInt,
-  verifyFields as verifyFieldsBigInt
+  signMessage as signMessageBigInt,
+  verifyFields as verifyFieldsBigInt,
+  verifyMessage as verifyMessageBigInt
 } from "../crypto/minaSchnorr";
 import { IC, f as sha256F } from "../crypto/sha2";
 import base58 from "../util/base58";
@@ -149,6 +151,34 @@ const verifyFields = (fields, sig) => {
   return verifyFieldsBigInt(fields, r, s, X);
 }
 
+
+/**
+ * @param {string} message
+ * @param {bigint} privKey
+ * @return {mina.SignerSignature}
+ */
+const signMessage = (message, privKey) => {
+  /** @const {!Point} */
+  const X = G.copy().multiply(privKey).project();
+  const { r, s } = signMessageBigInt(message, privKey, X);
+  return /** @type {mina.SignerSignature} */({
+    signer: PublicKey.fromPoint(X).toBase58(),
+    signature: new Signature(r, s).toBase58()
+  });
+}
+
+/**
+ * @param {string} message
+ * @param {mina.SignerSignature} sig
+ * @return {boolean}
+ */
+const verifyMessage = (message, sig) => {
+  const { r, s } = Signature.fromBase58(sig.signature);
+  /** @const {!Point} */
+  const X = PublicKey.fromBase58(sig.signer).toPoint();
+  return verifyMessageBigInt(message, r, s, X);
+}
+
 /**
  * @param {!Uint8Array} buff bytes array of which the last 4 bytes will be
  *                           written the checksum
@@ -191,5 +221,7 @@ export {
   Signature,
   parsePrivateKey,
   signFields,
+  signMessage,
   verifyFields,
+  verifyMessage
 };
