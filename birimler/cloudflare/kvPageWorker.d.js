@@ -6,10 +6,12 @@
 import { KeyValue } from "./types.d";
 
 /**
- * @typedef {{
- *   KV: KeyValue
- * }}
+ * @interface
+ * @struct
  */
-const KvPageWorkerEnv = {};
+const KvPageWorkerEnv = function () { };
+
+/** @type {!KeyValue} */
+KvPageWorkerEnv.prototype.KV;
 
 export { KvPageWorkerEnv };

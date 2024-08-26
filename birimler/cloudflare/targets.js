@@ -16,6 +16,7 @@ const Auth = {};
  *   name: string,
  *   namespace_id: string
  * }>=} kvBindings
+ * @return {!Promise<*>}
  */
 const uploadWorker = (auth, name, code, kvBindings) => {
   /** @const {string} */

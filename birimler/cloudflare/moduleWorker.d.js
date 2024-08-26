@@ -19,17 +19,11 @@ function Context() { }
 Context.prototype.waitUntil = function (promise) { }
 
 /**
- * @interface
+ * @typedef {{
+ *   fetch: function(!CfRequest, ?=, !Context=):(!Promise<!Response>|!Response)
+ * }}
  */
-function ModuleWorker() { }
-
-/**
- * @param {!CfRequest} req
- * @param {*} env
- * @param {!Context=} ctx
- * @return {!Promise<!Response>|!Response}
- */
-ModuleWorker.prototype.fetch = function (req, env, ctx) { }
+const ModuleWorker = {};
 
 /**
  * @interface

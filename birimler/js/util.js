@@ -9,11 +9,20 @@ import toml from "toml";
 const readDefines = (definesFile, module) => readFile(definesFile)
   .then(
     (fileContent) => {
-      const moduleName = module.replace("/", "$");
+      const moduleName = module.replaceAll("/", "$");
       return Object.entries(toml.parse(fileContent)).map(
         ([key, value]) => `${key}$$module$${moduleName}="${value}"`)
     },
     () => []
   )
 
-export { readDefines };
+/**
+ * @param {string} module
+ * @param {string} name
+ * @param {string} value
+ * @return {string}
+ */
+const define = (module, name, value) =>
+  `${name}$$module$${module.replaceAll("/", "$")}=${value}`;
+
+export { define, readDefines };
