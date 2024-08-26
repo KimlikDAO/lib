@@ -28,3 +28,5 @@ oauth2.AccessToken;
  * }}
  */
 oauth2.AccessTokenRequest;
+
+export default oauth2;

@@ -137,7 +137,7 @@ const expTimesExp = (a, x, b, y, M) => {
  */
 const tonelliShanks = (n, P, Q, c, M) => {
   if (n == 0n) return 0n;
-  /**@type {bigint} */
+  /** @type {bigint} */
   let t = exp(n, (Q - 1n) >> 1n, P);
   /** @type {bigint} */
   let R = t * n % P;

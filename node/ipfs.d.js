@@ -9,10 +9,8 @@ import node from "./node.d";
 node.ipfs = {};
 
 /**
- * @constructor
- * @struct
+ * @typedef {{
+ *   Hash: string
+ * }}
  */
-node.ipfs.AddResult = function () { }
-
-/** @type {string} */
-node.ipfs.AddResult.prototype.Hash;
+node.ipfs.AddResult;

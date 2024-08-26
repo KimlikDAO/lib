@@ -4,7 +4,7 @@ import toml from "toml";
 /**
  * @param {string} definesFile
  * @param {string} module
- * @return {!Array<string>}
+ * @return {!Promise<!Array<string>>}
  */
 const readDefines = (definesFile, module) => readFile(definesFile)
   .then(

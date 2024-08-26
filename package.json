@@ -11,16 +11,16 @@
   },
   "devDependencies": {
     "@ethereumjs/evm": "^3.1.0",
-    "@noble/secp256k1": "^2.0.0",
+    "@noble/secp256k1": "^2.1.0",
     "ethers": "^6.13.2",
     "mina-signer": "^3.0.7"
   },
   "dependencies": {
     "acorn": "^8.12.1",
     "acorn-walk": "^8.3.3",
-    "astring": "^1.8.6",
+    "astring": "^1.9.0",
     "google-closure-compiler": "^20240317.0.0",
     "htmlparser2": "^9.1.0",
-    "uglify-js": "^3.19.1"
+    "uglify-js": "^3.19.2"
   }
 }

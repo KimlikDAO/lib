@@ -101,7 +101,7 @@ const yaz = (nodeUrl, veri, veriŞekli) => {
     body: formData
   })
     .then((res) => res.json())
-    .then((/** @type {!node.ipfs.AddResult} */ res) => res.Hash)
+    .then((/** @type {node.ipfs.AddResult} */ res) => res.Hash)
 
   return Promise.all([hash(encoded), gelenSöz])
     .then(([/** !Uint8Array */ yerel, /** string */ gelen]) => CID(yerel) == gelen

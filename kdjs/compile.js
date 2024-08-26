@@ -17,7 +17,7 @@ const Params = {};
 const compile = async (params, checkFreshFn) => {
   /** @const {string} */
   const isolateDir = combine(
-    getDir(/** @type {string} */(params["output"] || /** @type {string} */(params["entry"]))),
+    getDir(/** @type {string} */(params["output"] || "build/" + /** @type {string} */(params["entry"]))),
     /** @type {string} */(params["isolateDir"]) || ".kdjs_isolate");
   const {
     /** @const {!Map<string, ImportStatement>} */ missingImports,
