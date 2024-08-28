@@ -85,6 +85,7 @@ const compile = async (params, checkFreshFn) => {
         },
         toplevel: true,
         compress: {
+          // evaluate: "eager",
           module: true,
           toplevel: true,
           passes: 3,
@@ -97,8 +98,9 @@ const compile = async (params, checkFreshFn) => {
       console.log(`Uglified size:\t${uglified.code.length}\nGCC size:\t${output.length}`);
       let code = uglified.code.length < output.length ? uglified.code : output;
       if (/** @type {boolean} */(params["emit_shebang"]))
-        code = "#!/usr/bin/env node\n" + code;
+        code = "#!/usr/bin/env bun\n" + code;
       console.log(uglified.warnings, uglified.error);
+      if (params["print"]) console.log(code);
       if (params["output"])
         writeFile(/** @type {string} */(params["output"]), code)
           .then(() => resolve(code))

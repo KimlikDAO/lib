@@ -40,6 +40,8 @@ const keccak256Uint32ToHex = (words) => hex.from(
   new Uint8Array(keccak256Uint32(words).buffer, 0, 32));
 
 /**
+ * @pureOrBreakMyCode
+ * @nosideeffects
  * @param {string} str A string to be hashed.
  * @return {string} hex encoded hash.
  */
