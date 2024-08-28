@@ -2,7 +2,7 @@ import express from "express";
 import { readFileSync } from "node:fs";
 import { parse } from "toml";
 import { createServer } from "vite";
-import { sayfaOku } from "./okuyucu";
+import { sayfaOku } from "../okuyucu";
 
 const KimlikDAOSwcPlugin = {
   name: "vite-plugin-kimlikdao-swc",

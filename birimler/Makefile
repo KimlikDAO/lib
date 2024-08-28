@@ -5,13 +5,13 @@ removeLang = $(subst -tr,,$(subst -en,,$(1)))
 Lang-en := false
 Lang-tr := true
 
-build/%.svg: %.svg lib/birimler/svgoConfig.js
+build/%.svg: %.svg lib/birimler/sayfa/svgoConfig.js
 	mkdir -p $(dir $@)
 	bun lib/birimler/işleyici.js $< --svg
 
-build/%.isvg: %.svg lib/birimler/svgoInlineConfig.js
+build/%.isvg: %.svg lib/birimler/sayfa/svgoInlineConfig.js
 	mkdir -p $(dir $@)
-	bun svgo --config lib/birimler/svgoInlineConfig.js $< --output $@
+	bun svgo --config lib/birimler/sayfa/svgoInlineConfig.js $< --output $@
 
 build/%.webp: %.png
 	mkdir -p $(dir $@)

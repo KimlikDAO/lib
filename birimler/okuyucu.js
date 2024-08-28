@@ -1,7 +1,7 @@
 import { Parser } from "htmlparser2";
 import { existsSync, readFileSync } from "node:fs";
 import { KapalıTagler, tagYaz } from "../util/html.js";
-import { renderParagraph } from "./latex.js";
+import { renderParagraph } from "./sayfa/latex.js";
 
 /**
  * @enum {number}
@@ -369,8 +369,7 @@ const sayfaOku = (sayfaAdı, seçimler) => {
 }
 
 export {
-  HataKodu,
-  birimOku,
-  sayfaOku,
+  birimOku, HataKodu, sayfaOku,
   tagYaz
 };
+

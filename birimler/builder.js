@@ -31,12 +31,14 @@ const buildCrate = (dirName, env) => import(`${ROOT_PATH}/${dirName}/build.js`)
     : Promise.reject())
   .catch(() => readBuildRecipe(dirName)
     .then((recipe) => {
+      if (recipe.dizin)
+        buildSayfa()
       if (recipe.worker)
         compileWorker(dirName, recipe.worker, env);
     })
   );
 
-/**s
+/**
  * @param {string} dirName
  * @param {!Object} env
  */

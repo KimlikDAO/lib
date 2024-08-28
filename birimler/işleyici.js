@@ -1,9 +1,9 @@
 import { minify } from "html-minifier";
 import { writeFileSync } from "node:fs";
 import { optimize } from "svgo";
-import htmlMinifierConfig from "./htmlMinifierConfig.js";
 import { sayfaOku } from "./okuyucu.js";
-import svgoConfig from "./svgoConfig.js";
+import htmlMinifierConfig from "./sayfa/htmlMinifierConfig.js";
+import svgoConfig from "./sayfa/svgoConfig.js";
 
 /** @const {!Array<string>} */
 const args = process.argv;
