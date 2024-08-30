@@ -24,7 +24,9 @@ const exportStmtToExportMap = (exportStmt) => {
     return "";
   let out = '\nglobalThis["KimlikDAOCompiler_exports"] = {\n';
   out += named.map(([exported, local]) => `  "${exported}": ${local},\n`).join('');
-  out += `  "KDdefault": ${exportStmt.unnamed}\n};\n`;
+  if (exportStmt.unnamed)
+    out += `  "KDdefault": ${exportStmt.unnamed}\n`
+  out += "};\n";
   return out;
 }
 

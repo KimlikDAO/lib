@@ -1,6 +1,6 @@
 import yaml from "js-yaml";
 import { readFile } from "node:fs/promises";
-import { combine } from "../../util/paths";
+import { combine } from "../util/paths";
 
 /**
  * @param {string} str

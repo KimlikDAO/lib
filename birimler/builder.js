@@ -2,7 +2,7 @@
 import yaml from "js-yaml";
 import { readFile, readdir } from "node:fs/promises";
 import { uploadWorker } from "./cloudflare/targets";
-import { compileWorker } from "./js/targets";
+import { compileWorker } from "./sunucu/targets";
 
 /** @define {string} */
 const ROOT_PATH = "../../..";

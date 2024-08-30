@@ -22,23 +22,6 @@ const HataKodu = {
 const Seçimler = {};
 
 /**
- * Verilen keymap dosyasını okur ve haritaya yerleştirir.
- *
- * @param {string} dosyaAdı keymap dosyasının adı
- * @param {!Object<string, string>} harita değerlerin işleneceği harita
- */
-const keymapOku = (dosyaAdı, harita) => {
-  try {
-    const dosya = readFileSync(dosyaAdı, "utf8");
-    for (const satır of dosya.split("\n")) {
-      if (!satır) continue;
-      const [key, val] = satır.split(" -> ");
-      harita[key] = val;
-    }
-  } catch (e) { }
-}
-
-/**
  * @param {string} birimAdı
  * @param {!Seçimler} seçimler
  * @param {!Object<string, string>}  anaNitelikler
@@ -47,7 +30,7 @@ const keymapOku = (dosyaAdı, harita) => {
 *   cssler: !Set<string>
 * }>}
 */
-const birimOku = (birimAdı, seçimler, anaNitelikler) => {
+const birimOku = async (birimAdı, seçimler, anaNitelikler) => {
   /** @const {string} */
   const birimDosyaAdı = birimAdı.endsWith("sayfa.html") || birimAdı.endsWith("birim.html")
     ? "/birim.html" : "/comp.html";
@@ -65,8 +48,6 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
   let latexVar = false;
   /** @type {number} */
   let latexDerinliği = 0;
-  /** @const {!Object<string, string>} */
-  const değiştirHaritası = {};
   /** @type {!Array<string|!Promise<string>>} */
   let htmlParts = [];
   /** @const {function({cssler: string, html: string}):!Promise<string>} */
@@ -120,17 +101,6 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
       let değiştirMetni = "";
 
       for (const /** string */ nitelik in nitelikler) {
-        if (!seçimler.dev) {
-          /** @const {string} */
-          const değer = nitelikler[nitelik];
-          /**
-           * Niteliğin değeri `değiştirHaritası`nda varsa değerini değiştir.
-           *
-           * @const {string}
-           */
-          const yeniDeğer = değiştirHaritası[değer.startsWith("/") ? değer : "/" + değer];
-          if (yeniDeğer) nitelikler[nitelik] = değerler.piggyback + yeniDeğer;
-        }
 
         if (nitelik.startsWith("data-remove-")) {
           if (!seçimler.dev)
@@ -223,12 +193,6 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
         if (phantom) nitelikler["data-phantom"] = "";
 
         if (üretilenHtml) {
-          if (!seçimler.dev)
-            üretilenHtml = üretilenHtml.replace(
-              new RegExp(Object.keys(değiştirHaritası).join('|'), 'g'),
-              (sol) => değiştirHaritası[sol]
-                ? değerler.piggyback + değiştirHaritası[sol] : sol
-            );
           değiştirDerinliği = derinlik;
           değiştirMetni = üretilenHtml;
         }
@@ -263,8 +227,6 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
       }
     },
 
-    oncomment(yorum) { },
-
     onclosetag(ad, hayali) {
       hayali ||= KapalıTagler[ad];
       sırada = null;
@@ -289,16 +251,6 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
     lowerCaseAttributeNames: false,
   });
 
-  if (!seçimler.dev) {
-    /** @const {string} */
-    let önek = seçimler.kök;
-    if (!birimAdı.startsWith("build/")) önek += "build/";
-    /** @const {string} */
-    const nokta = birimAdı.lastIndexOf(".");
-    keymapOku(`${önek}${birimAdı.slice(0, nokta)}.keymap`, değiştirHaritası);
-    keymapOku(`${önek}${birimAdı.slice(0, nokta)}-${seçimler.dil}.keymap`, değiştirHaritası);
-  }
-
   if (existsSync(seçimler.kök + birimAdı.slice(0, -4) + "css"))
     cssler.add(birimAdı.slice(0, -4) + "css");
 
@@ -310,7 +262,7 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
     parser.end(readFileSync(seçimler.kök + birimAdı, "utf8"));
 
   if (latexVar)
-    cssler.add("/lib/util/latex.css");
+    cssler.add("/lib/birimler/sayfa/latex.css");
 
   return {
     html,
@@ -343,8 +295,5 @@ const sayfaOku = (sayfaAdı, seçimler) => {
 }
 
 export {
-  HataKodu,
-  birimOku,
   sayfaOku,
-  tagYaz
 };

@@ -39,6 +39,12 @@ Provider.prototype.disconnect = function () { }
 Provider.prototype.switchChain = function (chain) { }
 
 /**
+ * @param {ChainId} chain
+ * @return {boolean}
+ */
+Provider.prototype.isChainSupported = function (chain) { }
+
+/**s
  * @type {?}
  */
 Provider.prototype.provider;
