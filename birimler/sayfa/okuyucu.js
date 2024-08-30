@@ -22,23 +22,6 @@ const HataKodu = {
 const Seçimler = {};
 
 /**
- * Verilen keymap dosyasını okur ve haritaya yerleştirir.
- *
- * @param {string} dosyaAdı keymap dosyasının adı
- * @param {!Object<string, string>} harita değerlerin işleneceği harita
- */
-const keymapOku = (dosyaAdı, harita) => {
-  try {
-    const dosya = readFileSync(dosyaAdı, "utf8");
-    for (const satır of dosya.split("\n")) {
-      if (!satır) continue;
-      const [key, val] = satır.split(" -> ");
-      harita[key] = val;
-    }
-  } catch (e) { }
-}
-
-/**
  * @param {string} birimAdı
  * @param {!Seçimler} seçimler
  * @param {!Object<string, string>}  anaNitelikler Kök birimin nitelikleri
@@ -256,6 +239,14 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
         delete nitelikler["data-latex"];
       }
 
+      if (ad.toLowerCase() == "html") {
+        for (const nitelik in nitelikler)
+          if (nitelik.startsWith("data")) {
+            seçimler[nitelik.slice(5)] = nitelikler[nitelik];
+            delete nitelikler[nitelik];
+          }
+      }
+
       if ("data-phantom" in nitelikler) {
         if (ad != "span" && ad != "g" && ad != "div") {
           console.error("Span div, veya g olmayan phantom!");
@@ -315,16 +306,6 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
     lowerCaseAttributeNames: false,
   });
 
-  if (!seçimler.dev) {
-    /** @const {string} */
-    let önek = seçimler.kök;
-    if (!birimAdı.startsWith("build/")) önek += "build/";
-    /** @const {string} */
-    const nokta = birimAdı.lastIndexOf(".");
-    keymapOku(`${önek}${birimAdı.slice(0, nokta)}.keymap`, değiştirHaritası);
-    keymapOku(`${önek}${birimAdı.slice(0, nokta)}-${seçimler.dil}.keymap`, değiştirHaritası);
-  }
-
   if (existsSync(seçimler.kök + birimAdı.slice(0, -4) + "css"))
     cssler.add(birimAdı.slice(0, -4) + "css");
 
@@ -345,12 +326,15 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
 }
 
 /**
- * @param {string} sayfaAdı
  * @param {!Seçimler} seçimler
- * @return {!Promise<string>}
+ * @return {!Promise<{
+ *   konum: string,
+ *   html: string,
+ *   defines: !Object
+ * }>}
  */
-const sayfaOku = (sayfaAdı, seçimler) => {
-  const { html, cssler } = birimOku(sayfaAdı, seçimler, {});
+const sayfaOku = (seçimler) => {
+  const { html, cssler } = birimOku(seçimler.konum, seçimler, {});
   if (seçimler.dev) {
     /** @type {string} */
     let linkler = "";
@@ -363,9 +347,15 @@ const sayfaOku = (sayfaAdı, seçimler) => {
       }
       linkler += `  <link href="${css}" rel="stylesheet" type="text/css" />\n`
     }
-    return html.replace("</head>", linkler + "</head>");
+    return Promise.resolve({
+      html: html.replace("</head>", linkler + "</head>"),
+      defines: seçimler
+    });
   }
-  return Promise.resolve(html);
+  return Promise.resolve({
+    html,
+    defines: seçimler
+  });
 }
 
 export {

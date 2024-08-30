@@ -256,6 +256,14 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
         delete nitelikler["data-latex"];
       }
 
+      if (ad.toLowerCase() == "html") {
+        for (const nitelik in nitelikler)
+          if (nitelik.startsWith("data")) {
+            seçimler[nitelik.slice(5)] = nitelikler[nitelik];
+            delete nitelikler[nitelik];
+          }
+      }
+
       if ("data-phantom" in nitelikler) {
         if (ad != "span" && ad != "g" && ad != "div") {
           console.error("Span div, veya g olmayan phantom!");

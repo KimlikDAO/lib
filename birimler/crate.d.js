@@ -1,5 +1,7 @@
 /** @externs */
 
+import birimler from "./birimler.d";
+
 /**
  * @typedef {{
  *   kök: string,
@@ -7,9 +9,10 @@
  *   sayfalar: !Array<{
  *     tr: string,
  *     en: string
- *   }>
+ *   }>,
+ *   worker: Object
  * }}
  */
-const Crate = {};
+birimler.Crate = {};
 
-export { Crate };
+export default birimler;

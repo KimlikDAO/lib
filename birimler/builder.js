@@ -1,54 +1,41 @@
 #!/usr/bin/env bun
 import yaml from "js-yaml";
-import { readFile, readdir } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { uploadWorker } from "./cloudflare/targets";
+import { readCrateRecipe } from "./crate";
 import { compileWorker } from "./sunucu/targets";
 
 /** @define {string} */
 const ROOT_PATH = "../../..";
 
 /**
- * @param {string} dirName
- * @return {!Promise<!Object>}
- */
-const readBuildRecipe = (dirName) => readdir(dirName)
-  .then((/** !Array<string> */ dir) => {
-    for (const file of dir) {
-      if (!file.startsWith(".") && file.endsWith(".yaml"))
-        return readFile(`${dirName}/${file}`)
-          .then((content) => yaml.load(content));
-    }
-    return Promise.reject();
-  });
-
-/**
- * @param {string} dirName
+ * @param {string} createDir
  * @param {!Object} env
  */
-const buildCrate = (dirName, env) => import(`${ROOT_PATH}/${dirName}/build.js`)
+const buildCrate = (createDir, env) => import(`${ROOT_PATH}/${createDir}/build.js`)
   .then((buildFile) => buildFile.default && buildFile.default.build
     ? buildFile.default.build(env)
     : Promise.reject())
-  .catch(() => readBuildRecipe(dirName)
+  .catch(() => readCrateRecipe(createDir)
     .then((recipe) => {
-      if (recipe.dizin)
-        buildSayfa()
+      // if (recipe.dizin)
+      //buildSayfa()
       if (recipe.worker)
-        compileWorker(dirName, recipe.worker, env);
+        compileWorker(createDir, recipe.worker, env);
     })
   );
 
 /**
- * @param {string} dirName
+ * @param {string} createDir
  * @param {!Object} env
  */
-const deployCrate = (dirName, env) => import(`${dirName}/build.js`)
+const deployCrate = (createDir, env) => import(`${createDir}/build.js`)
   .then(
     (buildFile) => buildFile.default.deploy(env),
-    () => readBuildRecipe(dirName)
+    () => readCrateRecipe(createDir)
       .then((recipe) => {
         if (recipe.worker)
-          return compileWorker(dirName, recipe.worker)
+          return compileWorker(createDir, recipe.worker)
             .then((code) => uploadWorker(env.cloudflare.auth, recipe.worker.name, code))
       })
   );
