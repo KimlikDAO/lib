@@ -2,7 +2,7 @@ import { createHash } from "crypto";
 import { copyFile, readFile, writeFile } from "node:fs/promises";
 import path from "path";
 import process from "process";
-import { CompressedMimes } from "./ayarlar.js";
+import { CompressedMimes } from "./mimes";
 
 /** @const {!Array<string>} */
 let args = process.argv.slice(3);

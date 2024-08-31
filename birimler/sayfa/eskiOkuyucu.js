@@ -1,7 +1,7 @@
 import { Parser } from "htmlparser2";
 import { existsSync, readFileSync } from "node:fs";
-import { KapalıTagler, tagYaz } from "../util/html.js";
-import { renderParagraph } from "./sayfa/latex.js";
+import { KapalıTagler, tagYaz } from "../../util/html.js";
+import { renderParagraph } from "./latex.js";
 
 /**
  * @enum {number}

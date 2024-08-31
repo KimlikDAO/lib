@@ -27,7 +27,7 @@ const compileAndRunMatching = async (pattern, command, args) => {
   const runBN = bottleneck(args["runConcurrency"] || args["concurrency"]);
 
   for await (const f of glob.scan(".")) {
-    if (f.startsWith("build") || f.includes("okuyucu") || f.includes("node_modules")) continue;
+    if (f.startsWith("build") || f.includes("eskiOkuyucu") || f.includes("node_modules")) continue;
     const output = `build/${f}`;
     compileTasks.push(compileBN(() => compile({
       ...args,

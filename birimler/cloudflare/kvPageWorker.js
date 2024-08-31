@@ -1,23 +1,7 @@
+import { CompressedMimes, Mimes } from "../mimes";
 import { KvPageWorkerEnv } from "./kvPageWorker.d";
 import { ModuleWorker } from "./moduleWorker.d";
 import { CfRequest } from "./types.d";
-
-/** @const {!Object<string, string>} */
-const MIMES = {
-  "css": "text/css",
-  "js": "application/javascript;charset=utf-8",
-  // Font
-  "ttf": "font/ttf",
-  "woff2": "font/woff2",
-  // Resim ve foto
-  "svg": "image/svg+xml",
-  "png": "image/png",
-  "webp": "image/webp",
-  // Metin
-  "txt": "text/plain",
-};
-/** @const {!Object<string, boolean>} */
-const COMPRESSED_MIMES = { "woff2": true, "png": true, "webp": true };
 
 /** @const {string} */
 const PAGE_CACHE_CONTROL = "max-age=90,public";
@@ -38,9 +22,9 @@ const err = () => new Response("NAPİM?", {
 /**
  * @param {string} hostUrl
  * @param {!Object<string, string>} pages
- * @return {!ModuleWorker}
+ * @return {ModuleWorker}
  */
-const create = (hostUrl, pages) => /** @type {!ModuleWorker} */({
+const create = (hostUrl, pages) => /** @type {ModuleWorker} */({
   /**
    * @override
    *
@@ -60,7 +44,7 @@ const create = (hostUrl, pages) => /** @type {!ModuleWorker} */({
     const suffix = url.slice(idx + 1);
 
     /** @const {string} */
-    const ext = COMPRESSED_MIMES[suffix]
+    const ext = CompressedMimes[suffix]
       ? ""
       : enc.includes("br") ? ".br" : enc.includes("gz") ? ".gz" : "";
 
@@ -123,7 +107,7 @@ const create = (hostUrl, pages) => /** @type {!ModuleWorker} */({
         "content-length": body.byteLength,
         "content-type": idx == hostUrl.lastIndexOf(".")
           ? "text/html;charset=utf-8"
-          : MIMES[suffix],
+          : Mimes[suffix],
         "expires": "Sun, 01 Jan 2034 00:00:00 GMT",
         "vary": "accept-encoding",
       }

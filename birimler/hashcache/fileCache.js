@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { keccak256Uint8 } from "../crypto/sha3";
+import { keccak256Uint8 } from "../../crypto/sha3";
 
 /**
  * @typedef {{

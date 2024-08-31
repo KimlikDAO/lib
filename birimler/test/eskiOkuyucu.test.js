@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { birimOku, sayfaOku, tagYaz } from "../okuyucu";
+import { birimOku, sayfaOku, tagYaz } from "../sayfa/eskiOkuyucu";
 
 describe("tagYaz tests", () => {
   it("should serialize empty tag", () => {

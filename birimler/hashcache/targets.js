@@ -1,6 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { keccak256Uint8 } from "../crypto/sha3";
-import { hex } from "../util/çevir";
+import { keccak256Uint8 } from "../../crypto/sha3";
+import { hex } from "../../util/çevir";
 import { getHash } from "./fileCache";
 
 /**
