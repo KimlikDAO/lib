@@ -10,18 +10,18 @@
  * @author KimlikDAO
  */
 
-import { hex } from "../util/çevir";
-import { arfCurve, Point as IPoint } from "./arfCurve";
+import { uint8ArrayBEtoBigInt } from "../util/çevir";
+import { arfCurve, aX_bY, Point as IPoint } from "./arfCurve";
 import { inverse } from "./modular";
 
 /**
- * @const {bigint}
  * @noinline
+ * @const {bigint}
  */
 const P = (1n << 256n) - (1n << 32n) - 977n;
 /**
- * @const {bigint}
  * @noinline
+ * @const {bigint}
  */
 const Q = P - 0x14551231950b75fc4402da1722fc9baeen;
 /**
@@ -103,14 +103,6 @@ const G = new Point(
 const O = new Point(0n, 0n, 0n);
 
 /**
- * @param {bigint} a
- * @param {bigint} b
- * @param {!Point} H
- * @return {!Point} a.G + b.H
- */
-const aGbH = (a, b, H) => G.copy().multiply(a).increment(H.multiply(b));
-
-/**
  * @param {!Point} p
  * @param {!Point} q
  * @return {boolean}
@@ -133,8 +125,8 @@ const equal = (p, q) => {
 const sign = (digest, privKey) => {
   for (; ;) {
     /** @const {bigint} */
-    const k = BigInt("0x" + hex(/** @type {!Uint8Array} */(
-      crypto.getRandomValues(new Uint8Array(32)))));
+    const k = uint8ArrayBEtoBigInt(/** @type {!Uint8Array} */(
+      crypto.getRandomValues(new Uint8Array(32))));
     if (k <= 0 || Q <= k) continue; // probability ~2^{-128}, i.e., a near impossibility.
     /** @const {!Point} */
     const K = G.copy().multiply(k).project();
@@ -167,7 +159,7 @@ const verify = (digest, r, s, pubKey) => {
   /** @const {bigint} */
   const is = inverse(s, Q);
   /** @const {!Point} */
-  const U = aGbH(digest * is % Q, r * is % Q, pubKey.copy());
+  const U = aX_bY(digest * is % Q, G.copy(), r * is % Q, pubKey.copy());
   /** @const {bigint} */
   const z2 = (U.z * U.z) % P;
   if (!z2) return false;
@@ -194,7 +186,7 @@ const recoverSigner = (digest, r, s, yParity) => {
   /** @const {Point} */
   const K = pointFrom(r, yParity);
   if (!K) return O;
-  return aGbH(Q - (digest * ir % Q), s * ir % Q, K).project();
+  return aX_bY(Q - (digest * ir % Q), G.copy(), s * ir % Q, K).project();
 }
 
 export {

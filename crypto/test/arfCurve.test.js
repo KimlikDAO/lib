@@ -1,5 +1,6 @@
-import { expect, test } from "bun:test";
-import { arfCurve, Point as IPoint } from "../arfCurve";
+import { describe, expect, test } from "bun:test";
+import { arfCurve, aX_bY, Point as IPoint } from "../arfCurve";
+import { pointFrom } from "../minaSchnorr";
 
 /** @const {bigint} */
 const P = 13n;
@@ -29,4 +30,47 @@ test("the order of Point is the base field of Qoint", () => {
 
 test("the order of Qoint is the base field of Point", () => {
   expect(Gq.copy().multiply(P)).toEqual(new Qoint(0n, 0n, 0n));
+});
+
+describe("Efficient aX + bY tests", () => {
+  /**
+   * Pallas field size
+   *
+   * @noinline
+   * @const {bigint}
+   */
+  const P = (1n << 254n) + 0x224698fc094cf91b992d30ed00000001n;
+
+  /**
+   * Pallas point
+   *
+   * @struct
+   * @const {function(new:IPoint, bigint, bigint, bigint)}
+   */
+  const Point = arfCurve(P);
+
+  /**
+   * A point on the curve (-1)^3 + 5 = 2^2.
+   *
+   * @noinline
+   * @const {!Point}
+   */
+  const X = new Point(P - 1n, 2n, 1n);
+
+  /**
+   * Another point on the curve.
+   *
+   * @noinline
+   * @const {!Point}
+   */
+  const Y = pointFrom(P - 2n, false) || X;
+
+  test("with basic examples", () => {
+    const a = 12312313n;
+    const b = 8458345683n;
+    for (let i = 0n; i < 10n; ++i)
+      for (let j = 0n; j < 10n; ++j)
+        expect(aX_bY(a + i, X.copy(), b + j, Y.copy()).project())
+          .toEqual(X.copy().multiply(a + i).increment(Y.copy().multiply(b + j)).project());
+  })
 });
