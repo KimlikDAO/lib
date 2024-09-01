@@ -12,7 +12,6 @@ globalThis["caches"]["default"] = /** @type {!Cache} */({
    * @return {!Promise<Response>}
    */
   match(key) {
-    console.log(key)
     return Promise.resolve(null);
   },
 
@@ -57,18 +56,7 @@ const createRequest = (url, encoding, cookie) => /** @type {!CfRequest} */({
 });
 
 /** @const {!ModuleWorker} */
-const KvPageWorker = create("https://kimlikdao.org/", {
-  "?tr": "ana-tr.html",
-  "?en": "ana-en.html",
-  "al": "al-tr.html",
-  "mint": "al-en.html",
-  "kpassim": "kpassim-tr.html",
-  "kpass": "kpassim-en.html",
-  "oyla": "oyla-tr.html",
-  "vote": "oyla-en.html",
-  "iptal": "iptal-tr.html",
-  "revoke": "iptal-en.html"
-});
+const KvPageWorker = create("https://kimlikdao.org/");
 
 const testKvName = (url, acceptEncoding, cookie, kvName) => it(
   `returns the correct result for ${acceptEncoding}, ${cookie}, ${kvName}`,
@@ -79,12 +67,18 @@ const testKvName = (url, acceptEncoding, cookie, kvName) => it(
     .then((res) => expect(res).toBe(kvName))
 );
 
-testKvName("https://kimlikdao.org/", "br", "l=tr", "ana-tr.html.br");
-testKvName("https://kimlikdao.org/", "br", null, "ana-en.html.br");
-testKvName("https://kimlikdao.org/?tr", "gzip", "l=en", "ana-tr.html.gz");
-testKvName("https://kimlikdao.org/?en", "", "l=tr", "ana-en.html");
-testKvName("https://kimlikdao.org/?utm_source=Wallet", "br, gzip", null, "ana-en.html.br");
-testKvName("https://kimlikdao.org/?utm", "gzip, br", "l=tr", "ana-tr.html.br");
+testKvName("https://kimlikdao.org/?tr", "gzip", "l=en", "?tr.gz");
+testKvName("https://kimlikdao.org/?tr", "gzip", "l=en", "?tr.gz");
+testKvName("https://kimlikdao.org/vote", "gzip", "l=tr", "vote.gz");
+testKvName("https://kimlikdao.org/", "br", "l=tr", "?tr.br");
+testKvName("https://kimlikdao.org/", "br", null, "?en.br");
+testKvName("https://kimlikdao.org/vote?evil_tracker=...dot.", "br", "l=tr", "vote.br");
+testKvName("https://kimlikdao.org/?utm_source=Wallet", "br, gzip", null, "?en.br");
+testKvName("https://kimlikdao.org/vote", "br", null, "vote.br");
+testKvName("https://kimlikdao.org/?utm", "gzip, br", "l=tr", "?tr.br");
 testKvName("https://kimlikdao.org/abc.woff2", "br", null, "abc.woff2");
-testKvName("https://kimlikdao.org/vote", "br", null, "oyla-en.html.br");
-testKvName("https://kimlikdao.org/vote", "gzip", "l=tr", "oyla-en.html.gz");
+testKvName("https://kimlikdao.org/vote/", "gzip", "l=tr", "vote.gz");
+
+testKvName("https://kimlikdao.org//", "gzip", "l=tr", "?tr.gz");
+testKvName("https://kimlikdao.org/?en/", "gzip", "l=tr", "?tr.gz");
+testKvName("https://kimlikdao.org//?en", "gzip", "l=tr", "?tr.gz");

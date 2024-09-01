@@ -276,12 +276,6 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
       }
     },
 
-    oncomment(yorum) {
-      yorum = yorum.trim();
-      if (EN && yorum.startsWith("en:"))
-        sırada = yorum.slice(3);
-    },
-
     onclosetag(ad, hayali) {
       hayali ||= KapalıTagler[ad];
       sırada = null;

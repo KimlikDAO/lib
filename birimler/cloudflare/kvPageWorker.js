@@ -14,17 +14,13 @@ const STATIC_CACHE_CONTROL = "max-age=29030400,public,immutable";
 /**
  * @return {!Response}
  */
-const err = () => new Response("NAPİM?", {
-  status: 404,
-  headers: { "content-type": "text/plain;charset=utf-8" }
-})
+const err = () => Response.redirect("/");
 
 /**
  * @param {string} hostUrl
- * @param {!Object<string, string>} pages
  * @return {ModuleWorker}
  */
-const create = (hostUrl, pages) => /** @type {ModuleWorker} */({
+const create = (hostUrl) => /** @type {ModuleWorker} */({
   /**
    * @override
    *
@@ -38,39 +34,37 @@ const create = (hostUrl, pages) => /** @type {ModuleWorker} */({
     const url = req.url;
     /** @const {string} */
     const enc = req.cf.clientAcceptEncoding || "";
-    /** @const {number} */
-    const idx = url.lastIndexOf(".");
-    /** @const {string} */
-    const suffix = url.slice(idx + 1);
+    /** @type {?string} */
+    let kvKey = url.slice(hostUrl.length);
+    /** @type {number} */
+    let qmk = kvKey.indexOf("?")
+    if (qmk != -1) kvKey = kvKey.slice(0, qmk);
+    if (kvKey.endsWith("/")) kvKey = kvKey.slice(0, -1);
 
+    /** @const {number} */
+    const dot = kvKey.indexOf(".");
+    /** @const {string} */
+    const suffix = kvKey.slice(dot + 1);
     /** @const {string} */
     const ext = CompressedMimes[suffix]
       ? ""
-      : enc.includes("br") ? ".br" : enc.includes("gz") ? ".gz" : "";
+      : enc.includes("br") ? ".br" : enc.includes("gz") ? ".gzip" : "";
 
-    /** @type {?string} */
-    let kvKey = url.slice(hostUrl.length);
-    /** @type {?string} */
-    let cacheKey;
-    if (kvKey && idx != hostUrl.lastIndexOf("."))
-      cacheKey = url;
-    else {
-      /** @const {number} */
-      const qmark = kvKey.lastIndexOf("?");
-      if (qmark != -1 && kvKey.length > 3)
-        kvKey = kvKey.slice(0, qmark);
-      if (kvKey) kvKey = pages[kvKey];
+    if (!kvKey) {
+      if (url.length == hostUrl.length + 3)
+        kvKey = url.slice(hostUrl.length);
       else {
         /** @const {?string} */
         const cookie = req.headers.get("cookie");
-        kvKey = (cookie ? cookie.includes("l=tr") : req.headers.get("accept-language")?.includes("tr"))
-          ? pages["?tr"] : pages["?en"];
+        if (cookie && cookie.includes("l=tr")) kvKey = "?tr";
+        else if (cookie && cookie.includes("l=en")) kvKey = "?en";
+        else kvKey = req.headers.get("accept-language")?.includes("tr")
+          ? "?tr" : "?en"
       }
-      cacheKey = hostUrl + kvKey
     }
-    kvKey += ext;
-    cacheKey += ext;
-
+    kvKey += ext.slice(0, 3);
+    /** @const {string} */
+    const cacheKey = hostUrl + kvKey;
     /** @type {boolean} */
     let inCache = false;
     /**
@@ -87,7 +81,7 @@ const create = (hostUrl, pages) => /** @type {ModuleWorker} */({
       });
       response.headers.set("content-encoding",
         response.headers.get("content-encoding").slice(1));
-      if (idx == hostUrl.lastIndexOf("."))
+      if (dot == -1)
         response.headers.set("cache-control", PAGE_CACHE_CONTROL);
       return response;
     });
@@ -100,12 +94,12 @@ const create = (hostUrl, pages) => /** @type {ModuleWorker} */({
     const makeResponse = (body, toCache) => {
       /** @type {!Object<string, string>} */
       let headers = {
-        "cache-control": (toCache || idx != hostUrl.lastIndexOf("."))
+        "cache-control": (toCache || (dot != -1))
           ? STATIC_CACHE_CONTROL
           : PAGE_CACHE_CONTROL,
-        "content-encoding": toCache + (ext === ".br" ? "br" : ext === ".gz" ? "gzip" : ""),
+        "content-encoding": toCache + ext.slice(1),
         "content-length": body.byteLength,
-        "content-type": idx == hostUrl.lastIndexOf(".")
+        "content-type": (dot == -1)
           ? "text/html;charset=utf-8"
           : Mimes[suffix],
         "expires": "Sun, 01 Jan 2034 00:00:00 GMT",
