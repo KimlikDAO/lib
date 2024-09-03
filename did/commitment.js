@@ -8,6 +8,8 @@ import {
   sayıdanBase64e,
   uint8ArrayeBase64ten,
   uint8ArrayeHexten,
+  uint8ArrayLEtoBigInt,
+  uint8ArrayLEyeSayıdan
 } from "../util/çevir";
 
 /**
@@ -27,7 +29,6 @@ const commit = (chainGroup, ownerAddress, commitmentR) => {
       return base64(new Uint8Array(
         keccak256Uint32(new Uint32Array(buff.buffer)).buffer, 0, 32));
     case ChainGroup.MINA:
-      // TODO(KimlikDAO-bot): just use Pedersen commitment with (X.x + X.isOdd) % P
       const { x, isOdd } = PublicKey.fromBase58(ownerAddress);
       return sayıdanBase64e(poseidon([base64tenSayıya(commitmentR), isOdd ? x + 1n : x]));
   }
@@ -43,16 +44,16 @@ const commit = (chainGroup, ownerAddress, commitmentR) => {
  * TODO(KimlikDAO-bot): work over Uint32Arrays.
  *
  * @param {ChainGroup} chainGroup
- * @param {string} address wallet address to commit to
- * @param {!Uint8Array} random random seed
+ * @param {string} ownerAddress wallet address to commit to
+ * @param {!Uint8Array} random 2x32 bits random seed
  * @return {!Uint8Array} 2x32 bits cryptographic commitment
  */
-const commitDouble = (chainGroup, address, random) => {
+const commitDouble = (chainGroup, ownerAddress, random) => {
   switch (chainGroup) {
     case ChainGroup.EVM: {
       /** @const {!Uint8Array} */
       const buff = new Uint8Array(32 + 20);
-      uint8ArrayeHexten(buff.subarray(32), address.slice(2));
+      uint8ArrayeHexten(buff.subarray(32), ownerAddress.slice(2));
       buff.set(random.subarray(0, 32));
       /** @const {!Uint8Array} */
       const commitment = new Uint8Array(
@@ -63,6 +64,17 @@ const commitDouble = (chainGroup, address, random) => {
       return commitment;
     }
     case ChainGroup.MINA:
+      /** @const {!Uint8Array} */
+      const commitment = new Uint8Array(64);
+      const { x, isOdd } = PublicKey.fromBase58(ownerAddress);
+      const /** bigint */ h = isOdd ? x + 1n : x;
+      uint8ArrayLEyeSayıdan(
+        commitment,
+        poseidon([uint8ArrayLEtoBigInt(random.subarray(0, 32)), h]));
+      uint8ArrayLEyeSayıdan(
+        commitment.subarray(32),
+        poseidon([uint8ArrayLEtoBigInt(random.subarray(32)), h]));
+      return commitment;
   }
   return new Uint8Array(64);
 }

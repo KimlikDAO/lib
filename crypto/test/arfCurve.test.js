@@ -13,16 +13,16 @@ const Q = 19n;
  *
  *  y² = x³ + 2
  *
- * @const {function(new:IPoint, bigint, bigint, bigint)} */
+ * @const {function(new:IPoint, bigint, bigint, bigint=)} */
 const Point = arfCurve(P);
 /**
- * @const {function(new:IPoint, bigint, bigint, bigint)} */
+ * @const {function(new:IPoint, bigint, bigint, bigint=)} */
 const Qoint = arfCurve(Q);
 
 /** @const {!Point} */
-const Gp = new Point(1n, 4n, 1n);
+const Gp = new Point(1n, 4n);
 /** @const {!Qoint} */
-const Gq = new Qoint(4n, 3n, 1n);
+const Gq = new Qoint(4n, 3n);
 
 test("the order of Point is the base field of Qoint", () => {
   expect(Gp.copy().multiply(Q)).toEqual(new Point(0n, 0n, 0n));
@@ -45,7 +45,7 @@ describe("Efficient aX + bY tests", () => {
    * Pallas point
    *
    * @struct
-   * @const {function(new:IPoint, bigint, bigint, bigint)}
+   * @const {function(new:IPoint, bigint, bigint, bigint=)}
    */
   const Point = arfCurve(P);
 
@@ -55,7 +55,7 @@ describe("Efficient aX + bY tests", () => {
    * @noinline
    * @const {!Point}
    */
-  const X = new Point(P - 1n, 2n, 1n);
+  const X = new Point(P - 1n, 2n);
 
   /**
    * Another point on the curve.

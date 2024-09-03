@@ -11,14 +11,14 @@ import { tonelliShanks } from "./modular";
 const Q = P + 0x47afc1f319ba3400000000n;
 /**
  * @struct
- * @const {function(new:IPoint, bigint, bigint, bigint)}
+ * @const {function(new:IPoint, bigint, bigint, bigint=)}
  */
 const Point = arfCurve(P);
 /**
  * @const {!Point}
  * @noinline
  */
-const G = new Point(1n, 0x1b74b5a30a12937c53dfa9f06378ee548f655bd4333d477119cf7a23caed2abbn, 1n);
+const G = new Point(1n, 0x1b74b5a30a12937c53dfa9f06378ee548f655bd4333d477119cf7a23caed2abbn);
 
 /**
  * @param {bigint} n
@@ -41,7 +41,7 @@ const pointFrom = (x, yParity) => {
   const y2 = (x2 * x + 5n) % P
   /** @const {?bigint} */
   const y = sqrt(y2);
-  return y ? new Point(x, (y & 1n) == yParity ? y : P - y, 1n) : null;
+  return y ? new Point(x, (y & 1n) == yParity ? y : P - y) : null;
 }
 
 /**

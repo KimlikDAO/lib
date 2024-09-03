@@ -10,7 +10,7 @@ import { G, Point } from "../../secp256k1";
  */
 const derogate = (p) => {
   const q = p.toAffine();
-  return new Point(q.x, q.y, 1n)
+  return new Point(q.x, q.y)
 };
 
 describe("Point <> JacobianPoint equivalence", () => {

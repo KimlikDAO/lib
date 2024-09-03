@@ -25,7 +25,7 @@ const P = (1n << 256n) - (1n << 32n) - 977n;
  */
 const Q = P - 0x14551231950b75fc4402da1722fc9baeen;
 /**
- * @const {function(new:IPoint, bigint, bigint, bigint)}
+ * @const {function(new:IPoint, bigint, bigint, bigint=)}
  */
 const Point = arfCurve(P);
 
@@ -77,7 +77,7 @@ const pointFrom = (x, yParity) => {
   /** @const {bigint} */
   const y = sqrt(y2);
   return (y * y) % P == y2
-    ? new Point(x, ((y & 1n) == yParity) ? y : P - y, 1n)
+    ? new Point(x, ((y & 1n) == yParity) ? y : P - y)
     : null;
 }
 
@@ -86,9 +86,8 @@ const pointFrom = (x, yParity) => {
  * @noinline
  */
 const G = new Point(
-  0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798n,
-  0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8n,
-  1n
+  0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798n,
+  0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8n
 );
 
 /**

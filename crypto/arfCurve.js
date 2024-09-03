@@ -30,7 +30,7 @@ class Point {
    * @pureOrBreakMyCode
    * @param {bigint} x
    * @param {bigint} y
-   * @param {bigint} z
+   * @param {bigint=} z
    */
   constructor(x, y, z) { }
 
@@ -73,7 +73,7 @@ class Point {
  * @nosideeffects
  * @pureOrBreakMyCode
  * @param {bigint} P
- * @return {function(new:Point, bigint, bigint, bigint)}
+ * @return {function(new:Point, bigint, bigint, bigint=)}
  */
 const arfCurve = (P) => {
   /**
@@ -96,7 +96,7 @@ const arfCurve = (P) => {
      * @nosideeffects
      * @param {bigint} x
      * @param {bigint} y
-     * @param {bigint} z
+     * @param {bigint=} z
      */
     constructor(x, y, z) {
       /** @type {bigint} */
@@ -104,7 +104,7 @@ const arfCurve = (P) => {
       /** @type {bigint} */
       this.y = y;
       /** @type {bigint} */
-      this.z = z;
+      this.z = z ?? 1n;
     }
 
     /** @return {!Point} */
