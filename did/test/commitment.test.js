@@ -2,8 +2,14 @@ import { expect, test } from "bun:test";
 import { ChainGroup } from "../../crosschain/chains";
 import { poseidon } from "../../crypto/minaPoseidon";
 import { keccak256Uint8 } from "../../crypto/sha3";
+import { addr } from "../../ethereum/mock/signer";
 import { PublicKey } from "../../mina/mina";
-import { base64, base64tenSayıya, uint8ArrayLEtoBigInt } from "../../util/çevir";
+import {
+  base64,
+  base64ten,
+  uint8ArrayLEtoBigInt,
+  uint8ArrayLEyeSayıdan
+} from "../../util/çevir";
 import { commit, commitDouble } from "../commitment";
 
 test("EVM commit with 0 input", () => {
@@ -12,12 +18,15 @@ test("EVM commit with 0 input", () => {
 });
 
 test("MINA commit with select values", () => {
-  expect(base64tenSayıya(commit(
+  const buff = new Uint8Array(32);
+  uint8ArrayLEyeSayıdan(buff, poseidon([0n, 32n]))
+
+  expect(base64ten(commit(
     ChainGroup.MINA,
     new PublicKey(31n, true).toBase58(),
     base64(new Uint8Array(32))
   )))
-    .toBe(poseidon([0n, 32n]));
+    .toEqual(buff);
 });
 
 test("MINA commitDouble()", () => {
@@ -38,4 +47,28 @@ test("MINA commitDouble()", () => {
 
   expect(uint8ArrayLEtoBigInt(c.subarray(0, 32))).toBe(poseidon([1n, 32n]));
   expect(uint8ArrayLEtoBigInt(c.subarray(32, 64))).toBe(poseidon([2n, 32n]));
+});
+
+test("commit() == commitDouble()[0] on EVM", () => {
+  const evmAddr = addr(123123n);
+  const random = /** @type {!Uint8Array} */(crypto.getRandomValues(new Uint8Array(64)));
+
+  let commitment = commitDouble(ChainGroup.EVM, evmAddr, random);
+
+  expect(base64(commitment.subarray(0, 32)))
+    .toBe(commit(ChainGroup.EVM, evmAddr, base64(random.subarray(0, 32))));
+  expect(base64(commitment.subarray(32)))
+    .toBe(commit(ChainGroup.EVM, evmAddr, base64(random.subarray(32))));
+});
+
+test("commit() == commitDouble()[0] on MINA", () => {
+  const minaAddr = new PublicKey(1337n, false).toBase58();
+  const random = /** @type {!Uint8Array} */(crypto.getRandomValues(new Uint8Array(64)));
+
+  let commitment = commitDouble(ChainGroup.MINA, minaAddr, random);
+
+  expect(base64(commitment.subarray(0, 32)))
+    .toBe(commit(ChainGroup.MINA, minaAddr, base64(random.subarray(0, 32))));
+  expect(base64(commitment.subarray(32)))
+    .toBe(commit(ChainGroup.MINA, minaAddr, base64(random.subarray(32))));
 });

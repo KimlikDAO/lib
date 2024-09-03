@@ -4,8 +4,7 @@ import { keccak256Uint32 } from "../crypto/sha3";
 import { PublicKey } from "../mina/mina";
 import {
   base64,
-  base64tenSayıya,
-  sayıdanBase64e,
+  base64ten,
   uint8ArrayeBase64ten,
   uint8ArrayeHexten,
   uint8ArrayLEtoBigInt,
@@ -15,7 +14,7 @@ import {
 /**
  * @param {ChainGroup} chainGroup
  * @param {string} ownerAddress
- * @param {string} commitmentR
+ * @param {string} commitmentR base64 encoded commitment blinding factor
  * @return {string} base64 encoded commitment 
  */
 const commit = (chainGroup, ownerAddress, commitmentR) => {
@@ -30,7 +29,12 @@ const commit = (chainGroup, ownerAddress, commitmentR) => {
         keccak256Uint32(new Uint32Array(buff.buffer)).buffer, 0, 32));
     case ChainGroup.MINA:
       const { x, isOdd } = PublicKey.fromBase58(ownerAddress);
-      return sayıdanBase64e(poseidon([base64tenSayıya(commitmentR), isOdd ? x + 1n : x]));
+      const commitmentBytes = base64ten(commitmentR);
+      const outBuff = new Uint8Array(32);
+      uint8ArrayLEyeSayıdan(outBuff, poseidon([
+        uint8ArrayLEtoBigInt(commitmentBytes), isOdd ? x + 1n : x
+      ]));
+      return base64(outBuff);
   }
 }
 
@@ -50,6 +54,7 @@ const commit = (chainGroup, ownerAddress, commitmentR) => {
  */
 const commitDouble = (chainGroup, ownerAddress, random) => {
   switch (chainGroup) {
+    default:
     case ChainGroup.EVM: {
       /** @const {!Uint8Array} */
       const buff = new Uint8Array(32 + 20);
@@ -60,7 +65,7 @@ const commitDouble = (chainGroup, ownerAddress, random) => {
         keccak256Uint32(new Uint32Array(buff.buffer)).buffer, 0, 64);
       buff.set(random.subarray(32, 64));
       commitment.set(new Uint8Array(
-        keccak256Uint32(new Uint32Array(buff.buffer)).buffer, 0, 64), 32);
+        keccak256Uint32(new Uint32Array(buff.buffer)).buffer, 0, 32), 32);
       return commitment;
     }
     case ChainGroup.MINA:
@@ -76,7 +81,6 @@ const commitDouble = (chainGroup, ownerAddress, random) => {
         poseidon([uint8ArrayLEtoBigInt(random.subarray(32)), h]));
       return commitment;
   }
-  return new Uint8Array(64);
 }
 
 export {
