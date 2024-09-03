@@ -20,12 +20,12 @@ const serveCrate = async (crateName) => {
   const port = crate.port || 8787;
 
   const map = {
-    "/": `${crateName}/${crate.dizin}-en.html`
+    "/": `${crateName}/en.html`
   };
   if (crate.sayfalar)
     for (const page of crate.sayfalar) {
-      map[`/${page.tr}`] = `${crateName}/${page.tr}-tr.html`;
-      map[`/${page.en}`] = `${crateName}/${page.tr}-en.html`;
+      map[`/${page.tr}`] = `${crateName}/${page.tr}.html`;
+      map[`/${page.en}`] = `${crateName}/${page.en}.html`;
     }
   console.log(map);
 

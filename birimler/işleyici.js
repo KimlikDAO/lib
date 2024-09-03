@@ -8,6 +8,13 @@ import { sayfaOku } from "./sayfa/eskiOkuyucu.js";
 /** @const {!Array<string>} */
 const args = process.argv;
 
+const EN = {
+  al: "mint",
+  iptal: "revoke",
+  kpassim: "kpass",
+  oyla: "vote",
+  tr: "en",
+}
 if (args[3] == "--svg") {
   /** @const {string} */
   const out = optimize(sayfaOku(args[2], { dil: "en" }, {}), svgoConfig).data;
@@ -16,7 +23,8 @@ if (args[3] == "--svg") {
   /** @const {string} */
   const out = minify(sayfaOku(args[2], { dil: args[3] }, {}), htmlMinifierConfig);
 
-  /** @const {!Array<string>} */
-  const parts = args[2].split('.');
-  writeFileSync(`build/${parts[0].slice(0, -6)}-${args[3]}.${parts[1]}`, out);
+  let name = args[2].split('/')[0];
+  if (name == "ana") name = "tr";
+  if (args[3] == "en") name = EN[name];
+  writeFileSync(`build/${name}.html`, out);
 }

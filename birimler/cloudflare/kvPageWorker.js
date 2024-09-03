@@ -51,16 +51,14 @@ const create = (hostUrl) => /** @type {ModuleWorker} */({
       : enc.includes("br") ? ".br" : enc.includes("gz") ? ".gzip" : "";
 
     if (!kvKey) {
-      if (url.length == hostUrl.length + 3)
-        kvKey = url.slice(hostUrl.length);
-      else {
-        /** @const {?string} */
-        const cookie = req.headers.get("cookie");
-        if (cookie && cookie.includes("l=tr")) kvKey = "?tr";
-        else if (cookie && cookie.includes("l=en")) kvKey = "?en";
-        else kvKey = req.headers.get("accept-language")?.includes("tr")
-          ? "?tr" : "?en"
-      }
+      /** @const {?string} */
+      const cookie = req.headers.get("cookie")
+      /** @const {number} */
+      const leq = cookie ? cookie.indexOf("l=") : -1;
+      if (leq != -1) kvKey = /** @type {string} */(cookie).slice(leq + 2, leq + 4);
+      else kvKey = req.headers.get("accept-language")
+        ?.includes("tr")
+        ? "tr" : "en"
     }
     kvKey += ext.slice(0, 3);
     /** @const {string} */
