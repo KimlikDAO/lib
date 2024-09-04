@@ -1,5 +1,5 @@
 import { spawn } from "bun";
-import { cp, readFile, rename } from "node:fs/promises";
+import { cp, readFile, rename, writeFile } from "node:fs/promises";
 import { keccak256Uint8 } from "../../crypto/sha3";
 import { base64 } from "../../util/çevir";
 
@@ -43,7 +43,11 @@ const getExt = (fileName) => {
   return dot == -1 ? "" : fileName.slice(dot);
 }
 
-const hashAndCompress = (fileName) => readFile(fileName)
+/**
+ * @param {string} fileName
+ * @return {!Promise<string>} hashed name of the file
+ */
+const hashAndCompressFile = (fileName) => readFile(fileName)
   .then((bytes) => {
     const hashedName = base64(keccak256Uint8(bytes).subarray(0, 6))
       .replaceAll("/", "+")
@@ -53,7 +57,31 @@ const hashAndCompress = (fileName) => readFile(fileName)
       cp(fileName, crateName),
       brotli(fileName, crateName),
       zopfli(fileName, crateName)
-    ]).then(() => hashedName);
+    ])
+      .then(() => hashedName);
   });
 
-export { brotli, hashAndCompress, zopfli };
+/**
+ * @param {string} content
+ * @param {string} extension
+ * @return {!Promise<string>} hashed name of the file
+ */
+const hashAndCompressContent = (content, extension) => {
+  const bytes = new TextEncoder().encode(content);
+  const hashedName = base64(keccak256Uint8(bytes).subarray(0, 6))
+    .replaceAll("/", "+")
+    .replaceAll("=", "-") + extension;
+  const crateName = "build/" + hashedName;
+  return writeFile(crateName, content).then(() => Promise.all([
+    brotli(crateName, crateName),
+    zopfli(crateName, crateName)
+  ]))
+    .then(() => hashedName)
+}
+
+export {
+  brotli,
+  hashAndCompressFile,
+  hashAndCompressContent,
+  zopfli
+};

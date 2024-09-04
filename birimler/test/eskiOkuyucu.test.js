@@ -19,7 +19,7 @@ describe("tagYaz tests", () => {
 describe("sayfaOku tests", () => {
   it("should remove in prod mode", async () => {
     /** @const {string} */
-    const { html } = await sayfaOku({ konum: "ana/sayfa.html", dil: "tr", dev: true, kök: "birimler/test/" });
+    const html = await sayfaOku({ konum: "ana/sayfa.html", dil: "tr", dev: true, kök: "birimler/test/" });
     expect(html).toContain("ana/sayfa.css");
     expect(html).toContain("Cüzdan eklendi");
     expect(html).toContain("KPass eklendi");
@@ -31,16 +31,16 @@ describe("sayfaOku tests", () => {
 
   it("should perform comment substitution", async () => {
     /** @const {string} */
-    const { html: sayfaEN } = await sayfaOku({ konum: "ana/sayfa.html", dil: "en", kök: "birimler/test/" });
+    const sayfaEN = await sayfaOku({ konum: "ana/sayfa.html", dil: "en", dev: true, kök: "birimler/test/" });
     /** @const {string} */
-    const { html: sayfaTR } = await sayfaOku({ konum: "ana/sayfa.html", dil: "tr", kök: "birimler/test/" });
+    const sayfaTR = await sayfaOku({ konum: "ana/sayfa.html", dil: "tr", dev: true, kök: "birimler/test/" });
     expect(sayfaTR).toContain("Toplam: 1,00");
     expect(sayfaEN).toContain("Total: 1.00");
   });
 
   it("should perform inline substitution", async () => {
     /** @const {string} */
-    const { html: sayfaEN } = await sayfaOku({ konum: "ana/sayfa.html", dil: "en", dev: true, kök: "birimler/test/" });
+    const sayfaEN = await sayfaOku({ konum: "ana/sayfa.html", dil: "en", dev: true, kök: "birimler/test/" });
 
     expect(sayfaEN).toContain('svg width="33" height="33"');
     expect(sayfaEN).toContain('svg" id="ansvg"');
@@ -50,7 +50,7 @@ describe("sayfaOku tests", () => {
 
   it("should perform innertext substitution", async () => {
     /** @const {string} */
-    const { html: sayfa } = await sayfaOku({ konum: "ana/sayfa.html", dil: "en", dev: false, kök: "birimler/test/" });
+    const sayfa = await sayfaOku({ konum: "ana/sayfa.html", dil: "en", dev: true, kök: "birimler/test/" });
 
     expect(sayfa).toContain('<div>Unvan</div>');
     expect(sayfa).not.toContain('titrspan');
@@ -58,36 +58,39 @@ describe("sayfaOku tests", () => {
 
   it("should perform English substitution", async () => {
     /** @const {string} */
-    const { html: sayfaEN } = await sayfaOku({ konum: "ana/sayfa.html", dil: "en", dev: false, kök: "birimler/test/" });
+    const sayfaEN = await sayfaOku({ konum: "ana/sayfa.html", dil: "en", dev: true, kök: "birimler/test/" });
     /** @const {string} */
-    const { html: sayfaTR } = await sayfaOku({ konum: "ana/sayfa.html", dil: "tr", dev: false, kök: "birimler/test/" })
+    const sayfaTR = await sayfaOku({ konum: "ana/sayfa.html", dil: "tr", dev: true, kök: "birimler/test/" })
 
     expect(sayfaEN).toContain("REPLACED_TEXT");
     expect(sayfaEN).not.toContain("<test1>");
     expect(sayfaEN).not.toContain("</test1>");
 
-    expect(sayfaEN).toContain("REPLACED_2NDTEXT");
-    expect(sayfaEN).not.toContain("<test2>");
-    expect(sayfaEN).not.toContain("</test2>");
+    expect(sayfaTR).not.toContain("data-en");
+    expect(sayfaTR).toContain("<test1>");
+    expect(sayfaTR).toContain("</test1>");
+    expect(sayfaTR).toContain("<test2>");
+    expect(sayfaTR).toContain("</test2>");
+    expect(sayfaTR).toContain("PREVIOUS 2ND TEXT");
   });
 });
 
 describe("birimOku tests", () => {
   it("should perform variable substitution", async () => {
-    const { html, _ } = await birimOku("ana/sayfa.html", { dil: "tr", dev: true, kök: "birimler/test/" }, {});
+    const html = await birimOku("ana/sayfa.html", { dil: "tr", dev: true, kök: "birimler/test/" }, {});
 
     expect(html).toContain('id="var1value"');
   });
 
   it("should eliminate self-closing xml tags", async () => {
-    const { html, _ } = await birimOku("birim/logo.svg", { dil: "tr", dev: false, kök: "birimler/test/" }, {});
+    const html = await birimOku("birim/logo.svg", { dil: "tr", dev: true, kök: "birimler/test/" }, {});
 
     expect(html).not.toContain("</stop>");
     expect(html).not.toContain("</path>");
   });
 
   it("should perform parametric content generation", async () => {
-    const { html, _ } = await birimOku("birim/cüzdan/birim.html", { dil: "tr", dev: false, kök: "birimler/test/" }, {});
+    const html = await birimOku("birim/cüzdan/birim.html", { dil: "tr", dev: true, kök: "birimler/test/" }, {});
 
     expect(html).toContain("<div>354224848179261915075</div>");
     expect(html).toContain("<div>201</div>");

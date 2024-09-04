@@ -1,6 +1,6 @@
 import { createServer } from "vite";
 import { readCrateRecipe } from "../crate";
-import { sayfaOku } from "../sayfa/eskiOkuyucu";
+import { svgOku, sayfaOku } from "../sayfa/eskiOkuyucu";
 
 /**
  * @param {string} crateName
@@ -42,13 +42,16 @@ const serveCrate = async (crateName) => {
         server.middlewares.use(async (req, res, next) => {
           if (req.url.endsWith(".m.svg")) {
             res.setHeader("content-type", "image/svg+xml");
-            sayfaOku({ konum: req.url.slice(1), dil: "en" })
-              .then((cvp) => res.end(cvp.html));
+            svgOku({
+              konum: req.url.slice(1),
+              dil: "en",
+              dev: true
+            }).then((svg) => res.end(svg));
           } else if (req.originalUrl in map) {
             server.moduleGraph.invalidateAll();
             yollananSayfa = map[req.originalUrl];
             res.setHeader("content-type", "text/html;charset=utf-8");
-            sayfaOku(yollananSayfa).then((cvp) => res.end(cvp.html));
+            sayfaOku(yollananSayfa).then((html) => res.end(html));
           } else next();
         })
       },

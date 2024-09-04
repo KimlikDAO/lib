@@ -1,8 +1,8 @@
 import { Parser } from "htmlparser2";
 import { existsSync, readFileSync } from "node:fs";
-import { KapalıTagler, tagYaz } from "../../util/html.js";
-import { renderParagraph } from "./latex.js";
-import { generateScript } from "./script.js";
+import { KapalıTagler, tagYaz } from "../../util/html";
+import { renderParagraph } from "./latex";
+import { generateScript, generateStylesheet } from "./targets";
 
 /**
  * @enum {number}
@@ -39,23 +39,25 @@ const keymapOku = (dosyaAdı, harita) => {
   } catch (e) { }
 }
 
+const normalizePath = (path) => path.replace(/^(\/|\.\/)/, '');
+
 /**
  * @param {string} birimAdı
  * @param {!Seçimler} seçimler
  * @param {!Object<string, string>}  anaNitelikler Kök birimin nitelikleri
- * @return {!Promise<{
-*   html: string,
-*   cssler: !Set<string>
-* }>}
-*/
+ * @return {!Promise<string>} the html
+ */
 const birimOku = (birimAdı, seçimler, anaNitelikler) => {
+  seçimler.ortakCss ||= new Set();
+  seçimler.yerelCss ||= new Set();
+  seçimler.kök ||= "";
+
+  birimAdı = normalizePath(birimAdı);
   /** @const {string} */
   const birimDosyaAdı = birimAdı.endsWith("sayfa.html") || birimAdı.endsWith("birim.html")
     ? "/birim.html" : "/comp.html";
   /** @const {boolean} */
   const EN = seçimler.dil == "en";
-  /** @const {!Set<string>} */
-  const cssler = new Set();
   /** @const {!Object<string, string>} */
   const değiştirHaritası = {};
   /** @const {!Array<boolean>} */
@@ -72,12 +74,6 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
   let latexDerinliği = 0;
   /** @const {!Array<string|!Promise<string>>} */
   let htmlParts = [];
-  /** @const {function({cssler: string, html: string}):!Promise<string>} */
-  const birleştir = ({ cssler: birimCssler, html }) => {
-    for (const css of birimCssler) cssler.add(css);
-    return html
-  };
-  seçimler.kök ||= "";
 
   /**
    * Bütün `Seçimler`i değerlere de kopyalıyoruz, böylelikle html
@@ -94,10 +90,7 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
 
   if (birimAdı.endsWith(".js")) {
     const üreticiBirim = require(process.cwd() + "/" + seçimler.kök + birimAdı, "utf8");
-    return Promise.resolve({
-      html: "" + üreticiBirim.üret(değerler),
-      cssler: new Set(),
-    });
+    return Promise.resolve("" + üreticiBirim.üret(değerler));
   }
 
   değerler.piggyback ||= "";
@@ -108,10 +101,17 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
       kapalı ||= KapalıTagler[ad];
       derinlik += 1;
 
+      if (ad.toLowerCase() == "html")
+        nitelikler.lang = seçimler.dil;
+
       if (!seçimler.dev && ad.toLowerCase() == "script") {
         htmlParts.push(generateScript(nitelikler, seçimler));
         return;
       }
+      if (ad.toLowerCase() == "link" && nitelikler.rel == "stylesheet")
+        return (("data-shared" in nitelikler) ? seçimler.ortakCss : seçimler.yerelCss)
+          .add(normalizePath(nitelikler.href));
+
       if ("data-dev-remove" in nitelikler) {
         delete nitelikler["data-dev-remove"];
         if (seçimler.dev) return;
@@ -176,8 +176,7 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
         /** @const {string} */
         const birimDizini = birimAdı.slice(0, birimAdı.lastIndexOf("/") + 1)
           + ad.slice(ad.indexOf(":") + 1).replaceAll(":", "/")
-        htmlParts.push(birimOku(birimDizini + birimDosyaAdı, seçimler, nitelikler)
-          .then(birleştir));
+        htmlParts.push(birimOku(birimDizini + birimDosyaAdı, seçimler, nitelikler));
         return;
       }
 
@@ -185,8 +184,7 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
       // TODO(KimlikDAO-bot): Birimin içini parse edip birime yolla.
       if (ad.includes(":")) {
         htmlParts.push(
-          birimOku(ad.replaceAll(":", "/") + birimDosyaAdı, seçimler, nitelikler)
-            .then(birleştir));
+          birimOku(ad.replaceAll(":", "/") + birimDosyaAdı, seçimler, nitelikler));
         return;
       }
 
@@ -201,8 +199,7 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
           inlineAdı = `build/${inlineAdı.slice(0, -4)}.isvg`;
         delete nitelikler["data-inline"];
         delete nitelikler["src"];
-        htmlParts.push(birimOku(inlineAdı, seçimler, nitelikler)
-          .then(birleştir));
+        htmlParts.push(birimOku(inlineAdı, seçimler, nitelikler));
         return;
       }
 
@@ -231,7 +228,6 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
         delete nitelikler["data-generate"];
         değiştirDerinliği = derinlik;
         değiştirMetni = birimOku(üreticiAdı, değerler, nitelikler)
-          .then(birleştir)
           .then((üretilenHtml) => seçimler.dev
             ? üretilenHtml
             : üretilenHtml.replace(
@@ -326,9 +322,6 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
     keymapOku(`${önek}${birimAdı.slice(0, nokta)}-${seçimler.dil}.keymap`, değiştirHaritası);
   }
 
-  if (existsSync(seçimler.kök + birimAdı.slice(0, -4) + "css"))
-    cssler.add(birimAdı.slice(0, -4) + "css");
-
   const jsxDosyaAdı = seçimler.kök + birimAdı.slice(0, -4) + "jsx";
   if (existsSync(jsxDosyaAdı)) {
     const üreticiBirim = require(process.cwd() + "/" + jsxDosyaAdı, "utf8");
@@ -336,44 +329,51 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
   } else
     parser.end(readFileSync(seçimler.kök + birimAdı, "utf8"));
 
-  if (latexVar)
-    cssler.add("/lib/util/latex.css");
+  const cssDosyaAdı = birimAdı.slice(0, -4) + "css";
+  if (!seçimler.ortakCss.has(cssDosyaAdı)
+    && !seçimler.yerelCss.has(cssDosyaAdı)
+    && existsSync(seçimler.kök + cssDosyaAdı))
+    seçimler.yerelCss.add(cssDosyaAdı);
 
-  return Promise.all(htmlParts).then((parts) => ({
-    html: parts.join(""),
-    cssler
-  }));
+  if (latexVar)
+    seçimler.yerelCss.add("/lib/birimler/sayfa/latex.css");
+
+  return Promise.all(htmlParts).then((parts) => parts.join(""));
 }
 
 /**
  * @param {!Seçimler} seçimler
  * @return {!Promise<string>}
  */
-const sayfaOku = async (seçimler) => birimOku(seçimler.konum, seçimler, {})
-  .then(({ html, cssler }) => {
-    if (seçimler.dev) {
-      /** @type {string} */
-      let linkler = "";
-      /** @type {boolean} */
-      let ilk = true;
-      for (const css of cssler) {
-        if (ilk) {
-          ilk = false;
-          continue
-        }
-        linkler += `  <link href="${css}" rel="stylesheet" type="text/css" />\n`
+const sayfaOku = async (seçimler) => {
+  seçimler.yerelCss = new Set();
+  seçimler.ortakCss = new Set();
+
+  return birimOku(seçimler.konum, seçimler, {})
+    .then((html) => {
+      console.log(seçimler);
+      if (seçimler.dev) {
+        /** @type {string} */
+        let linkler = "";
+        /** @const {!Set<string>} */
+        const cssler = seçimler.yerelCss.union(seçimler.ortakCss);
+        for (const css of cssler)
+          linkler += `  <link href="${css}" rel="stylesheet" type="text/css" />\n`;
+        return html.replace("</head>", linkler + "</head>");
       }
-      html = html.replace("</head>", linkler + "</head>");
-    }
-    return {
-      html,
-      defines: seçimler
-    }
-  });
+      return generateStylesheet([...seçimler.yerelCss])
+        .then((stylesheet) => html.replace("</head>", stylesheet + "\n</head>"));
+    });
+}
+
+const svgOku = (seçimler) => seçimler.dev
+  ? birimOku(seçimler.konum, seçimler)
+  : new Error("not implemented");
 
 export {
   birimOku,
   HataKodu,
   sayfaOku,
+  svgOku,
   tagYaz
 };

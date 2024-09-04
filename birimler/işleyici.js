@@ -18,14 +18,14 @@ const EN = {
 if (args[3] == "--svg") {
   /** @const {string} */
   const out = optimize(
-    (await sayfaOku({ konum: args[2], dil: "en" }, {})).html,
+    await sayfaOku({ konum: args[2], dil: "en" }, {}),
     svgoConfig
   ).data;
   writeFileSync("build/" + args[2], out);
 } else {
   /** @const {string} */
   const out = minify(
-    (await sayfaOku({ konum: args[2], dil: args[3] }, {})).html,
+    await sayfaOku({ konum: args[2], dil: args[3] }, {}),
     htmlMinifierConfig
   );
 
