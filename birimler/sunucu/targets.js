@@ -13,7 +13,7 @@ import { ensureDotJs, selectDefines } from "../defines";
  * @param {!Object=} env
  * @return {!Promise<string>}
  */
-const compileWorker = async (dirName, config, env) => {
+const compileWorker = (dirName, config, env) => {
   /** @const {string} */
   const entry = ensureDotJs(`${dirName}/${config.entry}`);
   const compileParams = {

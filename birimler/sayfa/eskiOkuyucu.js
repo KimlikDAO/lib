@@ -2,6 +2,7 @@ import { Parser } from "htmlparser2";
 import { existsSync, readFileSync } from "node:fs";
 import { KapalıTagler, tagYaz } from "../../util/html.js";
 import { renderParagraph } from "./latex.js";
+import { generateScript } from "./script.js";
 
 /**
  * @enum {number}
@@ -42,10 +43,10 @@ const keymapOku = (dosyaAdı, harita) => {
  * @param {string} birimAdı
  * @param {!Seçimler} seçimler
  * @param {!Object<string, string>}  anaNitelikler Kök birimin nitelikleri
- * @return {{
+ * @return {!Promise<{
 *   html: string,
 *   cssler: !Set<string>
-* }}
+* }>}
 */
 const birimOku = (birimAdı, seçimler, anaNitelikler) => {
   /** @const {string} */
@@ -57,8 +58,6 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
   const cssler = new Set();
   /** @const {!Object<string, string>} */
   const değiştirHaritası = {};
-  /** @type {string} */
-  let html = "";
   /** @const {!Array<boolean>} */
   const phantom = [];
   /** @type {number} */
@@ -71,7 +70,13 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
   let latexVar = false;
   /** @type {number} */
   let latexDerinliği = 0;
-
+  /** @const {!Array<string|!Promise<string>>} */
+  let htmlParts = [];
+  /** @const {function({cssler: string, html: string}):!Promise<string>} */
+  const birleştir = ({ cssler: birimCssler, html }) => {
+    for (const css of birimCssler) cssler.add(css);
+    return html
+  };
   seçimler.kök ||= "";
 
   /**
@@ -89,10 +94,10 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
 
   if (birimAdı.endsWith(".js")) {
     const üreticiBirim = require(process.cwd() + "/" + seçimler.kök + birimAdı, "utf8");
-    return {
+    return Promise.resolve({
       html: "" + üreticiBirim.üret(değerler),
       cssler: new Set(),
-    };
+    });
   }
 
   değerler.piggyback ||= "";
@@ -103,6 +108,10 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
       kapalı ||= KapalıTagler[ad];
       derinlik += 1;
 
+      if (!seçimler.dev && ad.toLowerCase() == "script") {
+        htmlParts.push(generateScript(nitelikler, seçimler));
+        return;
+      }
       if ("data-dev-remove" in nitelikler) {
         delete nitelikler["data-dev-remove"];
         if (seçimler.dev) return;
@@ -119,7 +128,7 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
 
       if (değiştirDerinliği > 0) return;
 
-      /** @type {string} */
+      /** @type {!Promise<string>|string} */
       let değiştirMetni = "";
 
       for (const /** string */ nitelik in nitelikler) {
@@ -167,26 +176,17 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
         /** @const {string} */
         const birimDizini = birimAdı.slice(0, birimAdı.lastIndexOf("/") + 1)
           + ad.slice(ad.indexOf(":") + 1).replaceAll(":", "/")
-        const {
-          html: /** @const {string} */ birimHtml,
-          cssler: /** @const {!Set<string>} */ birimCssler
-        } = birimOku(birimDizini + birimDosyaAdı, seçimler, nitelikler);
-        html += birimHtml;
-        for (const css of birimCssler)
-          cssler.add(css);
+        htmlParts.push(birimOku(birimDizini + birimDosyaAdı, seçimler, nitelikler)
+          .then(birleştir));
         return;
       }
 
       // altbirim haricinde ":" içeren taglar dizin olarak parse ediliyor.
       // TODO(KimlikDAO-bot): Birimin içini parse edip birime yolla.
       if (ad.includes(":")) {
-        const {
-          html: /** @const {string} */ birimHtml,
-          cssler: /** @const {!Set<string>} */ birimCssler
-        } = birimOku(ad.replaceAll(":", "/") + birimDosyaAdı, seçimler, nitelikler);
-        html += birimHtml;
-        for (const css of birimCssler)
-          cssler.add(css);
+        htmlParts.push(
+          birimOku(ad.replaceAll(":", "/") + birimDosyaAdı, seçimler, nitelikler)
+            .then(birleştir));
         return;
       }
 
@@ -201,11 +201,8 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
           inlineAdı = `build/${inlineAdı.slice(0, -4)}.isvg`;
         delete nitelikler["data-inline"];
         delete nitelikler["src"];
-        const {
-          html: birimHtml,
-          cssler: _,
-        } = birimOku(inlineAdı, seçimler, nitelikler);
-        html += birimHtml;
+        htmlParts.push(birimOku(inlineAdı, seçimler, nitelikler)
+          .then(birleştir));
         return;
       }
 
@@ -232,22 +229,18 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
         const üreticiAdı =
           `${birimAdı.slice(0, birimAdı.lastIndexOf("/"))}/${nitelikler["data-generate"]}.js`;
         delete nitelikler["data-generate"];
-        let {
-          html: üretilenHtml,
-          _
-        } = birimOku(üreticiAdı, değerler, nitelikler);
-        if (phantom) nitelikler["data-phantom"] = "";
-
-        if (üretilenHtml) {
-          if (!seçimler.dev)
-            üretilenHtml = üretilenHtml.replace(
+        değiştirDerinliği = derinlik;
+        değiştirMetni = birimOku(üreticiAdı, değerler, nitelikler)
+          .then(birleştir)
+          .then((üretilenHtml) => seçimler.dev
+            ? üretilenHtml
+            : üretilenHtml.replace(
               new RegExp(Object.keys(değiştirHaritası).join('|'), 'g'),
               (sol) => değiştirHaritası[sol]
                 ? değerler.piggyback + değiştirHaritası[sol] : sol
-            );
-          değiştirDerinliği = derinlik;
-          değiştirMetni = üretilenHtml;
-        }
+            ))
+        // TODO(KimlikDAO-bot): why do we have this?
+        if (phantom) nitelikler["data-phantom"] = "";
       }
 
       if ("data-latex" in nitelikler) {
@@ -273,23 +266,23 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
       } else {
         if (derinlik == 1)
           Object.assign(nitelikler, anaNitelikler);
-        html += tagYaz(ad, nitelikler, kapalı);
+        htmlParts.push(tagYaz(ad, nitelikler, kapalı));
       }
 
-      html += değiştirMetni;
+      htmlParts.push(değiştirMetni);
     },
 
     ontext(metin) {
       if (değiştirDerinliği <= 0) {
         if (sırada) {
-          html += latexDerinliği > 0
+          htmlParts.push(latexDerinliği > 0
             ? renderParagraph(metin)
-            : sırada;
+            : sırada);
           sırada = null;
         } else
-          html += latexDerinliği > 0
+          htmlParts.push(latexDerinliği > 0
             ? renderParagraph(metin)
-            : metin;
+            : metin);
       }
     },
 
@@ -307,7 +300,7 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
       if (derinlik == latexDerinliği)
         latexDerinliği = 0;
       if (değiştirDerinliği == 0 && !phantom[derinlik] && !hayali)
-        html += `</${ad}>`;
+        htmlParts.push(`</${ad}>`);
 
       phantom[derinlik] = false;
       derinlik -= 1;
@@ -315,7 +308,7 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
 
     onprocessinginstruction(ad, veri) {
       if (ad.toLowerCase() == "!doctype")
-        html += `<${veri}>`;
+        htmlParts.push(`<${veri}>`);
     }
   }, {
     recongnizeSelfClosing: true,
@@ -346,35 +339,37 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
   if (latexVar)
     cssler.add("/lib/util/latex.css");
 
-  return {
-    html,
+  return Promise.all(htmlParts).then((parts) => ({
+    html: parts.join(""),
     cssler
-  }
+  }));
 }
 
 /**
- * @param {string} sayfaAdı
  * @param {!Seçimler} seçimler
- * @return {string}
+ * @return {!Promise<string>}
  */
-const sayfaOku = (sayfaAdı, seçimler) => {
-  const { html, cssler } = birimOku(sayfaAdı, seçimler, {});
-  if (seçimler.dev) {
-    /** @type {string} */
-    let linkler = "";
-    /** @type {boolean} */
-    let ilk = true;
-    for (const css of cssler) {
-      if (ilk) {
-        ilk = false;
-        continue
+const sayfaOku = async (seçimler) => birimOku(seçimler.konum, seçimler, {})
+  .then(({ html, cssler }) => {
+    if (seçimler.dev) {
+      /** @type {string} */
+      let linkler = "";
+      /** @type {boolean} */
+      let ilk = true;
+      for (const css of cssler) {
+        if (ilk) {
+          ilk = false;
+          continue
+        }
+        linkler += `  <link href="${css}" rel="stylesheet" type="text/css" />\n`
       }
-      linkler += `  <link href="${css}" rel="stylesheet" type="text/css" />\n`
+      html = html.replace("</head>", linkler + "</head>");
     }
-    return html.replace("</head>", linkler + "</head>");
-  }
-  return html;
-}
+    return {
+      html,
+      defines: seçimler
+    }
+  });
 
 export {
   birimOku,

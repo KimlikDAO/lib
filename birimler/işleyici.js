@@ -17,11 +17,17 @@ const EN = {
 }
 if (args[3] == "--svg") {
   /** @const {string} */
-  const out = optimize(sayfaOku(args[2], { dil: "en" }, {}), svgoConfig).data;
+  const out = optimize(
+    (await sayfaOku({ konum: args[2], dil: "en" }, {})).html,
+    svgoConfig
+  ).data;
   writeFileSync("build/" + args[2], out);
 } else {
   /** @const {string} */
-  const out = minify(sayfaOku(args[2], { dil: args[3] }, {}), htmlMinifierConfig);
+  const out = minify(
+    (await sayfaOku({ konum: args[2], dil: args[3] }, {})).html,
+    htmlMinifierConfig
+  );
 
   let name = args[2].split('/')[0];
   if (name == "ana") name = "tr";

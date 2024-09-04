@@ -20,8 +20,9 @@ const serveCrate = async (crateName) => {
   const port = crate.port || 8787;
 
   const map = {
-    "/": `${crateName}/en.html`
+    "/en": `${crateName}/en.html`,
   };
+  map["/tr"] = map["/"] = `${crateName}/tr.html`;
   if (crate.sayfalar)
     for (const page of crate.sayfalar) {
       map[`/${page.tr}`] = `${crateName}/${page.tr}.html`;
@@ -31,13 +32,13 @@ const serveCrate = async (crateName) => {
 
   serve({
     fetch(req) {
-      console.log(req.url);
       const url = new URL(req.url);
       const path = url.pathname;
 
-      if (map[path]) {
-        console.info(path);
-        return readFile(map[path]).then((res) => new Response(res, {
+      let page = map[path]
+      if (page) {
+        console.info(`Serving page: ${page}`);
+        return readFile(page).then((res) => new Response(res, {
           headers: {
             "content-type": "text/html;charset=utf-8"
           },

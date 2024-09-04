@@ -1,6 +1,6 @@
 import { createServer } from "vite";
 import { readCrateRecipe } from "../crate";
-import { sayfaOku } from "../sayfa/okuyucu";
+import { sayfaOku } from "../sayfa/eskiOkuyucu";
 
 /**
  * @param {string} crateName
@@ -15,8 +15,8 @@ const generateMap = (crateName, crate) => {
     dil,
     dev: true
   };
-  map["/"] = ekle({ tr: "?tr", en: "?en" }, "en", crate.dizin);
-  ekle({ tr: "?tr", en: "?en" }, "tr", crate.dizin);
+  map["/"] = ekle({ tr: "tr", en: "en" }, "en", crate.dizin);
+  ekle({ tr: "tr", en: "en" }, "tr", crate.dizin);
   if (crate.sayfalar)
     for (const sayfa of crate.sayfalar) {
       ekle(sayfa, "tr");
