@@ -1,6 +1,7 @@
 import { spawn } from "bun";
 import { cp, readFile, rename, writeFile } from "node:fs/promises";
 import { keccak256Uint8 } from "../../crypto/sha3";
+import { getExt } from "../../util/paths";
 import { base64 } from "../../util/çevir";
 
 const zopfli = (inputName, outputName) => spawn({
@@ -38,10 +39,9 @@ const brotli = (inputName, outputName) => spawn({
   stderr: "pipe"
 }).exited;
 
-const getExt = (fileName) => {
-  const dot = fileName.indexOf(".");
-  return dot == -1 ? "" : fileName.slice(dot);
-}
+const hash = (bytes) => base64(keccak256Uint8(bytes).subarray(0, 6))
+  .replaceAll("/", "+")
+  .replaceAll("=", "-");
 
 /**
  * @param {string} fileName
@@ -49,9 +49,7 @@ const getExt = (fileName) => {
  */
 const hashAndCompressFile = (fileName) => readFile(fileName)
   .then((bytes) => {
-    const hashedName = base64(keccak256Uint8(bytes).subarray(0, 6))
-      .replaceAll("/", "+")
-      .replaceAll("=", "-") + getExt(fileName);
+    const hashedName = hash(bytes) + "." + getExt(fileName);
     const crateName = "build/" + hashedName;
     return Promise.all([
       cp(fileName, crateName),
@@ -68,9 +66,7 @@ const hashAndCompressFile = (fileName) => readFile(fileName)
  */
 const hashAndCompressContent = (content, extension) => {
   const bytes = new TextEncoder().encode(content);
-  const hashedName = base64(keccak256Uint8(bytes).subarray(0, 6))
-    .replaceAll("/", "+")
-    .replaceAll("=", "-") + extension;
+  const hashedName = hash(bytes) + "." + extension;
   const crateName = "build/" + hashedName;
   return writeFile(crateName, content).then(() => Promise.all([
     brotli(crateName, crateName),
@@ -79,9 +75,21 @@ const hashAndCompressContent = (content, extension) => {
     .then(() => hashedName)
 }
 
+/**
+ * @param {string} fileName
+ * @return {!Promise<string>} hashed name of the file
+ */
+const hashFile = (fileName) => readFile(fileName)
+  .then((bytes) => {
+    const hashedName = hash(bytes) + "." + getExt(fileName);
+    return cp(fileName, "build/" + hashedName)
+      .then(() => hashedName)
+  });
+
 export {
   brotli,
-  hashAndCompressFile,
   hashAndCompressContent,
+  hashAndCompressFile,
+  hashFile,
   zopfli
 };

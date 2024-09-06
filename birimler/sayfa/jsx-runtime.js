@@ -1,20 +1,20 @@
 import { tagYaz } from "../../util/html.js";
 
-export const jsx = (type, props = {}) => {
-  // Extract children from props, if present
-  const children = (props && props.children) || [];
-  const childrenString = Array.isArray(children)
-    ? children.map(child =>
-      typeof child === "object" ? jsx(child) : child
-    ).join('')
-    : children;
+const jsx = (tag, props = {}) => {
+  if (typeof tag == "function")
+    return tag(props);
 
-  if (typeof type === "string") {
-    // Remove children from props as it's already handled
+  if (typeof tag === "string") {
     const { children, ...attributes } = props;
-    return type.toLowerCase() == "br"
-      ? "<br>"
-      : tagYaz(type, attributes, false) + childrenString + `</${type}>`;
-  } else
-    return type(props);
+    return tag.toLowerCase() == "br"
+      ? Promise.resolve("<br>")
+      : Promise.all([].concat(children)
+        .map((child) => typeof child === "object" && "type" in child
+          ? jsx(child.type, child.props) : child))
+        .then((renderedChildren) =>
+          tagYaz(tag, attributes, false) + renderedChildren.join("") + `</${tag}>`);
+  }
+  console.log("other type", tag, props);
 }
+
+export { jsx };

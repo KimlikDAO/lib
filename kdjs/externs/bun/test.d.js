@@ -42,6 +42,11 @@ const expect = function (actual) { }
 const fail = function (message) { }
 
 /**
+ * @param {function(?):void} callback
+ */
+const afterAll = function (callback) { }
+
+/**
  * @template T
  * @constructor
  * @param {T} actual

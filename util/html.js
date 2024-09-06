@@ -9,6 +9,7 @@ const KapalıTagler = {
   feFlood: true,
   fegaussianblur: true,
   feGaussianBlur: true,
+  feDropShadow: true,
   image: true,
   path: true,
   rect: true,

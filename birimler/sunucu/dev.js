@@ -1,19 +1,21 @@
 import { createServer } from "vite";
+import { parseArgs } from "../../util/cli";
 import { readCrateRecipe } from "../crate";
-import { svgOku, sayfaOku } from "../sayfa/eskiOkuyucu";
+import { sayfaOku, svgOku } from "../sayfa/eskiOkuyucu";
 
 /**
  * @param {string} crateName
  * @param {birimler.Crate} crate
+ * @param {boolean} dev
  * @return {!Object<string, Object>}
  */
-const generateMap = (crateName, crate) => {
+const generateMap = (crateName, crate, dev) => {
   const map = {};
   const ekle = (sayfa, dil, ad) => map[`/${dil == "tr" ? sayfa.tr : sayfa.en}`] = {
     ...sayfa,
     konum: `${crateName}/${ad || sayfa.tr}/sayfa.html`,
     dil,
-    dev: true
+    dev
   };
   map["/"] = ekle({ tr: "tr", en: "en" }, "en", crate.dizin);
   ekle({ tr: "tr", en: "en" }, "tr", crate.dizin);
@@ -27,14 +29,17 @@ const generateMap = (crateName, crate) => {
 
 /**
  * @param {string} crateName
+ * @param {boolean} dev
  */
-const serveCrate = async (crateName) => {
+const serveCrate = async (crateName, dev) => {
+  console.log("crateName", crateName);
   const crate = await readCrateRecipe(crateName);
-  const map = generateMap(crateName, crate);
+  const map = generateMap(crateName, crate, dev);
   let yollananSayfa;
 
   createServer({
     appType: "mpa",
+    publicDir: dev ? "" : "build/",
     plugins: [{
       name: "kimlikdao-birimler",
 
@@ -45,7 +50,7 @@ const serveCrate = async (crateName) => {
             svgOku({
               konum: req.url.slice(1),
               dil: "en",
-              dev: true
+              dev
             }).then((svg) => res.end(svg));
           } else if (req.originalUrl in map) {
             server.moduleGraph.invalidateAll();
@@ -70,4 +75,5 @@ const serveCrate = async (crateName) => {
     .then(console.log("Dev server running at http://localhost:8787"));
 }
 
-serveCrate(process.argv[2] || ".");
+const args = parseArgs(process.argv.slice(2), "target");
+serveCrate(".", args["build"] ? false : true);

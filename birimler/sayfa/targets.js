@@ -1,6 +1,8 @@
+import { spawn } from "bun";
 import { minify } from "csso";
-import { readFile } from "node:fs/promises";
+import { mkdir, readFile } from "node:fs/promises";
 import { compile } from "../../kdjs/compile";
+import { getDir } from "../../util/paths";
 import { define } from "../defines";
 import {
   hashAndCompressContent,
@@ -42,7 +44,19 @@ const generateScript = (attribs, scope) => {
  */
 const generateStylesheet = (cssFileNames) =>
   Promise.all(cssFileNames.map((file) => readFile(file, "utf8")))
-    .then((csses) => hashAndCompressContent(minify(csses.join("\n")).css, ".css"))
+    .then((csses) => hashAndCompressContent(minify(csses.join("\n")).css, "css"))
     .then((hashedName) => `<link rel="stylesheet" src=${hashedName} type="text/css">`);
 
-export { generateScript, generateStylesheet };
+
+const webp = (inputName, outputName, passes = 10, quality = 70) =>
+  mkdir(getDir(outputName), { recursive: true }).then(() =>
+    spawn([
+      "cwebp",
+      "-m", 6,
+      "-pass", passes,
+      "-q", quality,
+      inputName,
+      "-o", outputName
+    ]).exited);
+
+export { generateScript, generateStylesheet, webp };
