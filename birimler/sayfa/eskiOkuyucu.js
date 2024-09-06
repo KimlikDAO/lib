@@ -1,3 +1,4 @@
+import { minify } from "html-minifier";
 import { Parser } from "htmlparser2";
 import assert from "node:assert";
 import { existsSync } from "node:fs";
@@ -7,6 +8,7 @@ import { KapalıTagler, tagYaz } from "../../util/html";
 import { getExt } from "../../util/paths";
 import { getByKey } from "../hashcache/buildCache";
 import { hashAndCompressContent, hashFile } from "../hashcache/compression";
+import HtmlMinifierConfig from "./htmlMinifierConfig.js";
 import { renderParagraph } from "./latex";
 import SvgoConfig from "./svgoConfig";
 import SvgoInlineConfig from "./svgoInlineConfig";
@@ -405,7 +407,10 @@ const sayfaOku = async (seçimler) => {
         return html.replace("</head>", linkler + "</head>");
       }
       return generateStylesheet([...seçimler.yerelCss])
-        .then((stylesheet) => html.replace("</head>", stylesheet + "\n</head>"));
+        .then((stylesheet) => minify(
+          html.replace("</head>", stylesheet + "\n</head>"),
+          HtmlMinifierConfig
+        ));
     });
 }
 

@@ -3,6 +3,7 @@ import yaml from "js-yaml";
 import { readFile } from "node:fs/promises";
 import { uploadWorker } from "./cloudflare/targets";
 import { readCrateRecipe } from "./crate";
+import { sayfaOku } from "./sayfa/eskiOkuyucu";
 import { compileWorker } from "./sunucu/targets";
 
 /** @define {string} */
@@ -18,8 +19,21 @@ const buildCrate = (createDir, env) => import(`${ROOT_PATH}/${createDir}/build.j
     : Promise.reject())
   .catch(() => readCrateRecipe(createDir)
     .then((recipe) => {
-      // if (recipe.dizin)
-      //buildSayfa()
+      const tasks = [];
+      if (recipe.dizin) {
+        const pages = [].concat({
+          en: "en",
+          tr: "tr",
+          konum: `${recipe.dizin}/sayfa.html`
+        }, recipe.sayfalar);
+
+        for (const lang of ["tr", "en"])
+          for (const page of pages) {
+            page.konum ||= `${page.tr}/sayfa.html`;
+            tasks.push(sayfaOku({ ...page, dil: lang }));
+          }
+      }
+
       if (recipe.worker)
         compileWorker(createDir, recipe.worker, env);
     })

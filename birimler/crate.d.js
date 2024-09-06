@@ -4,7 +4,6 @@ import birimler from "./birimler.d";
 
 /**
  * @typedef {{
- *   kök: string,
  *   dizin: string,
  *   sayfalar: !Array<{
  *     tr: string,

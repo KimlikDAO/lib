@@ -16,7 +16,6 @@ const HataKodu = {
  * @typedef {{
  *   dil: string,
  *   dev: boolean,
- *   kök: string,
  * }}
  */
 const Seçimler = {};
