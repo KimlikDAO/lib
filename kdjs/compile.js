@@ -2,6 +2,7 @@ import ClosureCompiler from "google-closure-compiler";
 import { writeFile } from "node:fs/promises";
 import UglifyJS from "uglify-js";
 import { combine, getDir } from "../util/paths";
+import { removeStringNamedExports } from "./passes";
 import { ImportStatement } from "./modules";
 import { postprocess } from "./postprocess";
 import { preprocessAndIsolate } from "./preprocess";
@@ -94,9 +95,10 @@ const compile = async (params, checkFreshFn) => {
         },
         warnings: "verbose",
       });
+      const uglifiedCode = removeStringNamedExports(uglified.code);
       console.log(params["entry"]);
-      console.log(`Uglified size:\t${uglified.code.length}\nGCC size:\t${output.length}`);
-      let code = uglified.code.length < output.length ? uglified.code : output;
+      console.log(`Uglified size:\t${uglifiedCode.length}\nGCC size:\t${output.length}`);
+      let code = uglifiedCode.length < output.length ? uglifiedCode : output;
       if (/** @type {boolean} */(params["emit_shebang"]))
         code = "#!/usr/bin/env bun\n" + code;
       console.log(uglified.warnings, uglified.error);

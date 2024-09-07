@@ -14,6 +14,12 @@ import SvgoConfig from "./svgoConfig";
 import SvgoInlineConfig from "./svgoInlineConfig";
 import { generateScript, generateStylesheet, webp } from "./targets";
 
+globalThis.GEN = true;
+globalThis.document = {};
+globalThis.document.createElement = (name) => ({
+  name
+});
+
 /**
  * @enum {number}
  */

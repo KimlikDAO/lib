@@ -5,6 +5,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { combine, getDir } from "../util/paths";
 import { ExportStatement, ImportStatement } from "./modules";
 import { Update, update } from "./textual";
+import { serializeWithStringKeys } from "./objects";
 
 const PACKAGE_EXTERNS = "node_modules/@kimlikdao/kdjs/externs/";
 
@@ -116,9 +117,23 @@ const preprocessAndIsolate = async (entryFile, isolateDir, externs) => {
         }
       },
       ExportDefaultDeclaration(node) {
-        if (file == entryFile)
-          exportStmt.unnamed = node.declaration.name;
-        if (file == entryFile || file.endsWith(".d.js"))
+        if (file == entryFile) {
+          if (node.declaration.type == "Identifier") {
+            exportStmt.unnamed = node.declaration.name;
+            updates.push({
+              beg: node.start,
+              end: node.end,
+              put: ";"
+            });
+          } else if (node.declaration.type == "ObjectExpression") {
+            exportStmt.unnamed = "KDdefault__";
+            updates.push({
+              beg: node.start,
+              end: node.end,
+              put: `const KDdefault__ = ${serializeWithStringKeys(node.declaration, content)};`
+            });
+          }
+        } else if (file.endsWith(".d.js"))
           updates.push({
             beg: node.start,
             end: node.end,

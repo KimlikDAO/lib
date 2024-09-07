@@ -10,6 +10,8 @@ import { tonelliShanks } from "./modular";
  */
 const Q = P + 0x47afc1f319ba3400000000n;
 /**
+ * @typedef {IPoint} Point */
+/**
  * @struct
  * @const {function(new:IPoint, bigint, bigint, bigint=)}
  */
@@ -41,7 +43,9 @@ const pointFrom = (x, yParity) => {
   const y2 = (x2 * x + 5n) % P
   /** @const {?bigint} */
   const y = sqrt(y2);
-  return y ? new Point(x, (y & 1n) == yParity ? y : P - y) : null;
+  return y
+    ? new Point(x, (y & 1n) == yParity ? y : P - y)
+    : null;
 }
 
 /**

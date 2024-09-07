@@ -51,7 +51,7 @@ acorn.Identifier.prototype.name;
 acorn.Literal = function () { }
 
 /** @const {bigint|string|number} */
-acorn.Literal.value;
+acorn.Literal.prototype.value;
 
 /**
  * @constructor
@@ -62,7 +62,7 @@ acorn.Property = function () { }
 
 /**
  * TODO(KimlikDAO-bot): fix
- * @const {!acorn.Identifier}
+ * @const {!acorn.Identifier|!acorn.Literal}
  */
 acorn.Property.prototype.key;
 
@@ -71,6 +71,11 @@ acorn.Property.prototype.key;
  * @const {!acorn.Node}
  */
 acorn.Property.prototype.value;
+
+/**
+ * @const {boolean}
+ */
+acorn.Property.prototype.shorthand;
 
 /**
  * @constructor

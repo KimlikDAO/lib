@@ -54,11 +54,10 @@ const postprocess = (content, missingImports) => {
           exportCode = "export{";
           node.right.properties.forEach((prop) => {
             const prefix = 'KimlikDAOCompiler_';
-            const newVarName = prefix + prop.key.name;
-            assignmentCode += `const ${newVarName} = ${generate(prop.value)};\n`;
-            let exportedName = prop.key.name;
-            if (exportedName == "KDdefault") exportedName = exportedName.slice(2);
-            exportCode += `${newVarName} as ${exportedName},`;
+            let exportName = prop.key.type === 'Identifier' ? prop.key.name : prop.key.value;
+            if (exportName == "KDdefault") exportName = exportName.slice(2);
+            assignmentCode += `const ${prefix}${exportName} = ${generate(prop.value)};\n`;
+            exportCode += `${prefix}${exportName} as ${exportName},`;
           });
           exportCode = exportCode.slice(0, -1) + "}";
         }

@@ -68,6 +68,7 @@ const serveCrate = async (crateName, dev) => {
             .replace(/const KonumEN =.*?;/, `const KonumEN = "${yollananSayfa.en}"`);
         if (id.endsWith("util/dom.js"))
           return code
+            .replace(/const GEN =.*?;/, `const GEN = false`)
             .replace(/const TR =.*?;/, `const TR = ${yollananSayfa.dil == "tr" ? "true" : "false"}`);
       }
     }]

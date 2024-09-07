@@ -27,6 +27,7 @@ const generateScript = (attribs, scope) => {
     output,
     loose: "data-loose" in attribs ? true : false,
     define: [
+      define("lib/util/dom", "GEN", false),
       define("lib/util/dom", "TR", scope.dil = "tr" ? "true" : "false"),
       define("birim/dil/birim", "KonumTR", scope.tr),
       define("birim/dil/birim", "KonumEN", scope.en),

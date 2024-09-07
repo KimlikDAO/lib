@@ -3,6 +3,9 @@
  */
 const TR = true;
 
+/** @define {boolean} */
+const GEN = true;
+
 /**
  * @noinline
  * @param {string} ad DOM biriminin adı.
@@ -107,11 +110,48 @@ const telefondanMetne = (telefon) =>
   telefon.slice(0, 3) + " (" + telefon.slice(3, 6) + ") " + telefon.slice(6, 9) + " " +
   telefon.slice(9, 11) + " " + telefon.slice(11);
 
+/**
+ * @param {string} id domId
+ * @param {string} name
+ * @return {!Element}
+ */
+const create = (id, name) => {
+  const el = document.createElement(name);
+  el.id = id;
+  return el;
+}
+
+/**
+ * @param {string} ad
+ * @return {!HTMLButtonElement}
+ */
+const button = (ad) => /** @type {!HTMLButtonElement} */((GEN && globalThis["GEN"])
+  ? create(ad, "button")
+  : adla(ad));
+
+/**
+ * @param {string} ad
+ * @return {!HTMLSpanElement}
+ */
+const span = (ad) => /** @type {!HTMLSpanElement} */((GEN && globalThis["GEN"])
+  ? create(ad, "span")
+  : adla(ad));
+
+/**
+ * @param {string} ad
+ * @return {!HTMLDivElement}
+ */
+const div = (ad) => /** @type {!HTMLDivElement} */((GEN && globalThis["GEN"])
+  ? create(ad, "div")
+  : adla(ad));
+
 export default {
   adla,
   adlaGizle,
   adlaGöster,
   adlaGösterGizle,
+  button,
+  div,
   düğmeDurdur,
   gizle,
   göster,
@@ -119,6 +159,7 @@ export default {
   menüYarat,
   paradanMetne,
   pencere,
+  span,
   telefondanMetne,
-  TR,
+  TR
 };
