@@ -123,6 +123,14 @@ const create = (id, name) => {
 
 /**
  * @param {string} ad
+ * @return {!HTMLAnchorElement}
+ */
+const a = (ad) => /** @type {!HTMLAnchorElement} */((GEN && globalThis["GEN"])
+  ? create(ad, "a")
+  : adla(ad));
+
+/**
+ * @param {string} ad
  * @return {!HTMLButtonElement}
  */
 const button = (ad) => /** @type {!HTMLButtonElement} */((GEN && globalThis["GEN"])
@@ -146,6 +154,7 @@ const div = (ad) => /** @type {!HTMLDivElement} */((GEN && globalThis["GEN"])
   : adla(ad));
 
 export default {
+  a,
   adla,
   adlaGizle,
   adlaGöster,

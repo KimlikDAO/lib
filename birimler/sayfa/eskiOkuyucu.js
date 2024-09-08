@@ -37,7 +37,7 @@ const HataKodu = {
  */
 const Seçimler = {};
 
-const normalizePath = (path) => path.replace(/^(\/|\.\/)/, '');
+const normalizePath = (path) => path.replace(/^(\/|\.\/)/, '').replaceAll("Ã¼", "ü");
 
 /**
  * @param {!Object<string, string>} attribs
