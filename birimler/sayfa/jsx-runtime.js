@@ -1,4 +1,4 @@
-import { tagYaz } from "../../util/html.js";
+import { KapalıTag, tagYaz } from "../../util/html.js";
 
 const jsx = (name, props = {}) => {
   const nameType = typeof name;
@@ -9,9 +9,12 @@ const jsx = (name, props = {}) => {
       prop.id = name.id;
       name = name.name;
     }
+    const closed = KapalıTag[name];
     return name == Fragment
-      ? children
-      : tagYaz(name, prop, false) + childStr + `</${name}>`;
+      ? childStr
+      : childStr || !closed
+        ? tagYaz(name, prop, false) + childStr + `</${name}>`
+        : tagYaz(name, prop, true);
   }
   return name(props);
 }
@@ -27,9 +30,12 @@ const jsxs = (name, props) => {
       name = name.name;
     }
     const childStr = children?.join("") || "";
+    const closed = KapalıTag[name];
     return name == Fragment
       ? childStr
-      : tagYaz(name, prop, false) + childStr + `</${name}>`;
+      : childStr || !closed
+        ? tagYaz(name, prop, false) + childStr + `</${name}>`
+        : tagYaz(name, prop, true);
   }
   return name(props);
 };

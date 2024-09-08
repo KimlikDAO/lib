@@ -1,7 +1,8 @@
 /** @const {!Object<string, boolean>} */
-const KapalıTagler = {
+const KapalıTag = {
   animate: true,
   animateTransform: true,
+  br: true,
   circle: true,
   ellipse: true,
   feblend: true,
@@ -34,4 +35,4 @@ const tagYaz = (ad, nitelikler, kapalı) => {
   return html + (kapalı ? "/>" : ">");
 }
 
-export { KapalıTagler, tagYaz };
+export { KapalıTag, tagYaz };

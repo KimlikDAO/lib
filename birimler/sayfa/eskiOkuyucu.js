@@ -4,7 +4,7 @@ import assert from "node:assert";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { optimize } from "svgo";
-import { KapalıTagler, tagYaz } from "../../util/html";
+import { KapalıTag, tagYaz } from "../../util/html";
 import { getExt } from "../../util/paths";
 import { getByKey } from "../hashcache/buildCache";
 import { hashAndCompressContent, hashFile } from "../hashcache/compression";
@@ -157,7 +157,7 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
   /** @const {!Parser} */
   const parser = new Parser({
     onopentag(ad, nitelikler, kapalı) {
-      kapalı ||= KapalıTagler[ad];
+      kapalı ||= KapalıTag[ad];
       derinlik += 1;
 
       if (ad.toLowerCase() == "html")
@@ -348,7 +348,7 @@ const birimOku = (birimAdı, seçimler, anaNitelikler) => {
     },
 
     onclosetag(ad, hayali) {
-      hayali ||= KapalıTagler[ad];
+      hayali ||= KapalıTag[ad];
       sırada = null;
       if (derinlik == değiştirDerinliği)
         değiştirDerinliği = 0;
