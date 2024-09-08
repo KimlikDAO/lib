@@ -38,7 +38,6 @@ const generateScript = (attribs, scope) => {
     .then((compressedName) => `<script src=${compressedName} type="module">`)
 }
 
-
 /**
  * @param {!Array<string>} cssFileNames
  * @return {!Promise<string>} the generate stylesheet element

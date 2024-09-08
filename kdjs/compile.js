@@ -21,7 +21,7 @@ const compile = async (params, checkFreshFn) => {
     getDir(/** @type {string} */(params["output"] || "build/" + /** @type {string} */(params["entry"]))),
     /** @type {string} */(params["isolateDir"]) || ".kdjs_isolate");
   const {
-    /** @const {!Map<string, ImportStatement>} */ missingImports,
+    /** @const {!Map<string, ImportStatement>} */ unlinkedImports,
     /** @const {!Set<string>} */ allFiles
   } = await preprocessAndIsolate(
     /** @type {string} */(params["entry"]),
@@ -79,7 +79,7 @@ const compile = async (params, checkFreshFn) => {
       }
       if (params["printGccOutput"])
         console.log("GCC output:", output);
-      output = postprocess(output, missingImports);
+      output = postprocess(output, unlinkedImports);
       const uglified = UglifyJS.minify(output, {
         mangle: {
           toplevel: true,
