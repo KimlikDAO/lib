@@ -33,14 +33,14 @@ const exportStmtToExportMap = (exportStmt) => {
 }
 
 /**
- * @param {string} entryFile
+ * @param {boolean} isEntry
  * @param {string} file name of the file
  * @param {string} content contents of the file
  * @param {!Array<string>} files the stack of files, which will be pushed new files
  * @param {!Map<string, ImportStatement>} unlinkedImports
  * @return {string} the content after preprocessing
  */
-const processJs = (entryFile, file, content, files, unlinkedImports) => {
+const processJs = (isEntry, file, content, files, unlinkedImports) => {
   /** @const {!acorn.Program} */
   const ast = parse(content, {
     ecmaVersion: "latest",
@@ -104,7 +104,7 @@ const processJs = (entryFile, file, content, files, unlinkedImports) => {
       }
     },
     ExportDefaultDeclaration(node) {
-      if (file == entryFile) {
+      if (isEntry) {
         if (node.declaration.type == "Identifier") {
           exportStmt.unnamed = node.declaration.name;
           updates.push({
@@ -136,7 +136,7 @@ const processJs = (entryFile, file, content, files, unlinkedImports) => {
         });
         return;
       }
-      if (file != entryFile) return;
+      if (!isEntry) return;
       if (node.declaration) {
         /** @const {!acorn.Declaration} */
         const decl = node.declaration;
@@ -169,13 +169,13 @@ const processJs = (entryFile, file, content, files, unlinkedImports) => {
 }
 
 /**
- * @param {string} entryFile
+ * @param {boolean} isEntry
  * @param {string} file name of the file
  * @param {string} content of the file
  * @param {!Array<string>} files
  * @return {string} file after preprocessing
  */
-const processJsx = (entryFile, file, content, files) => {
+const processJsx = (isEntry, file, content, files) => {
   /** @const {!Array<string>} */
   const lines = content.split("\n");
   /** @const {!Array<string>} */
@@ -222,8 +222,8 @@ const preprocessAndIsolate = async (entryFile, isolateDir, externs) => {
     /** @const {string} */
     const content = await readFile(file, "utf8");
     const newContent = file.endsWith(".jsx")
-      ? processJsx(entryFile, file, content, files)
-      : processJs(entryFile, file, content, files, unlinkedImports);
+      ? processJsx(file == entryFile, file, content, files)
+      : processJs(file == entryFile, file, content, files, unlinkedImports);
     const outFile = combine(isolateDir, file);
     writePromises.push(mkdir(getDir(outFile), { recursive: true })
       .then(() => writeFile(outFile, newContent)));

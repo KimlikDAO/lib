@@ -1,10 +1,19 @@
 import { KapalıTag, tagYaz } from "../../util/html.js";
 
+/**
+ * @param {!Array<*>} children
+ * @return {string}
+ */
+const mergeChildren = (children) => children
+  .flat()
+  .filter((c) => typeof c != "boolean")
+  .join("");
+
 const jsx = (name, props = {}) => {
   const nameType = typeof name;
   if (nameType != "function") {
     const { children, ...prop } = props;
-    const childStr = [].concat(children).join("");
+    const childStr = mergeChildren([].concat(children || []));
     if (nameType == "object") {
       prop.id = name.id;
       name = name.name;
@@ -29,7 +38,7 @@ const jsxs = (name, props) => {
       prop.id = name.id;
       name = name.name;
     }
-    const childStr = children?.join("") || "";
+    const childStr = children ? mergeChildren(children) : "";
     const closed = KapalıTag[name];
     return name == Fragment
       ? childStr

@@ -71,7 +71,7 @@ const commitDouble = (chainGroup, ownerAddress, random) => {
     case ChainGroup.MINA:
       /** @const {!Uint8Array} */
       const commitment = new Uint8Array(64);
-      const { x, isOdd } = PublicKey.fromBase58(ownerAddress);
+      const { /** bigint */ x, isOdd } = PublicKey.fromBase58(ownerAddress);
       const /** bigint */ h = isOdd ? x + 1n : x;
       uint8ArrayLEyeSayıdan(
         commitment,
