@@ -57,12 +57,12 @@ If you don't already have bun installed, you can install it by following the
 
 The tests can be run in two different modes:
 
-- Uncompiled
+- Uncompiled:
   We use `bun`'s test runner, which has a jest-like interface.
   ```shell
   bun test
   ```
-- Compiled (using `kdjs`)
+- Compiled (using `kdjs`):
   We also run the same tests after compiling them with `kdjs`, which ensures
   the packages are correctly typed and allows us to make measurements on the
   compiled versions of the code.

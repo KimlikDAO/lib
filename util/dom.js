@@ -153,6 +153,14 @@ const div = (ad) => /** @type {!HTMLDivElement} */((GEN && globalThis["GEN"])
   ? create(ad, "div")
   : adla(ad));
 
+/**
+ * @param {string} ad
+ * @return {!HTMLUListElement}
+ */
+const ul = (ad) => /** @type {!HTMLUListElement} */((GEN && globalThis["GEN"])
+  ? create(ad, "ul")
+  : adla(ad));
+
 export default {
   a,
   adla,
@@ -170,5 +178,6 @@ export default {
   pencere,
   span,
   telefondanMetne,
-  TR
+  TR,
+  ul
 };

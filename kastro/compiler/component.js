@@ -219,7 +219,7 @@ const compileComponent = (name, props, globals) => {
     },
 
     onclosetag(tagName, hayali) {
-      hayali ||= KapalıTag[tagName];
+      hayali ||= KapalıTag[tagName] || tagName.includes(":");
       sırada = null;
       if (depth == değiştirDerinliği)
         değiştirDerinliği = 0;
