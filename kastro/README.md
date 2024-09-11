@@ -12,7 +12,7 @@ In `kastro`, each component has its own directory, containing at least a `jsx`
 file responsible for rendering the component, and a `js` file managing the DOM
 interactions. Here, `jsx` files are used only during compilation and the JavaScript
 code that is sent to the client is obtained by compiling the `js` files with our
-with our advanced JavaScript compiler, `kdjs`.
+advanced JavaScript compiler, `kdjs`.
 
 Our in-house JavaScript compiler, `kdjs`, expects your code to be annotated with
 [Google Closure type annotations](https://github.com/google/closure-compiler/wiki/Types-in-the-Closure-Type-System)

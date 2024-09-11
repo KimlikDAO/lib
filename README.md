@@ -1,25 +1,30 @@
 <h1><img src="https://raw.githubusercontent.com/KimlikDAO/dapp/ana/birim/favicon/icon.svg" align="top" height="44"> kimlikdao-js</a></h1>
 
+[![Tests](https://img.shields.io/github/actions/workflow/status/KimlikDAO/kimlikdao-js/test.yml?branch=ana)](https://github.com/KimlikDAO/kimlikdao-js/actions/workflows/test.yml)
 [![npm version](https://img.shields.io/npm/v/@kimlikdao/lib.svg)](https://www.npmjs.com/package/@kimlikdao/lib)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 kimlikdao-js is a repository containing JavaScript modules essential for KimlikDAO projects.
 
-# 🗂️ Directories
+# 🗂️ Features
+
+## Highlights
+
+🗝️ [`crypto`](./crypto): Cryptographic functions and libraries
+
+🪁 [`kastro`](./kastro): Our compile-time focused web-framework
+
+⚙️ [`kdjs`](./kdjs): KimlikDAO JavaScript compiler
+
+🪪 [`did`](./did): Definitions of DID and KPass by KimlikDAO
+
+## Other goodies
 
 🔌 `api`: Definitions of standard protocols (e.g., jsonrpc, oauth2)
 
 🧬 `crosschain`: Definitions and structures valid across all blockchains
 
-🗝️ `crypto`: Cryptographic functions and libraries
-
-🪪 `did`: Definitions of DID and KPass by KimlikDAO
-
 💎 `ethereum`: Tools for interacting with Ethereum nodes
-
-✨ `kastro`: Our compile-time focused web-framework
-
-⚙️ `kdjs`: KimlikDAO JavaScript compiler
 
 📡 `node`: Definitions needed when communicating with KimlikDAO protocol nodes
 
