@@ -13,8 +13,8 @@ kimlikdao-js is a repository containing JavaScript modules essential for KimlikD
 
 🗝️ [`crypto`](./crypto): Cryptographic functions and libraries
 
-  - [`arfCurve`](./crypto/arfCurve.js): An efficient Arf Curve ($y^2= x^3 + b$) class factory
-  - [`wesolowski`](./crypto/wesolowski.js): Our Wesolowski VDF implementation
+  - `arfCurve`: An efficient Arf Curve ($y^2= x^3 + b$) class factory
+  - `wesolowski`: Our Wesolowski VDF implementation
 
 🪁 [`kastro`](./kastro): Our compile-time focused web-framework
 
@@ -32,6 +32,8 @@ kimlikdao-js is a repository containing JavaScript modules essential for KimlikD
 
 💎 `ethereum`: Tools for interacting with Ethereum nodes
 
+🪶 `mina`: Tools for working Mina dApps and Mina nodes.
+
 📡 `node`: Definitions needed when communicating with KimlikDAO protocol nodes
 
 🧪 `testing`: Libraries for writing tests
@@ -48,6 +50,8 @@ bun i
 
 These commands will clone the repository into your local development
 environment and download the packages necessary for the repository to function.
+If you don't already have bun installed, you can install it by following the
+[official guide](https://bun.sh/docs/installation).
 
 # 🧪 Tests
 
