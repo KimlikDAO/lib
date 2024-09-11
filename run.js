@@ -27,7 +27,7 @@ const compileAndRunMatching = async (pattern, command, args) => {
   const runBN = bottleneck(args["runConcurrency"] || args["concurrency"]);
 
   for await (const f of glob.scan(".")) {
-    if (f.startsWith("build") || f.includes("eskiOkuyucu") || f.includes("node_modules")) continue;
+    if (f.startsWith("build") || f.includes("kastro") || f.includes("node_modules")) continue;
     const output = `build/${f}`;
     compileTasks.push(compileBN(() => compile({
       ...args,
@@ -53,9 +53,14 @@ const ensureAllPassed = (allPassed) => process.exit(+!allPassed);
 const testCommand = "bun test --timeout 100000";
 const benchCommad = "bun";
 
-let target = args["target"];
-if (target == "test") target = "**/*.test.js";
-else if (target == "bench") target = "**/*.bench.js";
+const target = args["target"];
+const targetPattern = target == "bench"
+  ? "**/*.bench.js"
+  : (target == "test" ? "" : `${target}/`) + "**/*.test.js";
 
-compileAndRunMatching(target, target.includes("bench") ? benchCommad : testCommand, args)
+compileAndRunMatching(targetPattern,
+  targetPattern.includes("bench")
+    ? benchCommad
+    : testCommand,
+  args)
   .then(ensureAllPassed);

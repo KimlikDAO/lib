@@ -12,4 +12,6 @@ test("negative depth", () => {
     .toBe("c");
   expect(combine("", "../../../abc"))
     .toBe("../../../abc");
+  expect(combine("./a/b/c", "d"))
+    .toBe("a/b/c/d");
 });
