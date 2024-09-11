@@ -56,10 +56,11 @@ const compileComponent = (name, props, globals) => {
   let htmlParts = [];
 
   /**
-   * In htmlx modules, the local variables are set by data-key = value properties
-   * at the call site, which adds the key = value pair to the local variables.
+   * In htmlx modules, the local variables are set by `data-key = value`
+   * properties at the call site, which adds the key = value pair to the
+   * local variables.
    *
-   * In jsx modules, the same is done with adding the key = value property at
+   * In jsx modules, the same is done with adding the `key = value` property at
    * the call site.
    *
    * @const {!Object<string, string>}
