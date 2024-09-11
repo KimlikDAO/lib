@@ -3,6 +3,7 @@
 [![Tests](https://img.shields.io/github/actions/workflow/status/KimlikDAO/kimlikdao-js/test.yml?branch=ana)](https://github.com/KimlikDAO/kimlikdao-js/actions/workflows/test.yml)
 [![npm version](https://img.shields.io/npm/v/@kimlikdao/lib.svg)](https://www.npmjs.com/package/@kimlikdao/lib)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![KimlikDAO](https://img.shields.io/badge/Kimlik-DAO-blue)](https://kimlikdao.org)
 
 kimlikdao-js is a repository containing JavaScript modules essential for KimlikDAO projects.
 
@@ -12,7 +13,12 @@ kimlikdao-js is a repository containing JavaScript modules essential for KimlikD
 
 🗝️ [`crypto`](./crypto): Cryptographic functions and libraries
 
+  - [`arfCurve`](./crypto/arfCurve.js): An efficient Arf Curve ($y^2= x^3 + b$) class factory
+  - [`wesolowski`](./crypto/wesolowski.js): Our Wesolowski VDF implementation
+
 🪁 [`kastro`](./kastro): Our compile-time focused web-framework
+
+  - Our custom web framework for building hyper-efficient web apps
 
 ⚙️ [`kdjs`](./kdjs): KimlikDAO JavaScript compiler
 
