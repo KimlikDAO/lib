@@ -1,16 +1,23 @@
 import { Parser } from "htmlparser2";
 import { readdir, readFile } from "node:fs/promises";
 import { KapalıTag, tagYaz } from "../../util/html";
-import { LangCode } from "../crate";
 import { CompilerError } from "./compiler";
 import { renderParagraph } from "./latex";
 
-/** @const {string} */
-const ğ = new TextDecoder().decode(Uint8Array.from([195, 132, 194, 159]));
+const Fixes = {
+  "Ã¼": "ü",
+  [new TextDecoder().decode(Uint8Array.from([195, 132, 194, 159]))]: 'ğ',
+  [new TextDecoder().decode(Uint8Array.from([195, 133, 194, 159]))]: 'ş',
+  [new TextDecoder().decode(Uint8Array.from([195, 132, 194, 177]))]: 'ı',
+  [new TextDecoder().decode(Uint8Array.from([195, 132, 194, 176]))]: 'İ',
+  [new TextDecoder().decode(Uint8Array.from([195, 131, 194, 182]))]: 'ö',
+  [new TextDecoder().decode(Uint8Array.from([195, 132, 194, 159]))]: 'ğ',
+};
+
+const FixesRegex = new RegExp(Object.keys(Fixes).join("|"), "g");
 
 const normalizePath = (path) => path.replace(/^(\/|\.\/)/, '')
-  .replaceAll("Ã¼", "ü")
-  .replaceAll(ğ, "ğ");
+  .replace(FixesRegex, (match) => Fixes[match]);
 
 const getComponentFiles = (name) => readdir(name).then((files) => {
   const css = files.find((file) => file.endsWith('.css'));
@@ -26,7 +33,7 @@ const getComponentFiles = (name) => readdir(name).then((files) => {
     markup: `${name}/${markup}`,
     css: css ? `${name}/${css}` : null
   };
-});
+}, () => console.log(name, new TextEncoder().encode(name)));
 
 /**
  * @param {string} name
