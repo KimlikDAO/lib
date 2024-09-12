@@ -37,14 +37,18 @@ const exportStmtToExportMap = (exportStmt) => {
  * @param {string} file name of the file
  * @param {string} content contents of the file
  * @param {!Array<string>} files the stack of files, which will be pushed new files
+ * @param {!Object<string, *>} globals
  * @param {!Map<string, ImportStatement>} unlinkedImports
  * @return {string} the content after preprocessing
  */
-const processJs = (isEntry, file, content, files, unlinkedImports) => {
+const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
+  /** @const {!Array<!acorn.Comment>} */
+  const comments = [];
   /** @const {!acorn.Program} */
   const ast = parse(content, {
     ecmaVersion: "latest",
     sourceType: "module",
+    onComment: comments
   });
   /**
    * @const
@@ -58,6 +62,42 @@ const processJs = (isEntry, file, content, files, unlinkedImports) => {
   const exportStmt = {
     named: []
   };
+
+  /**
+   * @param {!acorn.Comment} comment
+   */
+  const processComment = (comment) => {
+    const defineIdx = comment.value.indexOf("@define");
+    if (defineIdx == -1) return;
+    const constDeclIndex = content.indexOf("const", comment.end);
+    if (constDeclIndex == -1) return;
+    const equalIndex = content.indexOf("=", constDeclIndex);
+    if (equalIndex == -1) return;
+
+    const symbol = content.substring(constDeclIndex + 5, equalIndex).trim();
+    if (symbol in globals) {
+      const typeBeg = comment.value.indexOf("{", defineIdx) + 1;
+      const typeEnd = comment.value.indexOf("}", typeBeg);
+      const type = comment.value.slice(typeBeg, typeEnd).trim();
+      const semicolonIndex = content.indexOf(';', equalIndex);
+      const lineEndIndex = content.indexOf("\n", equalIndex);
+      const assignmentEnd = semicolonIndex !== -1
+        ? Math.min(semicolonIndex + 1, lineEndIndex) : lineEndIndex;
+
+      updates.push({
+        beg: comment.start + defineIdx + 2,
+        end: comment.start + defineIdx + 9,
+        put: "@const"
+      }, {
+        beg: comment.end,
+        end: assignmentEnd,
+        put: `\nconst ${symbol} = /** @type {${type}} */(${JSON.stringify(globals[symbol])});`
+      });
+    }
+  }
+
+  for (const comment of comments)
+    processComment(comment);
 
   simple(ast, /** @type {!acorn.SimpleVisitor} */({
     ImportDeclaration(node) {
@@ -173,9 +213,10 @@ const processJs = (isEntry, file, content, files, unlinkedImports) => {
  * @param {string} file name of the file
  * @param {string} content of the file
  * @param {!Array<string>} files
+ * @param {!Object<string, *>} globals
  * @return {string} file after preprocessing
  */
-const processJsx = (isEntry, file, content, files) => {
+const processJsx = (isEntry, file, content, files, globals) => {
   /** @const {!Array<string>} */
   const lines = content.split("\n");
   /** @const {!Array<string>} */
@@ -201,16 +242,17 @@ const processJsx = (isEntry, file, content, files) => {
 /**
  * @param {string} entryFile
  * @param {string} isolateDir
- * @param {!Array<string>=} externs
+ * @param {!Array<string>} externs
+ * @param {!Object<string, *>} globals
  * @return {!Promise<{
  *   unlinkedImports: !Map<string, ImportStatement>,
  *   allFiles: !Set<string>
  * }>}
  */
-const preprocessAndIsolate = async (entryFile, isolateDir, externs) => {
+const preprocessAndIsolate = async (entryFile, isolateDir, externs, globals) => {
   const unlinkedImports = new Map();
   /** @const {!Array<string>} */
-  const files = [entryFile].concat(externs || []);
+  const files = [entryFile, ...externs];
   /** @const {!Set<string>} */
   const allFiles = new Set();
   /** @const {!Array<!Promise<void>>} */
@@ -222,8 +264,8 @@ const preprocessAndIsolate = async (entryFile, isolateDir, externs) => {
     /** @const {string} */
     const content = await readFile(file, "utf8");
     const newContent = file.endsWith(".jsx")
-      ? processJsx(file == entryFile, file, content, files)
-      : processJs(file == entryFile, file, content, files, unlinkedImports);
+      ? processJsx(file == entryFile, file, content, files, globals)
+      : processJs(file == entryFile, file, content, files, globals, unlinkedImports);
     const outFile = combine(isolateDir, file);
     writePromises.push(mkdir(getDir(outFile), { recursive: true })
       .then(() => writeFile(outFile, newContent)));

@@ -13,6 +13,7 @@ const Update = {};
  * @return {string}
  */
 const update = (orig, updates) => {
+  updates.sort((a, b) => a.beg - b.beg);
   /** @type {string} */
   let updated = "";
   /** @type {number} */

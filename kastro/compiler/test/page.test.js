@@ -15,7 +15,6 @@ describe("compilePage() tests", () => {
       SharedCss: new Set(),
       PageCss: new Set()
     });
-    console.log(html);
     expect(html).toContain(`html lang="tr"`);
     expect(html).not.toContain("l400.woff2");
     expect(html).not.toContain("l700.woff2");

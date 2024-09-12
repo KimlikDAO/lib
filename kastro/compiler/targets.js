@@ -7,7 +7,6 @@ import {
   hashAndCompressContent,
   hashAndCompressFile
 } from "../hashcache/compression";
-import { define } from "./defines";
 
 /**
  * @param {!Object<string, *>} props
@@ -22,14 +21,7 @@ const compileScript = (props, globals) => {
     entry,
     output,
     loose: "data-loose" in props ? true : false,
-    define: [
-      define("lib/util/dom", "GEN", false),
-      define("lib/util/dom", "TR", globals.Lang == "tr" ? "true" : "false"),
-      define("birim/dil/birim", "KonumTR", globals.RouteTR),
-      define("birim/dil/birim", "KonumEN", globals.RouteEN),
-      define("birim/cüzdan/birim", "Chains", globals.Chains.map((c) => c.id)).join("|"),
-      define("birim/cüzdan/birim", "DefaultChain", globals.DefaultChain)
-    ]
+    globals
   }).then(() => hashAndCompressFile(output))
     .then((compressedName) => `<script src=${compressedName} type="module">`)
 }

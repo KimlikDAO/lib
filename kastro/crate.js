@@ -1,24 +1,12 @@
 import yaml from "js-yaml";
 import { readFile, readdir } from "node:fs/promises";
-
-/** @enum {string} */
-const LangCode = {
-  EN: "en",
-  TR: "tr",
-  BG: "bg",
-  KZ: "kz",
-};
-
-/**
- * @typedef {!Object<LangCode, string>}
- */
-const PageRoute = {};
+import { I18nString, LangCode } from "../util/i18n";
 
 /**
  * @typedef {{
  *   index: string,
  *   codebaseLang: LangCode,
- *   pages: !Array<PageRoute>
+ *   pages: !Array<I18nString>
  * }}
  */
 const CrateRecipe = {};
@@ -40,6 +28,5 @@ const readCrateRecipe = (crateName) => readdir(crateName)
 export {
   CrateRecipe,
   LangCode,
-  PageRoute,
   readCrateRecipe
 };

@@ -15,17 +15,17 @@ const readCrate = (crateName, buildMode) => readCrateRecipe(crateName)
     const langs = crate.pages ? Object.keys(crate.pages[0]) : crate.languages;
     const map = {};
     const add = (page, rootComponent) => {
-      const routes = {};
-      for (const routeLang of langs)
-        routes[`Route${routeLang.toUpperCase()}`] = page[routeLang];
+      const route = {};
       for (const lang of langs) {
         const pageData = {
           RootComponent: (crateName === "." ? "" : `${crateName}/`) + (rootComponent || page[crate.codebaseLang]),
           BuildMode: buildMode,
           Lang: lang,
           CodebaseLang: crate.codebaseLang,
+          Route: { ...page }
         };
-        map[`/${page[lang]}`] = Object.assign(pageData, routes);
+        delete pageData.Route[lang];
+        map[`/${page[lang]}`] = pageData;
       }
     };
     add(Object.fromEntries(langs.map(lang => [lang, lang])), crate.index);
@@ -64,14 +64,17 @@ const serveCrate = async (crateName, buildMode) => {
       },
 
       transform(code, id) {
+        if (id.endsWith("cüzdan/birim.js"))
+          return code
+            .replace(/const Chains =.*?;/, `const Chains = ${JSON.stringify(currentPage.Chains)};`)
+            .replace(/const DefaultChain =.*?;/, `const DefaultChain = ${JSON.stringify(currentPage.DefaultChain)};`);
         if (id.endsWith("dil/birim.js"))
           return code
-            .replace(/const KonumTR =.*?;/, `const KonumTR = "${currentPage.RouteTR}"`)
-            .replace(/const KonumEN =.*?;/, `const KonumEN = "${currentPage.RouteEN}"`);
+            .replace(/const Route =.*?;/, `const Route = ${JSON.stringify(currentPage.Route)};`);
         if (id.endsWith("util/dom.js"))
           return code
             .replace(/const GEN =.*?;/, `const GEN = false`)
-            .replace(/const TR =.*?;/, `const TR = ${currentPage.Lang == "tr" ? "true" : "false"}`);
+            .replace(/const TR =.*?;/, `const TR = ${currentPage.Lang == "tr" ? "true" : "false"};`);
       }
     }]
   }).then((vite) => vite.listen(8787))

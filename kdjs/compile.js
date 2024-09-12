@@ -7,7 +7,7 @@ import { ImportStatement } from "./modules";
 import { postprocess } from "./postprocess";
 import { preprocessAndIsolate } from "./preprocess";
 
-/** @typedef {!Object<string, (string|boolean)>} */
+/** @typedef {!Object<string, *>} */
 const Params = {};
 
 /**
@@ -26,7 +26,8 @@ const compile = async (params, checkFreshFn) => {
   } = await preprocessAndIsolate(
     /** @type {string} */(params["entry"]),
     isolateDir,
-    [].concat(params["externs"] || [])
+    [].concat(params["externs"] || []),
+    /** @type {!Object<string, *>} */(params["globals"] || {})
   );
   /** @const {!Array<string>} */
   const allFilesArray = Array.from(allFiles).sort();
@@ -64,7 +65,7 @@ const compile = async (params, checkFreshFn) => {
     "entry_point": /** @type {string} */(params["entry"]),
   };
   if (params["define"])
-    options["define"] = params["define"];
+    options["define"] = /** @type {(!Array<string>|boolean|string)} */(params["define"]);
 
   const closureCompiler = new ClosureCompiler.compiler(options);
   closureCompiler.spawnOptions = {

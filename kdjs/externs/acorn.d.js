@@ -6,7 +6,8 @@ const acorn = {};
 /**
  * @typedef {{
  *   ecmaVersion: string,
- *   sourceType: string
+ *   sourceType: string,
+ *   onComment: (!Array<!acorn.Comment>|undefined)
  * }}
  */
 acorn.ParseOptions;
@@ -246,6 +247,35 @@ acorn.ExportNamedDeclaration.prototype.declaration;
 
 /** @const {!Array<!acorn.ExportSpecifier>} */
 acorn.ExportNamedDeclaration.prototype.specifiers;
+
+/**
+ * @typedef {{
+ *   line: number,
+ *   column: number
+ * }}
+ */
+acorn.Position;
+
+/**
+ * @typedef {{
+ *   source: string,
+ *   start: acorn.Position,
+ *   end: acorn.Position
+ * }}
+ */
+acorn.SourceLocation;
+
+/**
+ * @typedef {{
+ *   type: string,
+ *   value: string,
+ *   start: number,
+ *   end: number,
+ *   loc: acorn.SourceLocation,
+ *   range: (!Array<number>|undefined)
+ * }}
+ */
+acorn.Comment;
 
 /**
  * @param {string} content

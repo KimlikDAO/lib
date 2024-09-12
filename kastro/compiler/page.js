@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 import process from "node:process";
 import { optimize } from "svgo";
 import { tagYaz } from "../../util/html";
+import { LangCode } from "../../util/i18n";
 import { getExt } from "../../util/paths";
 import { getByKey } from "../hashcache/buildCache";
 import { hashAndCompressContent, hashFile } from "../hashcache/compression";
@@ -94,7 +95,12 @@ const generateImage = (attribs, options) => {
 const compilePage = async (componentName, pageGlobals) => {
   pageGlobals.SharedCss = new Set();
   pageGlobals.PageCss = new Set();
+  pageGlobals.GEN = false;
+  // TODO(KimlikDAO-bot): Remove when we have 3 languages
+  pageGlobals.TR = pageGlobals.Lang == LangCode.TR;
   initGlobals(pageGlobals);
+
+  console.log(pageGlobals);
 
   return compileComponent(componentName, {}, pageGlobals)
     .then((html) => {
