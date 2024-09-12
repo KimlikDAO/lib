@@ -2,7 +2,7 @@
 .kdjs_isolate
 .vscode
 *.out.js
-/build
+build
 bun.lockb
 node_modules*
 yarn.lock

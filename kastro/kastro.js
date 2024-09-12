@@ -5,9 +5,11 @@ import { uploadWorker } from "./cloudflare/targets";
 import { readCrateRecipe } from "./crate";
 import { sayfaOku } from "./sayfa/eskiOkuyucu";
 import { compileWorker } from "./sunucu/targets";
+import { plugin } from "bun";
 
 /** @define {string} */
 const ROOT_PATH = "../../..";
+
 
 /**
  * @param {string} createDir

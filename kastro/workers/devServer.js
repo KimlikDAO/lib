@@ -53,13 +53,7 @@ const serveCrate = async (crateName, buildMode) => {
 
       configureServer(server) {
         server.middlewares.use(async (req, res, next) => {
-          if (req.url.endsWith(".m.svg")) {
-            res.setHeader("content-type", "image/svg+xml");
-            compileSvg(req.url.slice(1), {
-              Lang: "en",
-              BuildMode: buildMode
-            }).then((svg) => res.end(svg));
-          } else if (req.originalUrl in map) {
+          if (req.originalUrl in map) {
             res.setHeader("content-type", "text/html;charset=utf-8");
             server.moduleGraph.invalidateAll();
             currentPage = map[req.originalUrl];

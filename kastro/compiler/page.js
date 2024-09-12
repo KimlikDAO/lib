@@ -1,6 +1,8 @@
+import { plugin } from "bun";
 import { minify } from "html-minifier";
 import assert from "node:assert";
 import { readFile } from "node:fs/promises";
+import process from "node:process";
 import { optimize } from "svgo";
 import { tagYaz } from "../../util/html";
 import { getExt } from "../../util/paths";
@@ -13,11 +15,32 @@ import SvgoConfig from "./svgoConfig";
 import SvgoInlineConfig from "./svgoInlineConfig";
 import { generateStylesheet, webp } from "./targets";
 
-globalThis.GEN = true;
-globalThis.document = {};
-globalThis.document.createElement = (name) => ({
-  name
-});
+const setupEnvironment = () => {
+  const ImagePlugin = {
+    name: 'kastro image loader',
+    setup(build) {
+      const cwdLen = process.cwd().length;
+      build.onLoad({ filter: /\.svg$/ }, (args) => {
+        const code = `import { Image } from "@kimlikdao/lib/kastro/compiler/image";\n` +
+          `export default (props) => Image({...props, src: "${args.path.slice(cwdLen)}" });`;
+        return {
+          contents: code,
+          loader: "js"
+        };
+      });
+    },
+  };
+
+  plugin(ImagePlugin);
+
+  globalThis.GEN = true;
+  globalThis.document = {};
+  globalThis.document.createElement = (name) => ({
+    name
+  });
+}
+
+setupEnvironment();
 
 /**
  * @param {!Object<string, string>} attribs

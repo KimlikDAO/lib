@@ -110,9 +110,6 @@ const compileComponent = (name, props, globals) => {
       if (globals.BuildMode > 0 && tagName.toLowerCase() == "script")
         return htmlParts.push(generateScript(tagProps, globals));
 
-      if (tagName.toLowerCase() == "img")
-        return;// htmlParts.push(generateImage(tagProps, globals));
-
       if (tagName.toLowerCase() == "link" && tagProps.rel == "stylesheet")
         return (("data-shared" in tagProps) ? globals.SharedCss : globals.PageCss)
           .add(normalizePath(tagProps.href));

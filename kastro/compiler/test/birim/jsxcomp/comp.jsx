@@ -1,3 +1,4 @@
+// @jsxImportSource ../../../
 
 const fibonacci = (n) => {
   let a = 0n, b = 1n, c;

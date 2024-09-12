@@ -19,3 +19,37 @@ Our in-house JavaScript compiler, `kdjs`, expects your code to be annotated with
 and uses this type information to perform aggressive optimizations which are not
 possible otherwise. `kdjs` internally uses the Google Closure Compiler, but it
 has many additional optimization passes and a full support for es6 modules.
+
+## Components
+
+There are 3 types of components:
+
+1. **Singleton**: Only one instance can be present in the page. These bind to the DOM when
+  you import them and can keep an arbitrary internal state. (every variable that you 
+  define in the module)
+  ```javascript
+  const State = { 1n, 2n, 3n };
+  const SingletonComp = () => <div>Singleton</div>;
+  export default SingletonComp;
+  ```
+
+2. **Stateless**: These are components that do not have any internal state besides the
+  DOM state.
+  ```javascript
+  const StatelessComp =  {
+    render: ({id}) => <div id={id}>Stateless</div>,
+    bind: (id) => { document.getElementById(id).onclick = () => alert("hi"); }
+  }
+  export default StatelessComp;
+  ```
+
+3. **Stateful**: These are components that have internal state and for each instance
+  of the component, a class instance is crated and exported.
+  ```javascript
+  class CheckBox {
+    static render({id}) { return <div id={id}>Stateful</div>; }
+    constructor(id) { this.root = document.getElementById(id); }
+    flip() {}
+  }
+  export default CheckBox;
+  ```
