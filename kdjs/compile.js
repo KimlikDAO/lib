@@ -11,6 +11,13 @@ import { preprocessAndIsolate } from "./preprocess";
 const Params = {};
 
 /**
+ * @param {*} globals
+ * @return {!Object<string, *>}
+ */
+const getGlobals = (globals) => /** @type {!Object<string, *>} */(typeof globals == "string"
+  ? JSON.parse(globals) : (globals || {}));
+
+/**
  * @param {!Params} params
  * @param {function(!Array<string>):!Promise<boolean>=} checkFreshFn
  * @return {!Promise<string>}
@@ -27,7 +34,7 @@ const compile = async (params, checkFreshFn) => {
     /** @type {string} */(params["entry"]),
     isolateDir,
     [].concat(params["externs"] || []),
-    /** @type {!Object<string, *>} */(params["globals"] || {})
+    getGlobals(params["globals"])
   );
   /** @const {!Array<string>} */
   const allFilesArray = Array.from(allFiles).sort();
