@@ -56,7 +56,9 @@ const benchCommad = "bun";
 const target = args["target"];
 const targetPattern = target == "bench"
   ? "**/*.bench.js"
-  : (target == "test" ? "" : `${target}/`) + "**/*.test.js";
+  : target.endsWith(".js")
+    ? target
+    : (target == "test" ? "" : `${target}/`) + "**/*.test.js";
 
 compileAndRunMatching(targetPattern,
   targetPattern.includes("bench")
