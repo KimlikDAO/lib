@@ -3,6 +3,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { I18nString, LangCode } from "../util/i18n";
 
 /**
+ * @dict
  * @typedef {{
  *   index: string,
  *   codebaseLang: LangCode,

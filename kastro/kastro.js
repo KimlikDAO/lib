@@ -2,44 +2,54 @@
 import yaml from "js-yaml";
 import { readFile } from "node:fs/promises";
 import { uploadWorker } from "./cloudflare/targets";
+import { BuildMode } from "./compiler/compiler";
+import { compilePage } from "./compiler/page";
+import { compileWorker } from "./compiler/worker";
 import { readCrateRecipe } from "./crate";
-import { sayfaOku } from "./sayfa/eskiOkuyucu";
-import { compileWorker } from "./sunucu/targets";
-import { plugin } from "bun";
 
 /** @define {string} */
 const ROOT_PATH = "../../..";
-
 
 /**
  * @param {string} createDir
  * @param {!Object} env
  */
-const buildCrate = (createDir, env) => import(`${ROOT_PATH}/${createDir}/build.js`)
-  .then((buildFile) => buildFile.default && buildFile.default.build
-    ? buildFile.default.build(env)
-    : Promise.reject())
-  .catch(() => readCrateRecipe(createDir)
-    .then((recipe) => {
-      const tasks = [];
-      if (recipe.dizin) {
-        const pages = [].concat({
-          en: "en",
-          tr: "tr",
-          konum: `${recipe.dizin}/sayfa.html`
-        }, recipe.sayfalar);
+const buildCrate = (createDir, env) => readCrateRecipe(createDir)
+  .then((crate) => {
+    const tasks = [];
+    /** @const {!Array<string>} */
+    const langs = crate.pages ? Object.keys(crate.pages[0]) : crate.languages;
 
-        for (const lang of ["tr", "en"])
-          for (const page of pages) {
-            page.konum ||= `${page.tr}/sayfa.html`;
-            tasks.push(sayfaOku({ ...page, dil: lang }));
-          }
+    if (crate.index) {
+      /**
+       * Given a page, schedules the compilation of it in all languages of the
+       * crate.
+       *
+       * @param {I18nString} page a page defined by its routes
+       * @param {string=} rootComponent 
+       */
+      const buildPage = (page, rootComponent) => {
+        for (const lang of langs) {
+          const pageData = {
+            BuildMode: BuildMode.Dev, // TODO(KimlikDAO-bot): fix
+            Lang: lang,
+            CodebaseLang: crate.codebaseLang,
+            Route: { ...page }
+          };
+          delete pageData.Route[lang];
+          tasks.push(compilePage(rootComponent || page[crate.codebaseLang], pageData));
+        }
       }
 
-      if (recipe.worker)
-        compileWorker(createDir, recipe.worker, env);
-    })
-  );
+      buildPage(Object.fromEntries(langs.map(lang => [lang, lang])), crate.index);
+      // if (crate.pages)
+      //   for (const page of crate.pages)
+      //     buildPage(page);
+    }
+
+    if (crate.worker)
+      compileWorker(crate.worker.name, crate.worker, env);
+  });
 
 /**
  * @param {string} createDir

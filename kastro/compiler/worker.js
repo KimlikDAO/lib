@@ -1,5 +1,5 @@
 import { compile } from "../../kdjs/compile";
-import { ensureDotJs, selectDefines } from "../defines";
+import { ensureDotJs, selectDefines } from "./defines";
 
 /**
  * @param {string} dirName

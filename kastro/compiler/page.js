@@ -99,9 +99,6 @@ const compilePage = async (componentName, pageGlobals) => {
   // TODO(KimlikDAO-bot): Remove when we have 3 languages
   pageGlobals.TR = pageGlobals.Lang == LangCode.TR;
   initGlobals(pageGlobals);
-
-  console.log(pageGlobals);
-
   return compileComponent(componentName, {}, pageGlobals)
     .then((html) => {
       html = "<!DOCTYPE html>" + html;

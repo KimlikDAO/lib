@@ -15,7 +15,6 @@ const readCrate = (crateName, buildMode) => readCrateRecipe(crateName)
     const langs = crate.pages ? Object.keys(crate.pages[0]) : crate.languages;
     const map = {};
     const add = (page, rootComponent) => {
-      const route = {};
       for (const lang of langs) {
         const pageData = {
           RootComponent: (crateName === "." ? "" : `${crateName}/`) + (rootComponent || page[crate.codebaseLang]),
