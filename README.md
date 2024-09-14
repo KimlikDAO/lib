@@ -63,17 +63,26 @@ The tests can be run in two different modes:
   bun test
   ```
 - Compiled (using `kdjs`):
-  We also run the same tests after compiling them with `kdjs`, which ensures
-  the packages are correctly typed and allows us to make measurements on the
-  compiled versions of the code.
+  We also run the same tests after compiling them with `kdjs` first:
   ```shell
-  bun test.js test
+  bun run test
   ```
+  Note that `kdjs` makes aggressive optimimizations using the provided
+  type information. It is crucial to run the tests in compiled mode
+  since incorrect type annotations will lead to functionally incorrect
+  output.
 
 To run tests in a certain directory, say `crypto`, you can also do
 ```shell
-  bun test crypto # uncompiled
-  bun test.js crypto # compiled
+bun test crypto # uncompiled
+bun run test crypto # compiled
+```
+
+# ⏱️ Benchmarks
+
+The benchmarks are always run on the compiled code. To run them, simply do
+```shell
+bun run bench
 ```
 
 When run, output will look like this:

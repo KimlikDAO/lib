@@ -1,4 +1,4 @@
-name: All benchmarks
+name: Bench
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   benchmark_bun:
-    name: Micro benches with bun
+    name: kdjs benches
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -16,4 +16,4 @@ jobs:
       - name: Run crypto benchmarks
         run: |
           bun i
-          bun test.js bench
+          bun testing/runner.js bench

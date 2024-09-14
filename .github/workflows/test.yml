@@ -1,4 +1,4 @@
-name: All tests
+name: Test
 
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: |
           bun i
-          bun test.js crypto
+          bun run test crypto
 
   kdjs_unit_tests_did:
     name: kdjs unit tests, did
@@ -35,7 +35,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: |
           bun i
-          bun test.js did
+          bun run test did
 
   kdjs_unit_tests_others:
     name: kdjs unit tests, others
@@ -45,7 +45,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: |
           bun i
-          bun test.js test --filter did crypto
+          bun run test --filter did crypto
 
   compile_kdjs_with_kdjs:
     name: Compile `kdjs` with `kdjs`

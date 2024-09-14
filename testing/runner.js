@@ -1,8 +1,8 @@
 import { Glob, spawn } from "bun";
 import process from "node:process";
-import { compile } from "./kdjs/compile";
-import { Clear, CliArgs, Green, Red, parseArgs } from "./util/cli";
-import { darboğaz as bottleneck } from "./util/promises";
+import { compile } from "../kdjs/compile";
+import { Clear, CliArgs, Green, Red, parseArgs } from "../util/cli";
+import { darboğaz as bottleneck } from "../util/promises";
 
 /** @const {CliArgs} */
 const args = parseArgs(process.argv.slice(2), "target", {
@@ -34,8 +34,6 @@ const compileAndRunMatching = async (pattern, command, args) => {
   const compileTasks = [];
   const compileBN = bottleneck(args["buildConcurrency"] || args["concurrency"]);
   const runBN = bottleneck(args["runConcurrency"] || args["concurrency"]);
-  /** @const {!Array<string>} */
-  const filter = createMatcher(["build/", "kastro/", "node_modules/"].concat(args["filter"] || []));
 
   for await (const f of glob.scan(".")) {
     if (filter.test(f)) continue;
@@ -61,19 +59,21 @@ const compileAndRunMatching = async (pattern, command, args) => {
 
 const ensureAllPassed = (allPassed) => process.exit(+!allPassed);
 
-const testCommand = "bun test --timeout 100000";
-const benchCommad = "bun";
-
 const target = args["target"];
 const targetPattern = target == "bench"
   ? "**/*.bench.js"
-  : target.endsWith(".js")
-    ? target
-    : (target == "test" ? "" : `${target}/`) + "**/*.test.js";
+  : typeof target === "string"
+    ? `${target}/` + "**/*.test.js"
+    : "**/*.test.js";
 
-compileAndRunMatching(targetPattern,
-  targetPattern.includes("bench")
-    ? benchCommad
-    : testCommand,
-  args)
+/** @const {!Array<string>} */
+const filter = createMatcher(["build/", "kastro/", "node_modules/"]
+  .concat(args["filter"] || []));
+
+const command = targetPattern.includes("bench")
+  ? "bun"
+  : "bun test --timeout 100000";
+
+console.info(`Target: ${targetPattern} (filtering: ${filter})`);
+compileAndRunMatching(targetPattern, command, args)
   .then(ensureAllPassed);

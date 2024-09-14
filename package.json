@@ -7,17 +7,19 @@
   "type": "module",
   "scripts": {
     "postinstall": "mkdir -p ./node_modules/@kimlikdao && ln -sfn ../../kdjs ./node_modules/@kimlikdao/kdjs",
-    "test": "bun test"
+    "test": "bun testing/runner.js",
+    "bench": "bun testing/runner.js bench",
+    "test:compiled": "bun testing/runner.js test"
   },
   "devDependencies": {
-    "@ethereumjs/evm": "^3.1.0",
+    "@ethereumjs/evm": "^3.1.1",
     "@noble/secp256k1": "^2.1.0",
     "ethers": "^6.13.2",
     "mina-signer": "^3.0.7"
   },
   "dependencies": {
     "acorn": "^8.12.1",
-    "acorn-walk": "^8.3.3",
+    "acorn-walk": "^8.3.4",
     "astring": "^1.9.0",
     "csso": "^5.0.5",
     "google-closure-compiler": "^20240317.0.0",
