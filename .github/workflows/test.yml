@@ -7,45 +7,52 @@ on:
     branches: ["ana", "prod"]
 
 jobs:
-  check_bun_tests:
-    name: Unit tests with bun
-    strategy:
-      fail-fast: true
-
+  bun_unit_tests:
+    name: bun unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: oven-sh/setup-bun@v2
-      - name: Run bun tests
-        run: |
+      - run: |
           bun i
           bun test --timeout 15000
-        id: test
 
-  check_compiled_bun:
-    name: Compiled tests with bun
-    strategy:
-      fail-fast: true
-
+  kdjs_unit_tests_crypto:
+    name: kdjs unit tests, crypto
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: oven-sh/setup-bun@v2
-      - name: "`kdjs` compiled tests with bun"
-        run: |
+      - run: |
           bun i
-          bun run.js test
+          bun test.js crypto
+
+  kdjs_unit_tests_did:
+    name: kdjs unit tests, did
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: oven-sh/setup-bun@v2
+      - run: |
+          bun i
+          bun test.js did
+
+  kdjs_unit_tests_others:
+    name: kdjs unit tests, others
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: oven-sh/setup-bun@v2
+      - run: |
+          bun i
+          bun test.js test --filter did crypto
 
   compile_kdjs_with_kdjs:
     name: Compile `kdjs` with `kdjs`
-    strategy:
-      fail-fast: true
-
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: oven-sh/setup-bun@v2
-      - name: "Compile `kdjs` with `kdjs`"
-        run: |
+      - run: |
           bun i
           bun kdjs/kdjs.js kdjs/kdjs.js

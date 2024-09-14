@@ -15,6 +15,15 @@ args["buildConcurrency"] ||= 4;
 args["runConcurrency"] ||= 4;
 
 /**
+ * @param {!Array<string>} patterns
+ * @return {!RegExp}
+ */
+const createMatcher = (patterns) => {
+  const regexPattern = patterns.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  return new RegExp(regexPattern);
+};
+
+/**
  * @param {string} pattern
  * @param {string} command
  * @param {CliArgs} args
@@ -25,9 +34,11 @@ const compileAndRunMatching = async (pattern, command, args) => {
   const compileTasks = [];
   const compileBN = bottleneck(args["buildConcurrency"] || args["concurrency"]);
   const runBN = bottleneck(args["runConcurrency"] || args["concurrency"]);
+  /** @const {!Array<string>} */
+  const filter = createMatcher(["build/", "kastro/", "node_modules/"].concat(args["filter"] || []));
 
   for await (const f of glob.scan(".")) {
-    if (f.startsWith("build") || f.includes("kastro") || f.includes("node_modules")) continue;
+    if (filter.test(f)) continue;
     const output = `build/${f}`;
     compileTasks.push(compileBN(() => compile({
       ...args,

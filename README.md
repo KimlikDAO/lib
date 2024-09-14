@@ -67,13 +67,13 @@ The tests can be run in two different modes:
   the packages are correctly typed and allows us to make measurements on the
   compiled versions of the code.
   ```shell
-  bun run.js test
+  bun test.js test
   ```
 
 To run tests in a certain directory, say `crypto`, you can also do
 ```shell
   bun test crypto # uncompiled
-  bun run.js crypto # compiled
+  bun test.js crypto # compiled
 ```
 
 When run, output will look like this:
