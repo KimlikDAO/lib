@@ -1,17 +1,12 @@
 import { plugin } from "bun";
 import { minify } from "html-minifier";
-import assert from "node:assert";
 import process from "node:process";
-import { optimize } from "svgo";
-import { tagYaz } from "../../util/html";
 import { LangCode } from "../../util/i18n";
-import { getExt } from "../../util/paths";
 import { compileComponent } from "./component";
-import { getByKey } from "./hashcache/buildCache";
-import { hashAndCompressContent, hashFile } from "./hashcache/compression";
+
 import HtmlMinifierConfig from "./htmlMinifierConfig";
 import { initGlobals } from "./pageGlobals";
-import { generateStylesheet, webp } from "./targets";
+import { generateStylesheet } from "./targets";
 
 const setupEnvironment = () => {
   const KastroPlugin = {
@@ -47,50 +42,6 @@ const setupEnvironment = () => {
 }
 
 setupEnvironment();
-
-/**
- * @param {!Object<string, string>} attribs
- * @param {!Object<string, string>} options
- * @return {!Promise<string>}
- */
-const generateImage = (attribs, options) => {
-  const type = getExt(attribs.src);
-  const fileName = normalizePath(attribs.src);
-  delete attribs["src"];
-
-  if ("data-inline" in attribs) {
-    delete attribs["data-inline"];
-    assert.equal(type, "svg", "We only support inlining svgs. For binary formats, not inlining is more efficient");
-    return getByKey(fileName, () =>
-      compileComponent(fileName, attribs)
-        .then((svg) => optimize(svg, SvgoInlineConfig).data))
-  }
-
-  const generate = {
-    "svg": () => (options.dev
-      ? Promise.resolve(fileName)
-      : getByKey(fileName, () => svgOku({ konum: fileName, dev: options.dev })
-        .then((svg) => hashAndCompressContent(svg, "svg"))))
-      .then((hashedName) => {
-        attribs.src = hashedName;
-        return tagYaz("img", attribs, true);
-      }),
-    "png": () => {
-      const webpName = `build/${fileName.slice(0, -4)}.webp`;
-      const { passes, quality, ...atts } = attribs;
-      return (options.dev
-        ? Promise.resolve(fileName)
-        : getByKey(fileName,
-          () => webp(fileName, webpName, passes, quality)
-            .then(() => hashFile(webpName))))
-        .then((hashedName) => {
-          atts.src = hashedName;
-          return tagYaz("img", atts, true);
-        });
-    }
-  };
-  return generate[type]();
-}
 
 /**
  * @param {string} componentName

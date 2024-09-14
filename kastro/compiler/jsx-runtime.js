@@ -1,16 +1,18 @@
 import { KapalıTag, tagYaz } from "../../util/html";
-import { getGlobals } from "./pageGlobals";
 import { LangCode } from "../crate";
+import { getGlobals } from "./pageGlobals";
 /**
  * @param {!Array<*>} children
  * @param {LangCode} lang
- * @return {string}
+ * @return {!Promise<string>}
  */
-const mergeChildren = (children, lang) => children
+const mergeChildren = (children, lang) => Promise.all(children
   .flat()
-  .filter((c) => typeof c != "boolean")
-  .map((c) => typeof c == "object" && c[lang] ? c[lang] : c)
-  .join("");
+  .filter((c) => typeof c != "boolean"))
+  .then((children) => children
+    .map((c) => typeof c == "object" && c[lang] ? c[lang] : c)
+    .join("")
+  );
 
 /**
  * @param {!Object} props
@@ -31,17 +33,17 @@ const jsx = (name, props = {}) => {
   const nameType = typeof name;
   if (nameType != "function") {
     const { children, ...prop } = props;
-    const childStr = mergeChildren([].concat(children || []), globals.Lang);
-    if (nameType == "object") {
+    if (nameType == "object") { // `{@link name}` is a placeholder dom element
       prop.id = name.id;
       name = name.name;
     }
-    const closed = KapalıTag[name];
-    return name == Fragment
-      ? childStr
-      : childStr || !closed
-        ? tagYaz(name, prop, false) + childStr + `</${name}>`
-        : tagYaz(name, prop, true);
+    return mergeChildren([].concat(children || []), globals.Lang)
+      .then((childStr) => name == Fragment
+        ? childStr
+        : (childStr || !KapalıTag[name])
+          ? tagYaz(name, prop, false) + childStr + `</${name}>`
+          : tagYaz(name, prop, true)
+      )
   }
   return name({ ...props, ...globals });
 }
@@ -59,13 +61,13 @@ const jsxs = (name, props) => {
       prop.id = name.id;
       name = name.name;
     }
-    const childStr = children ? mergeChildren(children, globals.Lang) : "";
-    const closed = KapalıTag[name];
-    return name == Fragment
-      ? childStr
-      : childStr || !closed
-        ? tagYaz(name, prop, false) + childStr + `</${name}>`
-        : tagYaz(name, prop, true);
+    return mergeChildren(children || [], globals.Lang)
+      .then((childStr) => name == Fragment
+        ? childStr
+        : childStr || !KapalıTag[name]
+          ? tagYaz(name, prop, false) + childStr + `</${name}>`
+          : tagYaz(name, prop, true)
+      );
   }
   return name({ ...props, ...globals });
 };
