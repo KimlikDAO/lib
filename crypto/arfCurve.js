@@ -206,14 +206,16 @@ const arfCurve = (P) => {
         this.x = this.y = this.z = 0n;
       } else {
         /** @const {string} */
-        const nBits = n.toString(2);
-        /** @const {!Point} */
-        const d = this.copy();
-
-        for (let i = 1; i < nBits.length; ++i) {
-          this.double();
-          if (nBits.charCodeAt(i) == 49)
-            this.increment(d);
+        const nNibs = n.toString(4);
+        /** @const {!Array<!Point>} */
+        const d = [
+          O, this.copy(),
+          this.copy().double(), this.copy().double().increment(this)
+        ];
+        ({ x: this.x, y: this.y, z: this.z } = d[nNibs.charCodeAt(0) - 48]);
+        for (let i = 1; i < nNibs.length; ++i) {
+          this.double(); this.double();
+          this.increment(d[nNibs.charCodeAt(i) - 48]);
         }
       }
       return this;

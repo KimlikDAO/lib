@@ -13,7 +13,7 @@ kimlikdao-js is a repository containing JavaScript modules essential for KimlikD
 
 🗝️ [`crypto`](./crypto): Cryptographic functions and libraries
 
-  - `arfCurve`: An efficient Arf Curve ($y^2= x^3 + b$) class factory
+  - `arfCurve`: An efficient Arf Curve ($y^2 = x^3 + b$) class factory
   - `wesolowski`: Our Wesolowski VDF implementation
 
 🪁 [`kastro`](./kastro): Our compile-time focused web-framework
@@ -67,12 +67,12 @@ The tests can be run in two different modes:
   ```shell
   bun run test
   ```
-  Note that `kdjs` makes aggressive optimimizations using the provided
+  Note that `kdjs` makes aggressive optimizations using the provided
   type information. It is crucial to run the tests in compiled mode
   since incorrect type annotations will lead to functionally incorrect
   output.
 
-To run tests in a certain directory, say `crypto`, you can also do
+To run tests in a specific directory, say `crypto`, you can also do
 ```shell
 bun test crypto # uncompiled
 bun run test crypto # compiled
@@ -80,7 +80,11 @@ bun run test crypto # compiled
 
 # ⏱️ Benchmarks
 
-The benchmarks are always run on the compiled code. To run them, simply do
+You can run a benchmark either directly as a regular es6 module
+```shell
+bun run crypto/bench/arfCurve.bench.js
+```
+or compile all of them and benchmark the compiled modules:
 ```shell
 bun run bench
 ```
@@ -89,4 +93,4 @@ When run, output will look like this:
 
 ![](.github/img/modular.compiled-test.png "Example modular.compiled-test.js output")
 
-![](.github/img/secp256k1.test.png "Example sepc256k1/unit.test.js output")
+![](.github/img/secp256k1.test.png "Example secp256k1/unit.test.js output")
