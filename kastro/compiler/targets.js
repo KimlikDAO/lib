@@ -6,7 +6,7 @@ import { getDir } from "../../util/paths";
 import {
   hashAndCompressContent,
   hashAndCompressFile
-} from "../hashcache/compression";
+} from "./hashcache/compression";
 
 /**
  * @param {!Object<string, *>} props
@@ -34,7 +34,6 @@ const generateStylesheet = (cssFileNames) =>
   Promise.all(cssFileNames.map((file) => readFile(file, "utf8")))
     .then((csses) => hashAndCompressContent(minify(csses.join("\n")).css, "css"))
     .then((hashedName) => `<link rel="stylesheet" src=${hashedName} type="text/css">`);
-
 
 const webp = (inputName, outputName, passes = 10, quality = 70) =>
   mkdir(getDir(outputName), { recursive: true }).then(() =>

@@ -1,29 +1,34 @@
 import { plugin } from "bun";
 import { minify } from "html-minifier";
 import assert from "node:assert";
-import { readFile } from "node:fs/promises";
 import process from "node:process";
 import { optimize } from "svgo";
 import { tagYaz } from "../../util/html";
 import { LangCode } from "../../util/i18n";
 import { getExt } from "../../util/paths";
-import { getByKey } from "../hashcache/buildCache";
-import { hashAndCompressContent, hashFile } from "../hashcache/compression";
 import { compileComponent } from "./component";
+import { getByKey } from "./hashcache/buildCache";
+import { hashAndCompressContent, hashFile } from "./hashcache/compression";
 import HtmlMinifierConfig from "./htmlMinifierConfig";
 import { initGlobals } from "./pageGlobals";
-import SvgoConfig from "./svgoConfig";
-import SvgoInlineConfig from "./svgoInlineConfig";
 import { generateStylesheet, webp } from "./targets";
 
 const setupEnvironment = () => {
-  const ImagePlugin = {
-    name: 'kastro image loader',
+  const KastroPlugin = {
+    name: 'kastro loader',
     setup(build) {
-      const cwdLen = process.cwd().length;
-      build.onLoad({ filter: /\.svg$/ }, (args) => {
+      const cwdLen = process.cwd().length + 1;
+      build.onLoad({ filter: /\.(svg|png|webp)$/ }, (args) => {
         const code = `import { Image } from "@kimlikdao/lib/kastro/compiler/image";\n` +
           `export default (props) => Image({...props, src: "${args.path.slice(cwdLen)}" });`;
+        return {
+          contents: code,
+          loader: "js"
+        };
+      });
+      build.onLoad({ filter: /\.css$/ }, (args) => {
+        const code = `import { StyleSheet } from "@kimlikdao/lib/kastro/compiler/stylesheet";\n` +
+          `export default (props) => StyleSheet({...props, src: "${args.path.slice(cwdLen)}" });`;
         return {
           contents: code,
           loader: "js"
@@ -32,7 +37,7 @@ const setupEnvironment = () => {
     },
   };
 
-  plugin(ImagePlugin);
+  plugin(KastroPlugin);
 
   globalThis.GEN = true;
   globalThis.document = {};
@@ -102,7 +107,6 @@ const compilePage = async (componentName, pageGlobals) => {
   return compileComponent(componentName, {}, pageGlobals)
     .then((html) => {
       html = "<!DOCTYPE html>" + html;
-      console.log(pageGlobals);
       if (pageGlobals.BuildMode == 0) {
         /** @type {string} */
         let links = "";
@@ -120,23 +124,8 @@ const compilePage = async (componentName, pageGlobals) => {
     });
 }
 
-/**
- * Verilen konumdan svg içeriğini okur. Eğer uzantı .m.js ise içeriğini kasto
- * kurallarına göre günceller.
- *
- * Eğer `!seçimler.dev` is içeriği svgo ile optimize eder.
- *
- * @param {!Object<string, string>} seçimler
- * @return {!Promise<string>}
- */
-const compileSvg = (seçimler) => (
-  seçimler.konum.endsWith(".m.svg")
-    ? compileComponent(seçimler.konum, seçimler)
-    : readFile(seçimler.konum, "utf8"))
-  .then((svg) => seçimler.dev ? svg : optimize(svg, SvgoConfig).data);
 
 export {
-  compilePage,
-  compileSvg
+  compilePage
 };
 

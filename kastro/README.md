@@ -24,21 +24,40 @@ has many additional optimization passes and a full support for es6 modules.
 
 There are 3 types of components:
 
-1. **Singleton**: Only one instance can be present in the page. These bind to the DOM when
-  you import them and can keep an arbitrary internal state. (every variable that you 
-  define in the module)
+1. **Singleton**: Only one instance can be present in the page. These bind to
+the DOM when you import them and can keep an arbitrary internal state (every
+variable that you define in the module).
   ```javascript
-  const State = { 1n, 2n, 3n };
-  const SingletonComp = () => <div>Singleton</div>;
+  const State = [1, 2, 3];
+  /** @kastroSingletonComponent */
+  const SingletonComp = (props) => <div>Singleton</div>;
+  export default SingletonComp;
+  ```
+  If your component is exposing additional methods, you can instead use
+  ```javascript
+  const State = [1, 2, 3];
+  /** @kastroSingletonComponent */
+  const SingletonComp = {
+    render: (props) => <div>Singleton</div>,
+    push: (x) => State.push(x),
+    pop: () => State.pop(),
+  }
   export default SingletonComp;
   ```
 
-2. **Stateless**: These are components that do not have any internal state besides the
-  DOM state.
+2. **Stateless**: These are components that do not have any internal state
+  besides the DOM state. Since they are stateless, there can be arbitrary
+  number of instances in the page without any js objects being created. Kastro
+  compiler will generate the `bind()` invocations from the `render()` jsx
+  expression of the parent component.
   ```javascript
+  /** @kastroStatelessComponent */
   const StatelessComp =  {
-    render: ({id}) => <div id={id}>Stateless</div>,
-    bind: (id) => { document.getElementById(id).onclick = () => alert("hi"); }
+    render: ({ id }) => <div id={id}>on</div>,
+    bind: (id) => {
+      const root = document.getElementById(id);
+      root.onclick = () => root.innerText = root.innerText == "on" ? "off" : "on"
+    }
   }
   export default StatelessComp;
   ```
@@ -46,10 +65,11 @@ There are 3 types of components:
 3. **Stateful**: These are components that have internal state and for each instance
   of the component, a class instance is crated and exported.
   ```javascript
+  /** @kastroStatefulComponent */
   class CheckBox {
-    static render({id}) { return <div id={id}>Stateful</div>; }
-    constructor(id) { this.root = document.getElementById(id); }
-    flip() {}
+    static render({ id }) { return <div id={id}>on</div>; }
+    constructor(id) { this.root = document.getElementById(id); this.on = true; }
+    flip() { this.on = !this.on; this.root.innerText = this.on ? "on" : "off"; }
   }
   export default CheckBox;
   ```

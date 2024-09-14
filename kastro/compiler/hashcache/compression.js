@@ -1,8 +1,8 @@
 import { spawn } from "bun";
 import { cp, readFile, rename, writeFile } from "node:fs/promises";
-import { keccak256Uint8 } from "../../crypto/sha3";
-import { getExt } from "../../util/paths";
-import { base64 } from "../../util/çevir";
+import { keccak256Uint8 } from "../../../crypto/sha3";
+import { getExt } from "../../../util/paths";
+import { base64 } from "../../../util/çevir";
 
 const zopfli = (inputName, outputName) => spawn({
   cmd: [

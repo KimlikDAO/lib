@@ -21,7 +21,7 @@ smart simplifications on a macroscoping scale to make the final code
 more efficient and compact.
 
 Don't worry about minification or variable renamings; those tedious tasks
-will be handler later with simpler tools. Your task is to come up with some
+will be handled later with simpler tools. Your task is to come up with some
 statements about the code and prove them correct and make simplification
 based on these facts.
 
@@ -30,7 +30,7 @@ remove it. Or may prove that some properties of an object is never read,
 and remove them.
 
 Or you may prove that some function is pure and constant-propogate through
-the function (if the parameters are known at compiler time, the function
+the function (if the parameters are known at compile time, the function
 call can be replaced with the result of the function). Since you are given
 a single module only, you may not always figure out that a function is pure.
 However if the function name looks like it could be pure, (such as add(a, b),

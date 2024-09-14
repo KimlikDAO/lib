@@ -4,8 +4,8 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { combine, getDir } from "../util/paths";
 import { ExportStatement, ImportStatement } from "./modules";
-import { Update, update } from "./textual";
 import { serializeWithStringKeys } from "./objects";
+import { Update, update } from "./textual";
 
 const PACKAGE_EXTERNS = "node_modules/@kimlikdao/kdjs/externs/";
 

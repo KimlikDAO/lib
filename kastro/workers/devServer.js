@@ -1,7 +1,7 @@
 import { createServer } from "vite";
 import { parseArgs } from "../../util/cli";
 import { BuildMode } from "../compiler/compiler";
-import { compilePage, compileSvg } from "../compiler/page";
+import { compilePage } from "../compiler/page";
 import { readCrateRecipe } from "../crate";
 
 /**
@@ -74,6 +74,12 @@ const serveCrate = async (crateName, buildMode) => {
           return code
             .replace(/const GEN =.*?;/, `const GEN = false`)
             .replace(/const TR =.*?;/, `const TR = ${currentPage.Lang == "tr" ? "true" : "false"};`);
+        if (id.endsWith(".jsx")) {
+          const lines = code.split("\n");
+          const filteredLines = lines.filter((line) => line.includes("util/dom") ||
+            line.trim().startsWith("export const"));
+          return filteredLines.join("\n");
+        }
       }
     }]
   }).then((vite) => vite.listen(8787))
