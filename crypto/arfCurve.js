@@ -142,15 +142,14 @@ const arfCurve = (P) => {
      */
     double() {
       const { x, y, z } = this;
-      const a = (x * x) % P;
-      const b = (y * y) % P;
-      const c = (b * b) % P;
-      const xb = x + b;
-      const d = 2n * (xb * xb - a - c) % P;
-      const e = 3n * a;
-      const f = (e * e) % P;
-      const X = modP(f - 2n * d);
-      this.y = modP(e * (d - X) - 8n * c);
+      const x2 = (x * x) % P;
+      const y2 = (y * y) % P;
+      const y4 = (y2 * y2) % P;
+      const _4xy2 = 4n * x * y2 % P;
+      const _3x2 = 3n * x2 % P;
+      const _9x4 = _3x2 * _3x2 % P;
+      const X = modP(_9x4 - 2n * _4xy2);
+      this.y = modP(_3x2 * (_4xy2 - X) - 8n * y4);
       this.z = (2n * y * z) % P;
       this.x = X;
       return this;
