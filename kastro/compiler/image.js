@@ -2,7 +2,7 @@ import { mkdir, readFile } from "node:fs/promises";
 import { SAXParser } from "sax";
 import { optimize } from "svgo";
 import { tagYaz } from "../../util/html";
-import { getExt } from "../../util/paths";
+import { getDir, getExt } from "../../util/paths";
 import { getByKey } from "./hashcache/buildCache";
 import { hashAndCompressContent, hashFile } from "./hashcache/compression";
 import SvgoConfig from "./svgoConfig";
@@ -13,23 +13,17 @@ const removeGlobalProps = (props) => {
     if (prop.charCodeAt(0) < 91)
       delete props[prop];
 }
+const rsvgConvert = (inputFile, outputFile, size) =>
+  mkdir(getDir(outputFile), { recursive: true })
+    .then(() => spawn(["rsvg-convert", "-w", size, "-h", size, "-o", outputFile, inputFile]).exited);
 
-const rsvgConvert = (input, output, size) =>
-  spawn(["rsvg-convert", "-w", size, "-h", size, "-o", output, input]).exited;
+const pngcrushInPlace = (inputFile) =>
+  spawn(["pngcrush", "-ow", "-brute", inputFile, inputFile]).exited;
 
-const pngcrushInPlace = (file) =>
-  spawn(["pngcrush", "-ow", "-brute", file, file]).exited;
-
-const webp = (inputName, outputName, passes = 10, quality = 70) =>
-  mkdir(getDir(outputName), { recursive: true }).then(() =>
-    spawn([
-      "cwebp",
-      "-m", 6,
-      "-pass", passes,
-      "-q", quality,
-      inputName,
-      "-o", outputName
-    ]).exited);
+const webp = (inputFile, outputFile, passes = 10, quality = 70) =>
+  mkdir(getDir(outputFile), { recursive: true })
+    .then(() =>
+      spawn(["cwebp", "-m", 6, "-pass", passes, "-q", quality, inputFile, "-o", outputFile]).exited);
 
 /**
  * We optimize the inline svgs regardless of the build mode.
@@ -99,8 +93,7 @@ const Favicon = ({ src, raster, BuildMode, ...props }) => {
     (BuildMode == 0 || !raster)
       ? Promise.resolve("")
       : getByKey(`build/${src.slice(0, -4)}${raster}.png`, () =>
-        mkdir(getDir(`build/${src}`), { recursive: true })
-          .then(() => rsvgConvert(src, `build/${src.slice(0, -4)}${raster}.png`, raster))
+        rsvgConvert(src, `build/${src.slice(0, -4)}${raster}.png`, raster)
           .then(() => pngcrushInPlace(`build/${src.slice(0, -4)}${raster}.png`))
           .then(() => hashFile(`build/${src.slice(0, -4)}${raster}.png`))
       )
