@@ -3,7 +3,6 @@ import { minify } from "html-minifier";
 import process from "node:process";
 import { LangCode } from "../../util/i18n";
 import { compileComponent } from "./component";
-
 import HtmlMinifierConfig from "./htmlMinifierConfig";
 import { initGlobals } from "./pageGlobals";
 import { generateStylesheet } from "./targets";
@@ -74,7 +73,6 @@ const compilePage = async (componentName, pageGlobals) => {
         ));
     });
 }
-
 
 export {
   compilePage

@@ -8,12 +8,17 @@ import { hashAndCompressContent, hashFile } from "./hashcache/compression";
 import SvgoConfig from "./svgoConfig";
 import SvgoInlineConfig from "./svgoInlineConfig";
 
-
 const removeGlobalProps = (props) => {
   for (const prop in props)
     if (prop.charCodeAt(0) < 91)
       delete props[prop];
 }
+
+const rsvgConvert = (input, output, size) =>
+  spawn(["rsvg-convert", "-w", size, "-h", size, "-o", output, input]).exited;
+
+const pngcrushInPlace = (file) =>
+  spawn(["pngcrush", "-ow", "-brute", file, file]).exited;
 
 const webp = (inputName, outputName, passes = 10, quality = 70) =>
   mkdir(getDir(outputName), { recursive: true }).then(() =>
@@ -82,6 +87,27 @@ const PngImage = ({ src, passes, quality, BuildMode, ...props }) => (BuildMode =
     return tagYaz("img", props, true);
   });
 
+const Favicon = ({ src, raster, BuildMode, ...props }) => {
+  removeGlobalProps(props);
+  return Promise.all([
+    (BuildMode == 0
+      ? Promise.resolve(src)
+      : getByKey(src, () => readFile(src, "utf-8")
+        .then((svg) => hashAndCompressContent(optimize(svg, SvgoConfig).data, "svg"))
+      ))
+      .then((hashedName) => tagYaz("link", { ...props, href: hashedName, type: "image/svg+xml" }, true)),
+    (BuildMode == 0 || !raster)
+      ? Promise.resolve("")
+      : getByKey(`build/${src.slice(0, -4)}${raster}.png`, () =>
+        mkdir(getDir(`build/${src}`), { recursive: true })
+          .then(() => rsvgConvert(src, `build/${src.slice(0, -4)}${raster}.png`, raster))
+          .then(() => pngcrushInPlace(`build/${src.slice(0, -4)}${raster}.png`))
+          .then(() => hashFile(`build/${src.slice(0, -4)}${raster}.png`))
+      )
+        .then((hashedName) => tagYaz("link", { ...props, href: hashedName, type: "image/png", sizes: `${raster}x${raster}` }, true))
+  ]).then((results) => results.join(""));
+};
+
 /**
  * @param {!Object<string, *>} props
  * @return {!Promise<string>}
@@ -92,10 +118,13 @@ const Image = ({ inline, ...props }) => {
       throw new Error("We only inline svgs; for other formats serving directly is more efficient");
     return InlineSvgImage(props)
   }
+  if (props.rel == "icon")
+    return Favicon(props);
+
   return {
     "svg": SvgImage,
     "png": PngImage,
   }[getExt(props.src)](props);
 };
 
-export { Image, InlineSvgImage, PngImage, SvgImage };
+export { Favicon, Image, InlineSvgImage, PngImage, SvgImage };
