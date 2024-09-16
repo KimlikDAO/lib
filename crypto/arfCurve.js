@@ -137,21 +137,19 @@ const arfCurve = (P) => {
     /**
      * Multiplies the point by 2, in-place.
      *
-     * @see https://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html#doubling-dbl-2009-l
      * @return {!Point}
      */
     double() {
-      const { x, y, z } = this;
-      const x2 = (x * x) % P;
-      const y2 = (y * y) % P;
-      const y4 = (y2 * y2) % P;
-      const _4xy2 = 4n * x * y2 % P;
+      const { x, y } = this;
+      const x2 = x * x % P;
+      const y2 = y * y % P;
+      const y4 = y2 * y2 % P;
+      const _4xy2 = ((x * y2) << 2n) % P;
       const _3x2 = 3n * x2 % P;
       const _9x4 = _3x2 * _3x2 % P;
-      const X = modP(_9x4 - 2n * _4xy2);
-      this.y = modP(_3x2 * (_4xy2 - X) - 8n * y4);
-      this.z = (2n * y * z) % P;
-      this.x = X;
+      this.x = modP(_9x4 - (_4xy2 << 1n));
+      this.y = modP(_3x2 * (_4xy2 - this.x) - (y4 << 3n));
+      this.z *= y << 1n; this.z %= P;
       return this;
     }
 

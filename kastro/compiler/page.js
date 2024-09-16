@@ -1,11 +1,10 @@
 import { plugin } from "bun";
 import { minify } from "html-minifier";
 import process from "node:process";
-import { LangCode } from "../../util/i18n";
 import { compileComponent } from "./component";
 import HtmlMinifierConfig from "./htmlMinifierConfig";
 import { initGlobals } from "./pageGlobals";
-import { generateStylesheet } from "./targets";
+import { getStyleSheet } from "./stylesheet";
 
 const setupEnvironment = () => {
   const KastroPlugin = {
@@ -51,30 +50,19 @@ const compilePage = async (componentName, pageGlobals) => {
   pageGlobals.SharedCss = new Set();
   pageGlobals.PageCss = new Set();
   pageGlobals.GEN = false;
-  // TODO(KimlikDAO-bot): Remove when we have 3 languages
-  pageGlobals.TR = pageGlobals.Lang == LangCode.TR;
+  if (pageGlobals.Lang == pageGlobals.CodebaseLang)
+    pageGlobals[pageGlobals.Lang.toUpperCase()] = true;
   initGlobals(pageGlobals);
   return compileComponent(componentName, {}, pageGlobals)
     .then((html) => {
-      html = "<!DOCTYPE html>" + html;
-      if (pageGlobals.BuildMode == 0) {
-        /** @type {string} */
-        let links = "";
-        /** @const {!Set<string>} */
-        const allCss = pageGlobals.PageCss.union(pageGlobals.SharedCss);
-        for (const css of allCss)
-          links += `  <link href="${css}" rel="stylesheet" type="text/css" />\n`;
-        return html.replace("</head>", links + "</head>");
-      }
-      return generateStylesheet([...pageGlobals.PageCss])
-        .then((stylesheet) => minify(
-          html.replace("</head>", stylesheet + "\n</head>"),
-          HtmlMinifierConfig
-        ));
+      html = "<!DOCTYPE html>" +
+        html.replace("</head>", getStyleSheet(pageGlobals) + "</head>");
+
+      return pageGlobals.BuildMode == 0
+        ? html : minify(html, HtmlMinifierConfig);
     });
 }
 
 export {
   compilePage
 };
-

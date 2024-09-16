@@ -181,6 +181,43 @@ const doubleRight2 = (R) => {
   return R;
 }
 
+
+/**
+ * @param {!Point} R
+ * @return {!Point}
+ */
+const doubleRightShift = (R) => {
+  const { x, y } = R;
+  const x2 = x * x % P;
+  const y2 = y * y % P;
+  const y4 = y2 * y2 % P;
+  const _4xy2 = ((x * y2) << 2n) % P;
+  const _3x2 = ((x2 << 1n) + x2) % P;
+  const _9x4 = _3x2 * _3x2 % P;
+  R.x = modP(_9x4 - (_4xy2 << 1n));
+  R.y = modP(_3x2 * (_4xy2 - R.x) - (y4 << 3n));
+  R.z *= (y << 1n); R.z %= P;
+  return R;
+}
+
+/**
+ * @param {!Point} R
+ * @return {!Point}
+ */
+const doubleRightShift2 = (R) => {
+  const { x, y } = R;
+  const x2 = x * x % P;
+  const y2 = y * y % P;
+  const y4 = y2 * y2 % P;
+  const _4xy2 = ((x * y2) << 2n) % P;
+  const _3x2 = 3n * x2 % P;
+  const _9x4 = _3x2 * _3x2 % P;
+  R.x = modP(_9x4 - (_4xy2 << 1n));
+  R.y = modP(_3x2 * (_4xy2 - R.x) - (y4 << 3n));
+  R.z *= y << 1n; R.z %= P;
+  return R;
+}
+
 /**
  * @param {!Point} R
  * @return {!Point}
@@ -202,31 +239,47 @@ const doubleGPT = (R) => {
   R.z = Z3;
   return R;
 }
+
 {
   const A = G.copy();
   const B = G.copy();
   const C = G.copy();
   const D = G.copy();
+  const E = G.copy();
+  const F = G.copy();
   for (let i = 0; i < 1000; ++i) {
     double(A);
     doubleRight(B);
     doubleGPT(C);
     doubleRight2(D);
+    doubleRightShift(E);
+    doubleRightShift2(F);
     assertEq(A.x, B.x);
     assertEq(B.x, C.x);
     assertEq(C.x, D.x);
+    assertEq(D.x, E.x);
+    assertEq(E.x, F.x);
     assertEq(A.y, B.y);
     assertEq(B.y, C.y);
     assertEq(C.y, D.y);
+    assertEq(D.y, E.y);
+    assertEq(E.y, F.y);
     assertEq(A.z, B.z);
     assertEq(B.z, C.z);
     assertEq(C.z, D.z);
+    assertEq(D.z, E.z);
+    assertEq(E.z, F.z);
   }
 }
 
+const e = () => { const A = G.copy(); for (let i = 0; i < 10000; ++i) double(A); };
+const eRight = () => { const A = G.copy(); for (let i = 0; i < 10000; ++i) doubleRight(A); };
+const eGPT = () => { const A = G.copy(); for (let i = 0; i < 10000; ++i) doubleGPT(A); };
+const eRight2 = () => { const A = G.copy(); for (let i = 0; i < 10000; ++i) doubleRight2(A); };
+const eRightShift = () => { const A = G.copy(); for (let i = 0; i < 10000; ++i) doubleRightShift(A); };
+const eRightShift2 = () => { const A = G.copy(); for (let i = 0; i < 10000; ++i) doubleRightShift2(A); };
+
 compareImpls([
-  () => { const A = G.copy(); for (let i = 0; i < 10000; ++i) double(A); },
-  () => { const A = G.copy(); for (let i = 0; i < 10000; ++i) doubleRight(A); },
-  () => { const A = G.copy(); for (let i = 0; i < 10000; ++i) doubleGPT(A); },
-  () => { const A = G.copy(); for (let i = 0; i < 10000; ++i) doubleRight2(A); },
+  e, eRight, eGPT, eRight2, eRightShift, eRightShift2,
+  e, eRight, eGPT, eRight2, eRightShift, eRightShift2,
 ], 10, [], null);
