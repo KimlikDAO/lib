@@ -161,6 +161,14 @@ const ul = (ad) => /** @type {!HTMLUListElement} */((GEN && globalThis["GEN"])
   ? create(ad, "ul")
   : adla(ad));
 
+/**
+ * @param {string} ad
+ * @return {!HTMLInputElement}
+ */
+const input = (ad) => /** @type {!HTMLInputElement} */((GEN && globalThis["GEN"])
+  ? create(ad, "input")
+  : adla(ad));
+
 export default {
   a,
   adla,
@@ -179,5 +187,6 @@ export default {
   span,
   telefondanMetne,
   TR,
-  ul
+  ul,
+  input
 };

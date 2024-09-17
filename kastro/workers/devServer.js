@@ -41,7 +41,6 @@ const readCrate = (crateName, buildMode) => readCrateRecipe(crateName)
  */
 const serveCrate = async (crateName, buildMode) => {
   const map = await readCrate(crateName, buildMode);
-  console.log(map);
   let currentPage;
 
   createServer({

@@ -1,6 +1,7 @@
 import { KapalıTag, tagYaz } from "../../util/html";
 import { LangCode } from "../crate";
 import { getGlobals } from "./pageGlobals";
+
 /**
  * @param {!Array<*>} children
  * @param {LangCode} lang
@@ -8,11 +9,9 @@ import { getGlobals } from "./pageGlobals";
  */
 const mergeChildren = (children, lang) => Promise.all(children
   .flat()
-  .filter((c) => typeof c != "boolean"))
-  .then((children) => children
-    .map((c) => typeof c == "object" && c[lang] ? c[lang] : c)
-    .join("")
-  );
+  .filter((c) => typeof c != "boolean")
+  .map((c) => (typeof c == "object" && lang in c) ? c[lang] : c))
+  .then((children) => children.join(""));
 
 /**
  * @param {!Object} props

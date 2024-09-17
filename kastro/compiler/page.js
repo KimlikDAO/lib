@@ -27,6 +27,14 @@ const setupEnvironment = () => {
           loader: "js"
         };
       });
+      build.onLoad({ filter: /\.ttf$/ }, (args) => {
+        const code = `import { TtfFont } from "@kimlikdao/lib/kastro/compiler/font";\n` +
+          `export default (props) => TtfFont({...props, href: "${args.path.slice(cwdLen)}" });`;
+        return {
+          contents: code,
+          loader: "js"
+        };
+      });
     },
   };
 

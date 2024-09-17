@@ -13,6 +13,7 @@ const removeGlobalProps = (props) => {
     if (prop.charCodeAt(0) < 91)
       delete props[prop];
 }
+
 const rsvgConvert = (inputFile, outputFile, size) =>
   mkdir(getDir(outputFile), { recursive: true })
     .then(() => spawn(["rsvg-convert", "-w", size, "-h", size, "-o", outputFile, inputFile]).exited);
