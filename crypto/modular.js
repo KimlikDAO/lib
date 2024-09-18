@@ -130,7 +130,7 @@ const expTimesExp = (a, x, b, y, M) => {
  * @param {bigint} n
  * @param {bigint} P
  * @param {bigint} Q the odd factor of P-1 satisfying Q.2^M = P-1
- * @param {bigint} c
+ * @param {bigint} c z^Q where z is a non-quadratic residue
  * @param {bigint} M so that Q.2^M == P-1.
  * @return {?bigint} returns sqrt(n) if n is a quadratic residue,
  *                   returns null otherwise.
@@ -138,7 +138,7 @@ const expTimesExp = (a, x, b, y, M) => {
 const tonelliShanks = (n, P, Q, c, M) => {
   if (n == 0n) return 0n;
   /** @type {bigint} */
-  let t = exp(n, (Q - 1n) >> 1n, P);
+  let t = exp(n, Q >> 1n, P);
   /** @type {bigint} */
   let R = t * n % P;
   for (t = t * R % P; t != 1n; t = t * c % P) {
@@ -155,9 +155,32 @@ const tonelliShanks = (n, P, Q, c, M) => {
   return R;
 }
 
+/**
+ * If P is fixed, prefer the {@link tonelliShanks} function with precomputed
+ * values of M, Q and c.
+ *
+ * @param {bigint} n
+ * @param {bigint} P an odd prime
+ * @return {?bigint}
+ */
+const sqrt = (n, P) => {
+  /** @type {bigint} */
+  let Q = P >> 1n;
+  if ((Q & 1n) === 1n)
+    return exp(n, (Q >> 1n) + 1n, P);
+  /** @type {bigint} */
+  let M = 2n;
+  for (Q >>= 1n; (Q & 1n) == 0n; Q >>= 1n) ++M;
+  /** @type {bigint} */
+  let z = 2n;
+  while (exp(z, P >> 1n, P) === 1n) ++z;
+  return tonelliShanks(n, P, Q, exp(z, Q, P), M);
+}
+
 export {
   exp, exp2, expTimesExp,
   inverse,
   pow5, pow7,
+  sqrt,
   tonelliShanks
 };

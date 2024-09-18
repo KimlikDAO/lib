@@ -63,7 +63,7 @@ const target = args["target"];
 const targetPattern = target == "bench"
   ? "**/*.bench.js"
   : typeof target === "string"
-    ? `${target}/` + "**/*.test.js"
+    ? (target.endsWith(".js") ? target : `${target}/` + "**/*.test.js")
     : "**/*.test.js";
 
 /** @const {!Array<string>} */

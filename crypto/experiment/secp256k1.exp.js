@@ -51,7 +51,7 @@ Point.random = () => {
 }
 
 console.log(Q % 4n, P % 4n);
-// TODO(KimlikDAO-bot): Calculate Tonelli-Shanks parameters for Qoint.
+console.log(P % 3n, Q % 3n);
 
 /**
  * @const {!Point}

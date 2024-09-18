@@ -200,6 +200,5 @@ export {
   pointFrom,
   recoverSigner,
   sign,
-  sqrt,
   verify
 };

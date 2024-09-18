@@ -37,11 +37,6 @@ const test = function (invariant, run, testOptions) { };
 const expect = function (actual) { }
 
 /**
- * @param {string=} message
- */
-const fail = function (message) { }
-
-/**
  * @param {function(?):void} callback
  */
 const afterAll = function (callback) { }
@@ -87,3 +82,6 @@ Matcher.prototype.toBeNull = function () { }
 Matcher.prototype.toBeTrue = function () { }
 
 Matcher.prototype.toBeTruthy = function () { }
+
+/** @param {string=} message */
+Matcher.prototype.fail = function (message) { }
