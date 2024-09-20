@@ -43,8 +43,10 @@ const TtfFont = ({ Lang, BuildMode, SharedCss, PageCss, shared, href, name, weig
     if (w && !isNaN(w))
       weight ||= w;
   }
+  const cssName = `build/${href.slice(0, -4)}-${Lang}.css`;
   if (BuildMode == 0) {
     (shared ? SharedCss : PageCss).add({
+      name: cssName,
       contents: `@font-face {
         font-family: ${name};
         src: url("${href}") format("truetype");
@@ -68,6 +70,7 @@ const TtfFont = ({ Lang, BuildMode, SharedCss, PageCss, shared, href, name, weig
     )
     .then(([ttfName, woff2Name]) => {
       (shared ? SharedCss : PageCss).add({
+        name: cssName,
         contents: `@font-face {
           font-family: ${name};
           src: url("${woff2Name}") format("woff2"),

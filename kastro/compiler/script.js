@@ -1,6 +1,11 @@
 import { tagYaz } from "../../util/html";
 
-const Script = ({ BuildMode, Lang, DefaultChain, Chains, loose, src }) => {
+/**
+ * TODO(KimlikDAO-bot): Add Release mode.
+ * @param {*} param
+ * @return {!Promise<string>}
+ */
+const Script = ({ BuildMode, Lang, loose, src, ...props }) => {
   return tagYaz("script", { type: "module", src }, false) + "</script>";
 };
 

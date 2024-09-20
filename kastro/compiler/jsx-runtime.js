@@ -6,11 +6,6 @@ import { Script } from "./script";
 /** @const {string} */
 const Fragment = "";
 
-/** @const {!Object<string, function():!Promise<string>>} */
-const AutoTags = {
-  script: Script
-};
-
 /**
  * @param {!Array<*>} children
  * @param {LangCode} lang
@@ -34,15 +29,6 @@ const resolveProps = (props, lang) => {
   return props;
 }
 
-const handleAutoTag = (name, props, globals) => {
-  Object.keys(props).forEach(key => {
-    if (key.charCodeAt(0) < 91)
-      globals[key] = props[key];
-  });
-
-  return AutoTags[name](props, globals);
-}
-
 const jsx = (name, props = {}) => {
   const globals = getGlobals();
   props = resolveProps(props, globals.Lang);
@@ -50,9 +36,6 @@ const jsx = (name, props = {}) => {
   const nameType = typeof name;
   if (nameType == "function")
     return name({ ...props, ...globals });
-
-  if (name in AutoTags)
-    return handleAutoTag(name, props, globals);
 
   const { children, ...prop } = props;
   if (nameType == "object") {
@@ -75,9 +58,6 @@ const jsxs = (name, props) => {
   const nameType = typeof name;
   if (nameType == "function")
     return name({ ...props, ...globals });
-
-  if (name in AutoTags)
-    return handleAutoTag(name, props, globals);
 
   const { children, ...prop } = props;
   if (nameType == "object") {

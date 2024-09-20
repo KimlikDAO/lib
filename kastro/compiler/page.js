@@ -1,6 +1,7 @@
 import { plugin } from "bun";
 import { minify } from "html-minifier";
 import process from "node:process";
+import { combine, getDir } from "../../util/paths";
 import { compileComponent } from "./component";
 import HtmlMinifierConfig from "./htmlMinifierConfig";
 import { initGlobals } from "./pageGlobals";
@@ -30,6 +31,24 @@ const setupEnvironment = () => {
       build.onLoad({ filter: /\.ttf$/ }, (args) => {
         const code = `import { TtfFont } from "@kimlikdao/lib/kastro/compiler/font";\n` +
           `export default (props) => TtfFont({...props, href: "${args.path.slice(cwdLen)}" });`;
+        return {
+          contents: code,
+          loader: "js"
+        };
+      });
+      build.onResolve({ filter: /./, namespace: "kastro" }, ({ path, importer }) => ({
+        path: path.startsWith(".") ? "/" + combine(getDir(importer.replace("kastro:", "")), path) : path,
+        namespace: "kastro"
+      }));
+      build.onLoad({ filter: /.*/, namespace: "kastro" }, (args) => {
+        const code = 'import { getGlobals } from "@kimlikdao/lib/kastro/compiler/pageGlobals";\n' +
+          'import { Script } from "@kimlikdao/lib/kastro/compiler/script";\n' +
+          `export default (props) => {
+            const globals = getGlobals();
+            for (const key in props)
+              if (key.charCodeAt(0) < 91) globals[key] = props[key];
+            return Script({...props, src: "${args.path.slice(cwdLen)}" });
+          }`;
         return {
           contents: code,
           loader: "js"
