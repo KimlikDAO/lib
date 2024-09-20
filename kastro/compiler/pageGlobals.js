@@ -7,7 +7,7 @@ let Globals = {};
  */
 const initGlobals = (globalsData) => Globals = new Proxy(globalsData, {
   set(target, key, value) {
-    if (key[0] !== key[0].toUpperCase())
+    if (key.charCodeAt(0) > 90)
       throw new Error(`Global key "${key}" must start with a capital letter.`);
 
     target[key] = value;

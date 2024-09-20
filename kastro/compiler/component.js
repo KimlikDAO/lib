@@ -248,13 +248,6 @@ const compileComponent = (name, props, globals) => {
       : import(process.cwd() + "/" + markup).then((mod) => mod.default(contextVars)))
     .then((markupContent) => {
       parser.end(markupContent);
-      if (css && !css.startsWith("/")) css = "/" + css;
-      if (css && !globals.SharedCss.has(css)
-        && !globals.PageCss.has(css))
-        globals.PageCss.add(css);
-      if (latexVar)
-        globals.PageCss.add("/lib/kastro/sayfa/latex.css");
-
       return Promise.all(htmlParts).then((parts) => parts.join(""));
     })
   );

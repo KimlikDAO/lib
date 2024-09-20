@@ -1,6 +1,15 @@
 import { KapalıTag, tagYaz } from "../../util/html";
 import { LangCode } from "../crate";
 import { getGlobals } from "./pageGlobals";
+import { Script } from "./script";
+
+/** @const {string} */
+const Fragment = "";
+
+/** @const {!Object<string, function():!Promise<string>>} */
+const AutoTags = {
+  script: Script
+};
 
 /**
  * @param {!Array<*>} children
@@ -25,50 +34,63 @@ const resolveProps = (props, lang) => {
   return props;
 }
 
+const handleAutoTag = (name, props, globals) => {
+  Object.keys(props).forEach(key => {
+    if (key.charCodeAt(0) < 91)
+      globals[key] = props[key];
+  });
+
+  return AutoTags[name](props, globals);
+}
+
 const jsx = (name, props = {}) => {
   const globals = getGlobals();
   props = resolveProps(props, globals.Lang);
 
   const nameType = typeof name;
-  if (nameType != "function") {
-    const { children, ...prop } = props;
-    if (nameType == "object") { // `{@link name}` is a placeholder dom element
-      prop.id = name.id;
-      name = name.name;
-    }
-    return mergeChildren([].concat(children || []), globals.Lang)
-      .then((childStr) => name == Fragment
-        ? childStr
-        : (childStr || !KapalıTag[name])
-          ? tagYaz(name, prop, false) + childStr + `</${name}>`
-          : tagYaz(name, prop, true)
-      )
-  }
-  return name({ ...props, ...globals });
-}
+  if (nameType == "function")
+    return name({ ...props, ...globals });
 
-const Fragment = "";
+  if (name in AutoTags)
+    return handleAutoTag(name, props, globals);
+
+  const { children, ...prop } = props;
+  if (nameType == "object") {
+    prop.id = name.id;
+    name = name.name;
+  }
+  return mergeChildren([].concat(children || []), globals.Lang)
+    .then((childStr) => name == Fragment
+      ? childStr
+      : (childStr || !KapalıTag[name])
+        ? tagYaz(name, prop, false) + childStr + `</${name}>`
+        : tagYaz(name, prop, true)
+    )
+}
 
 const jsxs = (name, props) => {
   const globals = getGlobals();
   props = resolveProps(props, globals.Lang);
 
   const nameType = typeof name;
-  if (nameType != "function") {
-    const { children, ...prop } = props;
-    if (nameType == "object") {
-      prop.id = name.id;
-      name = name.name;
-    }
-    return mergeChildren(children || [], globals.Lang)
-      .then((childStr) => name == Fragment
-        ? childStr
-        : childStr || !KapalıTag[name]
-          ? tagYaz(name, prop, false) + childStr + `</${name}>`
-          : tagYaz(name, prop, true)
-      );
+  if (nameType == "function")
+    return name({ ...props, ...globals });
+
+  if (name in AutoTags)
+    return handleAutoTag(name, props, globals);
+
+  const { children, ...prop } = props;
+  if (nameType == "object") {
+    prop.id = name.id;
+    name = name.name;
   }
-  return name({ ...props, ...globals });
+  return mergeChildren(children || [], globals.Lang)
+    .then((childStr) => name == Fragment
+      ? childStr
+      : childStr || !KapalıTag[name]
+        ? tagYaz(name, prop, false) + childStr + `</${name}>`
+        : tagYaz(name, prop, true)
+    );
 };
 
 export { Fragment, jsx, jsxs };

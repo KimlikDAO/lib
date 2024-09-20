@@ -63,6 +63,8 @@ const compilePage = async (componentName, pageGlobals) => {
   initGlobals(pageGlobals);
   return compileComponent(componentName, {}, pageGlobals)
     .then((html) => {
+      pageGlobals.PageCss = pageGlobals.PageCss.difference(pageGlobals.SharedCss);
+      console.log(pageGlobals);
       html = "<!DOCTYPE html>" +
         html.replace("</head>", getStyleSheet(pageGlobals) + "</head>");
 

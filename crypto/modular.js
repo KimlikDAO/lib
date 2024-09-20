@@ -130,7 +130,7 @@ const expTimesExp = (a, x, b, y, M) => {
  * @param {bigint} n
  * @param {bigint} P
  * @param {bigint} Q the odd factor of P-1 satisfying Q.2^M = P-1
- * @param {bigint} c z^Q where z is a non-quadratic residue
+ * @param {bigint} c z^Q where z is a quadratic non-residue
  * @param {bigint} M so that Q.2^M == P-1.
  * @return {?bigint} returns sqrt(n) if n is a quadratic residue,
  *                   returns null otherwise.

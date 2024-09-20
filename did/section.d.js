@@ -14,9 +14,9 @@ import "./verifiableID.d";
  * Each signature contains a timestamp and a wallet commitment; therefore
  * each section of data is signed *for* a walet and *at* a certain time.
  *
- * One exception to this is the `exposureReportID`, which is not committed
- * to a wallet (but still contains a signature timestamp), since it is used in
- * cases where the user has lost their keys.
+ * One exception to this is the {@link did.ExposureReport}, which is not
+ * committed to a wallet (but still contains a signature timestamp), since it
+ * is used in cases where the user has lost their keys.
  *
  * @interface
  * @struct
@@ -57,9 +57,6 @@ did.Section.prototype.bls12_381;
 did.Section.prototype.secp256k1;
 
 /**
- * The Schnorr signatures kept as a list of `mina.SignerSignature`s since
- * the signer cannot be derived from a mina signature alone.
- * 
  * @type {!Array<mina.SignerSignature>|undefined}
  */
 did.Section.prototype.minaSchnorr;
