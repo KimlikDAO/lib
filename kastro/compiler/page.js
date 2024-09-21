@@ -6,12 +6,17 @@ import { compileComponent } from "./component";
 import HtmlMinifierConfig from "./htmlMinifierConfig";
 import { initGlobals } from "./pageGlobals";
 import { getStyleSheet } from "./stylesheet";
+import { readFile } from "node:fs/promises";
 
 const setupEnvironment = () => {
   const KastroPlugin = {
-    name: 'kastro loader',
-    setup(build) {
+    name: "kastro-js",
+    async setup(build) {
       const cwdLen = process.cwd().length + 1;
+      const moduleDir = getDir(import.meta.url.slice(6));
+      const stylesheetLoader = await readFile("/" + combine(moduleDir, "./loader/stylesheetLoader.js"), "utf8");
+      const scriptLoader = await readFile("/" + combine(moduleDir, "./loader/scriptLoader.js"), "utf8");
+
       build.onLoad({ filter: /\.(svg|png|webp)$/ }, (args) => {
         const code = `import { Image } from "@kimlikdao/lib/kastro/compiler/image";\n` +
           `export default (props) => Image({...props, src: "${args.path.slice(cwdLen)}" });`;
@@ -20,14 +25,10 @@ const setupEnvironment = () => {
           loader: "js"
         };
       });
-      build.onLoad({ filter: /\.css$/ }, (args) => {
-        const code = `import { StyleSheet } from "@kimlikdao/lib/kastro/compiler/stylesheet";\n` +
-          `export default (props) => StyleSheet({...props, src: "${args.path.slice(cwdLen)}" });`;
-        return {
-          contents: code,
-          loader: "js"
-        };
-      });
+      build.onLoad({ filter: /\.css$/ }, (args) => ({
+        contents: stylesheetLoader.replace("SOURCE", args.path.slice(cwdLen)),
+        loader: "js"
+      }));
       build.onLoad({ filter: /\.ttf$/ }, (args) => {
         const code = `import { TtfFont } from "@kimlikdao/lib/kastro/compiler/font";\n` +
           `export default (props) => TtfFont({...props, href: "${args.path.slice(cwdLen)}" });`;
@@ -40,20 +41,10 @@ const setupEnvironment = () => {
         path: path.startsWith(".") ? "/" + combine(getDir(importer.replace("kastro:", "")), path) : path,
         namespace: "kastro"
       }));
-      build.onLoad({ filter: /.*/, namespace: "kastro" }, (args) => {
-        const code = 'import { getGlobals } from "@kimlikdao/lib/kastro/compiler/pageGlobals";\n' +
-          'import { Script } from "@kimlikdao/lib/kastro/compiler/script";\n' +
-          `export default (props) => {
-            const globals = getGlobals();
-            for (const key in props)
-              if (key.charCodeAt(0) < 91) globals[key] = props[key];
-            return Script({...props, src: "${args.path.slice(cwdLen)}" });
-          }`;
-        return {
-          contents: code,
-          loader: "js"
-        };
-      });
+      build.onLoad({ filter: /.*/, namespace: "kastro" }, (args) => ({
+        contents: scriptLoader.replace("SOURCE", args.path.slice(cwdLen)),
+        loader: "js"
+      }));
     },
   };
 

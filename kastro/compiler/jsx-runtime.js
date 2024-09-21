@@ -29,15 +29,24 @@ const resolveProps = (props, lang) => {
   return props;
 }
 
+const mergeArrayProps = (props) => {
+  for (const key in props)
+    if (Array.isArray(props[key]))
+      props[key] = props[key].filter(Boolean).join(" ");
+  return props;
+};
+
 const jsx = (name, props = {}) => {
   const globals = getGlobals();
-  props = resolveProps(props, globals.Lang);
+  resolveProps(props, globals.Lang);
 
   const nameType = typeof name;
   if (nameType == "function")
     return name({ ...props, ...globals });
 
   const { children, ...prop } = props;
+  mergeArrayProps(prop);
+
   if (nameType == "object") {
     prop.id = name.id;
     name = name.name;
@@ -53,13 +62,15 @@ const jsx = (name, props = {}) => {
 
 const jsxs = (name, props) => {
   const globals = getGlobals();
-  props = resolveProps(props, globals.Lang);
+  resolveProps(props, globals.Lang);
 
   const nameType = typeof name;
   if (nameType == "function")
     return name({ ...props, ...globals });
 
   const { children, ...prop } = props;
+  mergeArrayProps(prop);
+
   if (nameType == "object") {
     prop.id = name.id;
     name = name.name;
