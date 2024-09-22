@@ -24,3 +24,23 @@ ethers.TypedDataEncoder;
  * @return {string}
  */
 ethers.TypedDataEncoder.hashDomain = function (typedDataDomain) { }
+
+/**
+ * @constructor
+ * @param {string} privateKey
+ * @struct
+ */
+const Wallet = function (privateKey) { }
+
+/**
+ * @const {string}
+ */
+Wallet.prototype.address;
+
+/**
+ * @param {string} message
+ * @return {!Promise<string>}
+ */
+Wallet.prototype.signMessage = function (message) { }
+
+export { Wallet };

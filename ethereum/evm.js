@@ -44,10 +44,8 @@ const adresDüzelt = (adres) => {
       sağlama[i] = c;
     } else return null;
   }
-
-  if (küçükVar && büyükVar && farkVar) {
+  if (küçükVar && büyükVar && farkVar)
     return null;
-  }
   return new TextDecoder().decode(sağlama);
 }
 

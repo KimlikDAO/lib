@@ -31,8 +31,12 @@ const test = function (invariant, run, testOptions) { };
 
 /**
  * @template T
+ * @template MATCHER := cond(isTemplatized(T) && sub(rawTypeOf(T), 'IThenable'),
+ *     type('PromiseMatcher', templateTypeOf(T, 0)),
+ *     type('Matcher', T))
+ * =:
  * @param {T} actual
- * @return {!Matcher<T>}
+ * @return {MATCHER}
  */
 const expect = function (actual) { }
 
@@ -77,11 +81,22 @@ Matcher.prototype.toBeFalsy = function () { }
 
 Matcher.prototype.toBeNull = function () { }
 
-Matcher.prototype.toBeNull = function () { }
-
 Matcher.prototype.toBeTrue = function () { }
 
 Matcher.prototype.toBeTruthy = function () { }
 
 /** @param {string=} message */
 Matcher.prototype.fail = function (message) { }
+
+/**
+ * @template T
+ * @constructor
+ * @param {!Promise<T>} actual
+ */
+function PromiseMatcher(actual) { }
+
+/** @const {!Matcher<T>} */
+PromiseMatcher.prototype.resolves;
+
+/** @const {!Matcher<*>} */
+PromiseMatcher.prototype.rejects;

@@ -6,7 +6,14 @@
 const eth = {};
 
 /**
- * A length 80 hex string denoting and address without the leading 0x.
+ * A string of length 42, starting with 0x.
+ *
+ * @typedef {string}
+ */
+eth.Address;
+
+/**
+ * A length 40 hex string denoting and address without the leading 0x.
  *
  * @typedef {string}
  */

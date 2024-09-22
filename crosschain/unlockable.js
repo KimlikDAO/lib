@@ -49,6 +49,16 @@ const decrypt = (unlockable, signer, address) => {
 const encrypt = (text, userPrompt, version, signer, address) => {
   switch (version) {
     case "promptsign-sha256-aes-ctr": {
+      /** @const {!TextEncoder} */
+      const encoder = new TextEncoder();
+      /** @const {!Uint8Array} */
+      const encoded = encoder.encode(text);
+      /** @const {!Uint8Array} */
+      const padded = new Uint8Array(encoded.length + 256 - (encoded.length & 255));
+      padded.set(encoded);
+      /** @const {!Uint8Array} */
+      const counter = /** @type {!Uint8Array} */(crypto.getRandomValues(new Uint8Array(16)));
+
       /**
        * @param {!ArrayBuffer} secret
        * @return {!Promise<!crosschain.Unlockable>}
@@ -70,17 +80,6 @@ const encrypt = (text, userPrompt, version, signer, address) => {
             ciphertext: base64(new Uint8Array(encrypted)),
             userPrompt
           }));
-
-      /** @const {!TextEncoder} */
-      const encoder = new TextEncoder();
-      /** @const {!Uint8Array} */
-      const encoded = encoder.encode(text);
-      /** @const {!Uint8Array} */
-      const padded = new Uint8Array(encoded.length + 256 - (encoded.length & 255));
-      padded.set(encoded);
-      /** @const {!Uint8Array} */
-      const counter = /** @type {!Uint8Array} */(crypto.getRandomValues(new Uint8Array(16)));
-
       /** @return {!Promise<!ArrayBuffer>} */
       const requestSecret = () => signer.deriveSecret(userPrompt, address);
 

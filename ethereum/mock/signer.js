@@ -1,8 +1,9 @@
+import { Signer } from "../../crosschain/signer";
 import { inverse } from "../../crypto/modular";
 import { G, Point, Q } from "../../crypto/secp256k1";
 import { keccak256Uint32, keccak256Uint32ToHex } from "../../crypto/sha3";
+import { hex, hexten, uint8ArrayBEyeSayıdan } from "../../util/çevir";
 import evm from "../evm";
-import { hex, hexten } from "../../util/çevir";
 
 /**
  * @param {bigint} privKey
@@ -33,9 +34,12 @@ const addr = (privKey) => {
 * }}
 */
 const sign = (digest, privKey) => {
-  /** @type {!Uint32Array} */
-  let buff = new Uint32Array(
-    hexten(evm.uint256(digest) + evm.uint256(privKey)).buffer);
+  /** @type {!Uint8Array} */
+  const bytes = new Uint8Array(64);
+  uint8ArrayBEyeSayıdan(bytes, 32, digest);
+  uint8ArrayBEyeSayıdan(bytes, 64, privKey);
+  /** @const {!Uint32Array} */
+  const buff = new Uint32Array(bytes.buffer);
 
   for (; ; ++buff[0]) {
     /** @const {bigint} */
@@ -65,7 +69,7 @@ const sign = (digest, privKey) => {
  *   s: bigint,
  *   yParity: boolean
  * }} sig
- * @return {string}
+ * @return {eth.WideSignature}
  */
 const toWideSignature = (sig) =>
   evm.uint256(sig.r) + evm.uint256(sig.s) + (27 + +sig.yParity).toString(16);
@@ -76,7 +80,7 @@ const toWideSignature = (sig) =>
 *   s: bigint,
 *   yParity: boolean
 * }} sig
-* @return {string}
+* @return {eth.CompactSignature}
 */
 const toCompactSignature = (sig) => evm.uint256(sig.r) +
   evm.uint256(sig.yParity ? sig.s + (1n << 255n) : sig.s);
@@ -84,18 +88,21 @@ const toCompactSignature = (sig) => evm.uint256(sig.r) +
 /**
  * @param {bigint} digest as bigint
  * @param {bigint} privKey as bigint
- * @return {string}
+ * @return {eth.WideSignature}
  */
 const signWide = (digest, privKey) => toWideSignature(sign(digest, privKey));
 
 /**
  * @param {bigint} digest as bigint
  * @param {bigint} privKey as bigint
- * @return {string}
+ * @return {eth.CompactSignature}
  */
 const signCompact = (digest, privKey) => toCompactSignature(sign(digest, privKey));
 
-class Signer {
+/**
+ * @implements {Signer}
+ */
+class MockSigner {
   /** @param {bigint} privKey */
   constructor(privKey) {
     /** @const {bigint} */
@@ -103,25 +110,46 @@ class Signer {
   }
 
   /**
+   * Returns a deterministic but non RFC-6979 compliant signature if the
+   * provided address is the signer's address; returns `Promise.reject()`
+   * otherwise.
+   *
+   * @override
+   *
    * @param {string} message
    * @param {string} address
-   * @return {?string} the signature
+   * @return {!Promise<eth.CompactSignature>}
    */
   signMessage(message, address) {
     if (address.toLowerCase() != addr(this.privKey))
-      return null;
+      return Promise.reject();
     /** @const {bigint} */
     const digest = BigInt("0x" + evm.personalDigest(message));
-    return "0x" + signWide(digest, this.privKey);
+    return Promise.resolve("0x" + signCompact(digest, this.privKey));
   }
 
   /** @return {string} */
   getAddress() { return addr(this.privKey); }
+
+  /**
+   * @override
+   *
+   * @param {string} message
+   * @param {string} address
+   * @return {!Promise<!ArrayBuffer>}
+   */
+  deriveSecret(message, address) {
+    if (address.toLowerCase() != addr(this.privKey))
+      return Promise.reject();
+    /** @const {bigint} */
+    const digest = BigInt("0x" + evm.personalDigest(message));
+    return crypto.subtle.digest("SHA-256", hexten(signWide(digest, this.privKey)));
+  }
 }
 
 export {
-  Signer,
   addr,
+  MockSigner,
   sign,
   signCompact,
   signWide,

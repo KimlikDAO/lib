@@ -1,10 +1,8 @@
-import evm from "../../ethereum/evm";
-import { Signer as EvmSigner } from "../../ethereum/mock/signer";
+import { MockSigner as EvmSigner } from "../../ethereum/mock/signer";
 import { addr as minaAddr } from "../../mina/mock/signer";
 import { signMessage } from "../../mina/signer";
 import { assertEq } from "../../testing/assert";
 import base58 from "../../util/base58";
-import hex from "../../util/hex";
 import { ChainGroup } from "../chains";
 import { Signature, Signer } from "../signer";
 
@@ -26,11 +24,12 @@ class MockSigner {
    * @return {!Promise<!ArrayBuffer>}
    */
   deriveSecret(message, address) {
+    if (address.startsWith("0x"))
+      return this.evmSigner.deriveSecret(message, address);
+
     return this.signMessage(message, address)
       .then((/** Signature */ sig) => crypto.subtle.digest("SHA-256",
-        address.startsWith("0x")
-          ? hex.toUint8Array(/** @type {eth.CompactSignature} */(sig).slice(2))
-          : base58.toBytes(/** @type {mina.SignerSignature} */(sig).signature)
+        base58.toBytes(/** @type {mina.SignerSignature} */(sig).signature)
       ))
   }
 
@@ -42,11 +41,10 @@ class MockSigner {
    * @return {!Promise<Signature>}
    */
   signMessage(message, address) {
-    if (address.startsWith("0x")) {
-      assertEq(address.toLowerCase(), this.evmSigner.getAddress());
-      return Promise.resolve(evm.compactSignature(
-        /** @type {string} */(this.evmSigner.signMessage(message, address))));
-    } else if (address.startsWith("B62")) {
+    if (address.startsWith("0x"))
+      return this.evmSigner.signMessage(message, address);
+
+    if (address.startsWith("B62")) {
       /** @const {bigint} */
       const privKey = this.evmSigner.privKey;
       assertEq(address, minaAddr(privKey));
