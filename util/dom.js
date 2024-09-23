@@ -1,10 +1,17 @@
-/**
- * @define {boolean}
- */
-const TR = true;
+import { LangCode } from "./i18n";
 
 /** @define {boolean} */
 const GEN = true;
+
+/** @define {LangCode} */
+const Lang = LangCode.TR;
+
+/**
+ * @template T
+ * @param {!Object<LangCode, T>} i18ned
+ * @return {T}
+ */
+const i18n = (i18ned) => i18ned[Lang];
 
 /**
  * @noinline
@@ -98,7 +105,7 @@ const pencere = (url, en, boy) => {
  * @param {number} para
  * @return {string} metin olarak yazılmış para miktarı
  */
-const paradanMetne = (para) => TR
+const paradanMetne = (para) => Lang == LangCode.TR
   ? ("" + (para / 1_000_000)).replace(".", ",")
   : ("" + (para / 1_000_000))
 
@@ -170,6 +177,7 @@ const input = (ad) => /** @type {!HTMLInputElement} */((GEN && globalThis["GEN"]
   : adla(ad));
 
 export default {
+  Lang,
   a,
   adla,
   adlaGizle,
@@ -181,12 +189,12 @@ export default {
   gizle,
   göster,
   gösterGizle,
+  i18n,
   menüYarat,
   paradanMetne,
   pencere,
   span,
   telefondanMetne,
-  TR,
   ul,
   input
 };

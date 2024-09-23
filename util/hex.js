@@ -27,10 +27,15 @@ const toBinary = (hexStr) => {
   return Array.from(hexStr, (/** string */ s) => toBinary[s]).join("");
 }
 
-/** @const {!Array<string>} */
-const FromUint8 = Array(255);
-for (let /** number */ i = 0; i < 256; ++i)
-  FromUint8[i] = /** @pureOrBreakMyCode */(i.toString(16)).padStart(2, "0");
+/**
+ * @see https://github.com/google/closure-compiler/issues/4046
+ * @const {!Array<string>}
+ */
+const FromUint8 = Array(256);
+for (let /** number */ i = 0; i < 16; ++i)
+  for (let /** number */ j = 0; j < 16; ++j)
+    FromUint8[(16 * i) | j] = String.fromCharCode(i < 10 ? i + 48 : i + 87) +
+      String.fromCharCode(j < 10 ? j + 48 : j + 87);
 
 /**
  * @nosideeffects

@@ -72,7 +72,7 @@ const serveCrate = async (crateName, buildMode) => {
         if (id.endsWith("util/dom.js"))
           return code
             .replace(/const GEN =.*?;/, `const GEN = false`)
-            .replace(/const TR =.*?;/, `const TR = ${currentPage.Lang == "tr" ? "true" : "false"};`);
+            .replace(/const Lang =.*?;/, `const Lang = "${currentPage.Lang}";`);
         if (id.endsWith(".jsx")) {
           const lines = code.split("\n");
           const filteredLines = lines.filter((line) => line.includes("util/dom") ||

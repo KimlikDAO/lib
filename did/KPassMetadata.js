@@ -1,4 +1,6 @@
 /**
+ * TODO(KimlikDAO-bot): Move prompts to a component library and out of kimlikdao-js
+ *
  * @author KimlikDAO
  */
 
@@ -6,6 +8,7 @@ import { ChainId } from "../crosschain/chains";
 import "../ethereum/ERC721Unlockable.d";
 import KPass from "../ethereum/KPassLite";
 import dom from "../util/dom";
+import { I18nString } from "../util/i18n";
 import { hex } from "../util/çevir";
 import { SectionGroup } from "./KPass";
 
@@ -15,53 +18,43 @@ import { SectionGroup } from "./KPass";
  */
 const KIMLIKDAO_URL = "https://kimlikdao.org";
 
-/** @const {string} */
-const SignPromptTR = `KimlikDAO Pass Erişim İsteği:
--------------------------------------------------
-()Bu mesajı imzaladığınızda, bağlı uygulama KPass’inizin
-
-  {}
-
-bölüm<>ne erişebilecek. Bu mesajı sadece bu bilgileri paylaşmak istiyorsanız imzalayın.\n\n\n`;
-
-/** @const {string} */
-const SignPromptEN = `KimlikDAO Pass Access Request:
--------------------------------------------------
-()When you sign this message, the connected app will have access to
-
-  {}
-
-section<> of your KPass. Only sign this message if you would like to share this information.\n\n\n`
-
 /**
  * @param {!Array<string>} sections
- * @param {string=} introTr
- * @param {string=} introEn
  * @return {string}
  */
-const signPrompt = (sections, introTr, introEn) => {
+const userPrompt = (sections) => {
   /** @const {string} */
-  const tr = SignPromptTR
-    .replace("()", introTr || "")
-    .replace("<>", sections.length == 1 ? "ü" : "leri");
-  /** @const {string} */
-  const en = SignPromptEN
-    .replace("()", introEn || "")
-    .replace("<>", sections.length == 1 ? "" : "s");
-  return (dom.TR ? tr + en : en + tr)
-    .replace(/{}/g, sections.join(",\n  "));
+  const sectionText = sections.join(",\n  ");
+  /**
+ * @const
+ * @type {I18nString} */
+  const prompt = {
+    tr: `KPass Erişim İsteği:
+-------------------------------------------------
+Bu mesajı imzaladığınızda, bağlı uygulama KPass’inizin
+
+  ${sectionText}
+
+bölüm${sections.length == 1 ? "ü" : "leri"}ne erişebilecek. Bu mesajı sadece bu bilgileri paylaşmak istiyorsanız imzalayın.\n\n\n`,
+    en: `KPass Access Request:
+-------------------------------------------------
+When you sign this message, the connected app will have access to
+
+  ${sectionText}
+
+section${sections.length == 1 ? "" : "s"} of your KPass. Only sign this message if you would like to share this information.\n\n\n`
+  };
+  return dom.i18n(prompt);
 }
 
 /**
  * @param {!Array<string>} sections
  * @param {ChainId} chainId
- * @param {string=} introTr
- * @param {string=} introEn
  * @return {!SectionGroup}
  */
-const section = (sections, chainId, introTr, introEn) => /** @type {!SectionGroup} */({
+const sectionGroup = (sections, chainId) => /** @type {!SectionGroup} */({
   sectionNames: sections,
-  userPrompt: signPrompt(sections, introTr, introEn)
+  userPrompt: userPrompt(sections)
     + "Nonce: " + hex(/** @type {!Uint8Array} */(crypto.getRandomValues(new Uint8Array(8))))
     + "\nChainId: " + chainId
     + "\nNFT: " + KPass.getAddress(chainId)
@@ -76,19 +69,16 @@ const section = (sections, chainId, introTr, introEn) => /** @type {!SectionGrou
  */
 const metadataAndSections = (chainId) => ({
   metadata: /** @type {!eth.ERC721Metadata} */({
-    name: "KPASS",
-    description: "KimlikDAO Pass",
+    name: "KPass",
+    description: "KPass",
     image: KIMLIKDAO_URL + "/KPASS.svg",
     external_url: KIMLIKDAO_URL,
   }),
   sections: [
-    section(["personInfo", "contactInfo", "addressInfo", "kütükBilgileri"], chainId),
-    section(["contactInfo", "humanID"], chainId),
-    section(["humanID"], chainId),
-    section(["exposureReport"], chainId,
-      "https://kimlikdao.org adresinde olduğunuzdan emin olun! Bu adreste değilseniz bu metni imzalamayın.\n\n",
-      "Ensure that you're on https://kimlikdao.org. If not, don't sign this message!\n\n"
-    )
+    sectionGroup(["personInfo", "contactInfo", "addressInfo", "kütükBilgileri"], chainId),
+    sectionGroup(["contactInfo", "humanID"], chainId),
+    sectionGroup(["humanID"], chainId),
+    sectionGroup(["exposureReport"], chainId)
   ]
 });
 
@@ -120,6 +110,6 @@ const VerificationKeys = {
 
 export {
   metadataAndSections,
-  signPrompt,
+  userPrompt,
   VerificationKeys
 };

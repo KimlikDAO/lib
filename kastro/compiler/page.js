@@ -68,8 +68,6 @@ const compilePage = async (componentName, pageGlobals) => {
   pageGlobals.SharedCss = new Set();
   pageGlobals.PageCss = new Set();
   pageGlobals.GEN = false;
-  if (pageGlobals.Lang == pageGlobals.CodebaseLang)
-    pageGlobals[pageGlobals.Lang.toUpperCase()] = true;
   initGlobals(pageGlobals);
   return compileComponent(componentName, {}, pageGlobals)
     .then((html) => {

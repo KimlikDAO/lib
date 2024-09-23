@@ -13,7 +13,13 @@ const LangCode = {
  */
 const I18nString = {};
 
+/**
+ * @typedef {!Object<LangCode, !Array<string>>}
+ */
+const I18nStrings = {};
+
 export {
   LangCode,
-  I18nString
+  I18nString,
+  I18nStrings
 };
