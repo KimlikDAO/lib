@@ -1,12 +1,13 @@
+import { spawn } from "bun";
 import { mkdir, readFile } from "node:fs/promises";
 import { SAXParser } from "sax";
 import { optimize } from "svgo";
-import { tagYaz } from "../../util/html";
-import { getDir, getExt } from "../../util/paths";
-import { getByKey } from "./hashcache/buildCache";
-import { hashAndCompressContent, hashFile } from "./hashcache/compression";
-import SvgoConfig from "./svgoConfig";
-import SvgoInlineConfig from "./svgoInlineConfig";
+import { tagYaz } from "../util/html";
+import { getDir, getExt } from "../util/paths";
+import { getByKey } from "./compiler/hashcache/buildCache";
+import { hashAndCompressContent, hashFile } from "./compiler/hashcache/compression";
+import SvgoConfig from "./compiler/svgoConfig";
+import SvgoInlineConfig from "./compiler/svgoInlineConfig";
 
 const removeGlobalProps = (props) => {
   for (const prop in props)
@@ -19,7 +20,7 @@ const rsvgConvert = (inputFile, outputFile, size) =>
     .then(() => spawn(["rsvg-convert", "-w", size, "-h", size, "-o", outputFile, inputFile]).exited);
 
 const pngcrushInPlace = (inputFile) =>
-  spawn(["pngcrush", "-ow", "-brute", inputFile, inputFile]).exited;
+  spawn(["pngcrush", "-ow", "-brute", inputFile]).exited;
 
 const webp = (inputFile, outputFile, passes = 10, quality = 70) =>
   mkdir(getDir(outputFile), { recursive: true })
@@ -84,6 +85,7 @@ const PngImage = ({ src, passes, quality, BuildMode, ...props }) => (BuildMode =
 
 const Favicon = ({ src, raster, BuildMode, ...props }) => {
   removeGlobalProps(props);
+  console.log("Favicon", src, raster, BuildMode);
   return Promise.all([
     (BuildMode == 0
       ? Promise.resolve(src)
@@ -107,6 +109,7 @@ const Favicon = ({ src, raster, BuildMode, ...props }) => {
  * @return {!Promise<string>}
  */
 const Image = ({ inline, ...props }) => {
+  console.log("Image()", props);
   if (inline) {
     if (!props.src.endsWith(".svg"))
       throw new Error("We only inline svgs; for other formats serving directly is more efficient");
@@ -121,4 +124,10 @@ const Image = ({ inline, ...props }) => {
   }[getExt(props.src)](props);
 };
 
-export { Favicon, Image, InlineSvgImage, PngImage, SvgImage };
+export {
+  Favicon,
+  Image,
+  InlineSvgImage,
+  PngImage,
+  SvgImage
+};

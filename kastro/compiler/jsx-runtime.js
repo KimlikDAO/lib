@@ -1,7 +1,6 @@
 import { KapalıTag, tagYaz } from "../../util/html";
 import { LangCode } from "../crate";
 import { getGlobals } from "./pageGlobals";
-import { Script } from "./script";
 
 /** @const {string} */
 const Fragment = "";
@@ -24,7 +23,7 @@ const mergeChildren = (children, lang) => Promise.all(children
 */
 const resolveProps = (props, lang) => {
   for (const key in props)
-    if (key != "children" && typeof props[key] == "object" && props[key][lang])
+    if (key != "children" && typeof props[key] == "object" && (lang in props[key]))
       props[key] = props[key][lang];
   return props;
 }

@@ -107,9 +107,6 @@ const compileComponent = (name, props, globals) => {
       if (tagName.toLowerCase() == "html")
         tagProps.lang = globals.Lang;
 
-      if (globals.BuildMode > 0 && tagName.toLowerCase() == "script")
-        return htmlParts.push(generateScript(tagProps, globals));
-
       if ("data-dev-remove" in tagProps) {
         delete tagProps["data-dev-remove"];
         if (globals.BuildMode == 0) return;

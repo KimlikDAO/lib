@@ -1,4 +1,4 @@
-import { StyleSheet } from "@kimlikdao/lib/kastro/compiler/stylesheet";
+import { StyleSheet } from "@kimlikdao/lib/kastro/stylesheet";
 import { parse } from "css";
 import { readFileSync } from "node:fs";
 

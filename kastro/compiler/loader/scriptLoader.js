@@ -1,5 +1,5 @@
 import { getGlobals } from "@kimlikdao/lib/kastro/compiler/pageGlobals";
-import { Script } from "@kimlikdao/lib/kastro/compiler/script";
+import { Script } from "@kimlikdao/lib/kastro/script";
 
 export default (props) => {
   const globals = getGlobals();

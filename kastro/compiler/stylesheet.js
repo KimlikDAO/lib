@@ -1,28 +1,58 @@
 import { minify } from "csso";
-import { readFile } from "node:fs/promises";
-import { hashAndCompressContent } from "./hashcache/compression";
+import { mkdir, writeFile } from "node:fs/promises";
+import { getDir } from "../../util/paths";
+import { getFile, getTargetHash } from "./hashcache/buildCache";
+import { compressToHash } from "./hashcache/compression";
 
-const getStyleSheet = ({ PageCss, SharedCss, BuildMode }) => {
-  const allCss = PageCss.union(SharedCss);
+/**
+ * @param {!Set<string>} css
+ * @return {!Promise<string>}
+ */
+const getStyleSheet = (target, css) => {
+  const stringDeps = [];
+  const fileDeps = [];
+  for (const dep of css)
+    if (typeof dep === "string")
+      fileDeps.push(dep);
+    else {
+      stringDeps.push(dep.contents);
+      delete dep.contents;
+    }
+
+  stringDeps.sort();
+  fileDeps.sort();
+  return getTargetHash(target, fileDeps, stringDeps, (target, fileDeps, stringDeps) =>
+    Promise.all(fileDeps.map(getFile))
+      .then((fileContents) => {
+        const cssContent = minify(stringDeps.join("\n") + "\n" + fileContents.join("\n")).css;
+        return mkdir(getDir(target), { recursive: true })
+          .then(() => writeFile(target, cssContent))
+          .then(() => cssContent);
+      })
+  )
+    .then((hash) => compressToHash(target, hash))
+    .then((hashedName) => `<link href="${hashedName}" rel="stylesheet" type="text/css">`);
+}
+
+const getStyleSheets = (componentName, { PageCss, SharedCss, BuildMode, Lang }) => {
   if (BuildMode == 0) {
+    const allCss = PageCss.union(SharedCss);
     let embeddedCss = "";
     let externalCss = "";
     for (const css of allCss)
       if (typeof css === "string")
         externalCss += `<link href="${css}" rel="stylesheet" type="text/css" />\n`;
-      else
+      else {
         embeddedCss += css.contents;
-    return `<style>${embeddedCss}</style>${externalCss}`;
+        delete css.contents;
+      }
+    return Promise.resolve(`<style>${embeddedCss}</style>${externalCss}`);
   }
-  return Promise.all(allCss.map((css) => typeof css === "string"
-    ? readFile(css, "utf8") : css.contents))
-    .then((csses) => hashAndCompressContent(minify(csses.join("\n")).css, "css"))
-    .then((hashedName) => `<link rel="stylesheet" src=${hashedName} type="text/css">`);
+  PageCss = PageCss.difference(SharedCss);
+  return Promise.all([
+    getStyleSheet(`build/${componentName}/shared-${Lang}.css`, SharedCss),
+    getStyleSheet(`build/${componentName}/page-${Lang}.css`, PageCss),
+  ]).then((sheets) => sheets.join(""));
 }
 
-const StyleSheet = ({ src, shared, SharedCss, PageCss }) => {
-  (shared ? SharedCss : PageCss).add(src);
-  return;
-}
-
-export { getStyleSheet, StyleSheet };
+export { getStyleSheet, getStyleSheets };

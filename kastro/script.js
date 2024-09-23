@@ -1,4 +1,4 @@
-import { tagYaz } from "../../util/html";
+import { tagYaz } from "../util/html";
 
 /**
  * TODO(KimlikDAO-bot): Add Release mode.
