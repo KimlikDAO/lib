@@ -55,11 +55,10 @@ const serveCrate = async (crateName) => {
     port
   });
 
-  console.log(
-    (crate.codebase_lang === "en"
-      ? "Canary server running at: "
-      : "Kanarya sunucu şu adreste çalışıyor: ") + `http://localhost:${port}`
-  );
+  console.log({
+    en: "Canary server running at: ",
+    tr: "Kanarya sunucu şu adreste çalışıyor: "
+  }[crate.codebaseLang] + `http://localhost:${port}`);
 };
 
 serveCrate(process.argv[2] || ".");

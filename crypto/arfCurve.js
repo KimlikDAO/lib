@@ -16,7 +16,7 @@ import { inverse } from "./modular";
  * over (F_P)^3. The projection onto the z = 1 plane gives the regular
  * Arf curve.
  *
- * For other values of z ∉ {0, 1}, the projected curve is automorphic to the z=1 curve
+ * For other values of z ∉ {0, 1}, the projected curve is isomorphic to the z=1 curve
  * through the map (x, y) ↦ (x/z^2, y/z^3).
  *
  * @interface

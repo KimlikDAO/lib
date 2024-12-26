@@ -14,11 +14,11 @@
   "devDependencies": {
     "@ethereumjs/evm": "^3.1.1",
     "@noble/secp256k1": "^2.1.0",
-    "ethers": "^6.13.2",
+    "ethers": "^6.13.4",
     "mina-signer": "^3.0.7"
   },
   "dependencies": {
-    "acorn": "^8.12.1",
+    "acorn": "^8.14.0",
     "acorn-walk": "^8.3.4",
     "astring": "^1.9.0",
     "css": "^3.0.0",
@@ -27,6 +27,7 @@
     "html-minifier": "^4.0.0",
     "htmlparser2": "^9.1.0",
     "js-yaml": "^4.1.0",
+    "rlp": "^3.0.0",
     "sax": "^1.4.1",
     "svgo": "^3.3.2",
     "uglify-js": "~3.19.3"

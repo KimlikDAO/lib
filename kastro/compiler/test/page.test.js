@@ -1,17 +1,17 @@
 import { afterAll, describe, expect, it } from "bun:test";
 import process from "node:process";
-import { BuildMode } from "../compiler";
-import { compilePage } from "../page";
+import compiler from "../compiler";
+import { pageTarget } from "../page";
 
 process.chdir("kastro/compiler/test");
 
 describe("compilePage() tests", () => {
   it("should remove in prod mode", async () => {
     /** @const {string} */
-    const html = await compilePage("ana", {
+    const html = await pageTarget("ana", {
       Lang: "tr",
       CodebaseLang: "tr",
-      BuildMode: BuildMode.Dev,
+      BuildMode: compiler.BuildMode.Dev,
       SharedCss: new Set(),
       PageCss: new Set()
     });

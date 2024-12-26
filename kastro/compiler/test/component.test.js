@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, it } from "bun:test";
 import process from "node:process";
-import { BuildMode } from "../compiler";
+import compiler from "../compiler";
 import { compileComponent } from "../component";
 import { fibonacci } from "./birim/jsxcomp/comp";
 
@@ -10,7 +10,7 @@ describe("compileComponent tests", () => {
   it("should pass variables to jsx component", async () => {
     const pageGlobals = {
       Lang: "tr",
-      BuildMode: BuildMode.Compiled,
+      BuildMode: compiler.BuildMode.Compiled,
       SharedCss: new Set(),
       PageCss: new Set()
     };
@@ -23,7 +23,7 @@ describe("compileComponent tests", () => {
   it("should perform variable sub / string interpolation", async () => {
     const pageGlobals = {
       Lang: "tr",
-      BuildMode: BuildMode.Compiled,
+      BuildMode: compiler.BuildMode.Compiled,
       SharedCss: new Set(),
       PageCss: new Set()
     };

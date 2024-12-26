@@ -1,12 +1,11 @@
 import { createServer } from "vite";
 import { parseArgs } from "../../util/cli";
-import { BuildMode } from "../compiler/compiler";
-import { compilePage } from "../compiler/page";
+import compiler from "../compiler/compiler";
 import { readCrateRecipe } from "../crate";
 
 /**
  * @param {string} crateName
- * @param {BuildMode} buildMode
+ * @param {compiler.BuildMode} buildMode
  * @return {!Promise<!Object<string, *>>} Returns a map from routes to page globals.
  */
 const readCrate = (crateName, buildMode) => readCrateRecipe(crateName)
@@ -16,15 +15,15 @@ const readCrate = (crateName, buildMode) => readCrateRecipe(crateName)
     const map = {};
     const add = (page, rootComponent) => {
       for (const lang of langs) {
-        const pageData = {
+        const pageProps = {
           RootComponent: (crateName === "." ? "" : `${crateName}/`) + (rootComponent || page[crate.codebaseLang]),
           BuildMode: buildMode,
           Lang: lang,
           CodebaseLang: crate.codebaseLang,
-          Route: { ...page }
+          Route: { ...page } // Make a copy
         };
-        delete pageData.Route[lang];
-        map[`/${page[lang]}`] = pageData;
+        delete pageProps.Route[lang];
+        map[`/${page[lang]}`] = pageProps;
       }
     };
     add(Object.fromEntries(langs.map(lang => [lang, lang])), crate.index);
@@ -37,15 +36,15 @@ const readCrate = (crateName, buildMode) => readCrateRecipe(crateName)
 
 /**
  * @param {string} crateName
- * @param {BuildMode} buildMode
+ * @param {compiler.BuildMode} buildMode
  */
 const serveCrate = async (crateName, buildMode) => {
   const map = await readCrate(crateName, buildMode);
-  let currentPage;
+  let currentPageProps;
 
   createServer({
     appType: "mpa",
-    publicDir: buildMode == BuildMode.Dev ? "" : "build/",
+    publicDir: buildMode == compiler.BuildMode.Dev ? "" : "build/",
     plugins: [{
       name: "kastro-js",
 
@@ -54,9 +53,9 @@ const serveCrate = async (crateName, buildMode) => {
           if (req.originalUrl in map) {
             res.setHeader("content-type", "text/html;charset=utf-8");
             server.moduleGraph.invalidateAll();
-            currentPage = map[req.originalUrl];
-            compilePage(currentPage.RootComponent, currentPage)
-              .then((html) => res.end(html));
+            currentPageProps = map[req.originalUrl];
+            compiler.buildTarget(currentPageProps.RootComponent, currentPageProps)
+              .then(({ content }) => res.end(content));
           } else next();
         })
       },
@@ -64,15 +63,15 @@ const serveCrate = async (crateName, buildMode) => {
       transform(code, id) {
         if (id.endsWith("cüzdan/birim.js"))
           return code
-            .replace(/const Chains =.*?;/, `const Chains = ${JSON.stringify(currentPage.Chains)};`)
-            .replace(/const DefaultChain =.*?;/, `const DefaultChain = ${JSON.stringify(currentPage.DefaultChain)};`);
+            .replace(/const Chains =.*?;/, `const Chains = ${JSON.stringify(currentPageProps.Chains)};`)
+            .replace(/const DefaultChain =.*?;/, `const DefaultChain = ${JSON.stringify(currentPageProps.DefaultChain)};`);
         if (id.endsWith("dil/birim.js"))
           return code
-            .replace(/const Route =.*?;/, `const Route = ${JSON.stringify(currentPage.Route)};`);
+            .replace(/const Route =.*?;/, `const Route = ${JSON.stringify(currentPageProps.Route)};`);
         if (id.endsWith("util/dom.js"))
           return code
             .replace(/const GEN =.*?;/, `const GEN = false`)
-            .replace(/const Lang =.*?;/, `const Lang = "${currentPage.Lang}";`);
+            .replace(/const Lang =.*?;/, `const Lang = "${currentPageProps.Lang}";`);
         if (id.endsWith(".jsx")) {
           const lines = code.split("\n");
           const filteredLines = lines.filter((line) => line.includes("util/dom") ||
@@ -86,4 +85,6 @@ const serveCrate = async (crateName, buildMode) => {
 }
 
 const args = parseArgs(process.argv.slice(2), "target");
-serveCrate(".", args["compiled"] ? BuildMode.Compiled : BuildMode.Dev);
+serveCrate(".", args["compiled"]
+  ? compiler.BuildMode.Compiled
+  : compiler.BuildMode.Dev);

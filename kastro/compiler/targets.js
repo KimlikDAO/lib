@@ -1,5 +1,5 @@
 import { compile } from "../../kdjs/compile";
-import { hashAndCompressFile } from "./hashcache/compression";
+import { hashAndCompressFile } from "./compression";
 
 /**
  * @param {!Object<string, *>} props

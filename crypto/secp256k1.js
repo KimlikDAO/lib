@@ -191,13 +191,13 @@ const recoverSigner = (digest, r, s, yParity) => {
 }
 
 export {
+  equal,
   G,
   O,
   P,
-  Q,
   Point,
-  equal,
   pointFrom,
+  Q,
   recoverSigner,
   sign,
   verify

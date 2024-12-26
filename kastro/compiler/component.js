@@ -1,8 +1,14 @@
 import { Parser } from "htmlparser2";
 import { readdir, readFile } from "node:fs/promises";
 import { KapalıTag, tagYaz } from "../../util/html";
-import { CompilerError } from "./compiler";
 import { renderParagraph } from "./latex";
+
+/** @enum {number} */
+const CompilerError = {
+  UNSUPPORTED_INLINE: 1,
+  NESTED_REPLACE: 2,
+  INCORRECT_PHANTOM: 3
+}
 
 const Fixes = {
   "Ã¼": "ü",
