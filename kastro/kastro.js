@@ -8,6 +8,7 @@ import { pageTarget } from "./compiler/page";
 import { stylesheetTarget } from "./compiler/stylesheet";
 import { registerTargetFunction } from "./compiler/targetRegistry";
 import { readCrateRecipe } from "./crate";
+import { parseArgs } from "../util/cli";
 
 const setupKastro = () => {
   registerTargetFunction(".html", pageTarget);
@@ -142,4 +143,7 @@ const serveCrate = async (crateName, buildMode) => {
 }
 
 setupKastro();
-serveCrate(".", compiler.BuildMode.Dev);
+const args = parseArgs(process.argv.slice(2), "target");
+serveCrate(".", args["compiled"]
+  ? compiler.BuildMode.Compiled
+  : compiler.BuildMode.Dev);
