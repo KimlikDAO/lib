@@ -59,7 +59,6 @@ const PngImage = ({ src, passes, quality, BuildMode, ...props }) =>
 
 const Favicon = ({ src, raster, BuildMode, ...props }) => {
   removeGlobalProps(props);
-  console.log("Favicon", src, raster, BuildMode);
   return Promise.all([
     compiler.bundleTarget(`/build/${src}`, {
       BuildMode,
@@ -71,8 +70,8 @@ const Favicon = ({ src, raster, BuildMode, ...props }) => {
       childTargets: [`/${src}`]
     })
   ]).then(([svgBundled, pngBundled]) =>
-    tagYaz("link", { href: svgBundled, type: "image/svg+xml" }) +
-    tagYaz("link", { href: pngBundled, type: "image/png", sizes: `${raster}x${raster}` })
+    tagYaz("link", { rel: "icon", href: svgBundled, type: "image/svg+xml" }) +
+    tagYaz("link", { rel: "icon", href: pngBundled, type: "image/png", sizes: `${raster}x${raster}` })
   )
 };
 

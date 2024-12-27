@@ -22,8 +22,10 @@ const TARGET_FUNCTIONS = {};
  * @param {string} targetName 
  * @return {TargetFunction}
  */
-const getTargetFunction = (targetName) =>
-  TARGET_FUNCTIONS[targetName.slice(targetName.indexOf("."))]
+const getTargetFunction = (targetName) => {
+  const nameIdx = targetName.lastIndexOf("/");
+  return TARGET_FUNCTIONS[targetName.slice(targetName.indexOf(".", nameIdx))]
+}
 
 /**
  * @param {string} extension 

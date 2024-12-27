@@ -1,6 +1,6 @@
-import { access, mkdir, readFile, writeFile } from "node:fs/promises";
-import { keccak256, keccak256Uint8 } from "../../crypto/sha3";
-import { getDir } from "../../util/paths";
+import { access, cp, mkdir, readFile, writeFile } from "node:fs/promises";
+import { keccak256Uint8 } from "../../crypto/sha3";
+import { getDir, getExt } from "../../util/paths";
 import { Props } from "../props";
 import { CompressedMimes } from "../workers/mimes";
 import { brotli, zopfli } from "./compression";
@@ -43,22 +43,25 @@ const populateChildTargets = (props) => {
     BuildMode: props.BuildMode,
     Lang: props.Lang
   };
-  if (Array.isArray(props.childTargets)
-    && props.childTargets.length
-    && typeof props.childTargets[0] == "string"
-  )
-    props.childTargets = props.childTargets.map(
-      (target) => typeof target == "string"
-        ? buildTarget(target, childProps)
-          .then((entry) => ({
-            ...entry,
-            targetName: target
-          }))
-        : Promise.resolve({
-          ...target,
-          contentHash: keccak256(target.content),
+  if (Array.isArray(props.childTargets))
+    props.childTargets = props.childTargets.map((target) => {
+      if (target instanceof Promise) return target;
+      if (typeof target == "object" && target.content) {
+        const content = typeof target.content == "string" ? Encoder.encode(target.content) : target.content;
+        return Promise.resolve({
+          targetName: target.targetName,
+          content,
+          contentHash: keccak256Uint8(content),
         })
-    );
+      }
+      const targetName = typeof target == "string" ? target : target.targetName;
+      const props = typeof target == "string" ? childProps : target.props;
+      return buildTarget(targetName, props)
+        .then((entry) => ({
+          ...entry,
+          targetName
+        }));
+    });
 }
 
 /**
@@ -84,6 +87,7 @@ const forceBuildTarget = (targetName, props) => {
 
   populateChildTargets(props);
   const targetFunc = getTargetFunction(targetName);
+  if (!targetFunc) console.error("targetFunc not found", targetName);
   return Promise.all([targetFunc(targetName, props), marker.remove(targetName)])
     .then(([result, _]) => result);
 }
@@ -105,13 +109,13 @@ const buildTarget = (targetName, props) => {
   if (props.BuildMode == BuildMode.Release)
     return (CACHE[targetName] ||= forceBuildTarget(targetName, props));
 
-  return Promise.all([CACHE[targetName], computeDepHash(props)])
+  return CACHE[targetName] = Promise.all([CACHE[targetName], computeDepHash(props)])
     .then(([entry, depHash]) => {
       if (entry && hash.equal(entry.depHash, depHash))
         return entry;
 
-      return CACHE[targetName] = marker.read(targetName)
-        .then((markerEntry) => hash.equal(markerEntry.depHash, depHa2600sh)
+      return marker.read(targetName)
+        .then((markerEntry) => hash.equal(markerEntry.depHash, depHash)
           ? Promise.resolve() : Promise.reject())
         .catch(() => forceBuildTarget(targetName, props))
         .then((maybeResult) => {
@@ -141,18 +145,18 @@ const bundleTarget = (targetName, props) => props.BuildMode == BuildMode.Dev
   ? Promise.resolve(props.childTargets[0].slice(1))
   : buildTarget(targetName, props).then(({ contentHash }) => {
     /** @const {string} */
-    const ext = getExt(targetName);
+    const targetFile = targetName.slice(1);
     /** @const {string} */
-    const assetName = `build/${contentHash}.${ext}`;
+    const assetName = `build/${hash.toStr(contentHash)}.${getExt(targetName)}`;
     /** @const {!Promise<void>} */
-    const bundle = CompressedMimes[ext]
-      ? access(assetName).catch(() => cp(targetName, assetName))
+    const bundle = CompressedMimes[getExt(targetName)]
+      ? access(assetName).catch(() => cp(targetFile, assetName))
       : Promise.all([
-        access(assetName).catch(() => cp(targetName, assetName)),
-        access(`${assetName}.br`).catch(() => brotli(targetName, assetName)),
-        access(`${assetName}.gz`).catch(() => zopfli(targetName, assetName))
+        access(assetName).catch(() => cp(targetFile, assetName)),
+        access(`${assetName}.br`).catch(() => brotli(targetFile, assetName)),
+        access(`${assetName}.gz`).catch(() => zopfli(targetFile, assetName))
       ])
-    return bundle.then(() => assetName.slice(7));
+    return bundle.then(() => assetName.slice(6));
   });
 
 export default {

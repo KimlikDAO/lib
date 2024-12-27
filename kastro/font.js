@@ -27,8 +27,8 @@ const TtfFont = ({ Lang, BuildMode, SharedCss, PageCss, shared, href, name, weig
   const cssTarget = `/build/${fontBase}-${Lang}.css`;
   if (BuildMode == 0) {
     (shared ? SharedCss : PageCss).add({
-      name: cssTarget,
-      contents: `@font-face {
+      targetName: cssTarget,
+      content: `@font-face {
         font-family: ${name};
         src: url("${href}") format("truetype");
         font-weight: ${weight};
@@ -39,14 +39,18 @@ const TtfFont = ({ Lang, BuildMode, SharedCss, PageCss, shared, href, name, weig
     return Promise.resolve("");
   }
   const ttfTarget = `/build/${fontBase}-${Lang}.ttf`;
-  return compiler.bundleTarget(ttfTarget, {
+  const ttfProps = {
     childTargets: [`/${fontBase}.ttf`, `/${fontBase}-${Lang}.txt`],
     Lang
-  }).then((ttfBundled) => compiler.bundleTarget(`${fontBase}.woff2`, { childTargets: [ttfTarget] })
-    .then((woff2Bundled) => {
-      (shared ? SharedCss : PageCss).add({
-        name: cssTarget,
-        contents: `@font-face {
+  };
+  return compiler.bundleTarget(ttfTarget, ttfProps)
+    .then((ttfBundled) => compiler.bundleTarget(`/build/${fontBase}-${Lang}.woff2`, {
+      childTargets: [{ targetName: ttfTarget, props: ttfProps }]
+    })
+      .then((woff2Bundled) => {
+        (shared ? SharedCss : PageCss).add({
+          targetName: cssTarget,
+          content: `@font-face {
           font-family: ${name};
           src: url("${woff2Bundled}") format("woff2"),
                url("${ttfBundled}") format("truetype");
@@ -54,12 +58,12 @@ const TtfFont = ({ Lang, BuildMode, SharedCss, PageCss, shared, href, name, weig
           font-style: normal;
           font-display: block;
         }`
-      });
-      return tagYaz("link", {
-        rel: "preload", href: woff2Bundled, as: "font", type: "font/woff2", crossorigin: null
-      });
-    })
-  );
+        });
+        return tagYaz("link", {
+          rel: "preload", href: woff2Bundled, as: "font", type: "font/woff2", crossorigin: null
+        });
+      })
+    );
 }
 
 export { TtfFont };

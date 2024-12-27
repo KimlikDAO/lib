@@ -17,28 +17,35 @@ const woff2 = (inputFile) => spawn({
   stderr: "pipe"
 }).exited;
 
-/**
- * @param {string} targetName 
- * @param {!Array<string>} fileDeps
- * @param {!Array<string>} _ 
- * @return {!Promise<void>}
- */
-const subsetFont = (targetName, [href, specimenName], _) =>
-  mkdir(getDir(targetName), { recursive: true })
-    .then(() => spawn({
-      cmd: [
-        "pyftsubset",
-        href,
-        "--no-recommended-glyphs",
-        "--no-hinting",
-        "--with-zopfli",
-        "--canonical-order",
-        "--recalc-bounds",
-        `--text-file=${specimenName}`,
-        `--output-file=${targetName}`
-      ],
-      stdout: "pipe",
-      stderr: "pipe"
-    }).exited);
+const ttfTarget = (targetName, props) => Promise.all(props.childTargets)
+  .then(([{ targetName: ttfName }, { targetName: specimenName }]) =>
+    mkdir(getDir(targetName.slice(1)), { recursive: true })
+      .then(() => spawn({
+        cmd: [
+          "pyftsubset",
+          ttfName.slice(1),
+          "--no-recommended-glyphs",
+          "--no-hinting",
+          "--with-zopfli",
+          "--canonical-order",
+          "--recalc-bounds",
+          `--text-file=${specimenName.slice(1)}`,
+          `--output-file=${targetName.slice(1)}`
+        ],
+        stdout: "pipe", stderr: "pipe"
+      }).exited)
+  )
+  .then(() => { });
 
-export { woff2, subsetFont };
+const woff2Target = (targetName, props) =>
+  props.childTargets[0].then((childTarget) => {
+    const ttfName = childTarget.targetName;
+    if (ttfName.slice(0, -3) != targetName.slice(0, -5))
+      return Promise.reject(new Error(`Not supported yet: ${ttfName} != ${targetName}`));
+    return woff2(ttfName.slice(1)).then(() => { });
+  });
+
+export {
+  woff2Target,
+  ttfTarget
+};

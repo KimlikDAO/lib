@@ -1,22 +1,26 @@
 import { plugin } from "bun";
 import { readFile } from "node:fs/promises";
 import { createServer } from "vite";
+import { parseArgs } from "../util/cli";
 import { combine, getDir } from "../util/paths";
 import compiler from "./compiler/compiler";
-import { inlineSvgTarget, pngTarget, svgTarget } from "./compiler/image";
+import { ttfTarget, woff2Target } from "./compiler/font";
+import { inlineSvgTarget, pngTarget, svgTarget, webpTarget } from "./compiler/image";
 import { pageTarget } from "./compiler/page";
 import { stylesheetTarget } from "./compiler/stylesheet";
 import { registerTargetFunction } from "./compiler/targetRegistry";
 import { readCrateRecipe } from "./crate";
-import { parseArgs } from "../util/cli";
 
 const setupKastro = () => {
   registerTargetFunction(".html", pageTarget);
   registerTargetFunction(".inl.svg", inlineSvgTarget);
   registerTargetFunction(".png", pngTarget);
   registerTargetFunction(".svg", svgTarget);
+  registerTargetFunction(".m.svg", svgTarget);
   registerTargetFunction(".css", stylesheetTarget);
-  // registerTargetFunction(".ttf", ttfTarget);
+  registerTargetFunction(".webp", webpTarget);
+  registerTargetFunction(".ttf", ttfTarget);
+  registerTargetFunction(".woff2", woff2Target);
 
   plugin({
     name: "kastro-js",

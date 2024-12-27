@@ -6,30 +6,25 @@ import { rename } from "node:fs/promises";
  * @param {string} outputName without the .gz extension
  * @return {!Promise<string>}
  */
-const zopfli = (inputName, outputName) => {
-  console.info(`zopfli: ${inputName} -> ${outputName}.gz`);
-  return spawn({
-    cmd: [
-      "touch",
-      "-d", "2024-01-01T00:00:00",
-      `${inputName}`
-    ],
-    stdout: "pipe",
-    stderr: "pipe"
-  }).exited.then(() => spawn({
-    cmd: [
-      "zopfli",
-      "--force",
-      "--best",
-      "--i20",
-      inputName
-    ],
-    stdout: "pipe",
-    stderr: "pipe"
-  }).exited
-    .then(() => rename(inputName + ".gz", outputName + ".gz")))
-    .then(() => outputName + ".gz");
-}
+const zopfli = (inputName, outputName) => spawn({
+  cmd: [
+    "touch",
+    "-d", "2024-01-01T00:00:00",
+    `${inputName}`
+  ],
+  stdout: "pipe",
+  stderr: "pipe"
+}).exited.then(() => spawn({
+  cmd: [
+    "zopfli",
+    "--force",
+    "--best",
+    "--i20",
+    inputName
+  ]
+}).exited
+  .then(() => rename(inputName + ".gz", outputName + ".gz")))
+  .then(() => outputName + ".gz");
 
 /**
  * @param {string} inputName The asset to be compressed

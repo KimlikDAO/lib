@@ -1,4 +1,6 @@
 import { minify } from "html-minifier";
+import { getDir } from "../../util/paths";
+import compiler from "./compiler";
 import { compileComponent } from "./component";
 import HtmlMinifierConfig from "./config/htmlMinifierConfig";
 import { initGlobals } from "./pageGlobals";
@@ -12,20 +14,21 @@ const getStyleSheets = (targetName, { PageCss, SharedCss, BuildMode, Lang }) => 
       if (typeof css === "string")
         externalCss += `<link href="${css}" rel="stylesheet" type="text/css" />\n`;
       else {
-        embeddedCss += css.contents;
-        delete css.contents;
+        embeddedCss += css.content;
+        delete css.content;
       }
     return Promise.resolve(`<style>${embeddedCss}</style>${externalCss}`);
   }
-  const componentName = getDir(targetName);
+  const dirName = getDir(targetName);
+  PageCss = PageCss.difference(SharedCss);
   return Promise.all([
-    compiler.bundleTarget(`/build${componentName}/shared-${Lang}.css`, {
+    compiler.bundleTarget(`${dirName}/shared-${Lang}.css`, {
       BuildMode,
-      childTargets: []
+      childTargets: [...SharedCss]
     }).then((bundleName) => `<link href="${bundleName}" rel="stylesheet" type="text/css">`),
-    compiler.bundleTarget(`/build${componentName}/page-${Lang}.css`, {
+    compiler.bundleTarget(`${dirName}/page-${Lang}.css`, {
       BuildMode,
-      childTargets: []
+      childTargets: [...PageCss]
     }).then((bundleName) => `<link href="${bundleName}" rel="stylesheet" type="text/css">`)
   ]).then(([sharedCss, pageCss]) => `${sharedCss}${pageCss}`);
 }

@@ -1,7 +1,11 @@
 import { minify } from "csso";
 
+const Decoder = new TextDecoder();
+
 const stylesheetTarget = (_, props) =>
   Promise.all(props.childTargets)
-    .then((targets) => minify(targets.map(t => t.content).join("\n")).css)
+    .then((targets) => {
+      return minify(targets.map((t) => Decoder.decode(t.content)).join("")).css;
+    })
 
 export { stylesheetTarget };

@@ -1,6 +1,7 @@
 import { spawn } from "bun";
 import { mkdir } from "node:fs/promises";
 import { optimize } from "svgo";
+import { getDir } from "../../util/paths";
 import SvgoConfig from "./config/svgoConfig";
 import SvgoInlineConfig from "./config/svgoInlineConfig";
 
@@ -19,10 +20,19 @@ const pngcrushInPlace = (inputFile) =>
 /** @const {TargetFunction} */
 const pngTarget = (targetName, props) => {
   if (props.raster)
-    return rsvgConvert(props.childTargets[0].targetName.slice(1), targetName.slice(1), props.raster)
-      .then(() => pngcrushInPlace(targetName.slice(1)));
+    return props.childTargets[0]
+      .then(({ targetName: childTargetName }) => rsvgConvert(childTargetName.slice(1), targetName.slice(1), props.raster))
+      .then(() => pngcrushInPlace(targetName.slice(1)))
+      .then(() => { });
   throw "pngTarget(): not supported";
 }
+
+/** @const {TargetFunction} */
+const webpTarget = (targetName, props) =>
+  props.childTargets[0]
+    .then(({ targetName: childTargetName }) =>
+      webp(childTargetName.slice(1), targetName.slice(1), props.passes, props.quality))
+    .then(() => { });
 
 /** @const {TargetFunction} */
 const svgTarget = (_, props) =>
@@ -34,9 +44,7 @@ const inlineSvgTarget = (_, props) =>
 
 export {
   inlineSvgTarget,
-  pngcrushInPlace,
   pngTarget,
-  rsvgConvert,
   svgTarget,
-  webp
+  webpTarget
 };
