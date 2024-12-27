@@ -43,7 +43,8 @@ const makeImageElement = (bundledName, props) => {
 
 const SvgImage = ({ src, inline, BuildMode, ...props }) => {
   if (inline) return InlineSvgImage({ src, ...props });
-  return compiler.bundleTarget(`/build/${src}`, {
+  const suffix = props.width ? "_w" + props.width : "";
+  return compiler.bundleTarget(`/build/${src.slice(0, -4)}${suffix}.svg`, {
     BuildMode,
     childTargets: [`/${src}`]
   }).then((bundledName) => makeImageElement(bundledName, props));

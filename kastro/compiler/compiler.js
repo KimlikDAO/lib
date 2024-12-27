@@ -83,8 +83,6 @@ const computeDepHash = (props) => {
  * @const {TargetFunction}
  */
 const forceBuildTarget = (targetName, props) => {
-  console.log("forceBuildTarget()", targetName);
-
   populateChildTargets(props);
   const targetFunc = getTargetFunction(targetName);
   if (!targetFunc) console.error("targetFunc not found", targetName);

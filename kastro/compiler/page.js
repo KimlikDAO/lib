@@ -1,7 +1,6 @@
 import { minify } from "html-minifier";
 import { getDir } from "../../util/paths";
 import compiler from "./compiler";
-import { compileComponent } from "./component";
 import HtmlMinifierConfig from "./config/htmlMinifierConfig";
 import { initGlobals } from "./pageGlobals";
 
@@ -42,7 +41,8 @@ const pageTarget = (targetName, props) => {
   props.SharedCss = new Set();
   props.PageCss = new Set();
   initGlobals(props);
-  return compileComponent("ana", {}, props)
+  return import(`${targetName.slice(7, -5)}.jsx`)
+    .then((jsx) => jsx.default(props))
     .then((html) => getStyleSheets(targetName, props).then((styleSheets) => {
       html = "<!DOCTYPE html>" + html.replace("</head>", styleSheets + "</head>");
       return props.BuildMode == 0

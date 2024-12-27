@@ -25,6 +25,10 @@ const resolveProps = (props, lang) => {
   for (const key in props)
     if (key != "children" && typeof props[key] == "object" && (lang in props[key]))
       props[key] = props[key][lang];
+    else if (key.startsWith("data-")) {
+      if (key == "data-" + lang) props.children = [props[key]];
+      delete props[key];
+    }
   return props;
 }
 
