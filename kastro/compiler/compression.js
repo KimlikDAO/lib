@@ -1,5 +1,5 @@
 import { spawn } from "bun";
-import { rename } from "node:fs/promises";
+import { cp } from "node:fs/promises";
 
 /**
  * @param {string} inputName The asset to be compressed
@@ -23,7 +23,7 @@ const zopfli = (inputName, outputName) => spawn({
     inputName
   ]
 }).exited
-  .then(() => rename(inputName + ".gz", outputName + ".gz")))
+  .then(() => cp(inputName + ".gz", outputName + ".gz")))
   .then(() => outputName + ".gz");
 
 /**
