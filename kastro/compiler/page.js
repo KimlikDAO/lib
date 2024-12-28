@@ -41,7 +41,7 @@ const pageTarget = (targetName, props) => {
   props.SharedCss = new Set();
   props.PageCss = new Set();
   initGlobals(props);
-  return import(`${targetName.slice(7, -5)}.jsx`)
+  return import(`${getDir(targetName.slice(7))}/sayfa.jsx`)
     .then((jsx) => jsx.default(props))
     .then((html) => getStyleSheets(targetName, props).then((styleSheets) => {
       html = "<!DOCTYPE html>" + html.replace("</head>", styleSheets + "</head>");

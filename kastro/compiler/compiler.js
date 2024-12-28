@@ -188,16 +188,18 @@ const bundleTarget = (targetName, props) => props.BuildMode == BuildMode.Dev
     /** @const {string} */
     const targetFile = targetName.slice(1);
     /** @const {string} */
-    const assetName = `build/${hash.toStr(contentHash)}.${getExt(targetName)}`;
+    const assetName = "build/crate/" + (props.assetName || `${hash.toStr(contentHash)}.${getExt(targetName)}`);
     /** @const {!Promise<void>} */
-    const bundle = CompressedMimes[getExt(targetName)]
-      ? access(assetName).catch(() => cp(targetFile, assetName))
-      : Promise.all([
-        access(assetName).catch(() => cp(targetFile, assetName)),
-        access(`${assetName}.br`).catch(() => brotli(targetFile, assetName)),
-        access(`${assetName}.gz`).catch(() => zopfli(targetFile, assetName))
-      ])
-    return bundle.then(() => assetName.slice(6));
+    const bundle = mkdir("build/crate", { recursive: true }).then(() =>
+      CompressedMimes[getExt(targetName)]
+        ? access(assetName).catch(() => cp(targetFile, assetName))
+        : Promise.all([
+          access(assetName).catch(() => cp(targetFile, assetName)),
+          access(`${assetName}.br`).catch(() => brotli(targetFile, assetName)),
+          access(`${assetName}.gz`).catch(() => zopfli(targetFile, assetName))
+        ])
+    );
+    return bundle.then(() => assetName.slice(12));
   });
 
 export default {

@@ -80,19 +80,21 @@ const readCrate = (crateName, buildMode) => readCrateRecipe(crateName)
     /** @const {!Array<string>} */
     const langs = crate.pages ? Object.keys(crate.pages[0]) : crate.languages;
     const map = {};
-    const add = (page) => {
+    const add = (page, name) => {
       for (const lang of langs) {
         const pageProps = {
           BuildMode: buildMode,
           Lang: lang,
           CodebaseLang: crate.codebaseLang,
-          Route: { ...page } // Make a copy
+          Route: { ...page }, // Make a copy
+          assetName: page[lang],
+          targetName: `/build/${name || page[crate.codebaseLang]}/page-${lang}.html`,
         };
         delete pageProps.Route[lang];
         map[`/${page[lang]}`] = pageProps;
       }
     };
-    add(Object.fromEntries(langs.map(lang => [lang, lang])));
+    add(Object.fromEntries(langs.map(lang => [lang, lang])), crate.index);
     map["/"] = map[`/${crate.codebaseLang}`];
     if (crate.pages)
       for (const page of crate.pages) add(page);
@@ -106,7 +108,7 @@ const serveCrate = async (crateName, buildMode) => {
 
   createServer({
     appType: "mpa",
-    publicDir: buildMode == compiler.BuildMode.Dev ? "" : "build/",
+    publicDir: buildMode == compiler.BuildMode.Dev ? "" : "build/crate",
     plugins: [{
       name: "kastro-js",
 
@@ -116,7 +118,7 @@ const serveCrate = async (crateName, buildMode) => {
             res.setHeader("content-type", "text/html;charset=utf-8");
             server.moduleGraph.invalidateAll();
             currentPageProps = map[req.originalUrl];
-            compiler.forceBuildTarget("/build/ana/sayfa.html", currentPageProps)
+            compiler.forceBuildTarget(currentPageProps.targetName, currentPageProps)
               .then((content) => res.end(content));
           } else next();
         })
