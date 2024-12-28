@@ -60,14 +60,6 @@ const setupKastro = () => {
         contents: scriptLoader.replace("SOURCE", args.path.slice(cwdLen)),
         loader: "js"
       }));
-      build.onResolve({ filter: /./, namespace: "worker" }, ({ path, importer }) => ({
-        path: path.startsWith(".") ? "/" + combine(getDir(importer.replace("worker:", "")), path) : path,
-        namespace: "worker"
-      }));
-      build.onLoad({ filter: /.*/, namespace: "worker" }, (args) => ({
-        contents: workerLoader.replace("SOURCE", args.path.slice(cwdLen)),
-        loader: "js"
-      }));
     },
   });
 
@@ -94,7 +86,7 @@ const cratePageProps = (crate, buildMode) => {
         Lang: lang,
         CodebaseLang: crate.CodebaseLang,
         Route: { ...page }, // Make a copy
-        assetName: page[lang],
+        bundleName: page[lang],
         targetName: `/build/${name || page[crate.CodebaseLang]}/page-${lang}.html`,
       };
       delete pageProps.Route[lang];

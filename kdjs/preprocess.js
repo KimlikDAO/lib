@@ -114,7 +114,7 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
           const t = PACKAGE_EXTERNS + sourceName.replaceAll(":", "/") + ".d.js";
           if (existsSync(t)) {
             nextFile = t;
-            addBack = true;
+            addBack = !file.endsWith(".d.js");
             break;
           }
           if (!nextFile.startsWith("node_modules"))
