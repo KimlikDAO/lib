@@ -7,10 +7,10 @@ import compiler from "./compiler/compiler";
 import { ttfTarget, woff2Target } from "./compiler/font";
 import { inlineSvgTarget, pngTarget, svgTarget, webpTarget } from "./compiler/image";
 import { pageTarget } from "./compiler/page";
+import { getGlobals } from "./compiler/pageGlobals";
 import { scriptTarget } from "./compiler/script";
 import { stylesheetTarget } from "./compiler/stylesheet";
 import { registerTargetFunction } from "./compiler/targetRegistry";
-import { readCrateRecipe } from "./crate";
 
 const setupKastro = () => {
   registerTargetFunction(".html", pageTarget);
@@ -52,12 +52,20 @@ const setupKastro = () => {
           loader: "js"
         };
       });
-      build.onResolve({ filter: /./, namespace: "kastro" }, ({ path, importer }) => ({
-        path: path.startsWith(".") ? "/" + combine(getDir(importer.replace("kastro:", "")), path) : path,
-        namespace: "kastro"
+      build.onResolve({ filter: /./, namespace: "script" }, ({ path, importer }) => ({
+        path: path.startsWith(".") ? "/" + combine(getDir(importer.replace("script:", "")), path) : path,
+        namespace: "script"
       }));
-      build.onLoad({ filter: /.*/, namespace: "kastro" }, (args) => ({
+      build.onLoad({ filter: /.*/, namespace: "script" }, (args) => ({
         contents: scriptLoader.replace("SOURCE", args.path.slice(cwdLen)),
+        loader: "js"
+      }));
+      build.onResolve({ filter: /./, namespace: "worker" }, ({ path, importer }) => ({
+        path: path.startsWith(".") ? "/" + combine(getDir(importer.replace("worker:", "")), path) : path,
+        namespace: "worker"
+      }));
+      build.onLoad({ filter: /.*/, namespace: "worker" }, (args) => ({
+        contents: workerLoader.replace("SOURCE", args.path.slice(cwdLen)),
         loader: "js"
       }));
     },
@@ -71,39 +79,39 @@ const setupKastro = () => {
 }
 
 /**
- * @param {string} crateName
+ * @param {!Object} crate
  * @param {compiler.BuildMode} buildMode
- * @return {!Promise<!Object<string, *>>} Returns a map from routes to page globals.
+ * @return {!Object<string, *>} Returns a map from routes to page props.
  */
-const readCrate = (crateName, buildMode) => readCrateRecipe(crateName)
-  .then((crate) => {
-    /** @const {!Array<string>} */
-    const langs = crate.pages ? Object.keys(crate.pages[0]) : crate.languages;
-    const map = {};
-    const add = (page, name) => {
-      for (const lang of langs) {
-        const pageProps = {
-          BuildMode: buildMode,
-          Lang: lang,
-          CodebaseLang: crate.codebaseLang,
-          Route: { ...page }, // Make a copy
-          assetName: page[lang],
-          targetName: `/build/${name || page[crate.codebaseLang]}/page-${lang}.html`,
-        };
-        delete pageProps.Route[lang];
-        map[`/${page[lang]}`] = pageProps;
-      }
-    };
-    add(Object.fromEntries(langs.map(lang => [lang, lang])), crate.index);
-    map["/"] = map[`/${crate.codebaseLang}`];
-    if (crate.pages)
-      for (const page of crate.pages) add(page);
+const cratePageProps = (crate, buildMode) => {
+  /** @const {!Array<string>} */
+  const langs = crate.Page ? Object.keys(Object.values(crate.Page)[0]) : crate.Languages;
+  const map = {};
+  const add = (page, name) => {
+    for (const lang of langs) {
+      const pageProps = {
+        BuildMode: buildMode,
+        Lang: lang,
+        CodebaseLang: crate.CodebaseLang,
+        Route: { ...page }, // Make a copy
+        assetName: page[lang],
+        targetName: `/build/${name || page[crate.CodebaseLang]}/page-${lang}.html`,
+      };
+      delete pageProps.Route[lang];
+      map[`/${page[lang]}`] = pageProps;
+    }
+  };
+  if (crate.Page)
+    for (const [name, routes] of Object.entries(crate.Page))
+      add(routes, routes == crate.Entry ? name.toLowerCase() : undefined);
+  map["/"] = map[`/${crate.CodebaseLang}`];
 
-    return map;
-  });
+  return map;
+};
 
 const serveCrate = async (crateName, buildMode) => {
-  const map = await readCrate(crateName, buildMode);
+  const crate = await import(crateName);
+  const map = cratePageProps(crate, buildMode);
   let currentPageProps;
 
   createServer({
@@ -125,23 +133,9 @@ const serveCrate = async (crateName, buildMode) => {
       },
 
       transform(code, id) {
-        if (id.endsWith("cüzdan/birim.js"))
-          return code
-            .replace(/const Chains =.*?;/, `const Chains = ${JSON.stringify(currentPageProps.Chains)};`)
-            .replace(/const DefaultChain =.*?;/, `const DefaultChain = ${JSON.stringify(currentPageProps.DefaultChain)};`);
-        if (id.endsWith("dil/birim.js"))
-          return code
-            .replace(/const Route =.*?;/, `const Route = ${JSON.stringify(currentPageProps.Route)};`);
-        if (id.endsWith("util/dom.js"))
-          return code
-            .replace(/const GEN =.*?;/, `const GEN = false`)
-            .replace(/const Lang =.*?;/, `const Lang = "${currentPageProps.Lang}";`);
-        if (id.endsWith(".jsx")) {
-          const lines = code.split("\n");
-          const filteredLines = lines.filter((line) => line.includes("util/dom") ||
-            line.trim().startsWith("export const"));
-          return filteredLines.join("\n");
-        }
+        const globals = getGlobals();
+        if (crate.devModeJsTransform)
+          return crate.devModeJsTransform(id, code, globals);
       }
     }]
   }).then((vite) => vite.listen(8787))
@@ -150,6 +144,6 @@ const serveCrate = async (crateName, buildMode) => {
 
 setupKastro();
 const args = parseArgs(process.argv.slice(2), "target");
-serveCrate(".", args["compiled"]
+serveCrate(process.cwd() + "/crate.js", args["compiled"]
   ? compiler.BuildMode.Compiled
   : compiler.BuildMode.Dev);

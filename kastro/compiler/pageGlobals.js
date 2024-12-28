@@ -1,3 +1,5 @@
+import { filterGlobalProps } from "../props";
+
 let Globals = {};
 
 /**
@@ -5,22 +7,15 @@ let Globals = {};
  * @param {!Object<string, *>} newGlobals - An object containing key-value pairs to set as globals.
  * @return {!Object<string, *>} The new globals object.
  */
-const initGlobals = (globalsData) => {
-  const filteredData = {};
-  for (const key in globalsData) {
-    if (key.charCodeAt(0) < 91)
-      filteredData[key] = globalsData[key];
-  }
-  return Globals = new Proxy(filteredData, {
-    set(target, key, value) {
-      if (key.charCodeAt(0) > 90)
-        throw new Error(`Global key "${key}" must start with a capital letter.`);
+const initGlobals = (globalsData) => Globals = new Proxy(filterGlobalProps(globalsData), {
+  set(target, key, value) {
+    if (key.charCodeAt(0) > 90)
+      throw new Error(`Global key "${key}" must start with a capital letter.`);
 
-      target[key] = value;
-      return true;
-    }
-  });
-};
+    target[key] = value;
+    return true;
+  }
+});
 
 /**
  * Retrieves the current page compile time globals.

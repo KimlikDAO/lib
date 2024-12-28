@@ -1,5 +1,5 @@
 import { KapalıTag, tagYaz } from "../../util/html";
-import { LangCode } from "../crate";
+import { LangCode } from "../../util/i18n";
 import { getGlobals } from "./pageGlobals";
 
 /** @const {string} */
