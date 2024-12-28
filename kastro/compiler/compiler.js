@@ -86,8 +86,7 @@ const forceBuildTarget = (targetName, props) => {
   populateChildTargets(props);
   const targetFunc = getTargetFunction(targetName);
   if (!targetFunc) console.error("targetFunc not found", targetName);
-  return Promise.all([targetFunc(targetName, props), marker.remove(targetName)])
-    .then(([result, _]) => result);
+  return targetFunc(targetName, props);
 }
 
 /**
@@ -96,8 +95,6 @@ const forceBuildTarget = (targetName, props) => {
  * @const {TargetFunction}
  */
 const buildTarget = (targetName, props) => {
-  console.log(`buildTarget(): ${targetName}`);
-
   if (!targetName.startsWith("/build/"))
     return CACHE[targetName] ||= readFile(targetName.slice(1)).then((content) => ({
       content,
@@ -107,30 +104,76 @@ const buildTarget = (targetName, props) => {
   if (props.BuildMode == BuildMode.Release)
     return (CACHE[targetName] ||= forceBuildTarget(targetName, props));
 
-  return CACHE[targetName] = Promise.all([CACHE[targetName], computeDepHash(props)])
-    .then(([entry, depHash]) => {
-      if (entry && hash.equal(entry.depHash, depHash))
-        return entry;
 
-      return marker.read(targetName)
-        .then((markerEntry) => hash.equal(markerEntry.depHash, depHash)
-          ? Promise.resolve() : Promise.reject())
-        .catch(() => forceBuildTarget(targetName, props))
+  if (!props.dynamicDeps)
+    return CACHE[targetName] = Promise.all([CACHE[targetName], computeDepHash(props)])
+      .then(([entry, depHash]) => {
+        if (entry && hash.equal(entry.depHash, depHash))
+          return entry;
+
+        return marker.read(targetName)
+          .then((markerEntry) => hash.equal(markerEntry.depHash, depHash)
+            ? Promise.resolve() : Promise.reject())
+          .catch(() => marker.remove(targetName)
+            .then(() => forceBuildTarget(targetName, props)))
+          .then((maybeResult) => {
+            const fileName = targetName.slice(1);
+            if (!maybeResult)
+              return readFile(fileName);
+            if (typeof maybeResult === "string")
+              maybeResult = Encoder.encode(maybeResult);
+            return mkdir(getDir(fileName), { recursive: true })
+              .then(() => writeFile(fileName, maybeResult))
+              .then(() => maybeResult);
+          })
+          .then((content) => marker.write(targetName, {
+            content,
+            contentHash: keccak256Uint8(content),
+            depHash,
+          }));
+      });
+
+  return CACHE[targetName] = (CACHE[targetName] || Promise.resolve())
+    .then((entry) => {
+      let fromCachePromise;
+      let newDepHash;
+      props.checkFreshFn = (deps) => {
+        props.childTargets = deps.map((dep) => "/" + dep);
+        return computeDepHash(props)
+          .then((depHash) => {
+            newDepHash = depHash;
+            if (entry && hash.equal(entry.depHash, depHash)) {
+              fromCachePromise = Promise.resolve(entry);
+              return true;
+            }
+            return marker.read(targetName)
+              .then((markerEntry) => {
+                const diskFresh = hash.equal(markerEntry.depHash, depHash);
+                if (diskFresh)
+                  fromCachePromise = readFile(targetName.slice(1))
+                    .then((content) => ({
+                      targetName,
+                      content,
+                      ...markerEntry,
+                    }));
+                return diskFresh;
+              })
+              .catch(() => false)
+          })
+      }
+      return forceBuildTarget(targetName, props)
         .then((maybeResult) => {
-          const fileName = targetName.slice(1);
-          if (!maybeResult)
-            return readFile(fileName);
+          if (!maybeResult) return fromCachePromise;
           if (typeof maybeResult === "string")
             maybeResult = Encoder.encode(maybeResult);
-          return mkdir(getDir(fileName), { recursive: true })
-            .then(() => writeFile(fileName, maybeResult))
-            .then(() => maybeResult);
+          return mkdir(getDir(targetName.slice(1)), { recursive: true })
+            .then(() => writeFile(targetName.slice(1), maybeResult))
+            .then(() => marker.write(targetName, {
+              content: maybeResult,
+              contentHash: keccak256Uint8(maybeResult),
+              depHash: newDepHash,
+            }));
         })
-        .then((content) => marker.write(targetName, {
-          content,
-          contentHash: keccak256Uint8(content),
-          depHash,
-        }));
     })
 }
 

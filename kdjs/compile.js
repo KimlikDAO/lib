@@ -20,7 +20,7 @@ const getGlobals = (globals) => /** @type {!Object<string, *>} */(typeof globals
 /**
  * @param {!Params} params
  * @param {function(!Array<string>):!Promise<boolean>=} checkFreshFn
- * @return {!Promise<string>}
+ * @return {!Promise<string|void>}
  */
 const compile = async (params, checkFreshFn) => {
   /** @const {string} */
@@ -39,7 +39,7 @@ const compile = async (params, checkFreshFn) => {
   /** @const {!Array<string>} */
   const allFilesArray = Array.from(allFiles).sort();
   if (checkFreshFn && await checkFreshFn(allFilesArray))
-    return /** @type {string} */(params["output"]);
+    return;
 
   /** @const {!Array<string>} */
   const jsCompErrors = [

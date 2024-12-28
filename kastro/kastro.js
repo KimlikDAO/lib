@@ -7,6 +7,7 @@ import compiler from "./compiler/compiler";
 import { ttfTarget, woff2Target } from "./compiler/font";
 import { inlineSvgTarget, pngTarget, svgTarget, webpTarget } from "./compiler/image";
 import { pageTarget } from "./compiler/page";
+import { scriptTarget } from "./compiler/script";
 import { stylesheetTarget } from "./compiler/stylesheet";
 import { registerTargetFunction } from "./compiler/targetRegistry";
 import { readCrateRecipe } from "./crate";
@@ -21,6 +22,7 @@ const setupKastro = () => {
   registerTargetFunction(".webp", webpTarget);
   registerTargetFunction(".ttf", ttfTarget);
   registerTargetFunction(".woff2", woff2Target);
+  registerTargetFunction(".js", scriptTarget);
 
   plugin({
     name: "kastro-js",
@@ -101,8 +103,6 @@ const readCrate = (crateName, buildMode) => readCrateRecipe(crateName)
 const serveCrate = async (crateName, buildMode) => {
   const map = await readCrate(crateName, buildMode);
   let currentPageProps;
-
-  console.log(map);
 
   createServer({
     appType: "mpa",

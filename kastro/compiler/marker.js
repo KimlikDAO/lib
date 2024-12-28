@@ -6,7 +6,7 @@ export default {
     return readFile(`${targetName.slice(1)}.marker`, "utf8")
       .then((markerContent) => {
         const marker = JSON.parse(markerContent);
-        marker.contentHash = base64(marker.contentHash);
+        marker.contentHash = base64ten(marker.contentHash);
         if (marker.depHash)
           marker.depHash = base64ten(marker.depHash);
         return marker;
