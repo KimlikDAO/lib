@@ -19,12 +19,18 @@ const TargetFunction = {};
 const TARGET_FUNCTIONS = {};
 
 /**
- * @param {string} targetName 
+ * @param {string} targetName
  * @return {TargetFunction}
  */
-const getTargetFunction = (targetName) => {
+const getTargetFunction = (targetName) => TARGET_FUNCTIONS[getLongExt(targetName)];
+
+/**
+ * @param {string} targetName 
+ * @return {string}
+ */
+const getLongExt = (targetName) => {
   const nameIdx = targetName.lastIndexOf("/");
-  return TARGET_FUNCTIONS[targetName.slice(targetName.indexOf(".", nameIdx))]
+  return targetName.slice(targetName.indexOf(".", nameIdx));
 }
 
 /**
@@ -38,6 +44,7 @@ const registerTargetFunction = (extension, func) => {
 }
 
 export {
+  getLongExt,
   getTargetFunction,
   Props,
   registerTargetFunction,

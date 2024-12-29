@@ -1,8 +1,8 @@
 import { SAXParser } from "sax";
 import { tagYaz } from "../util/html";
-import { getExt } from "../util/paths";
+import { getDir, getExt } from "../util/paths";
 import compiler from "./compiler/compiler";
-import { Props } from "./compiler/targetRegistry";
+import { Props, getLongExt } from "./compiler/targetRegistry";
 import { removeGlobalProps } from "./props";
 
 /**
@@ -12,8 +12,9 @@ import { removeGlobalProps } from "./props";
  * @returns {!Promise<string>}
  */
 const InlineSvgImage = ({ src, ...props }) =>
-  compiler.buildTarget(`/build/${src.slice(0, -4)}.inl.svg`, {
+  compiler.buildTarget(`/build/${getDir(src)}.inl${getLongExt(src)}`, {
     childTargets: [`/${src}`],
+    alwaysBuild: src.endsWith(".svg.jsx"),
     ...props
   }).then(({ content }) => {
     removeGlobalProps(props);
@@ -35,17 +36,21 @@ const InlineSvgImage = ({ src, ...props }) =>
     return result;
   });
 
-const makeImageElement = (bundledName, props) => {
+const makeImageElement = (bundleName, { inSvg, ...props }) => {
   removeGlobalProps(props);
-  props.src = bundledName;
-  return tagYaz("img", props, true);
+  if ("piggyback" in props) delete props.piggyback;
+  if (inSvg) props.href = bundleName;
+  else props.src = bundleName;
+  return tagYaz(inSvg ? "image" : "img", props, true);
 }
 
 const SvgImage = ({ src, inline, BuildMode, ...props }) => {
   if (inline) return InlineSvgImage({ src, ...props });
   const suffix = props.width ? "-w" + props.width : "";
-  return compiler.bundleTarget(`/build/${src.slice(0, -4)}${suffix}.svg`, {
+  return compiler.bundleTarget(`/build/${getDir(src)}${suffix}${getLongExt(src)}`, {
     BuildMode,
+    alwaysBuild: src.endsWith(".svg.jsx"),
+    bundleExt: "svg",
     childTargets: [`/${src}`]
   }).then((bundledName) => makeImageElement(bundledName, props));
 }
@@ -82,14 +87,15 @@ const Favicon = ({ src, raster, BuildMode, ...props }) => {
  */
 const Image = ({ inline, ...props }) => {
   if (inline) {
-    if (!props.src.endsWith(".svg"))
-      throw new Error("We only inline svgs; for other formats serving directly is more efficient");
-    return InlineSvgImage(props)
+    if (props.src.endsWith(".svg") || props.src.endsWith(".svg.jsx"))
+      return InlineSvgImage(props);
+    throw new Error("We only inline svgs; for other formats serving directly is more efficient");
   }
   if (props.rel == "icon")
     return Favicon(props);
 
   return {
+    "jsx": SvgImage,
     "svg": SvgImage,
     "png": PngImage,
   }[getExt(props.src)](props);

@@ -42,9 +42,23 @@ const svgTarget = (_, props) =>
 const inlineSvgTarget = (_, props) =>
   props.childTargets[0].then(({ content }) => optimize(content, SvgoInlineConfig).data);
 
+/** @const {TargetFunction} */
+const svgJsxTarget = (_, props) => props.childTargets[0]
+  .then(({ targetName: childTargetName }) => import(childTargetName))
+  .then((mod) => mod.default(props))
+  .then((content) => content);
+
+/** @const {TargetFunction} */
+const inlineSvgJsxTarget = (_, props) => props.childTargets[0]
+  .then(({ targetName: childTargetName }) => import(childTargetName))
+  .then((mod) => mod.default(props))
+  .then((content) => optimize(content, SvgoInlineConfig).data);
+
 export {
   inlineSvgTarget,
+  inlineSvgJsxTarget,
   pngTarget,
   svgTarget,
+  svgJsxTarget,
   webpTarget
 };

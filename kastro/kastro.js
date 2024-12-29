@@ -5,7 +5,14 @@ import { parseArgs } from "../util/cli";
 import { combine, getDir } from "../util/paths";
 import compiler from "./compiler/compiler";
 import { ttfTarget, woff2Target } from "./compiler/font";
-import { inlineSvgTarget, pngTarget, svgTarget, webpTarget } from "./compiler/image";
+import {
+  inlineSvgJsxTarget,
+  inlineSvgTarget,
+  pngTarget,
+  svgJsxTarget,
+  svgTarget,
+  webpTarget
+} from "./compiler/image";
 import { pageTarget } from "./compiler/page";
 import { getGlobals } from "./compiler/pageGlobals";
 import { scriptTarget } from "./compiler/script";
@@ -15,9 +22,10 @@ import { registerTargetFunction } from "./compiler/targetRegistry";
 const setupKastro = () => {
   registerTargetFunction(".html", pageTarget);
   registerTargetFunction(".inl.svg", inlineSvgTarget);
+  registerTargetFunction(".inl.svg.jsx", inlineSvgJsxTarget);
   registerTargetFunction(".png", pngTarget);
   registerTargetFunction(".svg", svgTarget);
-  registerTargetFunction(".m.svg", svgTarget);
+  registerTargetFunction(".svg.jsx", svgJsxTarget);
   registerTargetFunction(".css", stylesheetTarget);
   registerTargetFunction(".webp", webpTarget);
   registerTargetFunction(".ttf", ttfTarget);
@@ -32,14 +40,16 @@ const setupKastro = () => {
       const stylesheetLoader = await readFile("/" + combine(moduleDir, "./compiler/loader/stylesheetLoader.js"), "utf8");
       const scriptLoader = await readFile("/" + combine(moduleDir, "./compiler/loader/scriptLoader.js"), "utf8");
 
-      build.onLoad({ filter: /\.(svg|png|webp)$/ }, (args) => {
+      const imageComponent = (args) => {
         const code = `import { Image } from "@kimlikdao/lib/kastro/image";\n` +
           `export default (props) => Image({...props, src: "${args.path.slice(cwdLen)}" });`;
         return {
           contents: code,
           loader: "js"
         };
-      });
+      }
+
+      build.onLoad({ filter: /\.(svg|png|webp)$/ }, imageComponent);
       build.onLoad({ filter: /\.css$/ }, (args) => ({
         contents: stylesheetLoader.replace("SOURCE", args.path.slice(cwdLen)),
         loader: "js"
@@ -52,14 +62,15 @@ const setupKastro = () => {
           loader: "js"
         };
       });
-      build.onResolve({ filter: /./, namespace: "script" }, ({ path, importer }) => ({
-        path: path.startsWith(".") ? "/" + combine(getDir(importer.replace("script:", "")), path) : path,
-        namespace: "script"
+      build.onResolve({ filter: /./, namespace: "kastro" }, ({ path, importer }) => ({
+        path: path.startsWith(".") ? "/" + combine(getDir(importer.replace("kastro:", "")), path) : path,
+        namespace: "kastro"
       }));
-      build.onLoad({ filter: /.*/, namespace: "script" }, (args) => ({
+      build.onLoad({ filter: /.js$/, namespace: "kastro" }, (args) => ({
         contents: scriptLoader.replace("SOURCE", args.path.slice(cwdLen)),
         loader: "js"
       }));
+      build.onLoad({ filter: /.svg.jsx$/, namespace: "kastro" }, imageComponent);
     },
   });
 
