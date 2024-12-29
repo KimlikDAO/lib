@@ -5,7 +5,10 @@ import { filterGlobalProps } from "../props";
 const scriptTarget = (_, props) => {
   const params = {
     entry: props.src,
-    globals: filterGlobalProps(props),
+    globals: {
+      ...filterGlobalProps(props),
+      GEN: false
+    }
   };
   if (props.strict) params.strict = true;
   return compile(params, props.checkFreshFn);

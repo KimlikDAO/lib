@@ -104,7 +104,6 @@ const buildTarget = (targetName, props) => {
   if (props.BuildMode == BuildMode.Release)
     return (CACHE[targetName] ||= forceBuildTarget(targetName, props));
 
-
   if (!props.dynamicDeps)
     return CACHE[targetName] = Promise.all([CACHE[targetName], computeDepHash(props)])
       .then(([entry, depHash]) => {
@@ -182,14 +181,15 @@ const buildTarget = (targetName, props) => {
  * and returns the bundle name of the asset.
  *
  * @const {TargetFunction} */
-const bundleTarget = (targetName, props) => (props.BuildMode == BuildMode.Dev && !props.alwaysBuild)
-  ? Promise.resolve(props.childTargets[0].slice(1))
+const bundleTarget = (targetName, props) => props.BuildMode == BuildMode.Dev
+  ? Promise.resolve(props.childTargets[0])
+    .then((target) => (typeof target == "string") ? target.slice(1) : target.targetName)
   : buildTarget(targetName, props).then(({ contentHash }) => {
     /** @const {string} */
     const targetFile = targetName.slice(1);
     /** @const {string} */
     const bundleName = "build/crate/" +
-      (props.bundleName || `${hash.toStr(contentHash)}.${props.bundleExt || getExt(targetName)}`);
+      (props.bundleName || `${hash.toStr(contentHash)}.${getExt(targetName)}`);
     /** @const {!Promise<void>} */
     const bundle = mkdir("build/crate", { recursive: true }).then(() =>
       CompressedMimes[getExt(targetName)]

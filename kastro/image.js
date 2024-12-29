@@ -2,8 +2,22 @@ import { SAXParser } from "sax";
 import { tagYaz } from "../util/html";
 import { getDir, getExt } from "../util/paths";
 import compiler from "./compiler/compiler";
-import { Props, getLongExt } from "./compiler/targetRegistry";
+import { Props } from "./compiler/targetRegistry";
 import { removeGlobalProps } from "./props";
+
+const makeImageElement = (bundleName, { inSvg, ...props }) => {
+  removeGlobalProps(props);
+  if ("piggyback" in props) delete props.piggyback;
+  if (inSvg) props.href = bundleName;
+  else props.src = bundleName;
+  return tagYaz(inSvg ? "image" : "img", props, true);
+}
+
+const makeTargetName = (parentTarget, suffix) => {
+  const lastSlash = parentTarget.lastIndexOf("/");
+  parentTarget = parentTarget.slice(0, parentTarget.indexOf(".", lastSlash));
+  return parentTarget.startsWith("build") ? `/${parentTarget}${suffix}` : `/build/${parentTarget}${suffix}`;
+}
 
 /**
  * We optimize the inline svgs regardless of the build mode.
@@ -11,10 +25,9 @@ import { removeGlobalProps } from "./props";
  * @param {Props} props
  * @returns {!Promise<string>}
  */
-const InlineSvgImage = ({ src, ...props }) =>
-  compiler.buildTarget(`/build/${getDir(src)}.inl${getLongExt(src)}`, {
-    childTargets: [`/${src}`],
-    alwaysBuild: src.endsWith(".svg.jsx"),
+const InlineSvgImage = ({ src, childTargets, ...props }) =>
+  compiler.buildTarget(makeTargetName(src, ".inl.svg"), {
+    childTargets: childTargets || [`/${src}`],
     ...props
   }).then(({ content }) => {
     removeGlobalProps(props);
@@ -36,23 +49,26 @@ const InlineSvgImage = ({ src, ...props }) =>
     return result;
   });
 
-const makeImageElement = (bundleName, { inSvg, ...props }) => {
-  removeGlobalProps(props);
-  if ("piggyback" in props) delete props.piggyback;
-  if (inSvg) props.href = bundleName;
-  else props.src = bundleName;
-  return tagYaz(inSvg ? "image" : "img", props, true);
+const SvgImage = ({ inline, BuildMode, ...props }) => {
+  if (inline) return InlineSvgImage(props);
+  return compiler.bundleTarget(makeTargetName(props.src, props.width ? `-w${props.wdith}.svg` : ".svg"), {
+    BuildMode,
+    childTargets: props.childTargets || [`/${props.src}`]
+  }).then((bundleName) => makeImageElement(bundleName, props));
 }
 
-const SvgImage = ({ src, inline, BuildMode, ...props }) => {
-  if (inline) return InlineSvgImage({ src, ...props });
-  const suffix = props.width ? "-w" + props.width : "";
-  return compiler.bundleTarget(`/build/${getDir(src)}${suffix}${getLongExt(src)}`, {
-    BuildMode,
-    alwaysBuild: src.endsWith(".svg.jsx"),
-    bundleExt: "svg",
+const SvgJsxImage = ({ src, ...props }) => {
+  const svgTarget = `/build/${src.slice(0, -8)}.jsx.svg`;
+  const svgProps = {
+    piggyback: props.piggyback,
     childTargets: [`/${src}`]
-  }).then((bundledName) => makeImageElement(bundledName, props));
+  };
+  return compiler.buildTarget(svgTarget, svgProps)
+    .then(() => SvgImage({
+      src: svgTarget.slice(1),
+      childTargets: [{ targetName: svgTarget, props: svgProps }],
+      ...props
+    }));
 }
 
 const PngImage = ({ src, passes, quality, BuildMode, ...props }) =>
@@ -95,7 +111,7 @@ const Image = ({ inline, ...props }) => {
     return Favicon(props);
 
   return {
-    "jsx": SvgImage,
+    "jsx": SvgJsxImage,
     "svg": SvgImage,
     "png": PngImage,
   }[getExt(props.src)](props);
@@ -106,5 +122,6 @@ export {
   Image,
   InlineSvgImage,
   PngImage,
-  SvgImage
+  SvgImage,
+  SvgJsxImage
 };

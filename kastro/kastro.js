@@ -6,10 +6,9 @@ import { combine, getDir } from "../util/paths";
 import compiler from "./compiler/compiler";
 import { ttfTarget, woff2Target } from "./compiler/font";
 import {
-  inlineSvgJsxTarget,
   inlineSvgTarget,
+  jsxSvgTarget,
   pngTarget,
-  svgJsxTarget,
   svgTarget,
   webpTarget
 } from "./compiler/image";
@@ -22,10 +21,9 @@ import { registerTargetFunction } from "./compiler/targetRegistry";
 const setupKastro = () => {
   registerTargetFunction(".html", pageTarget);
   registerTargetFunction(".inl.svg", inlineSvgTarget);
-  registerTargetFunction(".inl.svg.jsx", inlineSvgJsxTarget);
   registerTargetFunction(".png", pngTarget);
   registerTargetFunction(".svg", svgTarget);
-  registerTargetFunction(".svg.jsx", svgJsxTarget);
+  registerTargetFunction(".jsx.svg", jsxSvgTarget);
   registerTargetFunction(".css", stylesheetTarget);
   registerTargetFunction(".webp", webpTarget);
   registerTargetFunction(".ttf", ttfTarget);
@@ -40,16 +38,11 @@ const setupKastro = () => {
       const stylesheetLoader = await readFile("/" + combine(moduleDir, "./compiler/loader/stylesheetLoader.js"), "utf8");
       const scriptLoader = await readFile("/" + combine(moduleDir, "./compiler/loader/scriptLoader.js"), "utf8");
 
-      const imageComponent = (args) => {
+      build.onLoad({ filter: /\.(svg|png|webp)$/ }, (args) => {
         const code = `import { Image } from "@kimlikdao/lib/kastro/image";\n` +
           `export default (props) => Image({...props, src: "${args.path.slice(cwdLen)}" });`;
-        return {
-          contents: code,
-          loader: "js"
-        };
-      }
-
-      build.onLoad({ filter: /\.(svg|png|webp)$/ }, imageComponent);
+        return { contents: code, loader: "js" };
+      });
       build.onLoad({ filter: /\.css$/ }, (args) => ({
         contents: stylesheetLoader.replace("SOURCE", args.path.slice(cwdLen)),
         loader: "js"
@@ -57,10 +50,7 @@ const setupKastro = () => {
       build.onLoad({ filter: /\.ttf$/ }, (args) => {
         const code = `import { TtfFont } from "@kimlikdao/lib/kastro/font";\n` +
           `export default (props) => TtfFont({...props, href: "${args.path.slice(cwdLen)}" });`;
-        return {
-          contents: code,
-          loader: "js"
-        };
+        return { contents: code, loader: "js" };
       });
       build.onResolve({ filter: /./, namespace: "kastro" }, ({ path, importer }) => ({
         path: path.startsWith(".") ? "/" + combine(getDir(importer.replace("kastro:", "")), path) : path,
@@ -70,7 +60,11 @@ const setupKastro = () => {
         contents: scriptLoader.replace("SOURCE", args.path.slice(cwdLen)),
         loader: "js"
       }));
-      build.onLoad({ filter: /.svg.jsx$/, namespace: "kastro" }, imageComponent);
+      build.onLoad({ filter: /.svg.jsx$/, namespace: "kastro" }, (args) => {
+        const code = `import { SvgJsxImage } from "@kimlikdao/lib/kastro/image";\n` +
+          `export default (props) => SvgJsxImage({...props, src: "${args.path.slice(cwdLen)}" });`;
+        return { contents: code, loader: "js" };
+      });
     },
   });
 
