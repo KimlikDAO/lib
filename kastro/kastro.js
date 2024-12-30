@@ -149,6 +149,11 @@ const buildCrate = (crateName, buildMode) => import(crateName)
       }
   })
 
+const deployCrate = (crateName) => import(crateName)
+  .then(async (crate) => {
+    // TODO(KimlikDAO-bot)
+  })
+
 setupKastro();
 
 const args = parseArgs(process.argv.slice(2), "command");
@@ -159,3 +164,5 @@ if (args.command == "serve")
   serveCrate(crateName, args["compiled"] ? compiler.BuildMode.Compiled : compiler.BuildMode.Dev);
 else if (args.command == "build")
   buildCrate(crateName, compiler.BuildMode.Compiled);
+else if (args.command == "deploy")
+  deployCrate(crateName);

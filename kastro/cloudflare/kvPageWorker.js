@@ -3,6 +3,9 @@ import { KvPageWorkerEnv } from "./kvPageWorker.d";
 import { ModuleWorker } from "./moduleWorker.d";
 import { CfRequest } from "./types.d";
 
+/** @define {string} */
+const HOST_URL = "https://kimlikdao.org/";
+
 /** @const {string} */
 const PAGE_CACHE_CONTROL = "max-age=90,public";
 /**
@@ -16,17 +19,14 @@ const STATIC_CACHE_CONTROL = "max-age=29030400,public,immutable";
  */
 const err = () => Response.redirect("/");
 
-/**
- * @param {string} hostUrl
- * @return {ModuleWorker}
- */
-const create = (hostUrl) => /** @type {ModuleWorker} */({
+/** @const {ModuleWorker} */
+const KvPageWorker = {
   /**
    * @override
    *
    * @param {!CfRequest} req
-   * @param {KvPageWorkerEnv} env
-   * @param {!Context} ctx
+   * @param {!KvPageWorkerEnv=} env
+   * @param {!Context=} ctx
    * @return {!Promise<!Response>|!Response}
    */
   fetch(req, env, ctx) {
@@ -35,7 +35,7 @@ const create = (hostUrl) => /** @type {ModuleWorker} */({
     /** @const {string} */
     const enc = req.cf.clientAcceptEncoding || "";
     /** @type {?string} */
-    let kvKey = url.slice(hostUrl.length);
+    let kvKey = url.slice(HOST_URL.length);
     /** @type {number} */
     let qmk = kvKey.indexOf("?")
     if (qmk != -1) kvKey = kvKey.slice(0, qmk);
@@ -62,7 +62,7 @@ const create = (hostUrl) => /** @type {ModuleWorker} */({
     }
     kvKey += ext.slice(0, 3);
     /** @const {string} */
-    const cacheKey = hostUrl + kvKey;
+    const cacheKey = HOST_URL + kvKey;
     /** @type {boolean} */
     let inCache = false;
     /**
@@ -140,6 +140,6 @@ const create = (hostUrl) => /** @type {ModuleWorker} */({
 
     return Promise.any([fromCache, fromKV]).catch(err);
   }
-});
+}
 
-export { create, err };
+export default KvPageWorker;

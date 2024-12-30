@@ -67,7 +67,7 @@ const targetPattern = target == "bench"
     : "**/*.test.js";
 
 /** @const {!Array<string>} */
-const filter = createMatcher(["build/", "kastro/", "node_modules/"]
+const filter = createMatcher(["build/", "node_modules/"]
   .concat(args["filter"] || []));
 
 const command = targetPattern.includes("bench")

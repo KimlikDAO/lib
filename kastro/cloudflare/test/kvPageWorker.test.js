@@ -1,5 +1,5 @@
 import { expect, it } from "bun:test";
-import { create } from "../kvPageWorker";
+import KvPageWorker from "../kvPageWorker";
 import { KvPageWorkerEnv } from "../kvPageWorker.d";
 import { MockKeyValue } from "../mock/keyValue";
 import { Context, ModuleWorker } from "../moduleWorker.d";
@@ -54,9 +54,6 @@ const createRequest = (url, encoding, cookie) => /** @type {!CfRequest} */({
     clientAcceptEncoding: encoding
   }
 });
-
-/** @const {!ModuleWorker} */
-const KvPageWorker = create("https://kimlikdao.org/");
 
 const testKvName = (url, acceptEncoding, cookie, kvName) => it(
   `returns the correct result for ${acceptEncoding}, ${cookie}, ${kvName}`,
