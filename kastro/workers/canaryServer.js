@@ -1,56 +1,37 @@
 import { serve } from "bun";
 import { readFile } from "node:fs/promises";
-import { readCrateRecipe } from "../crate";
 import { Mimes } from "./mimes";
 
 /**
  * @param {string} path
  * @return {string}
  */
-const getContentType = (path) => Mimes[path.slice(path.lastIndexOf(".") + 1)];
+const getContentType = (path) => {
+  const dot = path.slice(path.lastIndexOf(".") + 1);
+  return dot == -1 ? null : Mimes[dot]
+};
 
 /**
  * @param {string} crateName
  */
-const serveCrate = async (crateName) => {
-  /** @const {birimler.Crate} */
-  const crate = await readCrateRecipe(crateName);
-  crateName = `build/${crateName}`;
-  /** @const {number} */
-  const port = crate.port || 8787;
-
-  const map = {
-    "/en": `${crateName}/en.html`,
-  };
-  map["/tr"] = map["/"] = `${crateName}/tr.html`;
-  if (crate.sayfalar)
-    for (const page of crate.sayfalar) {
-      map[`/${page.tr}`] = `${crateName}/${page.tr}.html`;
-      map[`/${page.en}`] = `${crateName}/${page.en}.html`;
-    }
-  console.log(map);
-
+const serveCrate = (crateName) => import(crateName).then((crate) => {
+  const port = crate.Port || 8787;
   serve({
     fetch(req) {
-      const url = new URL(req.url);
-      const path = url.pathname;
-
-      let page = map[path]
-      if (page) {
-        console.info(`Serving page: ${page}`);
-        return readFile(page).then((res) => new Response(res, {
-          headers: {
-            "content-type": "text/html;charset=utf-8"
-          },
-        }))
-      }
-      return readFile(`build/${path}`).then((res) => new Response(res, {
-        headers: {
-          "content-type": getContentType(path),
+      let path = new URL(req.url).pathname;
+      if (path == "/") path = "/en";
+      const contentType = getContentType(path);
+      return readFile(`build/crate/${path}`).then((res) => {
+        const headers = contentType ? {
+          "content-type": contentType,
           "cache-control": "max-age=29030400,public,immutable",
           "vary": "accept-encoding"
-        }
-      }))
+        } : {
+          "content-type": "text/html;charset=utf-8"
+        };
+        if (!contentType) console.info(`Serving page: ${path}`);
+        return new Response(res, { headers })
+      });
     },
     port
   });
@@ -58,7 +39,7 @@ const serveCrate = async (crateName) => {
   console.log({
     en: "Canary server running at: ",
     tr: "Kanarya sunucu şu adreste çalışıyor: "
-  }[crate.codebaseLang] + `http://localhost:${port}`);
-};
+  }[crate.CodebaseLang || "en"] + `http://localhost:${port}`);
+});
 
-serveCrate(process.argv[2] || ".");
+serveCrate((process.argv[2] || "") + "/crate.js");

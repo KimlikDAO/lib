@@ -139,8 +139,23 @@ const serveCrate = async (crateName, buildMode) => {
     .then(console.log("Dev server running at http://localhost:8787"));
 }
 
+const buildCrate = (crateName, buildMode) => import(crateName)
+  .then(async (crate) => {
+    const map = cratePageProps(crate, buildMode);
+    for (const [route, props] of Object.entries(map))
+      if (route != "/") {
+        console.info("\n\n\nBuilding", props.targetName);
+        await compiler.bundleTarget(props.targetName, props);
+      }
+  })
+
 setupKastro();
-const args = parseArgs(process.argv.slice(2), "target");
-serveCrate(process.cwd() + "/crate.js", args["compiled"]
-  ? compiler.BuildMode.Compiled
-  : compiler.BuildMode.Dev);
+
+const args = parseArgs(process.argv.slice(2), "command");
+/** @const {string} */
+const crateName = (Array.isArray(args.command) ? args.command[1] : "") + "/crate.js";
+
+if (args.command == "serve")
+  serveCrate(crateName, args["compiled"] ? compiler.BuildMode.Compiled : compiler.BuildMode.Dev);
+else if (args.command == "build")
+  buildCrate(crateName, compiler.BuildMode.Compiled);

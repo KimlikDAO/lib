@@ -1,13 +1,16 @@
 import { SAXParser } from "sax";
 import { tagYaz } from "../util/html";
-import { getDir, getExt } from "../util/paths";
+import { getExt } from "../util/paths";
 import compiler from "./compiler/compiler";
 import { Props } from "./compiler/targetRegistry";
 import { removeGlobalProps } from "./props";
 
+const REMOVE_PROPS = ["piggyback", "bundleName", "childTargets"];
+
 const makeImageElement = (bundleName, { inSvg, ...props }) => {
   removeGlobalProps(props);
-  if ("piggyback" in props) delete props.piggyback;
+  for (const prop of REMOVE_PROPS)
+    if (prop in props) delete props[prop];
   if (inSvg) props.href = bundleName;
   else props.src = bundleName;
   return tagYaz(inSvg ? "image" : "img", props, true);
@@ -49,12 +52,13 @@ const InlineSvgImage = ({ src, childTargets, ...props }) =>
     return result;
   });
 
-const SvgImage = ({ inline, BuildMode, ...props }) => {
+const SvgImage = ({ inline, BuildMode, bundleName, ...props }) => {
   if (inline) return InlineSvgImage(props);
-  return compiler.bundleTarget(makeTargetName(props.src, props.width ? `-w${props.wdith}.svg` : ".svg"), {
+  return compiler.bundleTarget(makeTargetName(props.src, props.width ? `-w${props.width}.svg` : ".svg"), {
     BuildMode,
+    bundleName,
     childTargets: props.childTargets || [`/${props.src}`]
-  }).then((bundleName) => makeImageElement(bundleName, props));
+  }).then((computedBundleName) => makeImageElement(computedBundleName, props));
 }
 
 const SvgJsxImage = ({ src, ...props }) => {

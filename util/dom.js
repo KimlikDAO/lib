@@ -162,6 +162,14 @@ const div = (ad) => /** @type {!HTMLDivElement} */((GEN && globalThis["GEN"])
 
 /**
  * @param {string} ad
+ * @return {!HTMLImageElement}
+ */
+const img = (ad) => /** @type {!HTMLImageElement} */((GEN && globalThis["GEN"])
+  ? create(ad, "img")
+  : adla(ad));
+
+/**
+ * @param {string} ad
  * @return {!HTMLUListElement}
  */
 const ul = (ad) => /** @type {!HTMLUListElement} */((GEN && globalThis["GEN"])
@@ -190,6 +198,7 @@ export default {
   göster,
   gösterGizle,
   i18n,
+  img,
   menüYarat,
   paradanMetne,
   pencere,

@@ -101,8 +101,19 @@ const buildTarget = (targetName, props) => {
       contentHash: keccak256Uint8(content),
     }));
 
+  const ensureOnDisk = (maybeResult) => {
+    const fileName = targetName.slice(1);
+    if (!maybeResult)
+      return readFile(fileName);
+    if (typeof maybeResult === "string")
+      maybeResult = Encoder.encode(maybeResult);
+    return mkdir(getDir(fileName), { recursive: true })
+      .then(() => writeFile(fileName, maybeResult))
+      .then(() => maybeResult);
+  }
+
   if (props.BuildMode == BuildMode.Release)
-    return (CACHE[targetName] ||= forceBuildTarget(targetName, props));
+    return (CACHE[targetName] ||= forceBuildTarget(targetName, props).then(ensureOnDisk));
 
   if (!props.dynamicDeps)
     return CACHE[targetName] = Promise.all([CACHE[targetName], computeDepHash(props)])
@@ -115,16 +126,7 @@ const buildTarget = (targetName, props) => {
             ? Promise.resolve() : Promise.reject())
           .catch(() => marker.remove(targetName)
             .then(() => forceBuildTarget(targetName, props)))
-          .then((maybeResult) => {
-            const fileName = targetName.slice(1);
-            if (!maybeResult)
-              return readFile(fileName);
-            if (typeof maybeResult === "string")
-              maybeResult = Encoder.encode(maybeResult);
-            return mkdir(getDir(fileName), { recursive: true })
-              .then(() => writeFile(fileName, maybeResult))
-              .then(() => maybeResult);
-          })
+          .then(ensureOnDisk)
           .then((content) => marker.write(targetName, {
             content,
             contentHash: keccak256Uint8(content),

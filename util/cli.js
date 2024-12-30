@@ -12,7 +12,7 @@ const CliArgs = {};
  * @param {!Array<string>} args
  * @param {string} defaultArgKey
  * @param {!Object<string, string>} shortArgMap
- * @return {!Object<string, (string|boolean)>}
+ * @return {CliArgs}
  */
 const parseArgs = (args, defaultArgKey, shortArgMap) => {
   /** @type {string} */
@@ -41,4 +41,3 @@ export {
   Red,
   parseArgs
 };
-
