@@ -15,4 +15,17 @@ const filterGlobalProps = (props) => {
   return result;
 }
 
-export { Props, removeGlobalProps, filterGlobalProps };
+const filterOutGlobalProps = (props) => {
+  const result = {};
+  for (const prop in props)
+    if (prop.charCodeAt(0) >= 91)
+      result[prop] = props[prop];
+  return result;
+}
+
+export {
+  Props,
+  filterGlobalProps,
+  filterOutGlobalProps,
+  removeGlobalProps
+};

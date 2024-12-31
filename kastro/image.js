@@ -5,12 +5,10 @@ import compiler from "./compiler/compiler";
 import { Props } from "./compiler/targetRegistry";
 import { removeGlobalProps } from "./props";
 
-const REMOVE_PROPS = ["piggyback", "bundleName", "childTargets"];
-
-const makeImageElement = (bundleName, { inSvg, ...props }) => {
+const makeImageElement = (bundleName, { inSvg, piggyback, childTargets, ...props }) => {
   removeGlobalProps(props);
-  for (const prop of REMOVE_PROPS)
-    if (prop in props) delete props[prop];
+  if (piggyback)
+    bundleName = piggyback + bundleName;
   if (inSvg) props.href = bundleName;
   else props.src = bundleName;
   return tagYaz(inSvg ? "image" : "img", props, true);

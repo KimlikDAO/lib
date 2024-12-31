@@ -1,17 +1,17 @@
 import { compile } from "../../kdjs/compile";
-import { filterGlobalProps } from "../props";
+import { filterGlobalProps, filterOutGlobalProps } from "../props";
 
 /** @const {TargetFunction} */
-const scriptTarget = (_, props) => {
+const scriptTarget = (_, { src: entry, ...props }) => {
   const params = {
-    entry: props.src,
+    entry,
     isolateDir: `kdjs-${props.Lang}`,
     globals: {
       ...filterGlobalProps(props),
       GEN: false
-    }
+    },
+    ...filterOutGlobalProps(props)
   };
-  if (props.strict) params.globals.strict = true;
   return compile(params, props.checkFreshFn);
 }
 

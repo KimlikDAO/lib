@@ -3,6 +3,8 @@ const Red = "\x1b[41m";
 /** @const {string} */
 const Green = "\x1b[42m";
 /** @const {string} */
+const Blue = "\x1b[44m";
+/** @const {string} */
 const Clear = "\x1b[0m";
 
 /** @typedef {!Object<string, (string|boolean|!Array<string>)>} */
@@ -35,6 +37,7 @@ const parseArgs = (args, defaultArgKey, shortArgMap) => {
 }
 
 export {
+  Blue,
   Clear,
   CliArgs,
   Green,

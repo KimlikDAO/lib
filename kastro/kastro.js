@@ -1,7 +1,7 @@
 import { plugin } from "bun";
 import { readFile } from "node:fs/promises";
 import { createServer } from "vite";
-import { parseArgs } from "../util/cli";
+import { Blue, Clear, Green, parseArgs } from "../util/cli";
 import { combine, getDir } from "../util/paths";
 import compiler from "./compiler/compiler";
 import { ttfTarget, woff2Target } from "./compiler/font";
@@ -144,15 +144,28 @@ const buildCrate = (crateName, buildMode) => import(crateName)
     const map = cratePageProps(crate, buildMode);
     for (const [route, props] of Object.entries(map))
       if (route != "/") {
-        console.info("\n\n\nBuilding", props.targetName);
+        console.info(`${Blue}[Building]${Clear} ${props.targetName}`);
         await compiler.bundleTarget(props.targetName, props);
       }
+    if (crate.Page) {
+      const targetName = "/" + combine(`build/${getDir(crateName)}`, "kvPageWorker.js");
+      console.info(`${Blue}[Building]${Clear} ${targetName}`);
+      await compiler.bundleTarget(targetName, {
+        src: "lib/kastro/cloudflare/kvPageWorker.js",
+        globals: {
+          HOST_URL: crate.HOST_URL,
+        },
+        strict: true,
+      });
+    }
+    return crate;
   })
 
-const deployCrate = (crateName) => import(crateName)
-  .then(async (crate) => {
-    // TODO(KimlikDAO-bot)
-  })
+const deployCrate = (crateName) => buildCrate(crateName, compiler.BuildMode.Compiled)
+  .then((crate) => {
+    console.info(`${Green}[Deploying]${Clear} ${crate.HOST_URL}`);
+    console.log(compiler.getNamedAssets());
+  });
 
 setupKastro();
 

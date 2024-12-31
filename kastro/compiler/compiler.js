@@ -38,6 +38,9 @@ const Encoder = new TextEncoder();
 /** @const {!Object<string, (CacheEntry|undefined)>} */
 const CACHE = {};
 
+/** @const {!Set<string>} */
+const NAMED_ASSETS = new Set();
+
 const populateChildTargets = (props) => {
   const childProps = {
     BuildMode: props.BuildMode,
@@ -192,6 +195,8 @@ const bundleTarget = (targetName, props) => props.BuildMode == BuildMode.Dev
     /** @const {string} */
     const bundleName = "build/crate/" +
       (props.bundleName || `${hash.toStr(contentHash)}.${getExt(targetName)}`);
+    if (props.bundleName)
+      NAMED_ASSETS.add(props.bundleName);
     /** @const {!Promise<void>} */
     const bundle = mkdir("build/crate", { recursive: true }).then(() =>
       CompressedMimes[getExt(targetName)]
@@ -205,9 +210,15 @@ const bundleTarget = (targetName, props) => props.BuildMode == BuildMode.Dev
     return bundle.then(() => bundleName.slice(12));
   });
 
+/**
+ * @return {!Array<string>}
+ */
+const getNamedAssets = () => Array.from(NAMED_ASSETS);
+
 export default {
   BuildMode,
   bundleTarget,
   buildTarget,
-  forceBuildTarget
+  forceBuildTarget,
+  getNamedAssets,
 };
