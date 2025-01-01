@@ -5,15 +5,17 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { combine, getDir } from "../util/paths";
 import { ExportStatement, ImportStatement } from "./modules";
 import { serializeWithStringKeys } from "./objects";
+import { processCss } from "./stylesheet";
 import { Update, update } from "./textual";
 
 const PACKAGE_EXTERNS = "node_modules/@kimlikdao/kdjs/externs/";
 
 /**
+ * TODO(KimlikDAO-bot): Fix this
  * @param {string} fileName
  * @return {string}
  */
-const ensureExtension = (fileName) => fileName.endsWith(".js") || fileName.endsWith(".jsx")
+const ensureExtension = (fileName) => fileName.endsWith(".js") || fileName.endsWith(".jsx") || fileName.endsWith(".css")
   ? fileName : fileName + ".js";
 
 /**
@@ -209,14 +211,12 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
 }
 
 /**
- * @param {boolean} isEntry
  * @param {string} file name of the file
  * @param {string} content of the file
  * @param {!Array<string>} files
- * @param {!Object<string, *>} globals
  * @return {string} file after preprocessing
  */
-const processJsx = (isEntry, file, content, files, globals) => {
+const processJsx = (file, content, files) => {
   /** @const {!Array<string>} */
   const lines = content.split("\n");
   /** @const {!Array<string>} */
@@ -227,7 +227,7 @@ const processJsx = (isEntry, file, content, files, globals) => {
     if (lines[i].trim().startsWith("export const")) {
       if (i > 0) result.push(lines[i - 1]);
       result.push(lines[i]);
-    } else if (lines[i].includes("import dom") && lines[i].includes("util/dom")) {
+    } else if (lines[i].includes("import") && (lines[i].includes("util/dom") || lines[i].includes(".css"))) {
       const importName = lines[i].slice(
         lines[i].indexOf('"') + 1,
         lines[i].lastIndexOf('"'));
@@ -263,9 +263,11 @@ const preprocessAndIsolate = async (entryFile, isolateDir, externs, globals) => 
     allFiles.add(file);
     /** @const {string} */
     const content = await readFile(file, "utf8");
-    const newContent = file.endsWith(".jsx")
-      ? processJsx(file == entryFile, file, content, files, globals)
-      : processJs(file == entryFile, file, content, files, globals, unlinkedImports);
+    const newContent = file.endsWith(".js")
+      ? processJs(file == entryFile, file, content, files, globals, unlinkedImports)
+      : file.endsWith(".jsx")
+        ? processJsx(file, content, files)
+        : processCss(content);
     const outFile = combine(isolateDir, file);
     writePromises.push(mkdir(getDir(outFile), { recursive: true })
       .then(() => writeFile(outFile, newContent)));

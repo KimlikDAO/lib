@@ -17,6 +17,7 @@ import { getGlobals } from "./compiler/pageGlobals";
 import { scriptTarget } from "./compiler/script";
 import { stylesheetTarget } from "./compiler/stylesheet";
 import { registerTargetFunction } from "./compiler/targetRegistry";
+import { processCss } from "../kdjs/stylesheet";
 
 const setupKastro = () => {
   registerTargetFunction(".html", pageTarget);
@@ -110,12 +111,14 @@ const serveCrate = async (crateName, buildMode) => {
   const crate = await import(crateName);
   const map = cratePageProps(crate, buildMode);
   let currentPageProps;
+  let currentPageGlobalsPattern;
 
   createServer({
     appType: "mpa",
     publicDir: buildMode == compiler.BuildMode.Dev ? "" : "build/crate",
     plugins: [{
       name: "kastro-js",
+      enforce: "pre",
 
       configureServer(server) {
         server.middlewares.use(async (req, res, next) => {
@@ -124,15 +127,41 @@ const serveCrate = async (crateName, buildMode) => {
             server.moduleGraph.invalidateAll();
             currentPageProps = map[req.originalUrl];
             compiler.forceBuildTarget(currentPageProps.targetName, currentPageProps)
-              .then((content) => res.end(content));
+              .then((content) => {
+                const globals = getGlobals();
+                globals.GEN = false;
+                currentPageGlobalsPattern = new RegExp(Object.keys(globals)
+                  .map((key) => `/\\*\\* @define \\{[^}]*\\} \\*/\\s*const ${key} =.*?;`)
+                  .join("|"), "g");
+                res.end(content)
+              });
           } else next();
         })
       },
 
+      resolveId(source, importer) {
+        if (source.endsWith(".css"))
+          return importer.slice(0, importer.lastIndexOf("/") + 1) + source + ".js";
+      },
+
+      load(id) {
+        if (id.endsWith(".css.js"))
+          return readFile(id.slice(0, -3), "utf8").then((css) => processCss(css));
+      },
+
       transform(code, id) {
+        if (id.endsWith(".jsx")) {
+          const lines = code.split("\n");
+          const filteredLines = lines.filter((line) => line.includes("util/dom") ||
+            line.trim().startsWith("export const"));
+          return filteredLines.join("\n");
+        }
         const globals = getGlobals();
-        if (crate.devModeJsTransform)
-          return crate.devModeJsTransform(id, code, globals);
+        return code.replace(currentPageGlobalsPattern, (match) => {
+          const constIdx = match.indexOf("const");
+          const varName = match.slice(match.indexOf("\nconst") + 6, match.indexOf("=", constIdx)).trim();
+          return `\nconst ${varName} = ${JSON.stringify(globals[varName])};`
+        });
       }
     }]
   }).then((vite) => vite.listen(8787))
