@@ -48,7 +48,6 @@ jobs:
           bun run test --filter did crypto
 
   compile_kdjs_with_kdjs:
-    if: false # Temporarily disabled
     name: Compile `kdjs` with `kdjs`
     runs-on: ubuntu-latest
     steps:
