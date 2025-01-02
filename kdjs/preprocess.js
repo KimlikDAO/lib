@@ -234,9 +234,9 @@ const processJsx = (file, content, files) => {
       files.push(importName.at(0) == "/"
         ? ensureExtension(importName.slice(1))
         : ensureExtension(combine(getDir(file), importName)));
-      out = lines[i] + "\n\n";
+      out += lines[i] + "\n";
     }
-  return out + result.join("\n");
+  return out + "\n" + result.join("\n");
 };
 
 /**
