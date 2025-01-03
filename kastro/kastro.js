@@ -176,25 +176,19 @@ const buildCrate = (crateName, buildMode) => import(crateName)
         console.info(`${Blue}[Building]${Clear} ${props.targetName}`);
         await compiler.bundleTarget(props.targetName, props);
       }
-    if (crate.Page) {
-      const targetName = "/" + combine(`build/${getDir(crateName)}`, "kvPageWorker.js");
-      console.info(`${Blue}[Building]${Clear} ${targetName}`);
-      await compiler.bundleTarget(targetName, {
-        src: "lib/kastro/cloudflare/kvPageWorker.js",
-        globals: {
-          HOST_URL: crate.HOST_URL,
-        },
-        strict: true,
-      });
-    }
     return crate;
   })
 
-const deployCrate = (crateName) => buildCrate(crateName, compiler.BuildMode.Compiled)
-  .then((crate) => {
-    console.info(`${Green}[Deploying]${Clear} ${crate.HOST_URL}`);
-    console.log(compiler.getNamedAssets());
-  });
+/**
+ * @param {string} crateName
+ * @param {string} target
+*/
+const deployCrate = (crateName, target) => Promise.all([
+  buildCrate(crateName, compiler.BuildMode.Compiled),
+  import(`${process.cwd()}/.secrets.js`),
+  import(`${target}/crate.js`)
+])
+  .then(([_, secrets, crates]) => crates.deployCrate(crateName, secrets, compiler.getNamedAssets()));
 
 setupKastro();
 
@@ -207,4 +201,4 @@ if (args.command == "serve")
 else if (args.command == "build")
   buildCrate(crateName, compiler.BuildMode.Compiled);
 else if (args.command == "deploy")
-  deployCrate(crateName);
+  deployCrate(crateName, args["target"] || "cloudflare");
