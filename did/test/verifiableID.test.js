@@ -20,7 +20,7 @@ test("generate and verify", () => {
       verify(verifiableID, "TR22345678902", publicKey))
     .then((result) => expect(result).toBeTrue());
 }, {
-  timeout: 100_000
+  timeout: 20_000
 });
 
 test("generate and verify", () => {
@@ -42,5 +42,5 @@ test("generate and verify", () => {
       verify(verifiableID, "PERSONID", publicKey))
     .then((result) => expect(result).toBeTrue());
 }, {
-  timeout: 100_000
+  timeout: 20_000
 });

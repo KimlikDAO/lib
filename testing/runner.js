@@ -75,7 +75,7 @@ const filter = createMatcher(["build/", "node_modules/"]
 
 const command = targetPattern.includes("bench")
   ? "bun"
-  : "bun test --timeout 100000";
+  : "bun test";
 
 console.info(`Target: ${targetPattern} (filtering: ${filter})`);
 compileAndRunMatching(targetPattern, command, args)
