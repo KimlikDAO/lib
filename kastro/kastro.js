@@ -153,7 +153,7 @@ const serveCrate = async (crateName, buildMode) => {
         if (id.endsWith(".jsx")) {
           const lines = code.split("\n");
           const filteredLines = lines.filter((line) => line.includes("util/dom") ||
-            line.trim().startsWith("export const"));
+            line.trim().startsWith("export const") || (line.includes("import") && line.includes('.css"')));
           return filteredLines.join("\n");
         }
         const globals = getGlobals();

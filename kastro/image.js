@@ -104,11 +104,9 @@ const Favicon = ({ src, raster, BuildMode, ...props }) => {
  * @return {!Promise<string>}
  */
 const Image = ({ inline, ...props }) => {
-  if (inline) {
-    if (props.src.endsWith(".svg") || props.src.endsWith(".svg.jsx"))
-      return InlineSvgImage(props);
-    throw new Error("We only inline svgs; for other formats serving directly is more efficient");
-  }
+  if (inline && (props.src.endsWith(".svg") || props.src.endsWith(".svg.jsx")))
+    return InlineSvgImage(props);
+
   if (props.rel == "icon")
     return Favicon(props);
 

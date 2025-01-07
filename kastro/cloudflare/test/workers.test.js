@@ -1,4 +1,4 @@
-import { expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import process from "node:process";
 import { bekle as wait } from "../../../util/promises";
 import { Auth } from "../api";
@@ -21,38 +21,41 @@ const getAuth = () => {
       .then((mod) => /** @type {Auth} */({
         account: mod["CloudflareAuth"].accountId,
         apiToken: mod["CloudflareAuth"].token,
-      }));
+      }))
+      .catch(() => /** @type {Auth} */({ account: "", apiToken: "" }));
 }
 
-test("upload, fetch and delete worker", async () => {
-  /** @const {Auth} */
+describe("Tests with Cloudflare auth", async () => {
   const auth = await getAuth();
-  /** @const {string} */
-  const name = `test-worker-${Math.floor(1000 + Math.random() * 9000)}`;
-  /** @const {string} */
-  const code = `export default {fetch(){return new Response("${name}",{headers:{"content-type":"text/plain"}})}}`;
 
-  const uploadResult = await workers.upload(auth, name, code);
-  expect(uploadResult.success).toBeTrue();
+  test.if(!!auth.account)("upload, fetch and delete worker", async () => {
+    /** @const {string} */
+    const name = `test-worker-${Math.floor(1000 + Math.random() * 9000)}`;
+    /** @const {string} */
+    const code = `export default {fetch(){return new Response("${name}",{headers:{"content-type":"text/plain"}})}}`;
 
-  const workersDevResult = await workers.enableWorkersDev(auth, name);
-  expect(workersDevResult.success).toBeTrue();
+    const uploadResult = await workers.upload(auth, name, code);
+    expect(uploadResult.success).toBeTrue();
 
-  const maxAttempts = 5;
-  let attempt = 0;
-  for (; attempt < maxAttempts; ++attempt) {
-    await wait(5000);
-    try {
-      const fetchResult = await fetch(`https://${name}.kimlikdao-testing.workers.dev`);
-      if (fetchResult.status == 200) {
-        const text = await fetchResult.text();
-        expect(text).toBe(name);
-        break;
-      }
-    } catch (_) { }
-  }
-  await workers.delete(auth, name);
-  expect(attempt).toBeLessThan(maxAttempts);
-}, {
-  timeout: 15_000
+    const workersDevResult = await workers.enableWorkersDev(auth, name);
+    expect(workersDevResult.success).toBeTrue();
+
+    const maxAttempts = 5;
+    let attempt = 0;
+    for (; attempt < maxAttempts; ++attempt) {
+      await wait(5000);
+      try {
+        const fetchResult = await fetch(`https://${name}.kimlikdao-testing.workers.dev`);
+        if (fetchResult.status == 200) {
+          const text = await fetchResult.text();
+          expect(text).toBe(name);
+          break;
+        }
+      } catch (_) { }
+    }
+    await workers.delete(auth, name);
+    expect(attempt).toBeLessThan(maxAttempts);
+  }, {
+    timeout: 15_000
+  });
 });

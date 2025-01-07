@@ -11,7 +11,7 @@ const TestOptions = {};
 
 /**
  * @param {string} description
- * @param {function():void} run
+ * @param {function():(!Promise<*>|void)} run
  */
 const describe = function (description, run) { };
 
@@ -28,6 +28,12 @@ const it = function (invariant, run, testOptions) { };
  * @param {TestOptions=} testOptions
  */
 const test = function (invariant, run, testOptions) { };
+
+/**
+ * @param {boolean} condition
+ * @return {function(string,(function():void|function():!Promise<void>),TestOptions=):void}
+ */
+test.if = function (condition) { }
 
 /**
  * @template T

@@ -18,7 +18,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: |
           bun i
-          bun test --timeout 15000
+          bun test
 
   kdjs_unit_tests_crypto:
     name: kdjs unit tests, crypto
