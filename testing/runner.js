@@ -43,7 +43,10 @@ const compileAndRunMatching = async (pattern, command, args) => {
       entry: f,
       output
     }).then(() =>
-      runBN(() => spawn(command.split(" ").concat(output)).exited
+      runBN(() => spawn(command.split(" ").concat(output), {
+        stdout: "inherit",
+        stderr: "inherit"
+      }).exited
         .then((exitCode) => {
           const marker = exitCode == 0 ? `${Green}[OK]` : `${Red}[Fail]`;
           console.log(`${marker}${Clear}, ${exitCode}: ${output}`);

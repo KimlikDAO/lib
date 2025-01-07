@@ -1,18 +1,7 @@
 import { CompressedMimes } from "../workers/mimes";
 
-/** @const {string} */
-const CloudflareV4 = "https://api.cloudflare.com/client/v4";
-
 /** @const {!Array<string>} */
 const Extensions = ['', '.br', '.gz'];
-
-/**
- * @typedef {{
- *   accountId: string,
- *   token: string
- * }}
- */
-const Auth = {};
 
 /**
  * @param {!Array<string>} assets
@@ -57,58 +46,6 @@ const uploadAssets = async (auth, namespaceId, namedAssets) => {
   console.log("🌀 Uploading static files:", staticFiles);
 }
 
-/**
- * @param {Auth} auth
- * @param {string} name
- * @param {string} code
- * @param {!Array<{
- *   name: string,
- *   namespace_id: string
- * }>=} kvBindings
- * @return {!Promise<*>}
- */
-const uploadWorker = (auth, name, code, kvBindings) => {
-  /** @const {string} */
-  const yesterday = new Date(Date.now() - 86400000)
-    .toISOString().split('T')[0];
-  /** @dict */
-  const metadata = {
-    "main_module": "a.js",
-    "compatibility_date": yesterday
-  };
-  if (kvBindings && kvBindings.length) {
-    for (const kv of kvBindings)
-      kv["type"] = "kv_namespace";
-    metadata["bindings"] = kvBindings;
-  }
-  /** @const {!FormData} */
-  const form = new FormData();
-  form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
-  form.append("a.js", new File([code], "a.js", { type: "application/javascript+module;charset=utf-8" }));
-  return fetch(`${CloudflareV4}/accounts/${auth.accountId}/workers/scripts/${name}`, {
-    method: "PUT",
-    headers: { "authorization": `Bearer ${auth.token}` },
-    body: form
-  }).then((res) => res.json());
-};
-
-/**
- * @param {Auth} auth
- * @param {string} name
- * @param {string} url
- */
-const bindWorker = (auth, name, url) => fetch(`${CloudflareV4}/accounts/${auth.accountId}/workers/domains`, {
-  method: "PUT",
-  headers: {
-    "authorization": `Bearer ${auth.token}`,
-    "content-type": "application/json"
-  },
-  body: JSON.stringify({
-    "environment": "production",
-    "hostname": url,
-    "service": name
-  })
-}).then((res) => res.json());
 
 const deployCrate = (crateName) => import(crateName)
   .then((crate) => {
@@ -117,6 +54,4 @@ const deployCrate = (crateName) => import(crateName)
 
 export {
   Auth,
-  bindWorker,
-  uploadWorker
 };

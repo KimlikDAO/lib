@@ -1,5 +1,6 @@
 .DS_Store
 .kdjs_isolate
+.secrets.js
 .vscode
 *.out.js
 build

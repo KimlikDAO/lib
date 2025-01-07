@@ -70,6 +70,7 @@ const compile = async (params, checkFreshFn) => {
     "module_resolution": "NODE",
     "dependency_mode": "PRUNE",
     "entry_point": /** @type {string} */(params["entry"]),
+    "chunk_output_type": "ES_MODULES"
   };
   if (params["define"])
     options["define"] = /** @type {(!Array<string>|boolean|string)} */(params["define"]);

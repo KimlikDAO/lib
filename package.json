@@ -13,8 +13,8 @@
   },
   "devDependencies": {
     "@ethereumjs/evm": "^3.1.1",
-    "@noble/secp256k1": "^2.1.0",
-    "ethers": "^6.13.4",
+    "@noble/secp256k1": "^2.2.2",
+    "ethers": "^6.13.5",
     "mina-signer": "^3.0.7"
   },
   "dependencies": {
