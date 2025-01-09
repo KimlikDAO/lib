@@ -33,6 +33,7 @@ const InlineSvgImage = ({ src, childTargets, ...props }) =>
   }).then(({ content }) => {
     removeGlobalProps(props);
     delete props.inline;
+    delete props.piggyback;
     const parser = new SAXParser(true);
     let result = "";
     parser.onopentag = ({ name, attributes }) => {

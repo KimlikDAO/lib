@@ -34,7 +34,7 @@ const KvPageWorker = {
     const url = req.url;
     /** @const {string} */
     const enc = req.cf.clientAcceptEncoding || "";
-    /** @type {?string} */
+    /** @type {string} */
     let kvKey = url.slice(HOST_URL.length);
     /** @type {number} */
     let qmk = kvKey.indexOf("?")

@@ -35,9 +35,11 @@ const processCss = (content) => {
       }
     }
   }
+  /** @const {!Array<string>} */
+  const names = Object.keys(exports).sort();
   /** @type {string} */
   let output = "\n/** @enum {string} */\nconst Style = {\n";
-  for (const name in exports)
+  for (const name of names)
     output += `  ${name}: "${exports[name]}",\n`;
   return output + "};\n\nexport default Style;\n";
 };

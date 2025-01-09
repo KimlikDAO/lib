@@ -21,17 +21,20 @@ const KapalıTag = {
 
 /**
  * @param {string} ad
- * @param {!Object<string, string>} nitelikler
+ * @param {!Object<string, (string|number|boolean|undefined|null)>} nitelikler
  * @param {boolean} kapalı
  * @return {string}
  */
 const tagYaz = (ad, nitelikler, kapalı) => {
   /** @type {string} */
   let html = "<" + ad;
-  for (const /** string */ nitelik in nitelikler)
-    html += nitelikler[nitelik]
-      ? ` ${nitelik}="${nitelikler[nitelik]}"`
-      : " " + nitelik;
+  for (const /** string */ nitelik in nitelikler) {
+    const val = nitelikler[nitelik];
+    if (val || val === 0)
+      html += val === true
+        ? " " + nitelik
+        : ` ${nitelik}="${nitelikler[nitelik]}"`;
+  }
   return html + (kapalı ? "/>" : ">");
 }
 

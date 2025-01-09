@@ -188,7 +188,7 @@ const deployCrate = (crateName, target) => Promise.all([
   import(`${process.cwd()}/.secrets.js`),
   import(`${target}/crate.js`)
 ])
-  .then(([_, secrets, crates]) => crates.deployCrate(crateName, secrets, compiler.getNamedAssets()));
+  .then(([_, secrets, crate]) => crate.deploy(crateName, secrets, compiler.getNamedAssets()));
 
 setupKastro();
 

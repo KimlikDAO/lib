@@ -59,7 +59,7 @@ const TtfFont = ({ Lang, BuildMode, SharedCss, PageCss, shared, href, name, weig
         }`
       });
       return tagYaz("link", {
-        rel: "preload", href: woff2Bundled, as: "font", type: "font/woff2", crossorigin: null
+        rel: "preload", href: woff2Bundled, as: "font", type: "font/woff2", crossorigin: true
       });
     })
     );
