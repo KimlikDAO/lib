@@ -53,11 +53,13 @@ loadCrate("./crate").then((files) => serve({
       "cache-control": dot == -1 ? PAGE_CACHE_CONTROL : STATIC_CACHE_CONTROL,
       "cdn-cache-control": STATIC_CACHE_CONTROL,
       "content-type": dot == -1 ? "text/html;charset=utf-8" : Mimes[suffix],
-      "content-encoding": ext.slice(1),
       "content-length": file.byteLength,
       "expires": "Sun, 01 Jan 2034 00:00:00 GMT",
-      "vary": path ? "accept-encoding" : "accept-encoding,accept-language,cookie",
     };
+    if (!CompressedMimes[suffix])
+      headers["vary"] = path ? "accept-encoding" : "accept-encoding,accept-language,cookie";
+    if (ext.length)
+      headers["content-encoding"] = ext.slice(1);
     if (suffix == "woff2" || suffix == "ttf")
       headers["access-control-allow-origin"] = "*";
     return new Response(file, { headers });
