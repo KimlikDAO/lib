@@ -1,33 +1,32 @@
 import { spawn } from "bun";
+import cache from "../cloudflare/cache";
+import { restart } from "./service";
 
 const deploy = async (crateName, secrets, namedAssets) => {
   const {
-    host = 'localhost',
-    username = 'root',
-    remotePath = '/var/www/crate',
+    host,
+    username,
+    remotePath,
+    sshKey,
   } = secrets.VpsConfig;
-
-  const target = `${username}@${host}:${remotePath}`;
+  /** @const {string} */
+  const target = `[${host}]:${remotePath}/crate`;
 
   try {
-    // Deploy files
     const rsync = spawn([
       "rsync",
-      "-azP",
-      "--delete",
-      "-e", `ssh -p 22`,
-      "build/crate/",
+      "-rP",
+      "-e", `ssh -6 -i ${sshKey} -l ${username}`,
+      "./build/crate/",
       target
     ]);
-
     const deployOutput = await new Response(rsync.stdout).text();
-    console.log('Deploy successful:', deployOutput);
-
-    return { success: true };
+    console.log("Deploy successful:", deployOutput);
   } catch (error) {
-    console.error('Deploy failed:', error);
+    console.error("Deploy failed:", error);
     throw error;
   }
+  return restart(secrets).then(() => cache.purge(crateName, secrets, namedAssets));
 }
 
 export { deploy };

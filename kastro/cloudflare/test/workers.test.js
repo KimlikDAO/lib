@@ -11,6 +11,7 @@ const getAuth = () => {
   /** @const {Auth} */
   const auth = {
     account: process.env["CF_TESTING_ACCOUNT_ID"],
+    zone: "",
     apiToken: process.env["CF_TESTING_API_TOKEN"],
   };
 
@@ -20,6 +21,7 @@ const getAuth = () => {
     : import(secrets)
       .then((mod) => /** @type {Auth} */({
         account: mod["CloudflareAuth"].accountId,
+        zone: "",
         apiToken: mod["CloudflareAuth"].token,
       }))
       .catch(() => /** @type {Auth} */({ account: "", apiToken: "" }));

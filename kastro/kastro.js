@@ -186,7 +186,7 @@ const buildCrate = (crateName, buildMode) => import(crateName)
 const deployCrate = (crateName, target) => Promise.all([
   buildCrate(crateName, compiler.BuildMode.Compiled),
   import(`${process.cwd()}/.secrets.js`),
-  import(`${target}/crate.js`)
+  import(`./${target}/crate.js`)
 ])
   .then(([_, secrets, crate]) => crate.deploy(crateName, secrets, compiler.getNamedAssets()));
 
@@ -201,4 +201,4 @@ if (args.command == "serve")
 else if (args.command == "build")
   buildCrate(crateName, compiler.BuildMode.Compiled);
 else if (args.command == "deploy")
-  deployCrate(crateName, args["target"] || "cloudflare");
+  deployCrate(crateName, args["target"] || "vps");

@@ -12,4 +12,21 @@ const shuffle = (arr) => {
   return arr;
 }
 
-export { shuffle };
+/**
+ * Splits an array into chunks of size n.
+ *
+ * @template T
+ * @param {!Array<T>} arr
+ * @param {number} n
+ * @return {!Array<!Array<T>>}
+ */
+const chunk = (arr, n) => {
+  if (n <= 0) throw 0;
+  /** @const {!Array<!Array<T>>} */
+  const result = [];
+  for (let i = 0; i < arr.length; i += n)
+    result.push(arr.slice(i, i + n));
+  return result;
+};
+
+export { chunk, shuffle };

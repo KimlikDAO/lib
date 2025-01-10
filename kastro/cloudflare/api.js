@@ -7,6 +7,7 @@ import "./api.d";
  * @struct
  * @typedef {{
  *   account: string,
+ *   zone: string,
  *   apiToken: string
  * }}
  */

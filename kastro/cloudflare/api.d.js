@@ -5,6 +5,7 @@ import cloudflare from "./cloudflare.d";
 /**
  * @typedef {{
  *   accountId: string,
+ *   zoneId: string,
  *   token: string
  * }}
  */

@@ -47,11 +47,12 @@ const uploadAssets = async (auth, namespaceId, namedAssets) => {
 }
 
 
-const deployCrate = (crateName) => import(crateName)
+const deploy = (crateName) => import(crateName)
   .then((crate) => {
 
   })
 
 export {
+  deploy,
   Auth,
 };
