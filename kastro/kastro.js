@@ -1,8 +1,9 @@
 import { plugin } from "bun";
-import { readFile } from "node:fs/promises";
+import { cp, readFile } from "node:fs/promises";
 import { createServer } from "vite";
-import { Blue, Clear, Green, parseArgs } from "../util/cli";
-import { combine, getDir } from "../util/paths";
+import { processCss } from "../kdjs/stylesheet";
+import { Blue, Clear, parseArgs } from "../util/cli";
+import { combine, getDir, getExt } from "../util/paths";
 import compiler from "./compiler/compiler";
 import { ttfTarget, woff2Target } from "./compiler/font";
 import {
@@ -17,7 +18,7 @@ import { getGlobals } from "./compiler/pageGlobals";
 import { scriptTarget } from "./compiler/script";
 import { stylesheetTarget } from "./compiler/stylesheet";
 import { registerTargetFunction } from "./compiler/targetRegistry";
-import { processCss } from "../kdjs/stylesheet";
+import { CompressedMimes } from "./workers/mimes";
 
 const setupKastro = () => {
   registerTargetFunction(".html", pageTarget);
@@ -176,7 +177,15 @@ const buildCrate = (crateName, buildMode) => import(crateName)
         console.info(`${Blue}[Building]${Clear} ${props.targetName}`);
         await compiler.bundleTarget(props.targetName, props);
       }
-    return crate;
+    if (crate.Aliases) {
+      const tasks = [];
+      for (const alias in crate.Aliases) {
+        const exts = CompressedMimes[getExt(alias)] ? [""] : ["", ".br", ".gz"];
+        for (const ext of exts)
+          tasks.push(cp(`build/crate/${crate.Aliases[alias]}${ext}`, `build/crate/${alias}${ext}`));
+      }
+      await Promise.all(tasks);
+    }
   })
 
 /**
@@ -201,4 +210,4 @@ if (args.command == "serve")
 else if (args.command == "build")
   buildCrate(crateName, compiler.BuildMode.Compiled);
 else if (args.command == "deploy")
-  deployCrate(crateName, args["target"] || "vps");
+  deployCrate(crateName, args["target"] || "cloudflare");

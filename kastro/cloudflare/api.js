@@ -1,14 +1,11 @@
 import "./api.d";
 
 /**
- * The keys here are deliberately different from `cloudflare.Auth`
- * to prevent kdjs from defensively treating Auth like an extern.
- *
  * @struct
  * @typedef {{
- *   account: string,
- *   zone: string,
- *   apiToken: string
+ *   accountId: string,
+ *   zoneId: string,
+ *   token: string
  * }}
  */
 const Auth = {};

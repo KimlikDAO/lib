@@ -1,4 +1,7 @@
+import { readdir, readFile } from "node:fs/promises";
+import compiler from "../compiler/compiler";
 import { CompressedMimes } from "../workers/mimes";
+import workers from "./workers";
 
 /** @const {!Array<string>} */
 const Extensions = ['', '.br', '.gz'];
@@ -46,13 +49,23 @@ const uploadAssets = async (auth, namespaceId, namedAssets) => {
   console.log("🌀 Uploading static files:", staticFiles);
 }
 
-
-const deploy = (crateName) => import(crateName)
-  .then((crate) => {
-
-  })
+const deploy = (crateName, secrets, namedAssets) => {
+  /** @const {string} */
+  const crateDir = "build/crate/";
+  return Promise.all([
+    compiler.buildTarget("/build/bundledPageWorker.js", {
+      dynamicDeps: true,
+      src: "lib/kastro/cloudflare/bundledPageWorker.js",
+      BuildMode: compiler.BuildMode.Compiled
+    }),
+    readdir(crateDir)
+      .then((files) => Promise.all(files.map((file) => readFile(crateDir + "/" + file)
+        .then((content) => [file, content])))
+        .then(Object.fromEntries))
+  ]).then(([{ content }, files]) =>
+    workers.upload(secrets.CloudflareAuth, "dapp", content.buffer, [], files));
+}
 
 export {
-  deploy,
-  Auth,
+  deploy
 };

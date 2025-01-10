@@ -14,11 +14,6 @@ const PAGE_CACHE_CONTROL = "max-age=90,public";
  */
 const STATIC_CACHE_CONTROL = "max-age=29030400,public,immutable";
 
-/**
- * @return {!Response}
- */
-const err = () => Response.redirect("/");
-
 /** @const {ModuleWorker} */
 const KvPageWorker = {
   /**
@@ -138,7 +133,7 @@ const KvPageWorker = {
       return makeResponse(body, "");
     })
 
-    return Promise.any([fromCache, fromKV]).catch(err);
+    return Promise.any([fromCache, fromKV]).catch(() => Response.redirect("/"));
   }
 }
 

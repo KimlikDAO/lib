@@ -3,14 +3,15 @@ import { ApiV4, Auth } from "./api";
 /**
  * @param {Auth} auth
  * @param {string} name
- * @param {string} code
+ * @param {string|!ArrayBuffer} code
  * @param {!Array<{
 *   name: string,
 *   namespace_id: string
 * }>=} kvBindings
+* @param {!Object<string, !ArrayBuffer>=} bundleFiles
 * @return {!Promise<cloudflare.Response>}
 */
-const upload = (auth, name, code, kvBindings) => {
+const upload = (auth, name, code, kvBindings, bundleFiles) => {
   /** @const {string} */
   const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
   /** @dict */
@@ -27,9 +28,11 @@ const upload = (auth, name, code, kvBindings) => {
   const form = new FormData();
   form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
   form.append("a.js", new File([code], "a.js", { type: "application/javascript+module;charset=utf-8" }));
-  return fetch(`${ApiV4}/accounts/${auth.account}/workers/scripts/${name}`, {
+  for (const file in bundleFiles)
+    form.append(file, new File([bundleFiles[file]], file, { type: "application/octet-stream" }));
+  return fetch(`${ApiV4}/accounts/${auth.accountId}/workers/scripts/${name}`, {
     method: "PUT",
-    headers: { "authorization": `Bearer ${auth.apiToken}` },
+    headers: { "authorization": `Bearer ${auth.token}` },
     body: form
   }).then((res) => res.json());
 };
@@ -40,10 +43,10 @@ const upload = (auth, name, code, kvBindings) => {
 * @param {string} url
 * @return {!Promise<cloudflare.Response>}
 */
-const bind = (auth, name, url) => fetch(`${ApiV4}/accounts/${auth.account}/workers/domains`, {
+const bind = (auth, name, url) => fetch(`${ApiV4}/accounts/${auth.accountId}/workers/domains`, {
   method: "PUT",
   headers: {
-    "authorization": `Bearer ${auth.apiToken}`,
+    "authorization": `Bearer ${auth.token}`,
     "content-type": "application/json"
   },
   body: JSON.stringify({
@@ -58,10 +61,10 @@ const bind = (auth, name, url) => fetch(`${ApiV4}/accounts/${auth.account}/worke
  * @param {string} name
  * @return {!Promise<cloudflare.Response>}
  */
-const enableWorkersDev = (auth, name) => fetch(`${ApiV4}/accounts/${auth.account}/workers/services/${name}/environments/production/subdomain`, {
+const enableWorkersDev = (auth, name) => fetch(`${ApiV4}/accounts/${auth.accountId}/workers/services/${name}/environments/production/subdomain`, {
   method: "POST",
   headers: {
-    "authorization": `Bearer ${auth.apiToken}`,
+    "authorization": `Bearer ${auth.token}`,
     "content-type": "application/json"
   },
   body: JSON.stringify({ enabled: true })
@@ -78,9 +81,9 @@ const workers = {
    * @return {!Promise<cloudflare.Response>}
    */
   delete(auth, name) {
-    return fetch(`${ApiV4}/accounts/${auth.account}/workers/scripts/${name}`, {
+    return fetch(`${ApiV4}/accounts/${auth.accountId}/workers/scripts/${name}`, {
       method: "DELETE",
-      headers: { "authorization": `Bearer ${auth.apiToken}` }
+      headers: { "authorization": `Bearer ${auth.token}` }
     }).then((res) => res.json());
   },
   enableWorkersDev,

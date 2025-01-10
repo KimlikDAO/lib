@@ -10,27 +10,23 @@ import workers from "../workers";
 const getAuth = () => {
   /** @const {Auth} */
   const auth = {
-    account: process.env["CF_TESTING_ACCOUNT_ID"],
-    zone: "",
-    apiToken: process.env["CF_TESTING_API_TOKEN"],
+    accountId: process.env["CF_TESTING_ACCOUNT_ID"],
+    zoneId: "",
+    token: process.env["CF_TESTING_API_TOKEN"],
   };
 
   const secrets = process.cwd() + "/.secrets.js";
-  return auth.account
+  return auth.accountId
     ? Promise.resolve(auth)
     : import(secrets)
-      .then((mod) => /** @type {Auth} */({
-        account: mod["CloudflareAuth"].accountId,
-        zone: "",
-        apiToken: mod["CloudflareAuth"].token,
-      }))
-      .catch(() => /** @type {Auth} */({ account: "", apiToken: "" }));
+      .then((mod) => /** @type {Auth} */(mod["CloudflareAuth"]))
+      .catch(() => /** @type {Auth} */({ accountId: "", token: "" }));
 }
 
 describe("Tests with Cloudflare auth", async () => {
   const auth = await getAuth();
 
-  test.if(!!auth.account)("upload, fetch and delete worker", async () => {
+  test.if(!!auth.accountId)("upload, fetch and delete worker", async () => {
     /** @const {string} */
     const name = `test-worker-${Math.floor(1000 + Math.random() * 9000)}`;
     /** @const {string} */
