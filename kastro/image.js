@@ -51,7 +51,7 @@ const InlineSvgImage = ({ src, childTargets, ...props }) =>
     return result;
   });
 
-const SvgImage = ({ inline, BuildMode, bundleName, ...props }) => {
+const SvgImage = ({ inline, BuildMode, bundleName, bundleWidth, bundleHeight, ...props }) => {
   if (inline) return InlineSvgImage(props);
   return compiler.bundleTarget(makeTargetName(props.src, props.width ? `-w${props.width}.svg` : ".svg"), {
     BuildMode,
@@ -74,11 +74,13 @@ const SvgJsxImage = ({ src, ...props }) => {
     }));
 }
 
-const PngImage = ({ src, passes, quality, BuildMode, ...props }) =>
+const PngImage = ({ src, passes, quality, BuildMode, bundleWidth, bundleHeight, ...props }) =>
   compiler.bundleTarget(`/build/${src.slice(0, -4)}.webp`, {
     BuildMode,
     passes,
     quality,
+    bundleWidth,
+    bundleHeight,
     childTargets: [`/${src}`]
   }).then((bundledName) => makeImageElement(bundledName, props));
 

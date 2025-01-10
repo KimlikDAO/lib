@@ -7,10 +7,14 @@ import SvgoInlineConfig from "./config/svgoInlineConfig";
 
 const Decoder = new TextDecoder();
 
-const webp = (inputFile, outputFile, passes = 10, quality = 70) =>
+const webp = (inputFile, outputFile, { passes = 10, quality = 70, bundleWidth, bundleHeight }) =>
   mkdir(getDir(outputFile), { recursive: true })
-    .then(() =>
-      spawn(["cwebp", "-m", 6, "-pass", passes, "-q", quality, inputFile, "-o", outputFile]).exited);
+    .then(() => {
+      const cmds = ["cwebp", "-m", 6, "-pass", passes, "-q", quality];
+      if (bundleWidth && bundleHeight)
+        cmds.push("-resize", bundleWidth, bundleHeight);
+      return spawn(cmds.concat([inputFile, "-o", outputFile])).exited;
+    });
 
 const rsvgConvert = (inputFile, outputFile, size) =>
   mkdir(getDir(outputFile), { recursive: true })
@@ -33,7 +37,7 @@ const pngTarget = (targetName, props) => {
 const webpTarget = (targetName, props) =>
   props.childTargets[0]
     .then(({ targetName: childTargetName }) =>
-      webp(childTargetName.slice(1), targetName.slice(1), props.passes, props.quality))
+      webp(childTargetName.slice(1), targetName.slice(1), props))
     .then(() => { });
 
 /** @const {TargetFunction} */
