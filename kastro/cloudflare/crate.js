@@ -49,22 +49,26 @@ const uploadAssets = async (auth, namespaceId, namedAssets) => {
   console.log("🌀 Uploading static files:", staticFiles);
 }
 
-const deploy = (crateName, secrets, namedAssets) => {
-  /** @const {string} */
-  const crateDir = "build/crate/";
-  return Promise.all([
-    compiler.buildTarget("/build/bundledPageWorker.js", {
-      dynamicDeps: true,
-      src: "lib/kastro/cloudflare/bundledPageWorker.js",
-      BuildMode: compiler.BuildMode.Compiled
-    }),
-    readdir(crateDir)
-      .then((files) => Promise.all(files.map((file) => readFile(crateDir + "/" + file)
-        .then((content) => [file, content])))
-        .then(Object.fromEntries))
-  ]).then(([{ content }, files]) =>
-    workers.upload(secrets.CloudflareAuth, "dapp", content.buffer, [], files));
-}
+const deploy = (crateName, secrets, namedAssets) => import(crateName)
+  .then((crate) => {
+    /** @const {string} */
+    const crateDir = "build/crate/";
+    return Promise.all([
+      compiler.buildTarget("/build/bundledPageWorker.js", {
+        dynamicDeps: true,
+        src: "lib/kastro/cloudflare/bundledPageWorker.js",
+        BuildMode: compiler.BuildMode.Compiled,
+        globals: {
+          HOST_URL: crate.HostUrl
+        }
+      }),
+      readdir(crateDir)
+        .then((files) => Promise.all(files.map((file) => readFile(crateDir + "/" + file)
+          .then((content) => [file, content])))
+          .then(Object.fromEntries))
+    ]).then(([{ content }, files]) =>
+      workers.upload(secrets.CloudflareAuth, "dapp", content.buffer, [], files));
+  });
 
 export {
   deploy

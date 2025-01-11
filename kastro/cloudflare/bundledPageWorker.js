@@ -2,6 +2,8 @@ import { CompressedMimes, Mimes } from "../workers/mimes";
 import { ModuleWorker } from "./moduleWorker.d";
 import { CfRequest } from "./types.d";
 
+/** @define {string} */
+const HOST_URL = "";
 /** @const {string} */
 const PAGE_CACHE_CONTROL = "max-age=100,public,no-transform";
 /** @const {string} */
@@ -47,16 +49,18 @@ const Worker = {
           "content-type": dot == -1 ? "text/html;charset=utf-8" : Mimes[suffix],
           "content-length": file.byteLength,
           "expires": "Sun, 01 Jan 2034 00:00:00 GMT",
+          // Technically no vary header is needed for CompressedMimes, but
+          // when left empty, Cloudflare inserts "Accept-Encoding"
+          // anyway, so we don't distinguish this case.
+          "vary": path ? "accept-encoding" : "accept-encoding,cookie"
         };
-        if (dot == -1 || !CompressedMimes[suffix])
-          headers["vary"] = path ? "accept-encoding" : "accept-encoding,cookie";
         if (ext.length)
           headers["content-encoding"] = ext.slice(1);
         if (suffix == "woff2" || suffix == "ttf")
           headers["access-control-allow-origin"] = "*";
         return new Response(file, { headers, "encodeBody": "manual" });
       })
-      .catch(() => Response.redirect("/"));
+      .catch(() => Response.redirect(HOST_URL));
   }
 }
 
