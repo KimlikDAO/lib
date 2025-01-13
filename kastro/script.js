@@ -14,7 +14,7 @@ const Script = (props) => {
   return Promise.all([].concat(props.children ?? [])).then(() =>
     compiler.bundleTarget(`/build/${props.src.slice(0, -3)}-${props.Lang}.js`, {
       dynamicDeps: true,
-      childTargets: ["/" + props.src], // Used in BuildMOde.Dev only
+      childTargets: ["/" + props.src], // Used in BuildMode.Dev only
       ...props,
       ...globals
     }).then((bundleName) => {

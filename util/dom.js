@@ -66,21 +66,25 @@ const düğmeDurdur = (düğme) => {
 }
 
 /**
- * @param {Element} düğme
- * @param {Element} menü
+ * @param {!Element} düğme
+ * @param {!Element} menü
  */
 const menüYarat = (düğme, menü) => {
+  menü.classList.add("hide");
+  menü.style.display = "";
+  menü.ontouchstart = (event) => event.stopPropagation();
   const kapat = (event) => {
+    window["ontouchstart"] = window.onclick = null;
     düğme.classList.remove("sel");
-    gizle(menü);
-    window.onclick = null;
+    menü.classList.add("hide");
   }
   düğme.onclick = (event) => {
+    menü.classList.remove("hide");
     düğme.classList.add("sel");
-    menü.style.display = "";
-    let f = window.onclick;
+    const f = window.onclick;
     if (f) f(event);
-    if (f !== kapat) window.onclick = kapat;
+    if (f !== kapat)
+      window.onclick = window["ontouchstart"] = kapat;
     event.stopPropagation();
   }
 }
