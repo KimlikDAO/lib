@@ -3,9 +3,10 @@ import { simple } from "acorn-walk";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { combine, getDir } from "../util/paths";
+import { processCss } from "./cssParser";
+import { processJsx } from "./jsxParser";
 import { ExportStatement, ImportStatement } from "./modules";
 import { serializeWithStringKeys } from "./objects";
-import { processCss } from "./stylesheet";
 import { Update, update } from "./textual";
 
 const PACKAGE_EXTERNS = "node_modules/@kimlikdao/kdjs/externs/";
@@ -209,35 +210,6 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
   }));
   return update(content, updates) + exportStmtToExportMap(exportStmt);
 }
-
-/**
- * @param {string} file name of the file
- * @param {string} content of the file
- * @param {!Array<string>} files
- * @return {string} file after preprocessing
- */
-const processJsx = (file, content, files) => {
-  /** @const {!Array<string>} */
-  const lines = content.split("\n");
-  /** @const {!Array<string>} */
-  const result = [];
-
-  let out = "";
-  for (let i = 0; i < lines.length; ++i)
-    if (lines[i].trim().startsWith("export const")) {
-      if (i > 0) result.push(lines[i - 1]);
-      result.push(lines[i]);
-    } else if (lines[i].includes("import") && (lines[i].includes("util/dom") || lines[i].includes(".css"))) {
-      const importName = lines[i].slice(
-        lines[i].indexOf('"') + 1,
-        lines[i].lastIndexOf('"'));
-      files.push(importName.at(0) == "/"
-        ? ensureExtension(importName.slice(1))
-        : ensureExtension(combine(getDir(file), importName)));
-      out += lines[i] + "\n";
-    }
-  return out + "\n" + result.join("\n");
-};
 
 /**
  * @param {string} entryFile

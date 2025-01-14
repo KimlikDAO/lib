@@ -1,7 +1,7 @@
 import { plugin } from "bun";
 import { cp, readFile } from "node:fs/promises";
 import { createServer } from "vite";
-import { processCss } from "../kdjs/stylesheet";
+import { processCss } from "../kdjs/cssParser";
 import { Blue, Clear, parseArgs } from "../util/cli";
 import { combine, getDir, getExt } from "../util/paths";
 import compiler from "./compiler/compiler";
