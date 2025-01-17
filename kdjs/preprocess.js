@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { combine, getDir } from "../util/paths";
 import { processCss } from "./cssParser";
-import { processJsx } from "./jsxParser";
+import { transpileJsx } from "./jsxParser";
 import { ExportStatement, ImportStatement } from "./modules";
 import { serializeWithStringKeys } from "./objects";
 import { Update, update } from "./textual";
@@ -12,12 +12,19 @@ import { Update, update } from "./textual";
 const PACKAGE_EXTERNS = "node_modules/@kimlikdao/kdjs/externs/";
 
 /**
- * TODO(KimlikDAO-bot): Fix this
+ * To be consistent with bun, we guess the extension in the following order:
+ *  - jsx
+ *  - js
+ *
  * @param {string} fileName
  * @return {string}
  */
-const ensureExtension = (fileName) => fileName.endsWith(".js") || fileName.endsWith(".jsx") || fileName.endsWith(".css")
-  ? fileName : fileName + ".js";
+const resolveExtension = (fileName) => {
+  if (existsSync(fileName)) return fileName;
+  if (existsSync(fileName + ".jsx")) return fileName + ".jsx";
+  if (existsSync(fileName + ".js")) return fileName + ".js";
+  return fileName;
+}
 
 /**
  * @param {ExportStatement} exportStmt
@@ -111,8 +118,8 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
       /** @type {boolean} */
       let addBack = false;
       switch (sourceName.at(0)) {
-        case "/": nextFile = ensureExtension(sourceName.slice(1)); break;
-        case ".": nextFile = ensureExtension(combine(getDir(file), sourceName)); break;
+        case "/": nextFile = sourceName.slice(1); break;
+        case ".": nextFile = combine(getDir(file), sourceName); break;
         default:
           const t = PACKAGE_EXTERNS + sourceName.replaceAll(":", "/") + ".d.js";
           if (existsSync(t)) {
@@ -123,15 +130,22 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
           if (!nextFile.startsWith("node_modules"))
             throw `nodejs support is not yet implemented (${file}, ${t})`;
       }
+      nextFile = resolveExtension(nextFile);
       files.push(nextFile);
 
-      if (file.endsWith(".d.js") || nextFile.endsWith(".d.js")) {
+      if (file.endsWith(".d.js") || nextFile.endsWith(".d.js"))
         updates.push({
           beg: node.start,
           end: node.end,
           put: ";"
         });
-      }
+      else if (nextFile.endsWith(".jsx") && !sourceName.endsWith(".jsx"))
+        updates.push({
+          beg: node.source.start,
+          end: node.source.end,
+          put: `"${sourceName}.jsx"`
+        });
+
       if (addBack) {
         let importStmt = unlinkedImports.get(sourceName);
         if (!importStmt) {
@@ -218,7 +232,8 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
  * @param {!Object<string, *>} globals
  * @return {!Promise<{
  *   unlinkedImports: !Map<string, ImportStatement>,
- *   allFiles: !Set<string>
+ *   allFiles: !Set<string>,
+ *   ignoreUnusedLocals: boolean
  * }>}
  */
 const preprocessAndIsolate = async (entryFile, isolateDir, externs, globals) => {
@@ -229,24 +244,31 @@ const preprocessAndIsolate = async (entryFile, isolateDir, externs, globals) => 
   const allFiles = new Set();
   /** @const {!Array<!Promise<void>>} */
   const writePromises = [];
+  /** @type {boolean} */
+  let ignoreUnusedLocals = false;
 
   for (let file; file = files.pop();) {
     if (allFiles.has(file)) continue;
     allFiles.add(file);
-    /** @const {string} */
-    const content = await readFile(file, "utf8");
-    const newContent = file.endsWith(".js")
+    /** @type {string} */
+    let content = await readFile(file, "utf8");
+    if (file.endsWith(".jsx")) {
+      content = transpileJsx(file == entryFile, file, content);
+      ignoreUnusedLocals = true; // jsx transform leaves hard to remove unused locals
+    }
+    const newContent = file.endsWith(".js") || file.endsWith(".jsx")
       ? processJs(file == entryFile, file, content, files, globals, unlinkedImports)
-      : file.endsWith(".jsx")
-        ? processJsx(file, content, files)
-        : processCss(content);
+      : processCss(content)
+
     const outFile = combine(isolateDir, file);
     writePromises.push(mkdir(getDir(outFile), { recursive: true })
+      .catch(() => { })
       .then(() => writeFile(outFile, newContent)));
   }
   return Promise.all(writePromises).then(() => ({
     unlinkedImports,
-    allFiles
+    allFiles,
+    ignoreUnusedLocals
   }));
 }
 

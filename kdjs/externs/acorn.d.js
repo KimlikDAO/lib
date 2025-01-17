@@ -196,6 +196,9 @@ acorn.ImportSpecifier.prototype.imported;
 /** @const {!acorn.Identifier} */
 acorn.ImportSpecifier.prototype.local;
 
+/** @const {!acorn.Identifier} */
+acorn.ImportDeclaration.prototype.imported;
+
 /**
  * @constructor
  * @struct
@@ -208,6 +211,11 @@ acorn.ImportDeclaration = function () { }
  * @const {!Array<!acorn.ImportSpecifier|!acorn.ImportDefaultSpecifier>}
  */
 acorn.ImportDeclaration.prototype.specifiers;
+
+/**
+ * @const {!acorn.Literal}
+ */
+acorn.ImportDeclaration.prototype.source;
 
 /**
  * @constructor
@@ -283,5 +291,24 @@ acorn.Comment;
  * @return {!acorn.Program}
  */
 const parse = (content, options) => { }
+
+/** @constructor */
+const Parser = function () { }
+
+/**
+ * @param {string} content
+ * @param {acorn.ParseOptions} options
+ * @return {!acorn.Program}
+ */
+Parser.prototype.parse = (content, options) => { }
+
+/** @constructor */
+acorn.Plugin = function () { }
+
+/**
+ * @param {!acorn.Plugin} plugin
+ * @return {!Parser}
+ */
+Parser.extend = (plugin) => { }
 
 export default acorn;

@@ -1,6 +1,11 @@
 import { chunk } from "../../util/arrays";
 import { ApiV4 } from "./api";
 
+/**
+ * @param {string} crateName
+ * @param {!Object} secrets
+ * @param {!Array<string>} namedAssets
+ */
 const purge = async (crateName, secrets, namedAssets) => {
   const { HostUrl } = await import(crateName);
   const { zoneId, token } = secrets.CloudflareAuth;

@@ -2,8 +2,8 @@ import ClosureCompiler from "google-closure-compiler";
 import { writeFile } from "node:fs/promises";
 import UglifyJS from "uglify-js";
 import { combine, getDir } from "../util/paths";
-import { removeStringNamedExports } from "./passes";
 import { ImportStatement } from "./modules";
+import { tweakPasses } from "./passes";
 import { postprocess } from "./postprocess";
 import { preprocessAndIsolate } from "./preprocess";
 
@@ -29,7 +29,8 @@ const compile = async (params, checkFreshFn) => {
     /** @type {string} */(params["isolateDir"]) || ".kdjs_isolate");
   const {
     /** @const {!Map<string, ImportStatement>} */ unlinkedImports,
-    /** @const {!Set<string>} */ allFiles
+    /** @const {!Set<string>} */ allFiles,
+    /** @const {boolean} */ ignoreUnusedLocals
   } = await preprocessAndIsolate(
     /** @type {string} */(params["entry"]),
     isolateDir,
@@ -43,8 +44,8 @@ const compile = async (params, checkFreshFn) => {
 
   /** @const {!Array<string>} */
   const jsCompErrors = [
-    "checkTypes",
     "unusedLocalVariables",
+    "checkTypes",
     "missingProperties",
     "strictCheckTypes",
   ];
@@ -54,6 +55,8 @@ const compile = async (params, checkFreshFn) => {
     jsCompWarnings.push("reportUnknownTypes");
   if (params["loose"])
     jsCompErrors.pop();
+  if (ignoreUnusedLocals)
+    jsCompErrors.shift();
 
   /** @const {ClosureCompiler.Options} */
   const options = {
@@ -104,7 +107,7 @@ const compile = async (params, checkFreshFn) => {
         },
         warnings: "verbose",
       });
-      const uglifiedCode = removeStringNamedExports(uglified.code);
+      const uglifiedCode = tweakPasses(uglified.code);
       console.log(params["entry"]);
       console.log(`Uglified size:\t${uglifiedCode.length}\nGCC size:\t${output.length}`);
       let code = uglifiedCode.length < output.length ? uglifiedCode : output;

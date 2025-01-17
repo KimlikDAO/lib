@@ -7,6 +7,7 @@ const GEN = true;
 const Lang = LangCode.TR;
 
 /**
+ * @nosideeffects
  * @template T
  * @param {!Object<LangCode, T>} i18ned
  * @return {T}
@@ -15,6 +16,7 @@ const i18n = (i18ned) => i18ned[Lang];
 
 /**
  * @noinline
+ * @nosideeffects
  * @param {string} ad DOM biriminin adı.
  * @return {!Element}
  */
@@ -72,7 +74,7 @@ const düğmeDurdur = (düğme) => {
 const menüYarat = (düğme, menü) => {
   menü.classList.add("hide");
   menü.style.display = "";
-  menü.ontouchstart = (event) => event.stopPropagation();
+  düğme.ontouchstart = menü.ontouchstart = (event) => event.stopPropagation();
   const kapat = (event) => {
     window["ontouchstart"] = window.onclick = null;
     düğme.classList.remove("sel");
@@ -106,6 +108,7 @@ const pencere = (url, en, boy) => {
 }
 
 /**
+ * @nosideeffects
  * @param {number} para
  * @return {string} metin olarak yazılmış para miktarı
  */
@@ -114,6 +117,7 @@ const paradanMetne = (para) => Lang == LangCode.TR
   : ("" + (para / 1_000_000))
 
 /**
+ * @nosideeffects
  * @param {string} telefon
  * @return {string} formatlanmış telefon numarası
  */
@@ -150,6 +154,14 @@ const button = (ad) => /** @type {!HTMLButtonElement} */((GEN && globalThis["GEN
 
 /**
  * @param {string} ad
+ * @return {!HTMLFormElement}
+ */
+const form = (ad) => /** @type {!HTMLFormElement} */((GEN && globalThis["GEN"])
+  ? create(ad, "form")
+  : adla(ad));
+
+/**
+ * @param {string} ad
  * @return {!HTMLSpanElement}
  */
 const span = (ad) => /** @type {!HTMLSpanElement} */((GEN && globalThis["GEN"])
@@ -157,6 +169,7 @@ const span = (ad) => /** @type {!HTMLSpanElement} */((GEN && globalThis["GEN"])
   : adla(ad));
 
 /**
+ * @nosideeffects
  * @param {string} ad
  * @return {!HTMLDivElement}
  */
@@ -198,6 +211,7 @@ export default {
   button,
   div,
   düğmeDurdur,
+  form,
   gizle,
   göster,
   gösterGizle,

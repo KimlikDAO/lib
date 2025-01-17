@@ -8,6 +8,10 @@ const removeStringNamedExports = (code) => {
   });
 }
 
+const removeDanglingObjectAssignments = (code) => code.replaceAll("Object.assign(()=>null,{})", "");
+
+const tweakPasses = (code) => removeStringNamedExports(removeDanglingObjectAssignments(code));
+
 /** @define {string} */
 const DEEP_INFRA_TOKEN = "";
 
@@ -176,4 +180,4 @@ Do not write any explanation. Only output the code please.
     });
 }
 
-export { removeStringNamedExports, deepInfraPass };
+export { removeStringNamedExports, deepInfraPass, tweakPasses };

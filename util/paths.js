@@ -8,7 +8,7 @@ const getDir = (fileName) => fileName.substring(0, fileName.lastIndexOf("/"));
 /**
  * @param {string} fileName
  * @param {string} orElse
- * @return {string|undefined} the extension
+ * @return {string} the extension
  */
 const getExt = (fileName, orElse = "") => {
   const dot = fileName.lastIndexOf(".") + 1;

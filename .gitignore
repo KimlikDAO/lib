@@ -3,7 +3,9 @@
 .secrets.js
 .vscode
 *.out.js
+*.out.jsx
 build
 bun.lockb
 node_modules*
+prompts.txt
 yarn.lock

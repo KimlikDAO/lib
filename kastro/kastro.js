@@ -2,6 +2,7 @@ import { plugin } from "bun";
 import { cp, readFile } from "node:fs/promises";
 import { createServer } from "vite";
 import { processCss } from "../kdjs/cssParser";
+import { transpileJsx } from "../kdjs/jsxParser";
 import { Blue, Clear, parseArgs } from "../util/cli";
 import { combine, getDir, getExt } from "../util/paths";
 import compiler from "./compiler/compiler";
@@ -151,12 +152,8 @@ const serveCrate = async (crateName, buildMode) => {
       },
 
       transform(code, id) {
-        if (id.endsWith(".jsx")) {
-          const lines = code.split("\n");
-          const filteredLines = lines.filter((line) => line.includes("util/dom") ||
-            line.trim().startsWith("export const") || (line.includes("import") && line.includes('.css"')));
-          return filteredLines.join("\n");
-        }
+        if (id.endsWith(".jsx"))
+          code = transpileJsx(code);
         const globals = getGlobals();
         return code.replace(currentPageGlobalsPattern, (match) => {
           const constIdx = match.indexOf("const");

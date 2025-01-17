@@ -4,6 +4,8 @@ import { CfRequest } from "./types.d";
 
 /** @define {string} */
 const HOST_URL = "";
+/** @define {!Object<string, string>} */
+const ETAGS = {};
 /** @const {string} */
 const PAGE_CACHE_CONTROL = "max-age=100,public,no-transform";
 /** @const {string} */
@@ -14,7 +16,7 @@ const Worker = {
   /**
    * @override
    * @param {!CfRequest} req
-   * @return {!Promise<!Response>}
+   * @return {!Promise<!Response>|!Response}
    */
   fetch(req) {
     /** @const {string} */
@@ -41,11 +43,16 @@ const Worker = {
         : req.headers.get("accept-language")
           ?.includes("tr") ? "tr" : "en"
     }
+    /** @const {?string} */
+    const maybeEtag = ETAGS[resolvedPath];
+    if (maybeEtag && req.headers.get("if-none-match") == maybeEtag)
+      return new Response(null, { status: 304 });
+
     return import(resolvedPath + ext.slice(0, 3))
       .then(({ default: file }) => {
         /** @const {!Object<string, (string|number)>} */
         const headers = {
-          "cache-control": dot == -1 ? PAGE_CACHE_CONTROL : STATIC_CACHE_CONTROL,
+          "cache-control": (dot == -1 || maybeEtag) ? PAGE_CACHE_CONTROL : STATIC_CACHE_CONTROL,
           "content-type": dot == -1 ? "text/html;charset=utf-8" : Mimes[suffix],
           "content-length": file.byteLength,
           "expires": "Sun, 01 Jan 2034 00:00:00 GMT",
@@ -54,6 +61,8 @@ const Worker = {
           // anyway, so we don't distinguish this case.
           "vary": path ? "accept-encoding" : "accept-encoding,cookie"
         };
+        if (maybeEtag)
+          headers["etag"] = maybeEtag;
         if (ext.length)
           headers["content-encoding"] = ext.slice(1);
         if (suffix == "woff2" || suffix == "ttf")

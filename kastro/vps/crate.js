@@ -26,7 +26,8 @@ const deploy = async (crateName, secrets, namedAssets) => {
     console.error("Deploy failed:", error);
     throw error;
   }
-  return restart(secrets).then(() => cache.purge(crateName, secrets, namedAssets));
+  return restart(secrets)
+    .then(() => cache.purge(crateName, secrets, Object.keys(namedAssets)));
 }
 
 export { deploy };
