@@ -71,28 +71,24 @@ const transpileJsx = (isEntry, file, content) => {
           if (info && info.state == SpecifierState.Remove)
             info.state = SpecifierState.PinRemove;
 
-          /** @const {acorn.JSXAttribute|undefined} */
-          const idProp = elem.openingElement.attributes.find(
-            (attr) => attr.type === 'JSXAttribute' && attr.name.name === 'id'
-          );
-          if (idProp) {
-            if (info) info.state = SpecifierState.Keep;
-            traverse(idProp.value.expression, idProp.value);
-            statements.push(`${tagName}({ id: ${content.slice(idProp.value.start + 1, idProp.value.end - 1)} });`);
-          }
-          /** @const {!Array<!acorn.JSXAttribute>} */
-          const onEventProps = elem.openingElement.attributes.filter(
-            (attr) => attr.type === 'JSXAttribute' &&
-              attr.name.name.startsWith('on') &&
-              attr.name.name[2] === attr.name.name[2].toUpperCase()
-          );
-          for (const prop of onEventProps) {
-            if (info) info.state = SpecifierState.Keep;
-            traverse(prop.value.expression, prop.value);
-            statements.push(`${tagName}.${prop.name.name.toLowerCase()} = ${content.slice(
-              prop.value.start + 1,
-              prop.value.end - 1)};`
-            );
+          for (const attr of elem.openingElement.attributes) {
+            if (attr.type !== 'JSXAttribute') continue;
+            const name = attr.name.name;
+            if (name === "id") {
+              if (info) info.state = SpecifierState.Keep;
+              traverse(attr.value.expression, attr.value);
+              statements.push(`${tagName}({ id: ${content.slice(attr.value.start + 1, attr.value.end - 1)} });`);
+            } else if (name.startsWith("on") && name.charCodeAt(2) < 91) {
+              if (info) info.state = SpecifierState.Keep;
+              traverse(attr.value.expression, attr.value);
+              statements.push(`${tagName}.${name.toLowerCase()} = ${content.slice(attr.value.start + 1, attr.value.end - 1)};`);
+            } else if (name == "controlsDropdown") {
+              const controlled = attr.value.expression.name;
+              const controlledInfo = specifierInfo[controlled];
+              if (controlledInfo) controlledInfo.state = SpecifierState.Keep;
+              if (info) info.state = SpecifierState.Keep;
+              statements.push(`dom.bindDropdown(${tagName}, ${controlled});`);
+            }
           }
         }
       }
@@ -127,13 +123,14 @@ const transpileJsx = (isEntry, file, content) => {
           updates.push({
             beg: parent.start,
             end: parent.end,
-            put: "\n  " + statements.join("\n") + "\n  return null;"
+            put: "\n  " + statements.join("\n  ") + "\n  return null;"
           });
         } else if (parent.type === "ArrowFunctionExpression") {
+          const params = parent.params.map(param => content.slice(param.start, param.end)).join(", ");
           updates.push({
             beg: parent.start,
             end: parent.end,
-            put: `() => {\n  ${statements.join("\n")}\n  return null;\n}`
+            put: `(${params}) => {\n  ${statements.join("\n  ")}\n  return null;\n}`
           });
         }
       } else updates.push({ beg: node.start, end: node.end, put: "null" });

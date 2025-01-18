@@ -20,6 +20,7 @@ const woff2 = (inputFile) => spawn({
 const ttfTarget = (targetName, props) => Promise.all(props.childTargets)
   .then(([{ targetName: ttfName }, { targetName: specimenName }]) =>
     mkdir(getDir(targetName.slice(1)), { recursive: true })
+      .catch(() => { })
       .then(() => spawn({
         cmd: [
           "pyftsubset",

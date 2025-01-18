@@ -71,7 +71,7 @@ const düğmeDurdur = (düğme) => {
  * @param {!Element} düğme
  * @param {!Element} menü
  */
-const menüYarat = (düğme, menü) => {
+const bindDropdown = (düğme, menü) => {
   menü.classList.add("hide");
   menü.style.display = "";
   düğme.ontouchstart = menü.ontouchstart = (event) => event.stopPropagation();
@@ -195,33 +195,60 @@ const ul = (ad) => /** @type {!HTMLUListElement} */((GEN && globalThis["GEN"])
 
 /**
  * @param {string} ad
+ * @return {!HTMLLIElement}
+ */
+const li = (ad) => /** @type {!HTMLLIElement} */((GEN && globalThis["GEN"])
+  ? create(ad, "li")
+  : adla(ad));
+
+/**
+ * @param {string} ad
  * @return {!HTMLInputElement}
  */
 const input = (ad) => /** @type {!HTMLInputElement} */((GEN && globalThis["GEN"])
   ? create(ad, "input")
   : adla(ad));
 
+/**
+ * @param {function()} f
+ * @param {number} ms
+ */
+const schedule = (f, ms) => (GEN && globalThis["GEN"]) ? {} : setTimeout(f, ms);
+
+/**
+ * @param {function()} f
+ */
+const run = (f) => (GEN && globalThis["GEN"]) ? {} : f();
+
 export default {
   Lang,
+  // Elements
   a,
+  button,
+  div,
+  form,
+  img,
+  input,
+  li,
+  span,
+  ul,
+  // DOM manipulation
   adla,
   adlaGizle,
   adlaGöster,
   adlaGösterGizle,
-  button,
-  div,
-  düğmeDurdur,
-  form,
   gizle,
   göster,
   gösterGizle,
-  i18n,
-  img,
-  menüYarat,
-  paradanMetne,
+  // Widgets
+  bindDropdown,
+  düğmeDurdur,
   pencere,
-  span,
+  // Render
+  i18n,
+  paradanMetne,
   telefondanMetne,
-  ul,
-  input
+  // Scheduling
+  schedule,
+  run,
 };

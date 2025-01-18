@@ -16,6 +16,17 @@ const getExt = (fileName, orElse = "") => {
 }
 
 /**
+ * @param {string} fileName
+ * @return {!Array<string>} [path, extension] without the dot
+ */
+const splitFullExt = (fileName) => {
+  const slash = fileName.lastIndexOf("/");
+  const dot = fileName.indexOf(".", slash);
+  const ext = dot < slash ? fileName.length : dot;
+  return [fileName.slice(0, ext), fileName.slice(ext + 1)];
+}
+
+/**
  * @param {string} basePath
  * @param {string} subPath
  * @return {string} combined path
@@ -31,12 +42,12 @@ const combine = (basePath, subPath) => {
     else if (part !== "." && part !== "")
       parts[j++] = part;
   }
-
   return parts.slice(0, j).join('/');
 }
 
 export {
   getDir,
   getExt,
-  combine
+  combine,
+  splitFullExt
 };

@@ -8,7 +8,7 @@ const removeStringNamedExports = (code) => {
   });
 }
 
-const removeDanglingObjectAssignments = (code) => code.replaceAll("Object.assign(()=>null,{})", "");
+const removeDanglingObjectAssignments = (code) => code.replaceAll(",Object.assign(()=>null,{}),", ",");
 
 const tweakPasses = (code) => removeStringNamedExports(removeDanglingObjectAssignments(code));
 

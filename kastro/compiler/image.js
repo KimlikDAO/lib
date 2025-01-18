@@ -9,6 +9,7 @@ const Decoder = new TextDecoder();
 
 const webp = (inputFile, outputFile, { passes = 10, quality = 70, bundleWidth, bundleHeight }) =>
   mkdir(getDir(outputFile), { recursive: true })
+    .catch(() => { })
     .then(() => {
       const cmds = ["cwebp", "-m", 6, "-pass", passes, "-q", quality];
       if (bundleWidth && bundleHeight)
@@ -18,6 +19,7 @@ const webp = (inputFile, outputFile, { passes = 10, quality = 70, bundleWidth, b
 
 const rsvgConvert = (inputFile, outputFile, size) =>
   mkdir(getDir(outputFile), { recursive: true })
+    .catch(() => { })
     .then(() => spawn(["rsvg-convert", "-w", size, "-h", size, "-o", outputFile, inputFile]).exited);
 
 const pngcrushInPlace = (inputFile) =>

@@ -111,6 +111,7 @@ const buildTarget = (targetName, props) => {
     if (typeof maybeResult === "string")
       maybeResult = Encoder.encode(maybeResult);
     return mkdir(getDir(fileName), { recursive: true })
+      .catch(() => { })
       .then(() => writeFile(fileName, maybeResult))
       .then(() => maybeResult);
   }
@@ -171,6 +172,7 @@ const buildTarget = (targetName, props) => {
           if (typeof maybeResult === "string")
             maybeResult = Encoder.encode(maybeResult);
           return mkdir(getDir(targetName.slice(1)), { recursive: true })
+            .catch(() => { })
             .then(() => writeFile(targetName.slice(1), maybeResult))
             .then(() => marker.write(targetName, {
               content: maybeResult,
@@ -200,15 +202,17 @@ const bundleTarget = (targetName, props) => props.BuildMode == BuildMode.Dev
     if (props.bundleName)
       NAMED_ASSETS[props.bundleName] = contentHashStr;
     /** @const {!Promise<void>} */
-    const bundle = mkdir("build/crate", { recursive: true }).then(() =>
-      CompressedMimes[getExt(targetName)]
-        ? access(bundleName).catch(() => cp(targetFile, bundleName))
-        : Promise.all([
-          access(bundleName).catch(() => cp(targetFile, bundleName)),
-          access(`${bundleName}.br`).catch(() => brotli(targetFile, bundleName)),
-          access(`${bundleName}.gz`).catch(() => zopfli(targetFile, bundleName))
-        ])
-    );
+    const bundle = mkdir("build/crate", { recursive: true })
+      .catch(() => { })
+      .then(() =>
+        CompressedMimes[getExt(targetName)]
+          ? access(bundleName).catch(() => cp(targetFile, bundleName))
+          : Promise.all([
+            access(bundleName).catch(() => cp(targetFile, bundleName)),
+            access(`${bundleName}.br`).catch(() => brotli(targetFile, bundleName)),
+            access(`${bundleName}.gz`).catch(() => zopfli(targetFile, bundleName))
+          ])
+      );
     return bundle.then(() => bundleName.slice(12));
   });
 

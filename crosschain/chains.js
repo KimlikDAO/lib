@@ -32,7 +32,7 @@ const ChainGroups = [ChainGroup.EVM, ChainGroup.MINA];
  * @param {ChainId} id
  * @return {ChainGroup}
  */
-const chainIdToGroup = (id) => /** @type {ChainGroup} */(id.slice(2));
+const chainIdToGroup = (id) => /** @type {ChainGroup} */(id.slice(0, 2));
 
 export {
   ChainGroup,

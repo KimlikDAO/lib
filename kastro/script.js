@@ -1,4 +1,5 @@
 import { tagYaz } from "../util/html";
+import { splitFullExt } from "../util/paths";
 import compiler from "./compiler/compiler";
 import { getGlobals } from "./compiler/pageGlobals";
 
@@ -11,8 +12,10 @@ const Script = (props) => {
   for (const key in props)
     if (key.charCodeAt(0) < 91) globals[key] = props[key];
 
+  const [file, ext] = splitFullExt(props.src);
+  const targetName = `/build/${file}-${props.Lang}.${ext}`;
   return Promise.all([].concat(props.children ?? [])).then(() =>
-    compiler.bundleTarget(`/build/${props.src.slice(0, -3)}-${props.Lang}.js`, {
+    compiler.bundleTarget(targetName, {
       dynamicDeps: true,
       childTargets: ["/" + props.src], // Used in BuildMode.Dev only
       ...props,

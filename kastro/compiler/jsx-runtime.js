@@ -22,13 +22,25 @@ const mergeChildren = (children, lang) => Promise.all(children
  * @return {!Object}
 */
 const resolveProps = (props, lang) => {
+  delete props.controlsDropdown;
+
   for (const key in props)
     if (key != "children" && typeof props[key] == "object" && (lang in props[key]))
       props[key] = props[key][lang];
     else if (key.startsWith("data-")) {
       if (key == "data-" + lang) props.children = [props[key]];
       delete props[key];
-    }
+    } else if (key.startsWith("on") && key.charCodeAt(2) < 91)
+      delete props[key];
+
+  if (props.nodisplay) {
+    props.style = props.style ? props.style + ";display:none" : "display:none";
+    delete props.nodisplay;
+  }
+  if (props.noshow) {
+    props.style = props.style ? props.style + ";opacity:0" : "opacity:0";
+    delete props.noshow;
+  }
   return props;
 }
 

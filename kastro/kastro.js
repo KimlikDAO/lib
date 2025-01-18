@@ -32,6 +32,7 @@ const setupKastro = () => {
   registerTargetFunction(".ttf", ttfTarget);
   registerTargetFunction(".woff2", woff2Target);
   registerTargetFunction(".js", scriptTarget);
+  registerTargetFunction(".jsx", scriptTarget);
 
   plugin({
     name: "kastro-js",
@@ -59,23 +60,66 @@ const setupKastro = () => {
         path: path.startsWith(".") ? "/" + combine(getDir(importer.replace("kastro:", "")), path) : path,
         namespace: "kastro"
       }));
-      build.onLoad({ filter: /.js$/, namespace: "kastro" }, (args) => ({
-        contents: scriptLoader.replace("SOURCE", args.path.slice(cwdLen)),
-        loader: "js"
-      }));
       build.onLoad({ filter: /.svg.jsx$/, namespace: "kastro" }, (args) => {
         const code = `import { SvgJsxImage } from "@kimlikdao/lib/kastro/image";\n` +
           `export default (props) => SvgJsxImage({...props, src: "${args.path.slice(cwdLen)}" });`;
         return { contents: code, loader: "js" };
       });
+      build.onLoad({ filter: /.jsx$/, namespace: "kastro" }, (args) => ({
+        contents: scriptLoader.replace("SOURCE", args.path.slice(cwdLen)),
+        loader: "js"
+      }));
     },
   });
 
+  class SinkElement {
+    constructor(name) {
+      this.name = name;
+    }
+    get children() { return [this, this, this, this, this] }
+    get firstElementChild() { return this; }
+    get nextSibling() { return this; }
+    get parentElement() { return this; }
+    get parentNode() { return this; }
+    get previousElementSibling() { return this; }
+    get previousSibling() { return this; }
+
+    cloneNode(deep) { return this; }
+    replaceChild(newChild, oldChild) { return this; }
+    appendChild() { return this; }
+    closest() { return this; }
+
+    get classList() {
+      return {
+        add: () => { },
+        remove: () => { },
+        contains: () => false,
+        toggle: () => false
+      };
+    }
+    get style() {
+      return new Proxy({}, {
+        get: () => "",
+        set: () => true
+      });
+    }
+  }
+
+  const window = {
+    ethereum: {
+      isRabby: false
+    },
+  }
   globalThis.GEN = true;
-  globalThis.document = {};
-  globalThis.document.createElement = (name) => ({
-    name
-  });
+  globalThis.window = window;
+  globalThis.document = {
+    cookie: "",
+    getElementById: (id) => {
+      console.warn(`use typed dom.elem() methods instead! ${id}`);
+      return new SinkElement("");
+    },
+  };
+  globalThis.document.createElement = (name) => new SinkElement(name);
 }
 
 /**

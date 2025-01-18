@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { combine } from "../paths";
+import { combine, splitFullExt } from "../paths";
 
 test("negative depth", () => {
   expect(combine("a/b/c", "../../../../x/y/z"))
@@ -14,4 +14,13 @@ test("negative depth", () => {
     .toBe("../../../abc");
   expect(combine("./a/b/c", "d"))
     .toBe("a/b/c/d");
+});
+
+test("splitFullExt", () => {
+  expect(splitFullExt("a/b/c.d.jsx"))
+    .toEqual(["a/b/c", "d.jsx"]);
+  expect(splitFullExt("a/b/c.d"))
+    .toEqual(["a/b/c", "d"]);
+  expect(splitFullExt("a/b/c"))
+    .toEqual(["a/b/c", ""]);
 });
