@@ -35,19 +35,21 @@ const hex = (renk) => "#" + renk.r.toString(16).padStart(2, '0')
   + renk.b.toString(16).padStart(2, '0');
 
 /**
- * @param {string} altRenk
- * @param {string} üstRenk
+ * @param {string|Renk} altRenk
+ * @param {string|Renk} üstRenk
  * @param {number} geçirgenlik
  * @return {string}
  */
 const karıştır = (altRenk, üstRenk, geçirgenlik) => {
-  altRenk = hexten(altRenk);
-  üstRenk = hexten(üstRenk);
+  if (typeof altRenk == "string")
+    altRenk = hexten(altRenk);
+  if (typeof üstRenk == "string")
+    üstRenk = hexten(üstRenk);
 
   return hex({
-    r: Math.round(altRenk.r * geçirgenlik + üstRenk.r * (1 - geçirgenlik)),
-    g: Math.round(altRenk.g * geçirgenlik + üstRenk.g * (1 - geçirgenlik)),
-    b: Math.round(altRenk.b * geçirgenlik + üstRenk.b * (1 - geçirgenlik))
+    r: (altRenk.r * geçirgenlik + üstRenk.r * (1 - geçirgenlik)) | 0,
+    g: (altRenk.g * geçirgenlik + üstRenk.g * (1 - geçirgenlik)) | 0,
+    b: (altRenk.b * geçirgenlik + üstRenk.b * (1 - geçirgenlik)) | 0
   });
 };
 

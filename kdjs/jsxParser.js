@@ -1,6 +1,7 @@
 import { Parser } from "acorn";
 import acornJsx from "acorn-jsx";
 import { getExt } from "../util/paths";
+import { DomIdMapper } from "./domIdMapper";
 import { ImportStatement, writeImportStatement } from "./modules";
 import { Update, update } from "./textual";
 
@@ -31,9 +32,10 @@ const SpecifierState = {
  * @param {boolean} isEntry Is the current file the entry file provided to kdjs.
  * @param {string} file Name of the file
  * @param {string} content The contents as a string
+ * @param {DomIdMapper} domIdMapper
  * @return {string} The transpiled js file
  */
-const transpileJsx = (isEntry, file, content) => {
+const transpileJsx = (isEntry, file, content, domIdMapper) => {
   /** @const {!Array<!acorn.Comment>} */
   const comments = [];
   /** @const {!Array<Update>} */
@@ -99,6 +101,17 @@ const transpileJsx = (isEntry, file, content) => {
     });
   }
 
+  const hasIdParam = (params) => {
+    if (!params || params.length === 0) return false;
+    return params.some(param =>
+      param.type === "ObjectPattern" &&  // Must be destructured
+      param.properties.some(prop =>
+        prop.type === "Property" &&
+        prop.key.name === "id"
+      )
+    );
+  };
+
   /**
    * @param {!acorn.Node} node
    * @param {!acorn.Node} parent
@@ -113,9 +126,16 @@ const transpileJsx = (isEntry, file, content) => {
 
       if (!isPropertyName && !isDestructured)
         specifierInfo[node.name].state = SpecifierState.Keep;
-    }
-    // Handle JSX Elements separately
-    else if (node.type === "JSXElement" || node.type === "JSXFragment") {
+    } else if (node.type === "TaggedTemplateExpression") {
+      if (node.tag.type == "Identifier" && node.tag.name == "css") {
+        console.log(content.slice(node.start, node.end));
+        updates.push({
+          beg: node.start,
+          end: node.end,
+          put: "/** @enum {string} */({})"
+        });
+      }
+    } else if (node.type === "JSXElement" || node.type === "JSXFragment") {
       const statements = [];
       processJsxElement(node, statements);
       if (statements.length) {
@@ -135,8 +155,23 @@ const transpileJsx = (isEntry, file, content) => {
         }
       } else updates.push({ beg: node.start, end: node.end, put: "null" });
       return;
+    } else if (node.type == "VariableDeclaration") {
+      for (const decl of node.declarations) {
+        const name = decl.id.name;
+        if (decl.id.type === "Identifier" && name.charCodeAt(0) < 91 &&
+          decl.init &&
+          (decl.init.type === "ArrowFunctionExpression" ||
+            decl.init.type === "FunctionExpression") &&
+          !hasIdParam(decl.init.params)
+        ) {
+          updates.push({
+            beg: node.end,
+            end: node.end,
+            put: `\n${name}(); // Auto-initialize singleton\n`
+          })
+        }
+      }
     }
-
     for (const key in node) {
       if (Array.isArray(node[key]))
         node[key].forEach(child => traverse(child, node));
@@ -152,8 +187,6 @@ const transpileJsx = (isEntry, file, content) => {
     onComment: comments
   });
 
-  /** @type {?acorn.ExportDefaultDeclaration} */
-  let defaultExport = null;
   for (const node of ast.body) {
     if (node.type == "ImportDeclaration") {
       /** @const {string} */
@@ -162,63 +195,21 @@ const transpileJsx = (isEntry, file, content) => {
       const ext = getExt(source, "js");
       /** @const {boolean} */
       const isAsset = ext == "svg" || ext == "png" || ext == "webp" || ext == "ttf" || ext == "woff2";
-      if (source.includes(":") || isAsset || source.includes("kastro/image")) {
+      if (source.includes(":") || isAsset
+        || source.includes("kastro/image") || source.includes("kastro/stylesheet")) {
         for (const specifier of node.specifiers)
           assetComponents.add(specifier.local.name);
-        updates.push({ beg: node.start, end: node.end, put: ";" });
+        updates.push({ beg: node.start, end: node.end, put: "; // Asset component" });
       } else
         addImport(node);
-    } else if (node.type == "ExportDefaultDeclaration") {
-      if (node.declaration.type !== "Identifier") {
-        throw new Error(`${file}: Export default must be an identifier`);
-      }
-      if (isEntry)
-        updates.push({ beg: node.start, end: node.end, put: "; // Entry component, remove the default export\n" });
-      defaultExport = node;
+    } else if (node.type == "ExportDefaultDeclaration" && isEntry) {
+      updates.push({
+        beg: node.start,
+        end: node.end,
+        put: "; // Entry component, remove the default export\n"
+      });
     } else
       traverse(node, ast);
-  }
-
-  if (defaultExport) {
-    /** @const {string} */
-    const name = defaultExport.declaration.name;
-    /** @const {?acorn.Node} */
-    const componentNode = ast.body.find(node =>
-      (node.type === "FunctionDeclaration" && node.id?.name === name) ||
-      (node.type === "VariableDeclaration" &&
-        node.declarations.some(d => d.id.name === name))
-    );
-
-    if (!componentNode) {
-      throw new Error(`${file}: Could not find component definition for ${name}`);
-    }
-    let params;
-    if (componentNode.type === "FunctionDeclaration") {
-      params = componentNode.params;
-    } else if (componentNode.type === "VariableDeclaration") {
-      const init = componentNode.declarations[0].init;
-      if (init.type === "ArrowFunctionExpression") {
-        params = init.params;
-      }
-    }
-
-    const hasIdParam = (params) => {
-      if (!params || params.length === 0) return false;
-      return params.some(param =>
-        param.type === "ObjectPattern" &&  // Must be destructured
-        param.properties.some(prop =>
-          prop.type === "Property" &&
-          prop.key.name === "id"
-        )
-      );
-    };
-    if (!hasIdParam(params)) {
-      updates.push({
-        beg: defaultExport.start - 1,
-        end: defaultExport.start - 1,
-        put: `\n${name}(); // Auto-initialize singleton\n`
-      })
-    }
   }
 
   /** @const {RegExp} */

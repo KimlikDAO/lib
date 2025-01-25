@@ -21,7 +21,7 @@ const deploy = (crateName, secrets, namedAssets) => import(crateName)
       compiler.buildTarget("/build/bundledPageWorker.js", {
         dynamicDeps: true,
         src: "lib/kastro/cloudflare/bundledPageWorker.js",
-        BuildMode: compiler.BuildMode.Compiled,
+        BuildMode: compiler.BuildMode.Release,
         globals: {
           HOST_URL: crate.HostUrl,
           ETAGS: etags

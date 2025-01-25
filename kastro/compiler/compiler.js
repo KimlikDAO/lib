@@ -4,7 +4,7 @@ import { getDir, getExt } from "../../util/paths";
 import { Props } from "../props";
 import { CompressedMimes } from "../workers/mimes";
 import { brotli, zopfli } from "./compression";
-import hash from "./hash";
+import hash, { AssetHash } from "./hash";
 import marker from "./marker";
 import { getTargetFunction } from "./targetRegistry";
 
@@ -12,17 +12,18 @@ import { getTargetFunction } from "./targetRegistry";
  * Dev: Try to do as little work as possible while providing the fundamental
  *      functionality of kastro such as component rendering, i18n, and updating
  *      the js defines. The rendered page should be visually identical to the
- *      Compiled version; anything else is a bug.
+ *      Compiled or Release version; anything else is a bug.
  *
- * Compiled: Produce the most optimized version of the app, while not making
- *      any assumptions on the freshness of the source. In this mode, we
- *      take a content hash of the dependencies of each targe to determine
- *      whether to rebuild the target or not.
+ * Compiled: Produce the most optimized version of the app while obeying the
+ *      constraint that each target is a function of its dependencies.
+ *      This means, for instance, that generated domIds are a function of
+ *      the explicit dependencies and cannot depend on a global counter.
  *
  * Release: Produce the most optimized version of the app, while assuming
- *      the source code does not change during the build process. With this
- *      assumption, we can memoize the built targets without checking if their
- *      dependencies have changed.
+ *      the source code does not change during the build process. In this mode
+ *      we can violate the constraint that each target is a function of its
+ *      dependencies, which allows us, for instance, to compress the domIds
+ *      using a global counter.
  *
  * @enum {number}
  */
@@ -38,9 +39,15 @@ const Encoder = new TextEncoder();
 /** @const {!Object<string, (CacheEntry|undefined)>} */
 const CACHE = {};
 
-/** @const {!Object<string, string>} */
+/** @const {!Object<string, AssetHash>} */
 const NAMED_ASSETS = {};
 
+/** @const {!Object<string, AssetHash>} */
+const PIGGYBACK_ASSETS = {};
+
+/**
+ * @param {Props} props
+ */
 const populateChildTargets = (props) => {
   const childProps = {
     BuildMode: props.BuildMode,
@@ -74,7 +81,8 @@ const populateChildTargets = (props) => {
 const computeDepHash = (props) => {
   populateChildTargets(props);
   const { childTargets = [], ...otherProps } = props;
-  const acc = keccak256Uint8(Encoder.encode(JSON.stringify(otherProps))).slice(0, 32);
+  const acc = keccak256Uint8(Encoder.encode(JSON.stringify(otherProps)))
+    .slice(0, 32); // Drop the excess buffer.
   return Promise.all(childTargets.map((childTarget) => childTarget
     .then(({ contentHash }) => hash.combine(acc, contentHash))))
     .then(() => acc);
@@ -93,7 +101,11 @@ const forceBuildTarget = (targetName, props) => {
 }
 
 /**
- *
+ * Builds a given target. This involves
+ *  1. Building all childTargets
+ *  2. Determining the targetFunction from the extension of the targetName
+ *  3. Handing the targetName and props (which includes the childTargets) to
+ *     the targetFunction.
  *
  * @const {TargetFunction}
  */
@@ -104,21 +116,7 @@ const buildTarget = (targetName, props) => {
       contentHash: keccak256Uint8(content),
     }));
 
-  const ensureOnDisk = (maybeResult) => {
-    const fileName = targetName.slice(1);
-    if (!maybeResult)
-      return readFile(fileName);
-    if (typeof maybeResult === "string")
-      maybeResult = Encoder.encode(maybeResult);
-    return mkdir(getDir(fileName), { recursive: true })
-      .catch(() => { })
-      .then(() => writeFile(fileName, maybeResult))
-      .then(() => maybeResult);
-  }
-
-  if (props.BuildMode == BuildMode.Release)
-    return (CACHE[targetName] ||= forceBuildTarget(targetName, props).then(ensureOnDisk));
-
+  // Explicit list of dependencies.
   if (!props.dynamicDeps)
     return CACHE[targetName] = Promise.all([CACHE[targetName], computeDepHash(props)])
       .then(([entry, depHash]) => {
@@ -130,7 +128,17 @@ const buildTarget = (targetName, props) => {
             ? Promise.resolve() : Promise.reject())
           .catch(() => marker.remove(targetName)
             .then(() => forceBuildTarget(targetName, props)))
-          .then(ensureOnDisk)
+          .then((maybeResult) => {
+            const fileName = targetName.slice(1);
+            if (!maybeResult)
+              return readFile(fileName);
+            if (typeof maybeResult === "string")
+              maybeResult = Encoder.encode(maybeResult);
+            return mkdir(getDir(fileName), { recursive: true })
+              .catch(() => { })
+              .then(() => writeFile(fileName, maybeResult))
+              .then(() => maybeResult);
+          })
           .then((content) => marker.write(targetName, {
             content,
             contentHash: keccak256Uint8(content),
@@ -138,6 +146,7 @@ const buildTarget = (targetName, props) => {
           }));
       });
 
+  // Dynamic dependencies.
   return CACHE[targetName] = (CACHE[targetName] || Promise.resolve())
     .then((entry) => {
       let fromCachePromise;
@@ -184,7 +193,7 @@ const buildTarget = (targetName, props) => {
 }
 
 /**
- * Builds the target, creates bundle file and compresses versions if needed,
+ * Builds the target, creates the bundle file and compressed versions if needed,
  * and returns the bundle name of the asset.
  *
  * @const {TargetFunction} */
@@ -201,6 +210,12 @@ const bundleTarget = (targetName, props) => props.BuildMode == BuildMode.Dev
       (props.bundleName || `${contentHashStr}.${getExt(targetName)}`);
     if (props.bundleName)
       NAMED_ASSETS[props.bundleName] = contentHashStr;
+
+    if (props.piggyback) {
+      const piggybackUrl = `${props.piggyback}/${props.bundleName.slice(12)}`;
+      PIGGYBACK_ASSETS[piggybackUrl] = contentHashStr;
+      return piggybackUrl;
+    }
     /** @const {!Promise<void>} */
     const bundle = mkdir("build/crate", { recursive: true })
       .catch(() => { })

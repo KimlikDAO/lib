@@ -11,32 +11,18 @@ import { preprocessAndIsolate } from "./preprocess";
 const Params = {};
 
 /**
- * @param {*} globals
- * @return {!Object<string, *>}
- */
-const getGlobals = (globals) => /** @type {!Object<string, *>} */(typeof globals == "string"
-  ? JSON.parse(globals) : (globals || {}));
-
-/**
  * @param {!Params} params
  * @param {function(!Array<string>):!Promise<boolean>=} checkFreshFn
+ * @param {DomIdMapper=} domIdMapper
  * @return {!Promise<string|void>}
  */
-const compile = async (params, checkFreshFn) => {
-  /** @const {string} */
-  const isolateDir = combine(
-    getDir(/** @type {string} */(params["output"] || "build/" + /** @type {string} */(params["entry"]))),
-    /** @type {string} */(params["isolateDir"]) || ".kdjs_isolate");
+const compile = async (params, checkFreshFn, domIdMapper) => {
   const {
     /** @const {!Map<string, ImportStatement>} */ unlinkedImports,
     /** @const {!Set<string>} */ allFiles,
+    /** @const {string} */ isolateDir,
     /** @const {boolean} */ ignoreUnusedLocals
-  } = await preprocessAndIsolate(
-    /** @type {string} */(params["entry"]),
-    isolateDir,
-    [].concat(params["externs"] || []),
-    getGlobals(params["globals"])
-  );
+  } = await preprocessAndIsolate(params);
   /** @const {!Array<string>} */
   const allFilesArray = Array.from(allFiles).sort();
   if (checkFreshFn && await checkFreshFn(allFilesArray))

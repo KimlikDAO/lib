@@ -1,11 +1,12 @@
 import { plugin } from "bun";
 import { cp, readFile } from "node:fs/promises";
 import { createServer } from "vite";
-import { processCss } from "../kdjs/cssParser";
+import { transpileCss } from "../kdjs/cssParser";
 import { transpileJsx } from "../kdjs/jsxParser";
 import { Blue, Clear, parseArgs } from "../util/cli";
 import { combine, getDir, getExt } from "../util/paths";
 import compiler from "./compiler/compiler";
+import crates from "./compiler/crates";
 import { ttfTarget, woff2Target } from "./compiler/font";
 import {
   inlineSvgTarget,
@@ -15,13 +16,15 @@ import {
   webpTarget
 } from "./compiler/image";
 import { pageTarget } from "./compiler/page";
-import { getGlobals } from "./compiler/pageGlobals";
+import { getDomIdMapper, getGlobals } from "./compiler/pageGlobals";
 import { scriptTarget } from "./compiler/script";
 import { stylesheetTarget } from "./compiler/stylesheet";
 import { registerTargetFunction } from "./compiler/targetRegistry";
 import { CompressedMimes } from "./workers/mimes";
 
-const setupKastro = () => {
+const setupKastro = (buildMode) => {
+  setDomIdMapper(buildMode);
+
   registerTargetFunction(".html", pageTarget);
   registerTargetFunction(".inl.svg", inlineSvgTarget);
   registerTargetFunction(".png", pngTarget);
@@ -38,22 +41,22 @@ const setupKastro = () => {
     name: "kastro-js",
     async setup(build) {
       const cwdLen = process.cwd().length + 1;
-      const moduleDir = getDir(import.meta.url.slice(6));
-      const stylesheetLoader = await readFile("/" + combine(moduleDir, "./compiler/loader/stylesheetLoader.js"), "utf8");
-      const scriptLoader = await readFile("/" + combine(moduleDir, "./compiler/loader/scriptLoader.js"), "utf8");
+      const path = (args) => args.path.slice(cwdLen);
 
       build.onLoad({ filter: /\.(svg|png|webp)$/ }, (args) => {
         const code = `import { Image } from "@kimlikdao/lib/kastro/image";\n` +
-          `export default (props) => Image({...props, src: "${args.path.slice(cwdLen)}" });`;
+          `export default (props) => Image({...props, src: "${path(args)}" });`;
         return { contents: code, loader: "js" };
       });
-      build.onLoad({ filter: /\.css$/ }, (args) => ({
-        contents: stylesheetLoader.replace("SOURCE", args.path.slice(cwdLen)),
-        loader: "js"
-      }));
+      build.onLoad({ filter: /\.css$/ }, (args) => {
+        const code = `import { makeStyleSheet } from "@kimlikdao/lib/kastro/stylesheet";\n` +
+          `import { readFileSync } from "node:fs";\n` +
+          `export default makeStyleSheet(readFileSync("${path(args)}", "utf-8"), "${path(args)}");`;
+        return { contents: code, loader: "js" };
+      });
       build.onLoad({ filter: /\.ttf$/ }, (args) => {
         const code = `import { TtfFont } from "@kimlikdao/lib/kastro/font";\n` +
-          `export default (props) => TtfFont({...props, href: "${args.path.slice(cwdLen)}" });`;
+          `export default (props) => TtfFont({...props, href: "${path(args)}" });`;
         return { contents: code, loader: "js" };
       });
       build.onResolve({ filter: /./, namespace: "kastro" }, ({ path, importer }) => ({
@@ -62,13 +65,14 @@ const setupKastro = () => {
       }));
       build.onLoad({ filter: /.svg.jsx$/, namespace: "kastro" }, (args) => {
         const code = `import { SvgJsxImage } from "@kimlikdao/lib/kastro/image";\n` +
-          `export default (props) => SvgJsxImage({...props, src: "${args.path.slice(cwdLen)}" });`;
+          `export default (props) => SvgJsxImage({...props, src: "${path(args)}" });`;
         return { contents: code, loader: "js" };
       });
-      build.onLoad({ filter: /.jsx$/, namespace: "kastro" }, (args) => ({
-        contents: scriptLoader.replace("SOURCE", args.path.slice(cwdLen)),
-        loader: "js"
-      }));
+      build.onLoad({ filter: /.jsx$/, namespace: "kastro" }, (args) => {
+        const code = `import { Script } from "@kimlikdao/lib/kastro/script";\n` +
+          `export default (props) => Script({...props, src: "${path(args)}" });`;
+        return { contents: code, loader: "js" };
+      });
     },
   });
 
@@ -122,40 +126,14 @@ const setupKastro = () => {
   globalThis.document.createElement = (name) => new SinkElement(name);
 }
 
-/**
- * @param {!Object} crate
- * @param {compiler.BuildMode} buildMode
- * @return {!Object<string, *>} Returns a map from routes to page props.
- */
-const cratePageProps = (crate, buildMode) => {
-  /** @const {!Array<string>} */
-  const langs = crate.Page ? Object.keys(Object.values(crate.Page)[0]) : crate.Languages;
-  const map = {};
-  const add = (page, name) => {
-    for (const lang of langs) {
-      const pageProps = {
-        BuildMode: buildMode,
-        Lang: lang,
-        CodebaseLang: crate.CodebaseLang,
-        Route: { ...page }, // Make a copy
-        bundleName: page[lang],
-        targetName: `/build/${name || page[crate.CodebaseLang]}/page-${lang}.html`,
-      };
-      delete pageProps.Route[lang];
-      map[`/${page[lang]}`] = pageProps;
-    }
-  };
-  if (crate.Page)
-    for (const [name, routes] of Object.entries(crate.Page))
-      add(routes, routes == crate.Entry ? name.toLowerCase() : undefined);
-  map["/"] = map[`/${crate.CodebaseLang}`];
-
-  return map;
-};
-
 const serveCrate = async (crateName, buildMode) => {
+  setupKastro(buildMode);
   const crate = await import(crateName);
-  const map = cratePageProps(crate, buildMode);
+  /** @const {!Object<string, PageTarget>} */
+  const map = crates.getPageTargets(crate, buildMode);
+  /** @const {!DomIdMapper} */
+  const domIdMapper = getDomIdMapper();
+
   let currentPageProps;
   let currentPageGlobalsPattern;
 
@@ -192,7 +170,8 @@ const serveCrate = async (crateName, buildMode) => {
 
       load(id) {
         if (id.endsWith(".css.js"))
-          return readFile(id.slice(0, -3), "utf8").then((css) => processCss(css));
+          return readFile(id.slice(0, -3), "utf8")
+            .then((css) => transpileCss(id.slice(0, -3), css, domIdMapper));
       },
 
       transform(code, id) {
@@ -210,14 +189,24 @@ const serveCrate = async (crateName, buildMode) => {
     .then(console.log("Dev server running at http://localhost:8787"));
 }
 
-const buildCrate = (crateName, buildMode) => import(crateName)
-  .then(async (crate) => {
-    const map = cratePageProps(crate, buildMode);
-    for (const [route, props] of Object.entries(map))
-      if (route != "/") {
-        console.info(`${Blue}[Building]${Clear} ${props.targetName}`);
-        await compiler.bundleTarget(props.targetName, props);
-      }
+/**
+ * @param {string} crateName
+ * @param {compiler.BuildMode} buildMode
+ * @param {?LangCode} lang
+ */
+const buildCrate = async (crateName, buildMode, lang) => {
+  const crate = await import(crateName);
+  if (!lang) {
+    // If no language is specified, spawn a bun instance for each language.
+    // For now we do this sequentially since each page saturates the CPUs.
+    const langs = crates.getLanguages(crate);
+    for (const lang of langs) {
+      console.info(`${Blue}[Building]${Clear} MPA ${lang}`);
+      await Bun.spawn(["bun", "lib/kastro/kastro.js", "build", "--lang", lang], {
+        env: { NODE_ENV: "production" },
+        stdio: ["inherit", "inherit", "inherit"]
+      }).exited;
+    }
     if (crate.Aliases) {
       const tasks = [];
       for (const alias in crate.Aliases) {
@@ -227,7 +216,18 @@ const buildCrate = (crateName, buildMode) => import(crateName)
       }
       await Promise.all(tasks);
     }
-  })
+    return;
+  }
+  // If a language is specified, build each page for that language.
+  setupKastro(buildMode);
+  /** @const {!Object<string, PageTarget>} */
+  const map = crates.getPageTargets(crate, buildMode, lang);
+
+  for (const page of Object.values(map)) {
+    console.info(`${Blue}[Building]${Clear} Page ${page.bundleName}`);
+    await compiler.bundleTarget(page.targetName, page);
+  }
+}
 
 /**
  * @param {string} crateName
@@ -238,17 +238,15 @@ const deployCrate = (crateName, target) => Promise.all([
   import(`${process.cwd()}/.secrets.js`),
   import(`./${target}/crate.js`)
 ])
-  .then(([_, secrets, crate]) => crate.deploy(crateName, secrets, compiler.getNamedAssets()));
-
-setupKastro();
+  .then(([_, secrets, crateDeployer]) => crateDeployer.deploy(crateName, secrets, compiler.getNamedAssets()));
 
 const args = parseArgs(process.argv.slice(2), "command");
 /** @const {string} */
-const crateName = (Array.isArray(args.command) ? args.command[1] : "") + "/crate.js";
+const crateName = (Array.isArray(args["command"]) ? args["command"][1] : "") + "/crate.js";
 
-if (args.command == "serve")
+if (args["command"] == "serve")
   serveCrate(crateName, args["compiled"] ? compiler.BuildMode.Compiled : compiler.BuildMode.Dev);
-else if (args.command == "build")
-  buildCrate(crateName, compiler.BuildMode.Compiled);
-else if (args.command == "deploy")
+else if (args["command"] == "build")
+  buildCrate(crateName, compiler.BuildMode.Release, args["lang"]);
+else if (args["command"] == "deploy")
   deployCrate(crateName, args["target"] || "cloudflare");

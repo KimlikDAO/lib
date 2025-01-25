@@ -13,8 +13,18 @@ css.BaseNode = function () { }
 css.BaseNode.prototype.type;
 
 /**
+ * @typedef {{
+ *   line: number,
+ *   column: number
+ * }}
+ */
+css.Position;
+
+/**
  * @const {{
- *   content: string
+ *   content: string,
+ *   start: css.Position,
+ *   end: css.Position
  * }}
  */
 css.BaseNode.prototype.position;

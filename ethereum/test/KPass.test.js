@@ -55,24 +55,14 @@ describe("0xa4b1 DOMAIN_SEPARATOR() check", () => {
   })
 });
 
-describe("0xfa DOMAIN_SEPARATOR() check", () => {
-  it("should be equal to the on-chain DOMAIN_SEPARATOR()", () => {
-    checkDomainSeparator(/** @type {!TokenInfo} */(TokenData[ChainId.xfa][2]),
-      ChainId.xfa,
-      "0xe494f2ccea138d6d397eabffa1428dcd703fb26029e591e283732f2128f79e3d");
-  });
-});
-
 describe("Test accepted payment tokens", () => {
   it("should list available tokens", () => {
     expect(KPass.isTokenAvailable(ChainId.xa86a, 1)).toBeTrue();
-    expect(KPass.isTokenAvailable(ChainId.x406, 1)).toBeFalse();
   });
 
   it("should list ERC20 tokens", () => {
     expect(KPass.isTokenERC20Permit(ChainId.x1, 1)).toBeFalse();
     expect(KPass.isTokenERC20Permit(ChainId.x1, 2)).toBeTrue();
     expect(KPass.isTokenERC20Permit(ChainId.xa86a, 1)).toBeTrue();
-    expect(KPass.isTokenERC20Permit(ChainId.x406, 1)).toBeFalse();
   })
 });

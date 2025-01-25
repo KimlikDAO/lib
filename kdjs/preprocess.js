@@ -3,7 +3,8 @@ import { simple } from "acorn-walk";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { combine, getDir } from "../util/paths";
-import { processCss } from "./cssParser";
+import { transpileCss } from "./cssParser";
+import { BasicMapper, DomIdMapper, GlobalMapper, LocalMapper } from "./domIdMapper";
 import { transpileJsx } from "./jsxParser";
 import { ExportStatement, ImportStatement } from "./modules";
 import { serializeWithStringKeys } from "./objects";
@@ -137,14 +138,16 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
         updates.push({
           beg: node.start,
           end: node.end,
-          put: ";"
+          put: "; // type only import"
         });
       else if (nextFile.endsWith(".jsx") && !sourceName.endsWith(".jsx"))
         updates.push({
           beg: node.source.start,
           end: node.source.end,
           put: `"${sourceName}.jsx"`
-        });
+        })
+      else if (nextFile.endsWith(".css") && file.endsWith(".js"))
+        throw `css files cannot be imported in js files (${file}->${nextFile})`;
 
       if (addBack) {
         let importStmt = unlinkedImports.get(sourceName);
@@ -225,19 +228,32 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
   return update(content, updates) + exportStmtToExportMap(exportStmt);
 }
 
+
 /**
- * @param {string} entryFile
- * @param {string} isolateDir
- * @param {!Array<string>} externs
- * @param {!Object<string, *>} globals
+ * @param {!Object<string, *>} params
+ * @param {DomIdMapper=} domIdMapper
  * @return {!Promise<{
  *   unlinkedImports: !Map<string, ImportStatement>,
  *   allFiles: !Set<string>,
  *   ignoreUnusedLocals: boolean
  * }>}
  */
-const preprocessAndIsolate = async (entryFile, isolateDir, externs, globals) => {
+const preprocessAndIsolate = async ({ entry: entryFile, ...params }, domIdMapper) => {
+  /** @const {string} */
+  const isolateDir = combine(
+    getDir(/** @type {string} */(params["output"] || "build/" + /** @type {string} */(entryFile))),
+    /** @type {string} */(params["isolateDir"]) || ".kdjs_isolate");
+  /** @const {!Object<string, *>} */
+  const globals = /** @type {!Object<string, *>} */(typeof params["globals"] == "string"
+    ? JSON.parse(params["globals"]) : (params["globals"] || {}));
+
+  domIdMapper ||= params["domIdMapping"] == "global"
+    ? new GlobalMapper()
+    : params["domIdMapping"] == "local" ? new LocalMapper() : new BasicMapper();
+
   const unlinkedImports = new Map();
+  /** @const {!Array<string>} */
+  const externs = [].concat(params["externs"] || []);
   /** @const {!Array<string>} */
   const files = [entryFile, ...externs];
   /** @const {!Set<string>} */
@@ -253,22 +269,23 @@ const preprocessAndIsolate = async (entryFile, isolateDir, externs, globals) => 
     /** @type {string} */
     let content = await readFile(file, "utf8");
     if (file.endsWith(".jsx")) {
-      content = transpileJsx(file == entryFile, file, content);
+      content = transpileJsx(file == entryFile, file, content, domIdMapper);
       ignoreUnusedLocals = true; // jsx transform leaves hard to remove unused locals
     }
-    const newContent = file.endsWith(".js") || file.endsWith(".jsx")
+    content = file.endsWith(".js") || file.endsWith(".jsx")
       ? processJs(file == entryFile, file, content, files, globals, unlinkedImports)
-      : processCss(content)
+      : transpileCss(file, content, domIdMapper);
 
     const outFile = combine(isolateDir, file);
     writePromises.push(mkdir(getDir(outFile), { recursive: true })
       .catch(() => { })
-      .then(() => writeFile(outFile, newContent)));
+      .then(() => writeFile(outFile, content)));
   }
   return Promise.all(writePromises).then(() => ({
     unlinkedImports,
     allFiles,
-    ignoreUnusedLocals
+    isolateDir,
+    ignoreUnusedLocals,
   }));
 }
 

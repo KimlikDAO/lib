@@ -12,8 +12,8 @@ const Script = (props) => {
   for (const key in props)
     if (key.charCodeAt(0) < 91) globals[key] = props[key];
 
-  const [file, ext] = splitFullExt(props.src);
-  const targetName = `/build/${file}-${props.Lang}.${ext}`;
+  const [file,] = splitFullExt(props.src);
+  const targetName = `/build/${file}-${props.Lang}.js`;
   return Promise.all([].concat(props.children ?? [])).then(() =>
     compiler.bundleTarget(targetName, {
       dynamicDeps: true,

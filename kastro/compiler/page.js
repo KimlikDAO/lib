@@ -2,7 +2,7 @@ import { minify } from "html-minifier";
 import { getDir } from "../../util/paths";
 import compiler from "./compiler";
 import HtmlMinifierConfig from "./config/htmlMinifierConfig";
-import { initGlobals } from "./pageGlobals";
+import { getDomIdMapper, initGlobals } from "./pageGlobals";
 
 const getStyleSheets = (targetName, { PageCss, SharedCss, BuildMode, Lang }) => {
   if (BuildMode == 0) {
@@ -20,6 +20,7 @@ const getStyleSheets = (targetName, { PageCss, SharedCss, BuildMode, Lang }) => 
   }
   const dirName = getDir(targetName);
   PageCss = PageCss.difference(SharedCss);
+
   return Promise.all([
     compiler.bundleTarget(`${dirName}/shared-${Lang}.css`, {
       BuildMode,

@@ -41,7 +41,7 @@ TokenInfo.prototype.sürüm;
 
 /** @const {!Object<ChainId, !Array<TokenInfo>>} */
 const TokenData = {
-  "0x1": [
+  [ChainId.x1]: [
     null, /** @type {!TokenInfo} */({
       adres: "dAC17F958D2ee523a2206206994597C13D831ec7".toLowerCase(),
       uzunAd: "Tether USD",
@@ -59,7 +59,7 @@ const TokenData = {
       sürüm: 0
     })
   ],
-  "0xa86a": [
+  [ChainId.xa86a]: [
     null, /** @type {!TokenInfo} */({
       adres: "9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7".toLowerCase(),
       uzunAd: "TetherToken",
@@ -84,7 +84,7 @@ const TokenData = {
   // fields. Future field additions must be in alphabetical order and come
   // after the above fields. User-agents should accept fields in any order as
   // specified by the EIPT712Domain type."
-  "0x89": [
+  [ChainId.x89]: [
     null, /** @type {!TokenInfo} */({
       adres: "c2132D05D31c914a87C6611C10748AEb04B58e8F".toLowerCase(),
       uzunAd: "(PoS) Tether USD",
@@ -102,7 +102,7 @@ const TokenData = {
       sürüm: 0
     })
   ],
-  "0xa4b1": [
+  [ChainId.xa4b1]: [
     null, /** @type {!TokenInfo} */({
       adres: "Fd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9".toLowerCase(),
       uzunAd: "Tether USD",
@@ -115,7 +115,7 @@ const TokenData = {
       sürüm: 1
     }), null
   ],
-  "0x38": [
+  [ChainId.x38]: [
     null, null, /** @type {!TokenInfo} */({
       adres: "8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d".toLowerCase(),
       uzunAd: "USD Coin",
@@ -128,21 +128,7 @@ const TokenData = {
       sürüm: 0
     })
   ],
-  "0x406": [
-    null, null, null, null
-  ],
-  "0xfa": [
-    null, null, /** @type {!TokenInfo} */({
-      adres: "04068DA6C83AFCFA0e13ba15A6696662335D5B75".toLowerCase(),
-      uzunAd: "USD Coin",
-      basamak: 6,
-      sürüm: 1
-    }), null
-  ],
-  "0x144": [
-    null, null, null, null
-  ],
-  "m:berkeley": [null, null, null, null]
+  [ChainId.MinaMainnet]: [null, null, null, null]
 };
 
 /** @type {!eth.Provider} */
