@@ -3,7 +3,7 @@ import { writeImportStatement } from "../modules";
 
 describe("writeImportStatement tests", () => {
   it("should print default import", () => {
-    const importStmt = { unnamed: "defaultExport", named: {} };
+    const importStmt = { unnamed: "defaultExport", named: {}, isNamespace: false };
     expect(writeImportStatement(importStmt, "module-name"))
       .toBe('import defaultExport from"module-name";');
   });
@@ -14,6 +14,7 @@ describe("writeImportStatement tests", () => {
         "A": "A",
         "LOCAL_B": "imported_B"
       },
+      isNamespace: false,
     };
     expect(writeImportStatement(importStmt, "hasan"))
       .toBe('import{A,imported_B as LOCAL_B}from"hasan";');
@@ -27,13 +28,14 @@ describe("writeImportStatement tests", () => {
         "B": "B",
         "C": "D"
       },
+      isNamespace: false,
     };
     expect(writeImportStatement(importStmt, "bun"))
       .toBe('import defaultExport,{A,B,D as C}from"bun";');
   });
 
   it("should omit from when no symbol is imported", () => {
-    const importStmt = { named: {} };
+    const importStmt = { named: {}, isNamespace: false };
     expect(writeImportStatement(importStmt, "module-name"))
       .toBe('import"module-name";');
   })

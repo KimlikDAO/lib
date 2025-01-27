@@ -1,5 +1,3 @@
-/** @externs */
-
 /**
  * @param {string} dirName
  * @return {!Promise<!Array<string>>}

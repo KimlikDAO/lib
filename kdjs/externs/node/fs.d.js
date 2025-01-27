@@ -1,5 +1,3 @@
-/** @externs */
-
 /**
  * @param {string} fileName
  * @param {string=} outputType

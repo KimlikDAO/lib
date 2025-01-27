@@ -1,5 +1,3 @@
-/** @externs */
-
 import acorn from "acorn";
 
 /**

@@ -7,19 +7,19 @@ const StyleSheet = ({ src, shared, SharedCss, PageCss }) => {
 }
 
 /**
+ * @param {string} filePath
  * @param {string} cssContent
- * @param {string=} filePath
  * @return {typeof StyleSheet}
  */
-const makeStyleSheet = (cssContent, filePath) => {
-  const { content, idMap } = minifyCss(cssContent, getDomIdMapper());
+const makeStyleSheet = (filePath, cssContent) => {
+  const { content, enumEntries } = minifyCss(filePath, cssContent, getDomIdMapper());
   const Style = Object.assign(({ SharedCss, PageCss, shared }) => {
     (shared ? SharedCss : PageCss).add({
       targetName: "/" + filePath,
       content
     });
     return null;
-  }, idMap);
+  }, enumEntries);
   return Style;
 };
 

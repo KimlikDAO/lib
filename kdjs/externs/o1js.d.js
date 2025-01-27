@@ -1,5 +1,3 @@
-/** @externs */
-
 /**
  * @constructor
  * @struct

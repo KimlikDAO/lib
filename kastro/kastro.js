@@ -51,7 +51,7 @@ const setupKastro = (buildMode) => {
       build.onLoad({ filter: /\.css$/ }, (args) => {
         const code = `import { makeStyleSheet } from "@kimlikdao/lib/kastro/stylesheet";\n` +
           `import { readFileSync } from "node:fs";\n` +
-          `export default makeStyleSheet(readFileSync("${path(args)}", "utf-8"), "${path(args)}");`;
+          `export default makeStyleSheet("${path(args)}", readFileSync("${path(args)}", "utf-8"));`;
         return { contents: code, loader: "js" };
       });
       build.onLoad({ filter: /\.ttf$/ }, (args) => {

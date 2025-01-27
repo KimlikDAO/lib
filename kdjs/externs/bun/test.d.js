@@ -1,5 +1,3 @@
-/** @externs */
-
 /**
  * @typedef {{
  *   timeout: (number|undefined),

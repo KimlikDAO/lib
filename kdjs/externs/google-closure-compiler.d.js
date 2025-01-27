@@ -1,6 +1,4 @@
 /**
- * @externs
- *
  * @author KimlikDAO
  */
 

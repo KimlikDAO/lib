@@ -110,6 +110,13 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
   for (const comment of comments)
     processComment(comment);
 
+  if (file.endsWith(".d.js") && !content.includes("@externs"))
+    updates.push({
+      beg: 0,
+      end: 0,
+      put: "/** @externs */\n"
+    });
+
   simple(ast, /** @type {!acorn.SimpleVisitor} */({
     ImportDeclaration(node) {
       /** @const {string} */
@@ -158,7 +165,10 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
         for (const spec of node.specifiers) {
           if (spec.type == "ImportDefaultSpecifier")
             importStmt.unnamed = spec.local.name;
-          else
+          else if (spec.type == "ImportNamespaceSpecifier") {
+            importStmt.isNamespace = true;
+            importStmt.unnamed = spec.local.name;
+          } else
             importStmt.named[spec.local.name] = spec.imported.name;
         }
       }
