@@ -120,11 +120,18 @@ const Image = ({ inline, ...props }) => {
   }[getExt(props.src)](props);
 };
 
+/**
+ * @param {string} id
+ * @return {string}
+ */
+const url = (id) => `url(#${id})`;
+
 export {
   Favicon,
   Image,
   InlineSvgImage,
   PngImage,
   SvgImage,
-  SvgJsxImage
+  SvgJsxImage,
+  url
 };

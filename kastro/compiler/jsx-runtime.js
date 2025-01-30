@@ -12,7 +12,7 @@ const Fragment = "";
  */
 const mergeChildren = (children, lang) => Promise.all(children
   .flat()
-  .filter((c) => typeof c != "boolean")
+  .filter((c) => c != null && typeof c != "boolean")
   .map((c) => (typeof c == "object" && lang in c) ? c[lang] : c))
   .then((children) => children.join(""));
 

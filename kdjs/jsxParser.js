@@ -1,6 +1,7 @@
 import { Parser } from "acorn";
 import acornJsx from "acorn-jsx";
 import { getExt } from "../util/paths";
+import { getEnum } from "./cssParser";
 import { DomIdMapper } from "./domIdMapper";
 import { ImportStatement, writeImportStatement } from "./modules";
 import { Update, update } from "./textual";
@@ -32,10 +33,11 @@ const SpecifierState = {
  * @param {boolean} isEntry Is the current file the entry file provided to kdjs.
  * @param {string} file Name of the file
  * @param {string} content The contents as a string
+ * @param {!Object<string, *>} globals
  * @param {DomIdMapper} domIdMapper
  * @return {string} The transpiled js file
  */
-const transpileJsx = (isEntry, file, content, domIdMapper) => {
+const transpileJsx = (isEntry, file, content, globals, domIdMapper) => {
   /** @const {!Array<!acorn.Comment>} */
   const comments = [];
   /** @const {!Array<Update>} */
@@ -128,11 +130,13 @@ const transpileJsx = (isEntry, file, content, domIdMapper) => {
         specifierInfo[node.name].state = SpecifierState.Keep;
     } else if (node.type === "TaggedTemplateExpression") {
       if (node.tag.type == "Identifier" && node.tag.name == "css") {
-        console.log(content.slice(node.start, node.end));
+        /** @const {string} */
+        const strippedCss = content.slice(node.start + 4, node.end - 1)
+          .replace(/\$\{[^}]*\}/g, "a"); // Template literals cannot be exported, simply replace them with a placeholder
         updates.push({
           beg: node.start,
           end: node.end,
-          put: "/** @enum {string} */({})"
+          put: getEnum(file, strippedCss, domIdMapper)
         });
       }
     } else if (node.type === "JSXElement" || node.type === "JSXFragment") {

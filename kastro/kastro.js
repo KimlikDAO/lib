@@ -16,9 +16,9 @@ import {
   webpTarget
 } from "./compiler/image";
 import { pageTarget } from "./compiler/page";
-import { getDomIdMapper, getGlobals } from "./compiler/pageGlobals";
+import { getDomIdMapper, getGlobals, setDomIdMapper } from "./compiler/pageGlobals";
 import { scriptTarget } from "./compiler/script";
-import { stylesheetTarget } from "./compiler/stylesheet";
+import { styleSheetTarget } from "./compiler/styleSheet";
 import { registerTargetFunction } from "./compiler/targetRegistry";
 import { CompressedMimes } from "./workers/mimes";
 
@@ -30,7 +30,7 @@ const setupKastro = (buildMode) => {
   registerTargetFunction(".png", pngTarget);
   registerTargetFunction(".svg", svgTarget);
   registerTargetFunction(".jsx.svg", jsxSvgTarget);
-  registerTargetFunction(".css", stylesheetTarget);
+  registerTargetFunction(".css", styleSheetTarget);
   registerTargetFunction(".webp", webpTarget);
   registerTargetFunction(".ttf", ttfTarget);
   registerTargetFunction(".woff2", woff2Target);
@@ -80,7 +80,7 @@ const setupKastro = (buildMode) => {
     constructor(name) {
       this.name = name;
     }
-    get children() { return [this, this, this, this, this] }
+    get children() { return [this, this, this, this, this]; }
     get firstElementChild() { return this; }
     get nextSibling() { return this; }
     get parentElement() { return this; }
@@ -139,7 +139,7 @@ const serveCrate = async (crateName, buildMode) => {
 
   createServer({
     appType: "mpa",
-    publicDir: buildMode == compiler.BuildMode.Dev ? "" : "build/crate",
+    publicDir: buildMode == compiler.BuildMode.Dev ? "" : "build/bundle",
     plugins: [{
       name: "kastro-js",
       enforce: "pre",
@@ -212,7 +212,7 @@ const buildCrate = async (crateName, buildMode, lang) => {
       for (const alias in crate.Aliases) {
         const exts = CompressedMimes[getExt(alias)] ? [""] : ["", ".br", ".gz"];
         for (const ext of exts)
-          tasks.push(cp(`build/crate/${crate.Aliases[alias]}${ext}`, `build/crate/${alias}${ext}`));
+          tasks.push(cp(`build/bundle/${crate.Aliases[alias]}${ext}`, `build/bundle/${alias}${ext}`));
       }
       await Promise.all(tasks);
     }

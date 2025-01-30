@@ -1,7 +1,7 @@
+import * as swc from "@swc/core";
 import ClosureCompiler from "google-closure-compiler";
 import { writeFile } from "node:fs/promises";
 import UglifyJS from "uglify-js";
-import { combine, getDir } from "../util/paths";
 import { ImportStatement } from "./modules";
 import { tweakPasses } from "./passes";
 import { postprocess } from "./postprocess";
@@ -70,6 +70,7 @@ const compile = async (params, checkFreshFn, domIdMapper) => {
   };
 
   return new Promise((resolve, reject) => {
+    closureCompiler.logger = console.log;
     closureCompiler.run((exitCode, output, errors) => {
       if (exitCode || errors) {
         reject(errors);
@@ -87,25 +88,44 @@ const compile = async (params, checkFreshFn, domIdMapper) => {
           // evaluate: "eager",
           module: true,
           toplevel: true,
-          passes: 3,
+          passes: 4,
           unsafe: true,
           drop_console: /** @type {boolean} */(params["nologs"]),
         },
         warnings: "verbose",
       });
-      const uglifiedCode = tweakPasses(uglified.code);
-      console.log(params["entry"]);
-      console.log(`Uglified size:\t${uglifiedCode.length}\nGCC size:\t${output.length}`);
-      let code = uglifiedCode.length < output.length ? uglifiedCode : output;
-      if (/** @type {boolean} */(params["emit_shebang"]))
-        code = "#!/usr/bin/env bun\n" + code;
+      console.log(`GCC size:     \t${output.length}`);
       console.log(uglified.warnings, uglified.error);
-      if (params["print"]) console.log(code);
-      if (params["output"])
-        writeFile(/** @type {string} */(params["output"]), code)
-          .then(() => resolve(code))
-      else resolve(code);
-    });
+      /** @const {string} */
+      const uglifiedCode = tweakPasses(uglified.code);
+      const swcOutputPromise = swc.minify(uglifiedCode, {
+        module: true,
+        sourceMap: false,
+        toplevel: true,
+        mangle: true,
+        compress: {
+          passes: 10,
+          pure_getters: true,
+          unsafe: true,
+          unsafe_proto: true,
+          reduce_vars: true,
+        }
+      });
+      resolve(Promise.all([uglifiedCode, swcOutputPromise]));
+    })
+  }).then(([uglifiedCode, swcOutput]) => {
+    console.log(`Uglified size:\t${uglifiedCode.length}`);
+    console.log(`SWC size:     \t${swcOutput.code.length}`);
+    /** @type {string} */
+    let code = uglifiedCode.length < swcOutput.code.length
+      ? uglifiedCode : swcOutput.code;
+    if (/** @type {boolean} */(params["emit_shebang"]))
+      code = "#!/usr/bin/env bun\n" + code;
+    if (params["print"]) console.log("UglifyJS\n", uglifiedCode, "\nSWC\n", swcOutput.code);
+    if (params["output"])
+      return writeFile(/** @type {string} */(params["output"]), code)
+        .then(() => code)
+    return code;
   })
 }
 

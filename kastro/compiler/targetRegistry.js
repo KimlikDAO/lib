@@ -3,15 +3,17 @@ import { ContentHash, DependencyHash } from "./hash";
 
 /**
  * @typedef {{
+ *   targetName: (string|undefined)
  *   content: !Uint8Array,
  *   contentHash: ContentHash,
  *   depHash: (DependencyHash|undefined)
  * }}
  */
-const CacheEntry = {};
+const Target = {};
 
 /**
- * @typedef {function(string, Props): !Promise<CacheEntry|string|!Uint8Array|void>}
+ * A target function
+ * @typedef {function(string, Props): !Promise<Target|string|!Uint8Array|void>}
  */
 const TargetFunction = {};
 

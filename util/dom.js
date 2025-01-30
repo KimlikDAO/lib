@@ -75,7 +75,7 @@ const bindDropdown = (düğme, menü) => {
   menü.classList.add("hide");
   menü.style.display = "";
   düğme.ontouchstart = menü.ontouchstart = (event) => event.stopPropagation();
-  const kapat = (event) => {
+  const kapat = () => {
     window["ontouchstart"] = window.onclick = null;
     düğme.classList.remove("sel");
     menü.classList.add("hide");

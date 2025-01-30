@@ -55,7 +55,7 @@ const populateChildTargets = (props) => {
   };
   if (Array.isArray(props.childTargets))
     props.childTargets = props.childTargets.map((target) => {
-      if (target instanceof Promise) return target;
+      if (typeof target.then === "function") return target;
       if (typeof target == "object" && target.content) {
         const content = typeof target.content == "string" ? Encoder.encode(target.content) : target.content;
         return Promise.resolve({
@@ -96,7 +96,7 @@ const computeDepHash = (props) => {
 const forceBuildTarget = (targetName, props) => {
   populateChildTargets(props);
   const targetFunc = getTargetFunction(targetName);
-  if (!targetFunc) console.error("targetFunc not found", targetName);
+  if (!targetFunc) console.error("targetFunc not found", targetName, targetFunc);
   return targetFunc(targetName, props);
 }
 
@@ -206,7 +206,7 @@ const bundleTarget = (targetName, props) => props.BuildMode == BuildMode.Dev
     /** @const {string} */
     const contentHashStr = hash.toStr(contentHash);
     /** @const {string} */
-    const bundleName = "build/crate/" +
+    const bundleName = "build/bundle/" +
       (props.bundleName || `${contentHashStr}.${getExt(targetName)}`);
     if (props.bundleName)
       NAMED_ASSETS[props.bundleName] = contentHashStr;
@@ -217,7 +217,7 @@ const bundleTarget = (targetName, props) => props.BuildMode == BuildMode.Dev
       return piggybackUrl;
     }
     /** @const {!Promise<void>} */
-    const bundle = mkdir("build/crate", { recursive: true })
+    const bundle = mkdir("build/bundle", { recursive: true })
       .catch(() => { })
       .then(() =>
         CompressedMimes[getExt(targetName)]
@@ -228,7 +228,7 @@ const bundleTarget = (targetName, props) => props.BuildMode == BuildMode.Dev
             access(`${bundleName}.gz`).catch(() => zopfli(targetFile, bundleName))
           ])
       );
-    return bundle.then(() => bundleName.slice(12));
+    return bundle.then(() => bundleName.slice(13));
   });
 
 /**

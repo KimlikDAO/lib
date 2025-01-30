@@ -17,7 +17,7 @@ const deploy = async (crateName, secrets, namedAssets) => {
       "rsync",
       "-rP",
       "-e", `ssh -6 -i ${sshKey} -l ${username}`,
-      "./build/crate/",
+      "./build/bundle/",
       target
     ]);
     const deployOutput = await new Response(rsync.stdout).text();

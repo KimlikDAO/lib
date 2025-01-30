@@ -1,7 +1,7 @@
 import { DomIdMapper, GlobalMapper, LocalMapper } from "../../kdjs/domIdMapper";
 import { filterGlobalProps } from "../props";
 
-const Globals = {};
+let Globals = {};
 
 /**
  *
@@ -28,15 +28,15 @@ const getGlobals = () => Globals;
 const assignGlobals = (newGlobals) => Object.assign(Globals, newGlobals);
 
 /** @type {DomIdMapper} */
-let DomIdMapper;
+let IdMapper;
 
-const setDomIdMapper = (buildMode) => DomIdMapper = buildMode == 2
+const setDomIdMapper = (buildMode) => IdMapper = buildMode == 2
   ? new GlobalMapper() : new LocalMapper();
 
 /**
  * @return {DomIdMapper}
  */
-const getDomIdMapper = () => DomIdMapper ||= new LocalMapper();
+const getDomIdMapper = () => IdMapper ||= new LocalMapper();
 
 export {
   assignGlobals,

@@ -38,11 +38,13 @@ const TtfFont = ({ Lang, BuildMode, SharedCss, PageCss, shared, href, name, weig
     });
     return Promise.resolve("");
   }
+
   const ttfTarget = `/build/${fontBase}-${Lang}.ttf`;
   const ttfProps = {
     childTargets: [`/${fontBase}.ttf`, `/${fontBase}-${Lang}.txt`],
     Lang
   };
+
   return compiler.bundleTarget(ttfTarget, ttfProps)
     .then((ttfBundled) => compiler.bundleTarget(`/build/${fontBase}-${Lang}.woff2`, {
       childTargets: [{ targetName: ttfTarget, props: ttfProps }]

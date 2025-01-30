@@ -1,37 +1,8 @@
 import { minify } from "html-minifier";
 import { getDir } from "../../util/paths";
-import compiler from "./compiler";
+import { makeStyleSheetCollection } from "../stylesheet";
 import HtmlMinifierConfig from "./config/htmlMinifierConfig";
-import { getDomIdMapper, initGlobals } from "./pageGlobals";
-
-const getStyleSheets = (targetName, { PageCss, SharedCss, BuildMode, Lang }) => {
-  if (BuildMode == 0) {
-    const allCss = PageCss.union(SharedCss);
-    let embeddedCss = "";
-    let externalCss = "";
-    for (const css of allCss)
-      if (typeof css === "string")
-        externalCss += `<link href="${css}" rel="stylesheet" type="text/css" />\n`;
-      else {
-        embeddedCss += css.content;
-        delete css.content;
-      }
-    return Promise.resolve(`<style>${embeddedCss}</style>${externalCss}`);
-  }
-  const dirName = getDir(targetName);
-  PageCss = PageCss.difference(SharedCss);
-
-  return Promise.all([
-    compiler.bundleTarget(`${dirName}/shared-${Lang}.css`, {
-      BuildMode,
-      childTargets: [...SharedCss]
-    }).then((bundleName) => `<link href="${bundleName}" rel="stylesheet" type="text/css">`),
-    compiler.bundleTarget(`${dirName}/page-${Lang}.css`, {
-      BuildMode,
-      childTargets: [...PageCss]
-    }).then((bundleName) => `<link href="${bundleName}" rel="stylesheet" type="text/css">`)
-  ]).then(([sharedCss, pageCss]) => `${sharedCss}${pageCss}`);
-}
+import { initGlobals } from "./pageGlobals";
 
 /**
  * @param {string} targetName
@@ -39,16 +10,32 @@ const getStyleSheets = (targetName, { PageCss, SharedCss, BuildMode, Lang }) => 
  * @return {!Promise<string>}
  */
 const pageTarget = (targetName, props) => {
-  props.SharedCss = new Set();
-  props.PageCss = new Set();
+  /** @const {string} */
+  const targetDir = getDir(targetName);
+  props.SharedCss = makeStyleSheetCollection(`${targetDir}/shared-${props.Lang}.css`);
+  props.PageCss = makeStyleSheetCollection(`${targetDir}/page-${props.Lang}.css`);
   initGlobals(props);
-  return import(`${getDir(targetName.slice(7))}/sayfa.jsx`)
+
+  return import(`${targetDir.slice(7)}/sayfa.jsx`)
     .then((jsx) => jsx.default(props))
-    .then((html) => getStyleSheets(targetName, props).then((styleSheets) => {
-      html = "<!DOCTYPE html>" + html.replace("</head>", styleSheets + "</head>");
-      return props.BuildMode == 0
-        ? html : minify(html, HtmlMinifierConfig);
-    }));
+    .then((html) => {
+      const renderStyleSheets = ({ BuildMode, SharedCss, PageCss }) => {
+        if (BuildMode == 0) {
+          SharedCss.addAll(SharedCss.entries());
+          return SharedCss({ BuildMode });
+        } else {
+          PageCss.removeAll(SharedCss.entries());
+          return Promise.all([SharedCss({ BuildMode }), PageCss({ BuildMode })])
+            .then(([shared, page]) => shared + page);
+        }
+      }
+      return renderStyleSheets(props)
+        .then((styleSheets) => {
+          html = "<!DOCTYPE html>" + html.replace("</head>", styleSheets + "</head>");
+          return props.BuildMode == 0
+            ? html : minify(html, HtmlMinifierConfig);
+        });
+    });
 }
 
 export { pageTarget };

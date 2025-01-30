@@ -16,7 +16,7 @@ const deploy = (crateName, secrets, namedAssets) => import(crateName)
       etags[name] = `"${namedAssets[name]}"`;
 
     /** @const {string} */
-    const crateDir = "build/crate/";
+    const bundleDir = "build/bundle/";
     return Promise.all([
       compiler.buildTarget("/build/bundledPageWorker.js", {
         dynamicDeps: true,
@@ -27,8 +27,8 @@ const deploy = (crateName, secrets, namedAssets) => import(crateName)
           ETAGS: etags
         }
       }),
-      readdir(crateDir)
-        .then((files) => Promise.all(files.map((file) => readFile(crateDir + "/" + file)
+      readdir(bundleDir)
+        .then((files) => Promise.all(files.map((file) => readFile(`${bundleDir}/${file}`)
           .then((content) => [file, content])))
           .then(Object.fromEntries))
     ]).then(([{ content }, files]) =>

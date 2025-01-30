@@ -1,4 +1,5 @@
 import * as csstree from "css-tree";
+import { splitFullExt } from "../util/paths";
 import { DomIdMapper } from "./domIdMapper";
 
 /**
@@ -21,8 +22,8 @@ const DomNamespacePattern = /@domNamespace\s*{(.*)}/;
  */
 const selectorToEnumKey = (selector) => selector
   .split(/[-_]+/)
-  .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-  .join('');
+  .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+  .join("");
 
 /**
  * @param {string} file
@@ -30,16 +31,17 @@ const selectorToEnumKey = (selector) => selector
  * @param {string} message
  * @return {string}
  */
-const errorMessage = (file, node, message) =>
-  `Error in ${file}:${node.loc.start.line}:${node.loc.start.column}: ${message}`;
+const errorMessage = (file, node, message) => `Error in ${file}:${node.loc}: ${message}`;
 
 /**
  * @param {string} file The name of the file
  * @param {string} content css file content to be converted to a js enum
  * @param {!DomIdMapper} domIdMapper
- * @return {string} js code that exports the enum
+ * @return {string}
  */
-const transpileCss = (file, content, domIdMapper) => {
+const getEnum = (file, content, domIdMapper) => {
+  /** @const {string} */
+  const context = `${splitFullExt(file)[0]}.jsx`;
   /** @const {!csstree.StyleSheet} */
   const ast = csstree.parse(content.replaceAll("/**", "/*!"));
   /** @const {!Object<string, string>} */
@@ -83,6 +85,7 @@ const transpileCss = (file, content, domIdMapper) => {
         const rule = /** @type {!csstree.Rule} */(node);
         if (!rule.prelude || rule.prelude.type !== "SelectorList")
           throw errorMessage(file, node, "Invalid selector");
+
         /** @const {!csstree.SelectorList} */
         const selector = rule.prelude;
         /** @const {!csstree.Selector} */
@@ -107,21 +110,31 @@ const transpileCss = (file, content, domIdMapper) => {
 
         /** @const {string} */
         const finalKey = enumKey || selectorToEnumKey(baseSelector);
-        enumEntries[finalKey] = domIdMapper.map(namespace, file, baseSelector);
+        enumEntries[finalKey] = domIdMapper.map(namespace, context, baseSelector);
       }
     } else if (node.type === "Atrule" && /** @type {!csstree.Atrule} */(node).name === "media") {
       stack.push(current.next);
       current = /** @type {!csstree.Atrule} */(node).block.children.head;
     }
   }
+  const entries = Object.keys(enumEntries).sort();
+  let output = "/** @enum {string} */({\n";
+  for (const entry of entries)
+    output += `  ${entry}: "${enumEntries[entry]}",\n`;
+  output += "})";
+  return output;
+}
 
-  /** @const {!Array<string>} */
-  const names = Object.keys(enumEntries).sort();
-  /** @type {string} */
-  let output = "\n/** @enum {string} */\nconst Style = {\n";
-  for (const name of names)
-    output += `  ${name}: "${enumEntries[name]}",\n`;
-  return output + "};\n\nexport default Style;\n";
+/**
+ * @param {string} file The name of the file
+ * @param {string} content css file content to be converted to a js enum
+ * @param {!DomIdMapper} domIdMapper
+ * @return {string} js code that exports the enum
+ */
+const transpileCss = (file, content, domIdMapper) => {
+  return "\n/** @enum {string} */\nconst Style = "
+    + getEnum(file, content, domIdMapper)
+    + ";\n\nexport default Style;\n";
 };
 
 /**
@@ -137,6 +150,8 @@ const transpileCss = (file, content, domIdMapper) => {
  * }}
  */
 const minifyCss = (file, content, domIdMapper) => {
+  /** @const {string} */
+  const context = `${splitFullExt(file)[0]}.jsx`;
   /** @const {!csstree.StyleSheet} */
   const ast = csstree.parse(content.replaceAll("/**", "/*!"));
   /** @const {!Object<string, string>} */
@@ -175,8 +190,10 @@ const minifyCss = (file, content, domIdMapper) => {
 
       /** @const {!csstree.Rule} */
       const rule = /** @type {!csstree.Rule} */(node);
-      if (!rule.prelude || rule.prelude.type !== "SelectorList")
+      if (!rule.prelude || rule.prelude.type !== "SelectorList") {
+        console.log("second", rule);
         throw errorMessage(file, node, "Invalid selector");
+      }
 
       /** @const {!csstree.SelectorList} */
       const selectorList = rule.prelude;
@@ -190,7 +207,7 @@ const minifyCss = (file, content, domIdMapper) => {
             /** @const {string} */
             const originalName = part.data.name;
             /** @const {string} */
-            const mappedName = domIdMapper.map(namespace, file, originalName);
+            const mappedName = domIdMapper.map(namespace, context, originalName);
             /** @const {string} */
             const finalKey = enumKey || selectorToEnumKey(originalName);
             enumEntries[finalKey] = mappedName;
@@ -203,4 +220,10 @@ const minifyCss = (file, content, domIdMapper) => {
   return { content: csstree.generate(ast), enumEntries };
 };
 
-export { CssModule, minifyCss, transpileCss };
+export {
+  CssModule,
+  getEnum,
+  minifyCss,
+  selectorToEnumKey,
+  transpileCss
+};

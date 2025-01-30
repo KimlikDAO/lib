@@ -59,16 +59,18 @@ DomIdMapper.prototype.map = function (namespace, context, domId) { }
 const hashKey = (key) => "K" +
   base64(keccak256Uint8(new TextEncoder().encode(key)).subarray(0, 3))
     .replaceAll("/", "_")
-    .replaceAll("=", "-");
+    .replaceAll("+", "-");
 
 /**
  * @implements {DomIdMapper}
  */
 class GlobalMapper {
-  /** @type {!Map<string, number>} */
+  /** @const {!Map<string, number>} */
   namespaceToNext = new Map();
-  /** @type {!Map<string, number>} */
+  /** @const{!Map<string, number>} */
   keyToIndex = new Map();
+  /** @const {!Set<string>} */
+  minifiedIds = new Set(["mpasel", "mpahide", "mpadis"]);
 
   /**
    * @param {string} namespace
@@ -77,15 +79,20 @@ class GlobalMapper {
    * @return {string} a minifiedId which is unique within the namespace
    */
   map(namespace, context, domId) {
+    if (this.minifiedIds.has(namespace + domId)) return domId;
     const key = hashKey(`${context}#${domId}`);
     /** @type {number|undefined} */
     let index = this.keyToIndex.get(namespace + key);
     if (index == undefined) {
       index = this.namespaceToNext.get(namespace) ?? 0;
+      if (this.minifiedIds.has(namespace + indexToMinified(index)))
+        ++index;
       this.namespaceToNext.set(namespace, index + 1);
       this.keyToIndex.set(namespace + key, index);
     }
-    return indexToMinified(index);
+    const minifiedId = indexToMinified(index);
+    this.minifiedIds.add(namespace + minifiedId);
+    return minifiedId;
   }
 }
 
@@ -93,10 +100,12 @@ class GlobalMapper {
  * @implements {DomIdMapper}
  */
 class LocalMapper {
-  /** @type {!Map<string, number>} */
+  /** @const {!Map<string, number>} */
   hashToNext = new Map();
-  /** @type {!Map<string, number>} */
+  /** @const {!Map<string, number>} */
   keyToIndex = new Map();
+  /** @const {!Set<string>} */
+  minifiedIds = new Set(["sel", "hide", "dis"]);
 
   /**
    * @param {string} _namespace Since context values are unique across
@@ -108,6 +117,7 @@ class LocalMapper {
    *                   context belongs to a single namespace.
    */
   map(_namespace, context, domId) {
+    if (this.minifiedIds.has(domId)) return domId;
     /** @const {string} */
     const hash = hashKey(context);
     /** @const {string} */
@@ -119,7 +129,9 @@ class LocalMapper {
       this.hashToNext.set(hash, index + 1);
       this.keyToIndex.set(key, index);
     }
-    return hash + indexToMinified(index);
+    const minifiedId = hash + indexToMinified(index);
+    this.minifiedIds.add(minifiedId);
+    return minifiedId;
   }
 }
 
@@ -128,7 +140,7 @@ class LocalMapper {
  */
 class BasicMapper {
   map(namespace, context, domId) {
-    return `${namespace}#${context}#${domId}`.replaceAll("/", "_");
+    return hashKey(`${namespace}#${context}#${domId}`);
   }
 }
 

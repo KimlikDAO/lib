@@ -279,7 +279,7 @@ const preprocessAndIsolate = async ({ entry: entryFile, ...params }, domIdMapper
     /** @type {string} */
     let content = await readFile(file, "utf8");
     if (file.endsWith(".jsx")) {
-      content = transpileJsx(file == entryFile, file, content, domIdMapper);
+      content = transpileJsx(file == entryFile, file, content, globals, domIdMapper);
       ignoreUnusedLocals = true; // jsx transform leaves hard to remove unused locals
     }
     content = file.endsWith(".js") || file.endsWith(".jsx")
