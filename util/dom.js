@@ -112,9 +112,7 @@ const pencere = (url, en, boy) => {
  * @param {number} para
  * @return {string} metin olarak yazılmış para miktarı
  */
-const paradanMetne = (para) => Lang == LangCode.TR
-  ? ("" + (para / 1_000_000)).replace(".", ",")
-  : ("" + (para / 1_000_000))
+const paradanMetne = (para) => (para / 1_000_000).toLocaleString(Lang);
 
 /**
  * @nosideeffects

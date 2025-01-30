@@ -15,15 +15,19 @@ const ExportAsPattern = /@export\s*{(.*)}/;
 const DomNamespacePattern = /@domNamespace\s*{(.*)}/;
 
 /**
- * Converts a css selector to a PascalCase enum key.
+ * Converts a css selector to a valid JS identifier.
+ * If the selector has no separators, keeps it as is.
+ * Otherwise converts to PascalCase.
  *
  * @param {string} selector A css id or class selector including # or .
- * @return {string} PascalCase enum key.
+ * @return {string} The JS identifier
  */
-const selectorToEnumKey = (selector) => selector
-  .split(/[-_]+/)
-  .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-  .join("");
+const selectorToEnumKey = (selector) => {
+  const parts = selector.split(/[-_]+/);
+  return parts.length === 1
+    ? selector
+    : parts.map(part => part.charAt(0).toUpperCase() + part.slice(1)).join("");
+};
 
 /**
  * @param {string} file
@@ -79,7 +83,6 @@ const getEnum = (file, content, domIdMapper) => {
         else if (comment.includes("@export"))
           enumKey = "";
       }
-
       if (enumKey !== null) {
         /** @const {!csstree.Rule} */
         const rule = /** @type {!csstree.Rule} */(node);
@@ -112,10 +115,9 @@ const getEnum = (file, content, domIdMapper) => {
         const finalKey = enumKey || selectorToEnumKey(baseSelector);
         enumEntries[finalKey] = domIdMapper.map(namespace, context, baseSelector);
       }
-    } else if (node.type === "Atrule" && /** @type {!csstree.Atrule} */(node).name === "media") {
-      stack.push(current.next);
-      current = /** @type {!csstree.Atrule} */(node).block.children.head;
-    }
+    } else if (node.type === "Atrule" && /** @type {!csstree.Atrule} */(node).name === "media")
+      stack.push(/** @type {!csstree.Atrule} */(node).block.children.head);
+
   }
   const entries = Object.keys(enumEntries).sort();
   let output = "/** @enum {string} */({\n";
@@ -158,7 +160,7 @@ const minifyCss = (file, content, domIdMapper) => {
   const enumEntries = {};
   /** @type {string} */
   let namespace = "mpa";
-  /** @const {!Array<!csstree.ListItem>} */
+  /** @const {!Array<?csstree.ListItem>} */
   const stack = [];
 
   for (
@@ -215,7 +217,8 @@ const minifyCss = (file, content, domIdMapper) => {
           }
         }
       }
-    }
+    } else if (node.type === "Atrule" && /** @type {!csstree.Atrule} */(node).name === "media")
+      stack.push(/** @type {!csstree.Atrule} */(node).block.children.head);
   }
   return { content: csstree.generate(ast), enumEntries };
 };

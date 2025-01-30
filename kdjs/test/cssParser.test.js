@@ -12,10 +12,12 @@ describe("selectorToEnumKey", () => {
   it("should convert selector to enum key", () => {
     expect(selectorToEnumKey("blue-button")).toBe("BlueButton");
     expect(selectorToEnumKey("blue_button")).toBe("BlueButton");
-    expect(selectorToEnumKey("blueButton")).toBe("BlueButton");
+    expect(selectorToEnumKey("blueButton")).toBe("blueButton");
     expect(selectorToEnumKey("PascalCase")).toBe("PascalCase");
     expect(selectorToEnumKey("a__PascalCase")).toBe("APascalCase");
     expect(selectorToEnumKey("a-PascalCase")).toBe("APascalCase");
+    expect(selectorToEnumKey("mina")).toBe("mina");
+    expect(selectorToEnumKey("x1")).toBe("x1");
   });
 });
 

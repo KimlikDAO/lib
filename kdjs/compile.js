@@ -22,7 +22,7 @@ const compile = async (params, checkFreshFn, domIdMapper) => {
     /** @const {!Set<string>} */ allFiles,
     /** @const {string} */ isolateDir,
     /** @const {boolean} */ ignoreUnusedLocals
-  } = await preprocessAndIsolate(params);
+  } = await preprocessAndIsolate(params, domIdMapper);
   /** @const {!Array<string>} */
   const allFilesArray = Array.from(allFiles).sort();
   if (checkFreshFn && await checkFreshFn(allFilesArray))
