@@ -53,6 +53,13 @@ const DomIdMapper = function () { }
 DomIdMapper.prototype.map = function (namespace, context, domId) { }
 
 /**
+ * @param {string} namespace
+ * @param {string} domId
+ * @return {string} the mapped id
+ */
+DomIdMapper.prototype.preserve = function (namespace, domId) { }
+
+/**
  * @param {string} key 
  * @return {string}
  */
@@ -70,7 +77,7 @@ class GlobalMapper {
   /** @const{!Map<string, number>} */
   keyToIndex = new Map();
   /** @const {!Set<string>} */
-  minifiedIds = new Set(["mpasel", "mpahide", "mpadis"]);
+  minifiedIds = new Set();
 
   /**
    * @param {string} namespace
@@ -85,7 +92,7 @@ class GlobalMapper {
     let index = this.keyToIndex.get(namespace + key);
     if (index == undefined) {
       index = this.namespaceToNext.get(namespace) ?? 0;
-      if (this.minifiedIds.has(namespace + indexToMinified(index)))
+      while (this.minifiedIds.has(namespace + indexToMinified(index)))
         ++index;
       this.namespaceToNext.set(namespace, index + 1);
       this.keyToIndex.set(namespace + key, index);
@@ -93,6 +100,16 @@ class GlobalMapper {
     const minifiedId = indexToMinified(index);
     this.minifiedIds.add(namespace + minifiedId);
     return minifiedId;
+  }
+
+  /**
+   * @param {string} namespace
+   * @param {string} domId
+   * @return {string} the mapped id
+   */
+  preserve(namespace, domId) {
+    this.minifiedIds.add(namespace + domId);
+    return domId;
   }
 }
 
@@ -105,7 +122,7 @@ class LocalMapper {
   /** @const {!Map<string, number>} */
   keyToIndex = new Map();
   /** @const {!Set<string>} */
-  minifiedIds = new Set(["sel", "hide", "dis"]);
+  minifiedIds = new Set();
 
   /**
    * @param {string} _namespace Since context values are unique across
@@ -133,6 +150,16 @@ class LocalMapper {
     this.minifiedIds.add(minifiedId);
     return minifiedId;
   }
+
+  /**
+   * @param {string} _namespace
+   * @param {string} domId
+   * @return {string} the mapped id
+   */
+  preserve(_namespace, domId) {
+    this.minifiedIds.add(domId);
+    return domId;
+  }
 }
 
 /**
@@ -141,6 +168,15 @@ class LocalMapper {
 class BasicMapper {
   map(namespace, context, domId) {
     return hashKey(`${namespace}#${context}#${domId}`);
+  }
+
+  /**
+   * @param {string} _namespace
+   * @param {string} domId
+   * @return {string} the mapped id
+   */
+  preserve(_namespace, domId) {
+    return domId;
   }
 }
 

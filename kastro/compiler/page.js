@@ -16,7 +16,7 @@ const pageTarget = (targetName, props) => {
   props.PageCss = makeStyleSheetCollection(`${targetDir}/page-${props.Lang}.css`);
   initGlobals(props);
 
-  return import(`${targetDir.slice(7)}/sayfa.jsx`)
+  return import(`${targetDir.slice(7)}/page.jsx`)
     .then((jsx) => jsx.default(props))
     .then((html) => {
       const renderStyleSheets = ({ BuildMode, SharedCss, PageCss }) => {

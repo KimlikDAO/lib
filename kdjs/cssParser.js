@@ -74,6 +74,8 @@ const getEnum = (file, content, domIdMapper) => {
     } else if (node.type === "Rule") {
       /** @type {?string} */
       let enumKey = null;
+      /** @type {boolean} */
+      let isPreserved = false;
       if (current.prev && current.prev.data.type === "Comment") {
         /** @const {string} */
         const comment = /** @type {!csstree.Comment} */(current.prev.data).value;
@@ -82,6 +84,7 @@ const getEnum = (file, content, domIdMapper) => {
           enumKey = exportMatch[1].trim();
         else if (comment.includes("@export"))
           enumKey = "";
+        isPreserved = comment.includes("@preserve");
       }
       if (enumKey !== null) {
         /** @const {!csstree.Rule} */
@@ -113,7 +116,9 @@ const getEnum = (file, content, domIdMapper) => {
 
         /** @const {string} */
         const finalKey = enumKey || selectorToEnumKey(baseSelector);
-        enumEntries[finalKey] = domIdMapper.map(namespace, context, baseSelector);
+        enumEntries[finalKey] = isPreserved
+          ? domIdMapper.preserve(namespace, baseSelector)
+          : domIdMapper.map(namespace, context, baseSelector);
       }
     } else if (node.type === "Atrule" && /** @type {!csstree.Atrule} */(node).name === "media")
       stack.push(/** @type {!csstree.Atrule} */(node).block.children.head);
@@ -182,12 +187,15 @@ const minifyCss = (file, content, domIdMapper) => {
     } else if (node.type === "Rule") {
       /** @type {?string} */
       let enumKey;
+      /** @type {boolean} */
+      let isPreserved = false;
       if (current.prev && current.prev.data.type === "Comment") {
         /** @const {string} */
         const comment = /** @type {!csstree.Comment} */(current.prev.data).value;
         const exportMatch = comment.match(ExportAsPattern);
         if (exportMatch)
           enumKey = exportMatch[1].trim();
+        isPreserved = comment.includes("@preserve");
       }
 
       /** @const {!csstree.Rule} */
@@ -207,13 +215,15 @@ const minifyCss = (file, content, domIdMapper) => {
         for (let part = selector.data.children.head; part; part = part.next) {
           if (part.data.type === "ClassSelector" || part.data.type === "IdSelector") {
             /** @const {string} */
-            const originalName = part.data.name;
+            const originalSelector = part.data.name;
             /** @const {string} */
-            const mappedName = domIdMapper.map(namespace, context, originalName);
+            const finalKey = enumKey || selectorToEnumKey(originalSelector);
             /** @const {string} */
-            const finalKey = enumKey || selectorToEnumKey(originalName);
-            enumEntries[finalKey] = mappedName;
-            part.data.name = mappedName;
+            const mappedSelector = isPreserved
+              ? domIdMapper.preserve(namespace, originalSelector)
+              : domIdMapper.map(namespace, context, originalSelector);
+            enumEntries[finalKey] = mappedSelector;
+            part.data.name = mappedSelector;
           }
         }
       }

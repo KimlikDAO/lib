@@ -70,7 +70,6 @@ const compile = async (params, checkFreshFn, domIdMapper) => {
   };
 
   return new Promise((resolve, reject) => {
-    closureCompiler.logger = console.log;
     closureCompiler.run((exitCode, output, errors) => {
       if (exitCode || errors) {
         reject(errors);

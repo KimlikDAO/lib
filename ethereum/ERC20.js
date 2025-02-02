@@ -5,13 +5,13 @@ import "./transaction.d";
 class ERC20 {
   /**
    * @param {string} rpcUrl
-   * @param {string} contact
+   * @param {string} contract
    */
-  constructor(rpcUrl, contact) {
+  constructor(rpcUrl, contract) {
     /** @const {string} */
     this.rpcUrl = rpcUrl;
     /** @const {string} */
-    this.contact = contact;
+    this.contact = contract;
   }
 
   /**

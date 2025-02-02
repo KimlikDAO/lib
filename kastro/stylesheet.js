@@ -81,7 +81,7 @@ const StyleSheet = {};
  */
 const makeStyleSheet = (fileName, cssContent) => {
   const { content, enumEntries } = minifyCss(fileName, cssContent, getDomIdMapper());
-  const Css = Object.assign(
+  const Css = new Proxy(Object.assign(
     ({ SharedCss, PageCss, shared }) => {
       (shared ? SharedCss : PageCss).add({
         targetName: "/" + fileName,
@@ -90,7 +90,13 @@ const makeStyleSheet = (fileName, cssContent) => {
       return null;
     },
     enumEntries
-  );
+  ), {
+    get(target, prop) {
+      if (!(prop in target))
+        console.warn(`StyleSheet: ${prop} is not defined in ${fileName}`);
+      return target[prop];
+    }
+  });
   return Css;
 };
 

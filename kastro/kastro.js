@@ -1,5 +1,6 @@
-import { plugin } from "bun";
+import { plugin, spawn } from "bun";
 import { cp, readFile } from "node:fs/promises";
+import process from "node:process";
 import { createServer } from "vite";
 import { transpileCss } from "../kdjs/cssParser";
 import { transpileJsx } from "../kdjs/jsxParser";
@@ -202,8 +203,9 @@ const buildCrate = async (crateName, buildMode, lang) => {
     const langs = crates.getLanguages(crate);
     for (const lang of langs) {
       console.info(`${Blue}[Building]${Clear} MPA ${lang}`);
-      await Bun.spawn(["bun", "lib/kastro/kastro.js", "build", "--lang", lang], {
-        env: { NODE_ENV: "production" },
+      await spawn({
+        cmd: ["bun", "lib/kastro/kastro.js", "build", "--lang", lang],
+        env: { ...process.env, NODE_ENV: "production" },
         stdio: ["inherit", "inherit", "inherit"]
       }).exited;
     }

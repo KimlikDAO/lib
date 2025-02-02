@@ -1,4 +1,4 @@
-<h1><img src="https://raw.githubusercontent.com/KimlikDAO/dapp/ana/birim/icon.svg" align="top" height="44"> kimlikdao-js</a></h1>
+<h1><img src="https://raw.githubusercontent.com/KimlikDAO/dapp/ana/components/icon.svg" align="top" height="44"> kimlikdao-js</a></h1>
 
 [![Tests](https://img.shields.io/github/actions/workflow/status/KimlikDAO/kimlikdao-js/test.yml?branch=ana)](https://github.com/KimlikDAO/kimlikdao-js/actions/workflows/test.yml)
 [![npm version](https://img.shields.io/npm/v/@kimlikdao/lib.svg)](https://www.npmjs.com/package/@kimlikdao/lib)

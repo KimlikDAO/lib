@@ -72,16 +72,16 @@ const düğmeDurdur = (düğme) => {
  * @param {!Element} menü
  */
 const bindDropdown = (düğme, menü) => {
-  menü.classList.add("hide");
+  menü.classList.add("nshw");
   menü.style.display = "";
   düğme.ontouchstart = menü.ontouchstart = (event) => event.stopPropagation();
   const kapat = () => {
     window["ontouchstart"] = window.onclick = null;
     düğme.classList.remove("sel");
-    menü.classList.add("hide");
+    menü.classList.add("nshw");
   }
   düğme.onclick = (event) => {
-    menü.classList.remove("hide");
+    menü.classList.remove("nshw");
     düğme.classList.add("sel");
     const f = window.onclick;
     if (f) f(event);
