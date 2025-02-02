@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![KimlikDAO](https://img.shields.io/badge/Kimlik-DAO-blue)](https://kimlikdao.org)
 
-kimlikdao-js is a repository containing JavaScript modules essential for KimlikDAO projects.
+kimlikdao-js is a repository containing JavaScript modules essential to KimlikDAO projects.
 
 # 🗂️ Features
 
@@ -15,12 +15,18 @@ kimlikdao-js is a repository containing JavaScript modules essential for KimlikD
 
   - `arfCurve`: An efficient Arf Curve ($y^2 = x^3 + b$) class factory
   - `wesolowski`: Our Wesolowski VDF implementation
+  - `minaSchnorr`: A faster and lighter mina signer
 
 🪁 [`kastro`](./kastro): Our compile-time focused web-framework
 
-  - Our custom web framework for building hyper-efficient web apps
+  - React-like .jsx components at zero runtime cost
+  - Import .css, fonts or images using es6 imports and receive a component
+  - Built-in i18n, asset bundling, vps or Cloudflare deployment
 
 ⚙️ [`kdjs`](./kdjs): KimlikDAO JavaScript compiler
+
+  - Fully typed, extending the google closure compiler's type system
+  - Type information is used for aggressive optimizations which are not possible otherwise
 
 🪪 [`did`](./did): Definitions of DID and KPass by KimlikDAO
 
@@ -32,11 +38,11 @@ kimlikdao-js is a repository containing JavaScript modules essential for KimlikD
 
 💎 `ethereum`: Tools for interacting with Ethereum nodes
 
-🪶 `mina`: Tools for working Mina dApps and Mina nodes.
+🪶 `mina`: Tools for working with Mina dApps and nodes.
 
-📡 `node`: Definitions needed when communicating with KimlikDAO protocol nodes
+📡 `node`: Utilities for communicating with KimlikDAO protocol nodes
 
-🧪 `testing`: Libraries for writing tests
+🧪 `testing`: Testing utils and runners
 
 🧰 `util`: Conversion tools and external definitions
 
@@ -68,9 +74,8 @@ The tests can be run in two different modes:
   bun run test
   ```
   Note that `kdjs` makes aggressive optimizations using the provided
-  type information. It is crucial to run the tests in compiled mode
-  since incorrect type annotations will lead to functionally incorrect
-  output.
+  type information. Running tests in compiled mode is crucial, as
+  incorrect type annotations can lead to functionally incorrect output.
 
 To run tests in a specific directory, say `crypto`, you can also do
 ```shell
@@ -86,7 +91,7 @@ bun run crypto/bench/arfCurve.bench.js
 ```
 or compile all of them and benchmark the compiled modules:
 ```shell
-bun run bench
+bun bench
 ```
 
 When run, output will look like this:

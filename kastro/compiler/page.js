@@ -1,5 +1,5 @@
 import { minify } from "html-minifier";
-import { getDir } from "../../util/paths";
+import { capitalize, getDir } from "../../util/paths";
 import { makeStyleSheetCollection } from "../stylesheet";
 import HtmlMinifierConfig from "./config/htmlMinifierConfig";
 import { initGlobals } from "./pageGlobals";
@@ -16,7 +16,9 @@ const pageTarget = (targetName, props) => {
   props.PageCss = makeStyleSheetCollection(`${targetDir}/page-${props.Lang}.css`);
   initGlobals(props);
 
-  return import(`${targetDir.slice(7)}/page.jsx`)
+  /** @const {string} */
+  const targetModuleName = capitalize(targetDir.slice(getDir(targetDir).length + 1));
+  return import(`${targetDir.slice(7)}/${targetModuleName}.jsx`)
     .then((jsx) => jsx.default(props).render())
     .then((html) => {
       const renderStyleSheets = ({ BuildMode, SharedCss, PageCss }) => {

@@ -45,7 +45,10 @@ const combine = (basePath, subPath) => {
   return parts.slice(0, j).join('/');
 }
 
+const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+
 export {
+  capitalize,
   getDir,
   getExt,
   combine,

@@ -21,11 +21,11 @@ have no way to reconstruct it, as that information is intentionally stripped
 out during compilation for maximum optimization.
 
 ## Example
-```jsx
+```jsx filename="LandingPage.jsx"
 import dom from "@kimlikdao/util/dom";
 import { LangCode } from "@kimlikdao/util/i18n";
 import ArrowSvg from "./arrow.svg";
-import Css from "./page.css";
+import Css from "./LandingPage.css";
 
 /** @const {!HTMLButtonElement} */
 const Button = dom.button(Css.ButtonId);
@@ -34,9 +34,8 @@ const Text = dom.span(Css.TextId);
 
 /**
  * @param {{ Lang: LangCode }} Lang
- * @return {Promise<string>}
  */
-const Page = ({ Lang }) => (
+const LandingPage = ({ Lang }) => (
   <html lang={Lang}>
     <Css />
     <Button onClick={() => Text.innerText = "Clicked!"}>
@@ -46,7 +45,7 @@ const Page = ({ Lang }) => (
   </html>
 );
 
-export default Page;
+export default LandingPage;
 ```
 When you import a `.css` file, you get a StyleSheet component like the `Css`
 component in the example above. Each selector in the css file becomes available
@@ -67,7 +66,7 @@ same global counter to ensure they are unique and minified. The promise returned
 would resolve to something like `<svg><path id="C" d="M10 10L10 10" /><use href="url(#C)" /></svg>`.
 
 When you compile the above example, the client javascript will be literally
-a minified verion of the following
+a minified version of the following
 ```javascript
 const get = (a) => document.getElementById(a);
 const c = get("B");
@@ -104,8 +103,8 @@ shipped and installed on client machines.
 
 In kastro, components are function objects: the function part is used to render
 the component html and the object part is used to manage the DOM interactions.
-The function part never ships to the client, only the object part is compiled
-into the client bundle.
+When building for the client, the function part is stripped to essentially
+a no-op and in particular, the entire jsx expression is removed.
 
 There are 3 types of components:
 
