@@ -53,7 +53,7 @@ const inlineSvgTarget = (_, props) => props.childTargets[0]
 /** @const {TargetFunction} */
 const jsxSvgTarget = (_, props) => props.childTargets[0]
   .then(({ targetName: childTargetName }) => import(childTargetName))
-  .then((mod) => mod.default(props));
+  .then((mod) => mod.default(props).render());
 
 export {
   inlineSvgTarget,

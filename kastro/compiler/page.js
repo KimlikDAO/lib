@@ -17,7 +17,7 @@ const pageTarget = (targetName, props) => {
   initGlobals(props);
 
   return import(`${targetDir.slice(7)}/page.jsx`)
-    .then((jsx) => jsx.default(props))
+    .then((jsx) => jsx.default(props).render())
     .then((html) => {
       const renderStyleSheets = ({ BuildMode, SharedCss, PageCss }) => {
         if (BuildMode == 0) {

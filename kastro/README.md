@@ -5,12 +5,12 @@ moving as much computation to compile time as possible. It achieves extreme
 performance while maintaining a familiar React-like developer experience.
 
 Key features:
-- Components written in `jsx`, just like React
-- Static rendering at build time for optimal performance
-- Minimal client-side JavaScript bundle
-- Advanced compile-time optimizations and type safety through our javascript
-  compiler `kdjs`
-- End to end integrated i18n, asset bundling and css modules.
+✅ Components written in `jsx`, just like React
+⚡️ Static rendering at build time for optimal performance
+🗜️ Minimal client-side JavaScript bundle
+🔍 Advanced compile-time optimizations and type safety through our javascript
+   compiler `kdjs`
+🌐 End to end integrated i18n, asset bundling and css modules.
 
 While other frameworks offer static rendering, kastro takes the compile time
 approach to the extreme: the client JavaScript bundle is strictly limited to
@@ -27,9 +27,9 @@ import { LangCode } from "@kimlikdao/util/i18n";
 import ArrowSvg from "./arrow.svg";
 import Css from "./page.css";
 
-/** @const {HTMLButtonElement} */
+/** @const {!HTMLButtonElement} */
 const Button = dom.button(Css.ButtonId);
-/** @const {HTMLSpanElement} */
+/** @const {!HTMLSpanElement} */
 const Text = dom.span(Css.TextId);
 
 /**
@@ -104,18 +104,18 @@ shipped and installed on client machines.
 
 In kastro, components are function objects: the function part is used to render
 the component html and the object part is used to manage the DOM interactions.
-The function part never ships to the client, only the object part is compiled in
-the client bundle.
+The function part never ships to the client, only the object part is compiled
+into the client bundle.
 
 There are 3 types of components:
 
 1. **Singleton**: Only one instance can be present in the page. These bind to
-the DOM when you import the es6 module and can keep an arbitrary internal state
-(every variable you define in the module is available as a property of the
-component object).
+the DOM when the containing module is imported and can keep an arbitrary
+internal state (every variable you define in the module is available as a
+property of the component object).
 
-If you component does not take an `id` property, then it is determined as 
-a singleton.
+If a component does not take an `id` or `instance` property, then it is
+determined as a singleton.
 
   ```jsx
   const State = [1, 2, 3];
@@ -132,11 +132,13 @@ a singleton.
   export default SingletonComp;
   ```
 
-2. **Stateless**: A component that does not take an `id` property is deemed a
-  stateless component. Since they are stateless, there can be arbitrary
-  number of instances in the page without any js objects being created. Kastro
-  compiler will generate the `Component({ id: "idAssignedByparent" })` invocations
-  from the initialization code of the parent component.
+2. **Stateless**: A component that takes an `id` property (but no `instance`
+  property) is deemed stateless. Their dom `id` is fixed at compile time by
+  their parents, and in particular there can be any number of instances of
+  stateless components with unique ids assigned by their parents.
+  
+  Kastro compiler will generate the `Component({ id: "idAssignedByparent" })`
+  invocations from the initialization code of the parent component.
 
   ```jsx
   const StatelessComp = ({ id }) => {
@@ -162,20 +164,21 @@ a singleton.
     return null;
   }
   const Page = () => {
-    StatelessComp({ id: "A" });
+    StatelessComp({ id: "A" }); // Initialize the stateless component with id "A"
     return null;
   }
   Page();
   ```
 
-3. **Stateful**: A component which takes a `instanceId` property is deemed a
-  stateful component. These components have internal state and for each instance
-  of the component, a class instance is crated.
+3. **Stateful**: A component which takes an `instance` property is deemed a
+  stateful component. These components have internal state and for each copy
+  of the component, a class instance is created.
 
   ```jsx
-  const CheckBox = ({ instanceId }) => {
-    this.root = dom.div(instanceId);
-    return <div id={instanceId}>on</div>;
+  const CheckBox = ({ id }) => {
+    this.root = dom.div(id);
+    this.on = true;
+    return <div id={id}>on</div>;
   }
   CheckBox.prototype.flip = function() {
     this.on = !this.on;
@@ -184,15 +187,18 @@ a singleton.
   
   const PageWithCheckBox = () => (
     <html>
-      <CheckBox instanceId="A" />
+      <CheckBox id="A" instance={PageWithCheckBox.checkBox}/>
     </html>
   );
+
+  PageWithCheckBox.isChecked = () => PageWithCheckBox.checkBox.on;
   ```
   When the above jsx file is transpiled for the client by kastro (but before compilation by kdjs),
   it will become
   ```javascript
-  const CheckBox = ({ instanceId }) => {
-    this.root = dom.div(instanceId);
+  const CheckBox = ({ id }) => {
+    this.root = dom.div(id);
+    this.on = true;
     return null;
   }
   CheckBox.prototype.flip = function() {
@@ -201,8 +207,10 @@ a singleton.
   }
   
   const PageWithCheckBox = () => {
-    new CheckBox({ instanceId: "A" });
+    PageWithCheckBox.checkBox = new CheckBox({ id: "A" });
     return null;
   }
   PageWithCheckBox();
+
+  PageWithCheckBox.isChecked = () => PageWithCheckBox.checkBox.on;
   ```

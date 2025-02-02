@@ -176,8 +176,10 @@ const serveCrate = async (crateName, buildMode) => {
       },
 
       transform(code, id) {
-        if (id.endsWith(".jsx"))
+        if (id.endsWith(".jsx")) {
+          console.log("transpileJsx", id, code);
           code = transpileJsx(code);
+        }
         const globals = getGlobals();
         return code.replace(currentPageGlobalsPattern, (match) => {
           const constIdx = match.indexOf("const");

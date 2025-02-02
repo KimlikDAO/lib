@@ -6,33 +6,60 @@ import { getGlobals } from "./pageGlobals";
 const Fragment = "";
 
 /**
- * @param {!Array<*>} children
- * @param {LangCode} lang
- * @return {!Promise<string>}
- */
-const mergeChildren = (children, lang) => Promise.all(children
-  .flat()
-  .filter((c) => c != null && typeof c != "boolean")
-  .map((c) => (typeof c == "object" && lang in c) ? c[lang] : c))
-  .then((children) => children.join(""));
-
-/**
+ * Before we pass the props to a component, we resolve I18nString's to regular
+ * strings since the language is fixed at this point.
+ *
+ * Furthermore, the following props are kastro specific and are removed:
+ *   - controls[A-Z]\w*
+ *   - on[A-Z]\w*
+ *   - instance
+ *
+ * We also have an obsolete i18n mechanism through the data-{LangCode} attribute.
+ * We still support it but we don't use it in new code.
+ *
  * @param {!Object} props
  * @param {LangCode} lang
- * @return {!Object}
 */
-const resolveProps = (props, lang) => {
-  delete props.controlsDropdown;
-
+const resolveComponentProps = (props, lang) => {
+  delete props.instance;
   for (const key in props)
     if (key != "children" && typeof props[key] == "object" && (lang in props[key]))
       props[key] = props[key][lang];
     else if (key.startsWith("data-")) {
       if (key == "data-" + lang) props.children = [props[key]];
       delete props[key];
-    } else if (key.startsWith("on") && key.charCodeAt(2) < 91)
+    } else if (/^(on[A-Z]|controls[A-Z])/.test(key)) {
       delete props[key];
+    }
+}
 
+/**
+ * We perform additional transformations for the props of a dom node.
+ * Arrays are joined with a space which is useful, for instance, for listing
+ * styles like `class={["class1", "class2"]}`
+ *
+ * An exception to this rule is the id prop, where we join with a dot. In kastro
+ * automatic dom ids cannot have dots, which are reserved for component nesting.
+ * A stateless or stateful component with id say `id` can freely use the dom ids
+ * `${id}.*`. Thus one can simply do `id={[id, Css.Subcomponent]}` in jsx
+ * expressions to generate unique ids for subcomponents.
+ *
+ * Further, `nodisplay` and `noshow` are special boolean props that resolve to
+ * `display:none` and `opacity:0` respectively.
+ *
+ * Finally the `modifiesChildren` boolean property is used to determine if we
+ * can eagerly start rendering the subtree emanating from the current node. If
+ * `modifiesChildren` is true, we wait until the `render()` method is called
+ * since before this, the parent is allowed to modify the children props.
+ * Otherwise, we eagerly start rendering the subtree and prune the tree when
+ * the rendering is finished.
+ *
+ * @param {!Object} props
+ */
+const resolveElementProps = (props) => {
+  for (const key in props)
+    if (key != "children" && Array.isArray(props[key]))
+      props[key] = props[key].filter(Boolean).join(key == "id" ? "." : " ");
   if (props.nodisplay) {
     props.style = props.style ? props.style + ";display:none" : "display:none";
     delete props.nodisplay;
@@ -41,62 +68,56 @@ const resolveProps = (props, lang) => {
     props.style = props.style ? props.style + ";opacity:0" : "opacity:0";
     delete props.noshow;
   }
-  return props;
-}
-
-const mergeArrayProps = (props) => {
-  for (const key in props)
-    if (Array.isArray(props[key]))
-      props[key] = props[key].filter(Boolean).join(" ");
-  return props;
 };
 
 const jsx = (name, props = {}) => {
   const globals = getGlobals();
-  resolveProps(props, globals.Lang);
+  resolveComponentProps(props, globals.Lang);
 
   const nameType = typeof name;
   if (nameType == "function")
     return name({ ...props, ...globals });
 
-  const { children, ...prop } = props;
-  mergeArrayProps(prop);
+  let { modifiesChildren, ...prop } = props;
+  resolveElementProps(prop);
 
   if (nameType == "object") {
+    // This is a kastro fake dom node; treat it as a real dom node
+    // by extracting the name and id.
     prop.id = name.id;
     name = name.name;
   }
-  return mergeChildren([].concat(children || []), globals.Lang)
-    .then((childStr) => name == Fragment
-      ? childStr
-      : (childStr || !KapalıTag[name])
-        ? tagYaz(name, prop, false) + childStr + `</${name}>`
-        : tagYaz(name, prop, true)
-    )
+
+  const normalizedChildren = [].concat(prop.children || []);
+  /** @const {function(): !Promise<string>} */
+  const renderChildren = () => Promise.all(
+    normalizedChildren
+      .flat()
+      .map((child) => {
+        if (child == null || typeof child == "boolean") return "";
+        if (Object.getPrototypeOf(child) === Object.prototype && (globals.Lang in child))
+          child = child[globals.Lang];
+        if (typeof child.then == "function")
+          return child;
+        if (typeof child.render == "function")
+          return child.render();
+        return child;
+      }))
+    .then((children) => {
+      delete prop.children; // We have rendered the subtree, so we can prune the children
+      const { render, ...rest } = prop;
+      return name == Fragment
+        ? children.join("")
+        : (children.length || !KapalıTag[name])
+          ? tagYaz(name, rest, false) + children.join("") + `</${name}>`
+          : tagYaz(name, rest, true);
+    });
+  /** @const {?Promise<string>} */
+  const renderPromise = modifiesChildren ? null : renderChildren();
+  prop.render = () => renderPromise || renderChildren();
+  return prop;
 }
 
-const jsxs = (name, props) => {
-  const globals = getGlobals();
-  resolveProps(props, globals.Lang);
-
-  const nameType = typeof name;
-  if (nameType == "function")
-    return name({ ...props, ...globals });
-
-  const { children, ...prop } = props;
-  mergeArrayProps(prop);
-
-  if (nameType == "object") {
-    prop.id = name.id;
-    name = name.name;
-  }
-  return mergeChildren(children || [], globals.Lang)
-    .then((childStr) => name == Fragment
-      ? childStr
-      : childStr || !KapalıTag[name]
-        ? tagYaz(name, prop, false) + childStr + `</${name}>`
-        : tagYaz(name, prop, true)
-    );
-};
+const jsxs = jsx;
 
 export { Fragment, jsx, jsxs };
