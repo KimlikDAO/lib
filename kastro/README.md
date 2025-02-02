@@ -5,12 +5,12 @@ moving as much computation to compile time as possible. It achieves extreme
 performance while maintaining a familiar React-like developer experience.
 
 Key features:
-✅ Components written in `jsx`, just like React
-⚡️ Static rendering at build time for optimal performance
-🗜️ Minimal client-side JavaScript bundle
-🔍 Advanced compile-time optimizations and type safety through our javascript
+ - ✅ Components written in `jsx`, just like React
+ - ⚡️ Static rendering at build time for optimal performance
+ - 🗜️ Minimal client-side JavaScript bundle
+ - 🔍 Advanced compile-time optimizations and type safety through our javascript
    compiler `kdjs`
-🌐 End to end integrated i18n, asset bundling and css modules.
+ - 🌐 End to end integrated i18n, asset bundling and css modules
 
 While other frameworks offer static rendering, kastro takes the compile time
 approach to the extreme: the client JavaScript bundle is strictly limited to

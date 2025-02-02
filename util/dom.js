@@ -92,6 +92,16 @@ const bindDropdown = (düğme, menü) => {
 }
 
 /**
+ * @param {!Element} pane
+ * @param {number} index
+ */
+const slideCard = (pane, index) => {
+  /** @const {number} */
+  const width = pane.children[0].getBoundingClientRect().width;
+  pane.style.transform = `translate3d(-${index * width}px,0,0)`;
+}
+
+/**
  * @param {string} url
  * @param {number} en
  * @param {number} boy
@@ -242,6 +252,7 @@ export default {
   bindDropdown,
   düğmeDurdur,
   pencere,
+  slideCard,
   // Render
   i18n,
   paradanMetne,
