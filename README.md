@@ -7,20 +7,14 @@
 
 kimlikdao-js is a repository containing JavaScript modules essential to KimlikDAO projects.
 
-# 🗂️ Features
+## 🗂️ Features
 
-## Highlights
-
-🗝️ [`crypto`](./crypto): Cryptographic functions and libraries
-
-  - `arfCurve`: An efficient Arf Curve ($y^2 = x^3 + b$) class factory
-  - `wesolowski`: Our Wesolowski VDF implementation
-  - `minaSchnorr`: A faster and lighter mina signer
+### Highlights
 
 🪁 [`kastro`](./kastro): Our compile-time focused web-framework
 
   - React-like .jsx components at zero runtime cost
-  - Import .css, fonts or images using es6 imports and receive a component
+  - Import css, fonts or images using es6 imports and receive a component
   - Built-in i18n, asset bundling, vps or Cloudflare deployment
 
 ⚙️ [`kdjs`](./kdjs): KimlikDAO JavaScript compiler
@@ -28,9 +22,15 @@ kimlikdao-js is a repository containing JavaScript modules essential to KimlikDA
   - Fully typed, extending the google closure compiler's type system
   - Type information is used for aggressive optimizations which are not possible otherwise
 
+🗝️ [`crypto`](./crypto): Cryptographic functions and libraries
+
+  - `arfCurve`: An efficient Arf Curve ($y^2 = x^3 + b$) class factory
+  - `wesolowski`: Our Wesolowski VDF implementation
+  - `minaSchnorr`: A faster and lighter mina signer
+
 🪪 [`did`](./did): Definitions of DID and KPass by KimlikDAO
 
-## Other goodies
+### Other goodies
 
 🔌 `api`: Definitions of standard protocols (e.g., jsonrpc, oauth2)
 
@@ -46,7 +46,7 @@ kimlikdao-js is a repository containing JavaScript modules essential to KimlikDA
 
 🧰 `util`: Conversion tools and external definitions
 
-# 👩‍💻 Development
+## 👩‍💻 Development
 
 ```shell
 git clone https://github.com/KimlikDAO/kimlikdao-js
@@ -59,7 +59,7 @@ environment and download the packages necessary for the repository to function.
 If you don't already have bun installed, you can install it by following the
 [official guide](https://bun.sh/docs/installation).
 
-# 🧪 Tests
+## 🧪 Tests
 
 The tests can be run in two different modes:
 
@@ -83,7 +83,7 @@ bun test crypto # uncompiled
 bun run test crypto # compiled
 ```
 
-# ⏱️ Benchmarks
+## ⏱️ Benchmarks
 
 You can run a benchmark either directly as a regular es6 module
 ```shell
