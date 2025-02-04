@@ -26,7 +26,7 @@ const makeTargetName = (parentTarget, suffix) => {
  * @param {Props} props
  * @returns {!Promise<string>}
  */
-const InlineSvgImage = ({ src, childTargets, ...props }) =>
+const InlineSvgImage = ({ src, childTargets, bundleWidth, bundleHeight, ...props }) =>
   compiler.buildTarget(makeTargetName(src, ".inl.svg"), {
     childTargets: childTargets || [`/${src}`],
     ...props

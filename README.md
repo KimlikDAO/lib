@@ -15,7 +15,6 @@ kimlikdao-js is a repository containing JavaScript modules essential to KimlikDA
 
   - React-like .jsx components at zero runtime cost
   - Import css, fonts or images using es6 imports and receive a component
-  - Built-in i18n, asset bundling, vps or Cloudflare deployment
 
 ⚙️ [`kdjs`](./kdjs): KimlikDAO JavaScript compiler
 
@@ -24,9 +23,8 @@ kimlikdao-js is a repository containing JavaScript modules essential to KimlikDA
 
 🗝️ [`crypto`](./crypto): Cryptographic functions and libraries
 
-  - `arfCurve`: An efficient Arf Curve ($y^2 = x^3 + b$) class factory
-  - `wesolowski`: Our Wesolowski VDF implementation
-  - `minaSchnorr`: A faster and lighter mina signer
+  - [`arfCurve`](./crypto/arfCurve.js): An efficient Arf Curve ($y^2 = x^3 + b$) class factory
+  - [`wesolowski`](./crypto/wesolowski.js): Our Wesolowski VDF implementation
 
 🪪 [`did`](./did): Definitions of DID and KPass by KimlikDAO
 

@@ -75,9 +75,9 @@ const compile = async (params, checkFreshFn, domIdMapper) => {
         reject(errors);
         return;
       }
+      output = postprocess(output, unlinkedImports);
       if (params["printGccOutput"])
         console.log("GCC output:", output);
-      output = postprocess(output, unlinkedImports);
       const uglified = UglifyJS.minify(output, {
         mangle: {
           toplevel: true,
