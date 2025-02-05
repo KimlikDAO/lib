@@ -6,17 +6,17 @@ import jsx from "./jsx";
 const Mapper = new GlobalMapper();
 
 const minifyCss = (content, file) =>
-  css.minifyCss(file, content, Mapper);
+  css.minify(file, content, Mapper);
 
 const transpileCss = (content, file) =>
-  css.transpileCss(file, content, Mapper);
+  css.transpile(file, content, Mapper);
 
 const transpileJsx = (content, file, isEntry) =>
-  jsx.transpileJsx(isEntry, file, content, Mapper);
+  jsx.transpile(isEntry, file, content, Mapper);
 
 const transpile = (content, file, isEntry) => file.endsWith(".jsx")
-  ? transpileJsx(content, file, isEntry)
-  : transpileCss(content, file);
+  ? jsx.transpile(isEntry, file, content, Mapper)
+  : css.transpile(file, content, Mapper)
 
 export {
   minifyCss,

@@ -7,7 +7,7 @@ import { DomIdMapper } from "./domIdMapper";
  *   default: !Object<string, string>
  * }}
  */
-const CssModule = {};
+export const CssModule = {};
 
 /** @const {!RegExp} */
 const ExportAsPattern = /@export\s*{(.*)}/;
@@ -138,7 +138,7 @@ const getEnum = (file, content, domIdMapper) => {
  * @param {!DomIdMapper} domIdMapper
  * @return {string} js code that exports the enum
  */
-const transpileCss = (file, content, domIdMapper) => {
+const transpile = (file, content, domIdMapper) => {
   return "\n/** @enum {string} */\nconst Style = "
     + getEnum(file, content, domIdMapper)
     + ";\n\nexport default Style;\n";
@@ -156,7 +156,7 @@ const transpileCss = (file, content, domIdMapper) => {
  *   enumEntries: (!Object<string, string>)
  * }}
  */
-const minifyCss = (file, content, domIdMapper) => {
+const minify = (file, content, domIdMapper) => {
   /** @const {string} */
   const context = `${splitFullExt(file)[0]}.jsx`;
   /** @const {!csstree.StyleSheet} */
@@ -234,8 +234,9 @@ const minifyCss = (file, content, domIdMapper) => {
 };
 
 export default {
+  EnumModule: CssModule,
   getEnum,
-  minifyCss,
+  minify,
   selectorToEnumKey,
-  transpileCss
+  transpile
 };

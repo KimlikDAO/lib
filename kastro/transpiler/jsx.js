@@ -38,7 +38,7 @@ const SpecifierState = {
  * @param {DomIdMapper} domIdMapper
  * @return {string} The transpiled js file
  */
-const transpileJsx = (isEntry, file, content, domIdMapper) => {
+const transpile = (isEntry, file, content, domIdMapper) => {
   /** @const {!Array<!acorn.Comment>} */
   const comments = [];
   /** @const {!Array<Update>} */
@@ -268,4 +268,4 @@ const transpileJsx = (isEntry, file, content, domIdMapper) => {
   return update(content, updates);
 };
 
-export default { transpileJsx };
+export default { transpile };
