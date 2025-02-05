@@ -3,7 +3,7 @@
  * 
  * @typedef {{
  *   unnamed: (string|undefined),
- *   isNamespace: boolean,
+ *   isNamespace: (boolean|undefined),
  *   named: !Object<string, string>,
  *   source: (string|undefined)
  * }}

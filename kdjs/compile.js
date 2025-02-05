@@ -13,16 +13,16 @@ const Params = {};
 /**
  * @param {!Params} params
  * @param {function(!Array<string>):!Promise<boolean>=} checkFreshFn
- * @param {DomIdMapper=} domIdMapper
+ * @param {function(string,string,boolean=):?string=} transpileFn
  * @return {!Promise<string|void>}
  */
-const compile = async (params, checkFreshFn, domIdMapper) => {
+const compile = async (params, checkFreshFn, transpileFn) => {
   const {
     /** @const {!Map<string, ImportStatement>} */ unlinkedImports,
     /** @const {!Set<string>} */ allFiles,
     /** @const {string} */ isolateDir,
     /** @const {boolean} */ ignoreUnusedLocals
-  } = await preprocessAndIsolate(params, domIdMapper);
+  } = await preprocessAndIsolate(params, transpileFn);
   /** @const {!Array<string>} */
   const allFilesArray = Array.from(allFiles).sort();
   if (checkFreshFn && await checkFreshFn(allFilesArray))

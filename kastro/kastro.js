@@ -2,8 +2,6 @@ import { plugin, spawn } from "bun";
 import { cp, readFile } from "node:fs/promises";
 import process from "node:process";
 import { createServer } from "vite";
-import { transpileCss } from "../kdjs/cssParser";
-import { transpileJsx } from "../kdjs/jsxParser";
 import { Blue, Clear, parseArgs } from "../util/cli";
 import { combine, getDir, getExt } from "../util/paths";
 import compiler from "./compiler/compiler";
@@ -17,15 +15,14 @@ import {
   webpTarget
 } from "./compiler/image";
 import { pageTarget } from "./compiler/page";
-import { getDomIdMapper, getGlobals, setDomIdMapper } from "./compiler/pageGlobals";
+import { getGlobals } from "./compiler/pageGlobals";
 import { scriptTarget } from "./compiler/script";
 import { styleSheetTarget } from "./compiler/styleSheet";
 import { registerTargetFunction } from "./compiler/targetRegistry";
+import { transpileCss, transpileJsx } from "./transpiler/transpiler";
 import { CompressedMimes } from "./workers/mimes";
 
-const setupKastro = (buildMode) => {
-  setDomIdMapper(buildMode);
-
+const setupKastro = () => {
   registerTargetFunction(".html", pageTarget);
   registerTargetFunction(".inl.svg", inlineSvgTarget);
   registerTargetFunction(".png", pngTarget);
@@ -132,8 +129,6 @@ const serveCrate = async (crateName, buildMode) => {
   const crate = await import(crateName);
   /** @const {!Object<string, PageTarget>} */
   const map = crates.getPageTargets(crate, buildMode);
-  /** @const {!DomIdMapper} */
-  const domIdMapper = getDomIdMapper();
 
   let currentPageProps;
   let currentPageGlobalsPattern;
@@ -172,14 +167,13 @@ const serveCrate = async (crateName, buildMode) => {
       load(id) {
         if (id.endsWith(".css.js"))
           return readFile(id.slice(0, -3), "utf8")
-            .then((css) => transpileCss(id.slice(0, -3), css, domIdMapper));
+            .then((css) => transpileCss(css, id.slice(0, -3)));
       },
 
       transform(code, id) {
-        if (id.endsWith(".jsx")) {
-          console.log("transpileJsx", id, code);
-          code = transpileJsx(code);
-        }
+        if (id.endsWith(".jsx"))
+          code = transpileJsx(code, id);
+
         const globals = getGlobals();
         return code.replace(currentPageGlobalsPattern, (match) => {
           const constIdx = match.indexOf("const");

@@ -1,10 +1,9 @@
 import { keccak256Uint8 } from "../crypto/sha3";
-import { minifyCss } from "../kdjs/cssParser";
 import { tagYaz } from "../util/html";
 import { fileFromError } from "../util/reflection";
 import compiler from "./compiler/compiler";
 import hash from "./compiler/hash";
-import { getDomIdMapper } from "./compiler/pageGlobals";
+import { minifyCss } from "./transpiler/transpiler";
 
 /** @const {!TextEncoder} */
 const Encoder = new TextEncoder();
@@ -80,7 +79,7 @@ const StyleSheet = {};
  * @return {StyleSheet}
  */
 const makeStyleSheet = (fileName, cssContent) => {
-  const { content, enumEntries } = minifyCss(fileName, cssContent, getDomIdMapper());
+  const { content, enumEntries } = minifyCss(cssContent, fileName);
   const Css = new Proxy(Object.assign(
     ({ SharedCss, PageCss, shared }) => {
       (shared ? SharedCss : PageCss).add({

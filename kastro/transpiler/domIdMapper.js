@@ -1,42 +1,33 @@
-import { keccak256Uint8 } from "../crypto/sha3";
-import { base64 } from "../util/çevir";
+import { keccak256Uint8 } from "../../crypto/sha3";
+import { base64 } from "../../util/çevir";
 
 /**
+ * Maps numbers to Excel-like column names
  * @param {number} index
  * @return {string}
  */
 const indexToMinified = (index) => {
   let result = "";
 
-  {
-    /**
-     * First character must be [A-Za-z] (52 possibilities)
-     * @const {number}
-     */
-    const c = index % 52;
-    result += String.fromCharCode(c + (c < 26 ? 65 : 71));
-    if (index < 52) return result;
-    index = (index / 52) | 0;
-  }
+  // Handle first character (only A-Z, a-z allowed)
+  const firstChar = index % 52;
+  result += String.fromCharCode(firstChar + (firstChar < 26 ? 65 : 71));
+  index = (index / 52) | 0;
 
-  for (; ;) {
-    /** @const {number} */
+  // Handle remaining characters if any (A-Z, a-z, 0-9, _, -)
+  while (index > 0) {
+    index--; // Decrement to handle the base-64 conversion correctly
     const c = index % 64;
-    // Map 0-63 to allowed characters:
-    // 0-25: A-Z
-    // 26-51: a-z
-    // 52-61: 0-9
-    // 62: _
-    // 63: -
     const charCode = c < 52
-      ? c + (c < 26 ? 65 : 71)
+      ? c + (c < 26 ? 65 : 71)  // A-Z (65-90), a-z (97-122)
       : c < 62
-        ? c - 4 // 0-9 
-        : c == 62 ? 95 : 45; // -
-    result += String.fromCharCode(charCode);
-    if (index < 64) return result;
+        ? c - 4  // 0-9 (48-57)
+        : c === 62 ? 95 : 45;  // _ (95) or - (45)
+    result = String.fromCharCode(charCode) + result;
     index = (index / 64) | 0;
   }
+
+  return result;
 };
 
 /**
@@ -94,10 +85,11 @@ class GlobalMapper {
       index = this.namespaceToNext.get(namespace) ?? 0;
       while (this.minifiedIds.has(namespace + indexToMinified(index)))
         ++index;
-      this.namespaceToNext.set(namespace, index + 1);
+      this.namespaceToNext.set(namespace, index);
       this.keyToIndex.set(namespace + key, index);
     }
     const minifiedId = indexToMinified(index);
+    if (minifiedId == "zC") console.log("\n\n\n\n\n\n", context, domId, index);
     this.minifiedIds.add(namespace + minifiedId);
     return minifiedId;
   }
@@ -181,7 +173,6 @@ class BasicMapper {
 }
 
 export {
-  BasicMapper,
   DomIdMapper,
   GlobalMapper,
   indexToMinified,

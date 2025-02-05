@@ -33,11 +33,10 @@ const SpecifierState = {
  * @param {boolean} isEntry Is the current file the entry file provided to kdjs.
  * @param {string} file Name of the file
  * @param {string} content The contents as a string
- * @param {!Object<string, *>} globals
  * @param {DomIdMapper} domIdMapper
  * @return {string} The transpiled js file
  */
-const transpileJsx = (isEntry, file, content, globals, domIdMapper) => {
+const transpileJsx = (isEntry, file, content, domIdMapper) => {
   /** @const {!Array<!acorn.Comment>} */
   const comments = [];
   /** @const {!Array<Update>} */
@@ -267,4 +266,4 @@ const transpileJsx = (isEntry, file, content, globals, domIdMapper) => {
   return update(content, updates);
 };
 
-export { transpileJsx };
+export default { transpileJsx };

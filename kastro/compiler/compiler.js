@@ -14,16 +14,12 @@ import { getTargetFunction } from "./targetRegistry";
  *      the js defines. The rendered page should be visually identical to the
  *      Compiled or Release version; anything else is a bug.
  *
- * Compiled: Produce the most optimized version of the app while obeying the
- *      constraint that each target is a function of its dependencies.
- *      This means, for instance, that generated domIds are a function of
- *      the explicit dependencies and cannot depend on a global counter.
+ * Compiled: Produce the most optimized version of the app while checking the
+ *      freshness of each target through content hashes.
  *
- * Release: Produce the most optimized version of the app, while assuming
- *      the source code does not change during the build process. In this mode
- *      we can violate the constraint that each target is a function of its
- *      dependencies, which allows us, for instance, to compress the domIds
- *      using a global counter.
+ * Release: Produce the most optimized version of the app assuming the source
+ *      code is frozen. In this mode we omit taking dependency hashes since
+ *      we assume they are always fresh.
  *
  * @enum {number}
  */

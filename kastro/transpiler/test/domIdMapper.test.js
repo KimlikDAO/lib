@@ -7,9 +7,8 @@ test("indexToMinified", () => {
   expect(indexToMinified(25)).toBe("Z");
   expect(indexToMinified(26)).toBe("a");
   expect(indexToMinified(51)).toBe("z");
-  expect(indexToMinified(52)).toBe("AB");
-
-  expect(indexToMinified(52 * 64)).toBe("AAB");
+  expect(indexToMinified(52)).toBe("AA");
+  expect(indexToMinified(53)).toBe("AB");
 });
 
 test("GlobalMapper", () => {

@@ -27,21 +27,8 @@ const getGlobals = () => Globals;
 
 const assignGlobals = (newGlobals) => Object.assign(Globals, newGlobals);
 
-/** @type {DomIdMapper} */
-let IdMapper;
-
-const setDomIdMapper = (buildMode) => IdMapper = buildMode == 2
-  ? new GlobalMapper() : new LocalMapper();
-
-/**
- * @return {DomIdMapper}
- */
-const getDomIdMapper = () => IdMapper ||= new LocalMapper();
-
 export {
   assignGlobals,
-  getDomIdMapper,
   getGlobals,
   initGlobals,
-  setDomIdMapper
 };

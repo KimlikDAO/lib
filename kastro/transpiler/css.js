@@ -233,8 +233,7 @@ const minifyCss = (file, content, domIdMapper) => {
   return { content: csstree.generate(ast), enumEntries };
 };
 
-export {
-  CssModule,
+export default {
   getEnum,
   minifyCss,
   selectorToEnumKey,

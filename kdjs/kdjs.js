@@ -29,8 +29,6 @@ Parameters:
 }
 
 params["output"] ||= /** @type {string} */(params["entry"])
-  .replace(/\.js$/, ".out.js")
-  .replace(/\.jsx$/, ".out.jsx")
-  .replace(/\.css$/, ".css.js");
+  .replace(/\.js$/, ".out.js");
 
 compile(params);

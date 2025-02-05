@@ -3,9 +3,6 @@ import { simple } from "acorn-walk";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { combine, getDir } from "../util/paths";
-import { transpileCss } from "./cssParser";
-import { BasicMapper, DomIdMapper, GlobalMapper, LocalMapper } from "./domIdMapper";
-import { transpileJsx } from "./jsxParser";
 import { ExportStatement, ImportStatement } from "./modules";
 import { serializeWithStringKeys } from "./objects";
 import { Update, update } from "./textual";
@@ -241,31 +238,29 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
 
 /**
  * @param {!Object<string, *>} params
- * @param {DomIdMapper=} domIdMapper
+ * @param {function(string, string, boolean=):?string=} transpileFn
  * @return {!Promise<{
  *   unlinkedImports: !Map<string, ImportStatement>,
  *   allFiles: !Set<string>,
+ *   isolateDir: string,
  *   ignoreUnusedLocals: boolean
  * }>}
  */
-const preprocessAndIsolate = async ({ entry: entryFile, ...params }, domIdMapper) => {
+const preprocessAndIsolate = async (params, transpileFn) => {
+  const entry = /** @type {string} */(params["entry"]);
   /** @const {string} */
   const isolateDir = combine(
-    getDir(/** @type {string} */(params["output"] || "build/" + /** @type {string} */(entryFile))),
+    getDir(/** @type {string} */(params["output"] || "build/" + entry)),
     /** @type {string} */(params["isolateDir"]) || ".kdjs_isolate");
   /** @const {!Object<string, *>} */
   const globals = /** @type {!Object<string, *>} */(typeof params["globals"] == "string"
-    ? JSON.parse(params["globals"]) : (params["globals"] || {}));
-
-  domIdMapper ||= params["domIdMapping"] == "global"
-    ? new GlobalMapper()
-    : params["domIdMapping"] == "local" ? new LocalMapper() : new BasicMapper();
+    ? JSON.parse(/** @type {string} */(params["globals"])) : (params["globals"] || {}));
 
   const unlinkedImports = new Map();
   /** @const {!Array<string>} */
   const externs = [].concat(params["externs"] || []);
   /** @const {!Array<string>} */
-  const files = [entryFile, ...externs];
+  const files = [entry, ...externs];
   /** @const {!Set<string>} */
   const allFiles = new Set();
   /** @const {!Array<!Promise<void>>} */
@@ -278,13 +273,14 @@ const preprocessAndIsolate = async ({ entry: entryFile, ...params }, domIdMapper
     allFiles.add(file);
     /** @type {string} */
     let content = await readFile(file, "utf8");
-    if (file.endsWith(".jsx")) {
-      content = transpileJsx(file == entryFile, file, content, globals, domIdMapper);
-      ignoreUnusedLocals = true; // jsx transform leaves hard to remove unused locals
+    if (!file.endsWith(".js")) {
+      if (!transpileFn) throw "For non-js files please provide a transpile function: " + file;
+      /** @const {?string} */
+      const transpiled = transpileFn(content, file, file == entry);
+      content = transpiled || content;
+      ignoreUnusedLocals ||= file.endsWith(".jsx") && !!transpiled;
     }
-    content = file.endsWith(".js") || file.endsWith(".jsx")
-      ? processJs(file == entryFile, file, content, files, globals, unlinkedImports)
-      : transpileCss(file, content, domIdMapper);
+    content = processJs(file == entry, file, content, files, globals, unlinkedImports);
 
     const outFile = combine(isolateDir, file);
     writePromises.push(mkdir(getDir(outFile), { recursive: true })

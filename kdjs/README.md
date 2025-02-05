@@ -1,15 +1,18 @@
 # `kdjs`: KimlikDAO JavaScript compiler
 
-`kdjs` is a javascript compiler with advanced optimization and minification capabilities.
+`kdjs` is a javascript compiler with advanced optimization and minification
+capabilities.
 It primarily builds upon the Google Closure Compiler (GCC) however it has many custom optimization
 passes and a more powerful module system.
 
 For instance, `kdjs` it is able to generate es6 modules with `export`s and unlinked `import`s, which
 is not possible with GCC.
 
-`kdjs` expects your code to be fully annotated using the Google Closure Compiler type annotations.
-Just like in GCC, your type annotations can be either in a `.js` file or an externs file, which in `kdjs`
-has to end with the extension `.d.js`.
+`kdjs` expects your code to be fully annotated using the Google Closure
+Compiler type annotations. Just like in GCC, your type annotations can be
+either in a `.js` file or an externs file, which in `kdjs` has to end with the
+extension `.d.js`. In `.d.js` files explicit `@externs` annotations are not
+needed.
 
 You can run `kdjs` directly
 
