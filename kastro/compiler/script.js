@@ -1,6 +1,5 @@
 import { compile } from "../../kdjs/compile";
 import { filterGlobalProps, filterOutGlobalProps } from "../props";
-import { getDomIdMapper } from "./pageGlobals";
 
 /** @const {TargetFunction} */
 const scriptTarget = (_, { src: entry, ...props }) => {
@@ -13,7 +12,7 @@ const scriptTarget = (_, { src: entry, ...props }) => {
     },
     ...filterOutGlobalProps(props)
   };
-  return compile(params, props.checkFreshFn, getDomIdMapper());
+  return compile(params, props.checkFreshFn);
 }
 
 export { scriptTarget };

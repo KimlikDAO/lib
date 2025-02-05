@@ -1,6 +1,6 @@
 import { KapalıTag, tagYaz } from "../../util/html";
 import { LangCode } from "../../util/i18n";
-import { getGlobals } from "./pageGlobals";
+import { getGlobals } from "../compiler/pageGlobals";
 
 /** @const {string} */
 const Fragment = "";

@@ -1,10 +1,12 @@
 import { Parser } from "acorn";
 import acornJsx from "acorn-jsx";
-import { getExt } from "../util/paths";
-import { getEnum } from "./cssParser";
+import {
+  ImportStatement, writeImportStatement
+} from "../../kdjs/modules";
+import { Update, update } from "../../kdjs/textual";
+import { getExt } from "../../util/paths";
+import css from "./css";
 import { DomIdMapper } from "./domIdMapper";
-import { ImportStatement, writeImportStatement } from "./modules";
-import { Update, update } from "./textual";
 
 /** @const {!Parser} */
 const JsxParser = Parser.extend(acornJsx());
@@ -135,7 +137,7 @@ const transpileJsx = (isEntry, file, content, domIdMapper) => {
         updates.push({
           beg: node.start,
           end: node.end,
-          put: getEnum(file, strippedCss, domIdMapper)
+          put: css.getEnum(file, strippedCss, domIdMapper)
         });
       }
     } else if (node.type === "JSXElement" || node.type === "JSXFragment") {

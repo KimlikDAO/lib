@@ -1,4 +1,3 @@
-import { DomIdMapper, GlobalMapper, LocalMapper } from "../../kdjs/domIdMapper";
 import { filterGlobalProps } from "../props";
 
 let Globals = {};
@@ -30,5 +29,5 @@ const assignGlobals = (newGlobals) => Object.assign(Globals, newGlobals);
 export {
   assignGlobals,
   getGlobals,
-  initGlobals,
+  initGlobals
 };
