@@ -12,13 +12,18 @@ Key features:
    compiler `kdjs`
  - 🌐 End to end integrated i18n, asset bundling and css modules
 
-While other frameworks offer static rendering, kastro takes the compile time
-approach to the extreme: the client JavaScript bundle is strictly limited to
-manipulation of existing DOM elements. The component structure and rendering
-logic are completely optimized away at compile time.
-This means if the DOM were to be manually deleted, the client bundle would
-have no way to reconstruct it, as that information is intentionally stripped
-out during compilation for maximum optimization.
+Unlike other frameworks that offer static rendering, kastro takes a radical
+approach to optimization: the client JavaScript bundle contains only the code
+needed to manipulate existing DOM elements. All component structure and
+rendering logic is optimized away at compile time.
+
+This means the client bundle is extremely lightweight - it doesn't contain any
+code for rendering components or managing a virtual DOM. Everything that needs
+to be in DOM is placed into an HTML file at compile time, which then can be
+precompressed and pushed to the edge. Not only does this make the initial
+download faster, but browsers are also highly optimized for constructing the
+DOM directly from HTML, compared to constructing DOM elements one by one
+using JavaScript like most other frameworks do.
 
 ## Example
 ```jsx filename="LandingPage.jsx"
@@ -111,11 +116,11 @@ There are 2 types of components, stateless and stateful. In stateless components
 the function part binds the component to the dom; in stateful components, the
 function part is used as a constructor of the component's instance.
 
-### **Stateless**: A component that does not take an `instance` property is
-deemed stateless. Their dom id is fixed at compile time either by an `id`
-property passed by their parent component, or by hardcoding it if the
-component appears at most once in a page (thus assigning a unique id by the
-parent is unnecessary).
+### **Stateless**:
+A component that does not take an `instance` property is deemed stateless.
+Their dom id is fixed at compile time either by an `id` property passed by
+their parent component, or by hardcoding it if the component appears at
+most once in a page (thus assigning a unique id by the parent is unnecessary).
 
 These components can keep an internal state, however if there are multiple
 copies of the component in a page, they will share this state. This means
@@ -160,9 +165,10 @@ const Page = () => {
 Page();
 ```
 
-### **Stateful**: A component which takes an `instance` property is deemed a
-stateful component. These components can keep an internal state and for each
-copy of the component, a class instance is created.
+### **Stateful**:
+A component which takes an `instance` property is deemed stateful. These
+components can keep an internal state and for each copy of the component, a
+class instance is created.
 
 Note the `instance` property is used by the client jsx transpiler and never
 passed to the component itself.
