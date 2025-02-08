@@ -15,10 +15,10 @@ import {
   webpTarget
 } from "./compiler/image";
 import { pageTarget } from "./compiler/page";
-import { getGlobals } from "./compiler/pageGlobals";
 import { scriptTarget } from "./compiler/script";
 import { styleSheetTarget } from "./compiler/styleSheet";
 import { registerTargetFunction } from "./compiler/targetRegistry";
+import { getGlobals } from "./transpiler/pageGlobals";
 import { transpileCss, transpileJsx } from "./transpiler/transpiler";
 import { CompressedMimes } from "./workers/mimes";
 

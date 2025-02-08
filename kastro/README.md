@@ -27,27 +27,29 @@ import { LangCode } from "@kimlikdao/util/i18n";
 import ArrowSvg from "./arrow.svg";
 import Css from "./LandingPage.css";
 
-/** @const {!HTMLButtonElement} */
-const Button = dom.button(Css.ButtonId);
-/** @const {!HTMLSpanElement} */
-const Text = dom.span(Css.TextId);
-
 /**
  * @param {{ Lang: LangCode }} Lang
  */
-const LandingPage = ({ Lang }) => (
-  <html lang={Lang}>
-    <Css />
-    <Button onClick={() => Text.innerText = "Clicked!"}>
-      <ArrowSvg />Click me!
-    </Button>
-    <Text>Hello World!</Text>
-  </html>
-);
+const LandingPage = ({ Lang }) => {
+  /** @const {!HTMLButtonElement} */
+  const Button = dom.button(Css.ButtonId);
+  /** @const {!HTMLSpanElement} */
+  const Text = dom.span(Css.TextId);
+
+  return (
+    <html lang={Lang}>
+      <Css />
+      <Button onClick={() => Text.innerText = "Clicked!"}>
+        <ArrowSvg />Click here!
+      </Button>
+      <Text>Hello World!</Text>
+    </html>
+  );
+};
 
 export default LandingPage;
 ```
-When you import a `.css` file, you get a StyleSheet component like the `Css`
+When you import a .css file, you get a StyleSheet component like the `Css`
 component in the example above. Each selector in the css file becomes available
 as a property on this component, with the selector name converted to PascalCase.
 For example, `.blue-button` becomes `Css.BlueButton`. 
@@ -77,12 +79,11 @@ and the following html will be generated (after de-minification):
 <!DOCTYPE html>
 <html lang="en">
   <head><link rel="stylesheet" href="khmW2F9I.css" /></head>
-  <button id="A"><svg src="vlGA9oOP.svg"/>Click me!</button>
+  <button id="A"><svg src="vlGA9oOP.svg"/>Click here!</button>
   <span id="B">Hello World!</span>
 </html>
 ```
-In particular, there is no runtime, no boilerplate or any other code that 
-would better be handled at compile time.
+In particular, there is no runtime, no framework setup code or boilerplate.
 
 ## Not reactive
 As you may have noticed in the example above, kastro is not a reactive
@@ -106,110 +107,109 @@ the component html and the object part is used to manage the DOM interactions.
 When building for the client, the function part is stripped to essentially
 a no-op and in particular, the entire jsx expression is removed.
 
-There are 3 types of components:
+There are 2 types of components, stateless and stateful. In stateless components
+the function part binds the component to the dom; in stateful components, the
+function part is used as a constructor of the component's instance.
 
-1. **Singleton**: Only one instance can be present in the page. These bind to
-the DOM when the containing module is imported and can keep an arbitrary
-internal state (every variable you define in the module is available as a
-property of the component object).
+### **Stateless**: A component that does not take an `instance` property is
+deemed stateless. Their dom id is fixed at compile time either by an `id`
+property passed by their parent component, or by hardcoding it if the
+component appears at most once in a page (thus assigning a unique id by the
+parent is unnecessary).
 
-If a component does not take an `id` or `instance` property, then it is
-determined as a singleton.
+These components can keep an internal state, however if there are multiple
+copies of the component in a page, they will share this state. This means
+that for singleton components, we can freely keep internal state, however
+for reusable components, either the entire state must be kept in the DOM
+or passed into the methods of the component by the caller.
 
-  ```jsx
-  const State = [1, 2, 3];
-  const SingletonComp = () => <div>Singleton</div>;
-  export default SingletonComp;
-  ```
-  If your component is exposing additional methods, you can add them like so:
-  ```jsx
-  const State = [1, 2, 3];
-  const SingletonComp = () => <div>Singleton</div>;
-  SingletonComp.push = (x) => State.push(x);
-  SingletonComp.pop = () => State.pop();
+Kastro compiler will generate the `Component({ id: "idAssignedByParent" })`
+invocations from the initialization code of the parent component.
 
-  export default SingletonComp;
-  ```
-
-2. **Stateless**: A component that takes an `id` property (but no `instance`
-  property) is deemed stateless. Their dom `id` is fixed at compile time by
-  their parents, and in particular there can be any number of instances of
-  stateless components with unique ids assigned by their parents.
-  
-  Kastro compiler will generate the `Component({ id: "idAssignedByparent" })`
-  invocations from the initialization code of the parent component.
-
-  ```jsx
-  const StatelessComp = ({ id }) => {
-    const Root = dom.div(id);
-    return (
-      <Root
-        onClick={() => Root.innerText = Root.innerText == "On" ? "Off" : "On"}
-        >On</Root>
-    );
-  }
-
-  const Page = () => (
-    <html>
-      <StatelessComp id="A" />
-    </html>
+```jsx
+/** @param {{ id: string }} props */
+const StatelessComp = ({ id }) => {
+  /** @type {!HTMLDivElement} */
+  const Root = dom.div(id);
+  return (
+    <Root
+      onClick={() => Root.innerText = Root.innerText == "On" ? "Off" : "On"}
+      >On</Root>
   );
-  ```
-  When transpiled by kastro (but before compilation by kdjs), the above jsx file will become
-  ```javascript
-  const StatelessComp = ({ id }) => {
-    const Root = dom.div(id);
-    Root.onclick = () => Root.innerText = Root.innerText == "On" ? "Off" : "On";
-    return null;
-  }
-  const Page = () => {
-    StatelessComp({ id: "A" }); // Initialize the stateless component with id "A"
-    return null;
-  }
-  Page();
-  ```
+}
 
-3. **Stateful**: A component which takes an `instance` property is deemed a
-  stateful component. These components have internal state and for each copy
-  of the component, a class instance is created.
+const Page = () => (
+  <html>
+    <StatelessComp id="A" />
+  </html>
+);
+```
+When transpiled by kastro (but before compilation by kdjs), the above jsx file will become
+```javascript
+/** @param {{ id: string }} props */
+const StatelessComp = ({ id }) => {
+  /** @type {!HTMLDivElement} */
+  const Root = dom.div(id);
+  Root.onclick = () => Root.innerText = Root.innerText == "On" ? "Off" : "On";
+  return null;
+}
+const Page = () => {
+  StatelessComp({ id: "A" }); // Initialize the stateless component with id "A"
+  return null;
+}
+Page();
+```
 
-  ```jsx
-  const CheckBox = ({ id }) => {
-    this.root = dom.div(id);
-    this.on = true;
-    return <div id={id}>on</div>;
-  }
-  CheckBox.prototype.flip = function() {
-    this.on = !this.on;
-    this.root.innerText = this.on ? "on" : "off";
-  }
-  
-  const PageWithCheckBox = () => (
-    <html>
-      <CheckBox id="A" instance={PageWithCheckBox.checkBox}/>
-    </html>
-  );
+### **Stateful**: A component which takes an `instance` property is deemed a
+stateful component. These components can keep an internal state and for each
+copy of the component, a class instance is created.
 
-  PageWithCheckBox.isChecked = () => PageWithCheckBox.checkBox.on;
-  ```
-  When the above jsx file is transpiled for the client by kastro (but before compilation by kdjs),
-  it will become
-  ```javascript
-  const CheckBox = ({ id }) => {
-    this.root = dom.div(id);
-    this.on = true;
-    return null;
-  }
-  CheckBox.prototype.flip = function() {
-    this.on = !this.on;
-    this.root.innerText = this.on ? "on" : "off";
-  }
-  
-  const PageWithCheckBox = () => {
-    PageWithCheckBox.checkBox = new CheckBox({ id: "A" });
-    return null;
-  }
-  PageWithCheckBox();
+Note the `instance` property is used by the client jsx transpiler and never
+passed to the component itself.
 
-  PageWithCheckBox.isChecked = () => PageWithCheckBox.checkBox.on;
-  ```
+```jsx
+/** @param {{ id: string }} props */
+const CheckBox = ({ id }) => {
+  /** @type {!HTMLDivElement} */
+  this.root = dom.div(id);
+  /** @type {boolean} */
+  this.on = true;
+  return <div id={id}>on</div>;
+}
+CheckBox.prototype.flip = function() {
+  this.on = !this.on;
+  this.root.innerText = this.on ? "on" : "off";
+}
+
+const PageWithCheckBox = () => (
+  <html>
+    <CheckBox id="A" instance={PageWithCheckBox.checkBox}/>
+  </html>
+);
+
+PageWithCheckBox.isChecked = () => PageWithCheckBox.checkBox.on;
+```
+When the above jsx file is transpiled for the client by kastro (but before compilation by kdjs),
+it will become
+```javascript
+/** @param {{ id: string }} props */
+const CheckBox = ({ id }) => {
+  /** @type {!HTMLDivElement} */
+  this.root = dom.div(id);
+  /** @type {boolean} */
+  this.on = true;
+  return null;
+}
+CheckBox.prototype.flip = function() {
+  this.on = !this.on;
+  this.root.innerText = this.on ? "on" : "off";
+}
+
+const PageWithCheckBox = () => {
+  PageWithCheckBox.checkBox = new CheckBox({ id: "A" });
+  return null;
+}
+PageWithCheckBox();
+
+PageWithCheckBox.isChecked = () => PageWithCheckBox.checkBox.on;
+```

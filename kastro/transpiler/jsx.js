@@ -38,7 +38,7 @@ const SpecifierState = {
  * @param {DomIdMapper} domIdMapper
  * @return {string} The transpiled js file
  */
-const transpile = (isEntry, file, content, domIdMapper, componentProps) => {
+const transpile = (isEntry, file, content, domIdMapper, globals) => {
   /** @const {!Array<!acorn.Comment>} */
   const comments = [];
   /** @const {!Array<Update>} */
@@ -53,6 +53,8 @@ const transpile = (isEntry, file, content, domIdMapper, componentProps) => {
   const assetComponents = new Set();
   /** @const {!Set} */
   const localComponents = new Set();
+  /** @const {!Set} */
+  const styleSheetComponents = new Set();
 
   /**
    * @param {!acorn.ImportDeclaration} node
@@ -98,7 +100,7 @@ const transpile = (isEntry, file, content, domIdMapper, componentProps) => {
             } else
               props[name] = attr.value;
           }
-          if (instance || props.id || localComponents.has(tagName)) {
+          if ((tagName in specifierInfo || localComponents.has(tagName)) && !styleSheetComponents.has(tagName)) {
             keepImport = true;
             const serialize = (v) => {
               if (!v) return "true";
@@ -192,8 +194,6 @@ const transpile = (isEntry, file, content, domIdMapper, componentProps) => {
     }
   }
 
-  let defaultComponent = null;
-
   /**
    * @param {!acorn.Program} ast
    */
@@ -216,16 +216,9 @@ const transpile = (isEntry, file, content, domIdMapper, componentProps) => {
           updates.push({ beg: node.start, end: node.end, put: "; // Asset component" });
         } else
           addImport(node);
-      } else if (node.type == "ExportDefaultDeclaration") {
-        if (node.declaration.type == "Identifier")
-          defaultComponent = node.declaration.name;
-
-        if (isEntry) {
-          updates.push({
-            beg: node.start,
-            end: node.end,
-            put: "; // Entry component, remove the default export\n"
-          });
+        if (ext == "css") {
+          for (const specifier of node.specifiers)
+            styleSheetComponents.add(specifier.local.name);
         }
       } else if (node.type == "VariableDeclaration") {
         for (const decl of node.declarations) {
@@ -235,65 +228,6 @@ const transpile = (isEntry, file, content, domIdMapper, componentProps) => {
             (decl.init.type === "ArrowFunctionExpression" ||
               decl.init.type === "FunctionExpression"))
             localComponents.add(name);
-        }
-      }
-    }
-  }
-
-  const autoInitializeDefaultSingleton = (ast) => {
-    // Until our type parser is ready, we have a hardcoded name to type map here
-    const nameToType = {
-      "Lang": "LangCode",
-      "defaultChain": "ChainId",
-      "chains": "!Array<ChainId>",
-      "chainNotes": "!Object<ChainId, I18nString>",
-    }
-    if (!defaultComponent) return;
-    for (const node of ast.body) {
-      if (node.type == "VariableDeclaration") {
-        for (const decl of node.declarations) {
-          const name = decl.id.name;
-          if (decl.id.type === "Identifier" && name == defaultComponent &&
-            decl.init &&
-            (decl.init.type === "ArrowFunctionExpression" ||
-              decl.init.type === "FunctionExpression")) {
-
-            const propStrings = [];
-            if (decl.init.params.length) {
-              if (decl.init.params.length > 1)
-                throw new Error("Singleton components cannot have more than one parameter");
-
-              const params = decl.init.params[0];
-              if (params.type !== "ObjectPattern")
-                throw new Error("Singleton components must have an object parameter");
-
-              for (const prop of params.properties)
-                if (prop.key.name === "id" || prop.key.name === "instance")
-                  return; // Not a singleton
-
-              const storedProps = componentProps[name] || {};
-              const serializeValueOf = (key) => {
-                const serialized = JSON.stringify(storedProps[key]);
-                const type = nameToType[key];
-                return type ? `/** @type {${type}} */(${serialized})` : serialized;
-              }
-              for (const prop of params.properties) {
-                const propName = prop.key.name;
-                if (propName in storedProps)
-                  propStrings.push(
-                    `${propName}: ${serializeValueOf(propName)}`
-                  );
-              }
-            }
-            const initStatement = propStrings.length
-              ? `\n${name}({\n  ${propStrings.join(",\n  ")}\n});`
-              : `\n${name}();`;
-            updates.push({
-              beg: node.end,
-              end: node.end,
-              put: initStatement
-            });
-          }
         }
       }
     }
@@ -345,6 +279,83 @@ const transpile = (isEntry, file, content, domIdMapper, componentProps) => {
     }
   }
 
+  const initializeEntry = () => {
+    let rootComponentName = file.slice(file.lastIndexOf("/") + 1).replace(".jsx", "");
+    /** @type {acorn.Node} */
+    let defaultExport = null;
+    let exportNode = null;
+
+    for (const node of ast.body) {
+      if (node.type === "ExportDefaultDeclaration") {
+        exportNode = node;
+        defaultExport = node.declaration;  // Either Identifier or Function
+        break;
+      }
+    }
+
+    if (!defaultExport) throw new Error("Root component must be exported as default");
+
+    if (defaultExport.type === "Identifier") {
+      rootComponentName = defaultExport.name;
+      updates.push({
+        beg: exportNode.start,
+        end: exportNode.end,
+        put: ""
+      });
+    } else {
+      updates.push({
+        beg: exportNode.start,
+        end: exportNode.declaration.start,
+        put: `const ${rootComponentName} = `
+      });
+    }
+
+    if (defaultExport.type === "Identifier") {
+      const name = defaultExport.name;
+      for (const node of ast.body) {
+        if (node.type === "VariableDeclaration") {
+          for (const decl of node.declarations) {
+            if (decl.id.name === name) {
+              defaultExport = decl.init;
+              break;
+            }
+          }
+        }
+      }
+    }
+    const nameToType = {
+      "Lang": "LangCode",
+    };
+    const serializeValueOf = (key) => {
+      const serialized = JSON.stringify(globals[key]);
+      const type = nameToType[key];
+      return type ? `/** @type {${type}} */(${serialized})` : serialized;
+    }
+
+    const propStrings = [];
+    if (defaultExport.params.length) {
+      if (defaultExport.params.length > 1)
+        throw new Error("Root component cannot have more than one parameter");
+
+      const params = defaultExport.params[0];
+      if (params.type !== "ObjectPattern")
+        throw new Error("Root component must have an object parameter");
+
+      for (const prop of params.properties) {
+        const propName = prop.key.name;
+        if (propName in globals)
+          propStrings.push(
+            `${propName}: ${serializeValueOf(propName)}`
+          );
+      }
+    }
+    updates.push({
+      beg: ast.end,
+      end: ast.end,
+      put: `${rootComponentName}(${propStrings.length ? `{\n  ${propStrings.join(",\n  ")}\n}` : ""});`
+    });
+  };
+
   /** @const {!acorn.Program} */
   const ast = JsxParser.parse(content, {
     sourceType: "module",
@@ -354,9 +365,11 @@ const transpile = (isEntry, file, content, domIdMapper, componentProps) => {
 
   collectComponents(ast);
   processComponents(ast);
-  autoInitializeDefaultSingleton(ast);
   processComments(comments)
   pruneImports();
+  if (isEntry)
+    initializeEntry();
+
   return update(content, updates);
 };
 

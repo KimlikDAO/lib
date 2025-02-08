@@ -3,9 +3,8 @@ import { capitalize, getDir } from "../../util/paths";
 import { filterGlobalProps } from "../props";
 import { Script } from "../script";
 import { makeStyleSheets } from "../stylesheet";
-import { initComponentProps } from "../transpiler/componentProps";
+import { initGlobals } from "../transpiler/pageGlobals";
 import HtmlMinifierConfig from "./config/htmlMinifierConfig";
-import { initGlobals } from "./pageGlobals";
 
 /**
  * @param {string} targetName
@@ -22,7 +21,6 @@ const pageTarget = (targetName, props) => {
 
   const { BuildMode, Lang } = props;
   initGlobals(props);
-  initComponentProps(targetModuleName, { BuildMode, Lang });
   const StyleSheets = makeStyleSheets();
   return import(targetModulePath)
     .then((jsx) => jsx.default({ BuildMode, Lang }).render())

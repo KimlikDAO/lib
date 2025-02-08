@@ -1,8 +1,8 @@
 import { tagYaz } from "../util/html";
 import { splitFullExt } from "../util/paths";
 import compiler from "./compiler/compiler";
-import { getGlobals } from "./compiler/pageGlobals";
 import { Props } from "./props";
+import { getGlobals } from "./transpiler/pageGlobals";
 
 /**
  * @param {Props} props

@@ -1,7 +1,7 @@
-import { getComponentProps } from "./componentProps";
 import css from "./css";
 import { DomIdMapper, GlobalMapper } from "./domIdMapper";
 import jsx from "./jsx";
+import { getGlobals } from "./pageGlobals";
 
 /** @type {!DomIdMapper} */
 const IdMapper = new GlobalMapper();
@@ -16,7 +16,7 @@ const transpileJsx = (content, file, isEntry) =>
   jsx.transpile(isEntry, file, content, IdMapper);
 
 const transpile = (content, file, isEntry) => file.endsWith(".jsx")
-  ? jsx.transpile(isEntry, file, content, IdMapper, getComponentProps())
+  ? jsx.transpile(isEntry, file, content, IdMapper, getGlobals())
   : css.transpile(file, content, IdMapper)
 
 export {
