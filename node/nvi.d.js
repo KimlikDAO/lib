@@ -2,7 +2,6 @@
  * @fileoverview e-devlet API veri şekli tanımları.
  *
  * @author KimlikDAO
- * @externs
  */
 
 import node from "./node.d";

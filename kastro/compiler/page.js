@@ -1,6 +1,9 @@
 import { minify } from "html-minifier";
 import { capitalize, getDir } from "../../util/paths";
-import { makeStyleSheetCollection } from "../stylesheet";
+import { filterGlobalProps } from "../props";
+import { Script } from "../script";
+import { makeStyleSheets } from "../stylesheet";
+import { initComponentProps } from "../transpiler/componentProps";
 import HtmlMinifierConfig from "./config/htmlMinifierConfig";
 import { initGlobals } from "./pageGlobals";
 
@@ -12,32 +15,27 @@ import { initGlobals } from "./pageGlobals";
 const pageTarget = (targetName, props) => {
   /** @const {string} */
   const targetDir = getDir(targetName);
-  props.SharedCss = makeStyleSheetCollection(`${targetDir}/shared-${props.Lang}.css`);
-  props.PageCss = makeStyleSheetCollection(`${targetDir}/page-${props.Lang}.css`);
-  initGlobals(props);
-
   /** @const {string} */
   const targetModuleName = capitalize(targetDir.slice(getDir(targetDir).length + 1));
-  return import(`${targetDir.slice(7)}/${targetModuleName}.jsx`)
-    .then((jsx) => jsx.default(props).render())
-    .then((html) => {
-      const renderStyleSheets = ({ BuildMode, SharedCss, PageCss }) => {
-        if (BuildMode == 0) {
-          SharedCss.addAll(SharedCss.entries());
-          return SharedCss({ BuildMode });
-        } else {
-          PageCss.removeAll(SharedCss.entries());
-          return Promise.all([SharedCss({ BuildMode }), PageCss({ BuildMode })])
-            .then(([shared, page]) => shared + page);
-        }
-      }
-      return renderStyleSheets(props)
-        .then((styleSheets) => {
-          html = "<!DOCTYPE html>" + html.replace("</head>", styleSheets + "</head>");
-          return props.BuildMode == 0
-            ? html : minify(html, HtmlMinifierConfig);
-        });
-    });
+  /** @const {string} */
+  const targetModulePath = `${targetDir.slice(7)}/${targetModuleName}.jsx`;
+
+  const { BuildMode, Lang } = props;
+  initGlobals(props);
+  initComponentProps(targetModuleName, { BuildMode, Lang });
+  const StyleSheets = makeStyleSheets();
+  return import(targetModulePath)
+    .then((jsx) => jsx.default({ BuildMode, Lang }).render())
+    .then((html) => Promise.all([
+      StyleSheets({ BuildMode, Lang, targetDir }),
+      Script({ src: targetModulePath, ...filterGlobalProps(props) })
+    ])
+      .then(([styleSheets, script]) => {
+        html = "<!DOCTYPE html>" + html.replace("</head>", styleSheets + script + "</head>");
+        return BuildMode == 0
+          ? html : minify(html, HtmlMinifierConfig);
+      })
+    )
 }
 
 export { pageTarget };

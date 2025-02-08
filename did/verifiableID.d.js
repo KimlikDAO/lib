@@ -2,7 +2,6 @@
  * @fileoverview
  *
  * @author KimlikDAO
- * @externs
  */
 
 import did from "./did.d";

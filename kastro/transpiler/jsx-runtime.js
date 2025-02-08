@@ -1,6 +1,7 @@
 import { KapalıTag, tagYaz } from "../../util/html";
 import { LangCode } from "../../util/i18n";
 import { getGlobals } from "../compiler/pageGlobals";
+import { storeComponentProps } from "./componentProps";
 
 /** @const {string} */
 const Fragment = "";
@@ -75,8 +76,16 @@ const jsx = (name, props = {}) => {
   resolveComponentProps(props, globals.Lang);
 
   const nameType = typeof name;
-  if (nameType == "function")
-    return name({ ...props, ...globals });
+  if (nameType == "function") {
+    const componentProps = name({ ...props, ...globals });
+    if (!componentProps) return;
+    const render = componentProps.render;
+    componentProps.render = () => {
+      storeComponentProps(name.name, props);
+      return render();
+    }
+    return componentProps;
+  }
 
   let { modifiesChildren, ...prop } = props;
   resolveElementProps(prop);

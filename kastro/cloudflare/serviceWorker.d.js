@@ -2,7 +2,6 @@
  * @fileoverview Externs for Cloudflare Service Workers.
  *
  * @author KimlikDAO
- * @externs
  */
 
 import "./cache.d";

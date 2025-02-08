@@ -2,7 +2,6 @@
  * @fileoverview Etherem logs definitions.
  *
  * @author KimlikDAO
- * @externs
  */
 
 import eth from "./eth.d";

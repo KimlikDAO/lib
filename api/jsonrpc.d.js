@@ -2,7 +2,6 @@
  * @fileoverview
  *
  * @author KimlikDAO
- * @externs
  */
 
 /**

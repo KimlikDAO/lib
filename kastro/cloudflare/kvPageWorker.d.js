@@ -1,6 +1,5 @@
 /**
  * @author KimlikDAO
- * @externs
  */
 
 import { KeyValue } from "./types.d";

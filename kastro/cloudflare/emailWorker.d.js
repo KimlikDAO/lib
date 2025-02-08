@@ -2,7 +2,6 @@
  * @fileoverview Cloudflare email workers definitions.
  *
  * @author KimlikDAO
- * @externs
  */
 
 import cloudflare from "./cloudflare.d";

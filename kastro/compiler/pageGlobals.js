@@ -1,9 +1,9 @@
 import { filterGlobalProps } from "../props";
 
+/** @type {!Object<string, *>} */
 let Globals = {};
 
 /**
- *
  * @param {!Object<string, *>} newGlobals - An object containing key-value pairs to set as globals.
  * @return {!Object<string, *>} The new globals object.
  */
@@ -29,5 +29,5 @@ const assignGlobals = (newGlobals) => Object.assign(Globals, newGlobals);
 export {
   assignGlobals,
   getGlobals,
-  initGlobals
+  initGlobals,
 };

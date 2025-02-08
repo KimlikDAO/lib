@@ -1,5 +1,3 @@
-/** @externs */
-
 /** @const */
 const cloudflare = {}
 

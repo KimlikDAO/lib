@@ -3,7 +3,6 @@
  * data to be stored inside an NFT.
  *
  * @author KimlikDAO
- * @externs
  */
 
 import "../crosschain/unlockable.d";

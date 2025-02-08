@@ -3,7 +3,6 @@
  * NFT.
  *
  * @author KimlikDAO
- * @externs
  */
 
 import "../ethereum/encryptedData.d";

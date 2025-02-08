@@ -1,6 +1,7 @@
 import { tagYaz } from "../util/html";
 import { LangCode } from "../util/i18n";
 import compiler from "./compiler/compiler";
+import { addStyleSheet } from "./stylesheet";
 
 /**
  * @param {{
@@ -26,7 +27,7 @@ const TtfFont = ({ Lang, BuildMode, SharedCss, PageCss, shared, href, name, weig
   const fontBase = href.slice(0, -4);
   const cssTarget = `/build/${fontBase}-${Lang}.css`;
   if (BuildMode == 0) {
-    (shared ? SharedCss : PageCss).add({
+    addStyleSheet(shared, {
       targetName: cssTarget,
       content: `@font-face {
         font-family: ${name};
@@ -49,7 +50,7 @@ const TtfFont = ({ Lang, BuildMode, SharedCss, PageCss, shared, href, name, weig
     .then((ttfBundled) => compiler.bundleTarget(`/build/${fontBase}-${Lang}.woff2`, {
       childTargets: [{ targetName: ttfTarget, props: ttfProps }]
     }).then((woff2Bundled) => {
-      (shared ? SharedCss : PageCss).add({
+      addStyleSheet(shared, {
         targetName: cssTarget,
         content: `@font-face {
           font-family: ${name};

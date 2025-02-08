@@ -1,5 +1,3 @@
-/** @externs */
-
 import cloudflare from "./cloudflare.d";
 
 /**

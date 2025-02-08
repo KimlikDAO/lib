@@ -1,7 +1,3 @@
-/**
- * @externs
- */
-
 /** @const */
 const eth = {};
 

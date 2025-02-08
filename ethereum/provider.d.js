@@ -2,7 +2,6 @@
  * @fileoverview Externs for an ethereum provider.
  *
  * @author KimlikDAO
- * @externs
  */
 
 import eth from "./eth.d";

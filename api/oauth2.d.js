@@ -1,9 +1,4 @@
 /**
- * @author KimlikDAO
- * @externs
- */
-
-/**
  * @const
  */
 const oauth2 = {};

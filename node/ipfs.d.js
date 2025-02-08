@@ -1,6 +1,5 @@
 /**
  * @author KimlikDAO
- * @externs
  */
 
 import node from "./node.d";

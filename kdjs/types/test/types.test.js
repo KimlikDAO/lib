@@ -1,37 +1,37 @@
-import { expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import {
   FunctionType,
   GenericType,
   PrimitiveType,
+  StructType,
   UnionType
 } from "../types";
 
-test("FunctionType.toString()", () => {
-  const returnType = new PrimitiveType("string", false);
-  const paramTypes = [
-    new PrimitiveType("number", false),
-    new PrimitiveType("boolean", true)
-  ];
-  const fn = new FunctionType(returnType, paramTypes, 1);
-  expect(fn.toString()).toBe("function(number,?boolean=):string");
-});
+describe("toExpr() tests", () => {
+  test("PrimitiveType", () => {
+    const string = new PrimitiveType("string", true);
+    expect(string.toExpr()).toBe("?string");
+    const bigint = new PrimitiveType("bigint", false);
+    expect(bigint.toExpr()).toBe("bigint");
+  });
 
-test("GenericType.toString()", () => {
-  const arrayType = new GenericType("Array", [new PrimitiveType("string")], false);
-  console.log(arrayType.toString());
-  expect(arrayType.toString()).toBe("!Array<string>");
+  test("GenericType, array specialization", () => {
+    const arrayOfString = new GenericType("Array", [
+      new PrimitiveType("string", false)
+    ], true);
+    expect(arrayOfString.toExpr()).toBe("?(string[])");
+    const arrayOfNullable = new GenericType("Array", [
+      new PrimitiveType("string", true)
+    ], true);
+    expect(arrayOfNullable.toExpr()).toBe("?(?string[])");
+  });
 
-  const objectType = new GenericType("Object", [
-    new PrimitiveType("string"), new PrimitiveType("number")
-  ], false);
-  expect(objectType.toString()).toBe("!Object<string, number>");
-});
+  test("GenericType", () => {
+    const record = new GenericType("Record", [
+      new PrimitiveType("string", false),
+      new PrimitiveType("bigint", false)
+    ], true);
 
-test("UnionType.toString()", () => {
-  const unionType = new UnionType([
-    new PrimitiveType("string"),
-    new PrimitiveType("number"),
-    new PrimitiveType("null")
-  ]);
-  expect(unionType.toString()).toBe("string | number | null");
+    expect(record.toExpr()).toBe("?Record<string, bigint>");
+  })
 });

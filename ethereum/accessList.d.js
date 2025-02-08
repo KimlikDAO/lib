@@ -1,6 +1,3 @@
-/**
- * @externs
- */
 
 import eth from "./eth.d";
 

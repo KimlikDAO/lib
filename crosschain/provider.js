@@ -44,7 +44,7 @@ Provider.prototype.switchChain = function (chain) { }
  */
 Provider.prototype.isChainSupported = function (chain) { }
 
-/**s
+/**
  * @type {?}
  */
 Provider.prototype.provider;

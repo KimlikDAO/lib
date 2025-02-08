@@ -8,57 +8,66 @@ import { minifyCss } from "./transpiler/transpiler";
 /** @const {!TextEncoder} */
 const Encoder = new TextEncoder();
 
-/**
- * @typedef {{
- *   function({ BuildMode: compiler.BuildMode }): Promise<string>
- * }}
- */
-const StyleSheetCollection = {};
+class StyleSheetCollection {
+  targets = new Map();
+  /**
+   * @param {{ targetName: string, content: string }} target
+   */
+  add({ targetName, content: contentString }) {
+    /** @const {!Uint8Array} */
+    const content = Encoder.encode(contentString);
+    /** @const {!ContentHash} */
+    const contentHash = keccak256Uint8(content);
+    /** @const {string} */
+    const key = targetName.endsWith(".jsx")
+      ? targetName.replace(".jsx", `-${hash.toStr(contentHash)}.css`)
+      : targetName;
+    this.targets.set(key, { targetName, content, contentHash });
+  }
 
-/**
- * @param {string} name Name of the collection
- * @return {!StyleSheetCollection}
- */
-const makeStyleSheetCollection = (name) => {
-  /** @const {!Map<string, Target>} */
-  const targets = new Map();
+  removeAll(entries) {
+    for (const [key] of entries)
+      this.targets.delete(key);
+  }
 
-  const CssCollection = Object.assign(
-    ({ BuildMode }) => compiler.bundleTarget(name, {
+  addAll(entries) {
+    for (const [key, target] of entries)
+      this.targets.set(key, target);
+  }
+
+  asTargets() {
+    return Array.from(this.targets.values());
+  }
+
+  entries() { return this.targets.entries(); }
+
+  clear() { this.targets.clear(); }
+}
+
+/** @type {!StyleSheetCollection} */
+let SharedCss = new StyleSheetCollection();
+/** @type {!StyleSheetCollection} */
+let PageCss = new StyleSheetCollection();
+
+const makeStyleSheets = () => {
+  const dev = (BuildMode) => BuildMode == 0 ? "-dev" : "";
+  PageCss.clear();
+
+  const StyleSheets = ({ BuildMode, Lang, targetDir }) => Promise.all([
+    compiler.bundleTarget(`/build/shared-${Lang}${dev(BuildMode)}.css`, {
       BuildMode,
-      childTargets: Array.from(targets.values())
-    }).then(
-      (bundleName) => tagYaz("link", { rel: "stylesheet", href: bundleName }, true)
-    ), {
-    /**
-     * @param {{ targetName: string, content: string }} target
-     */
-    add({ targetName, content: contentString }) {
-      /** @const {!Uint8Array} */
-      const content = Encoder.encode(contentString);
-      /** @const {!ContentHash} */
-      const contentHash = keccak256Uint8(content);
-      /** @const {string} */
-      const key = targetName.endsWith(".jsx")
-        ? targetName.replace(".jsx", `-${hash.toStr(contentHash)}.css`)
-        : targetName;
-      targets.set(key, { targetName, content, contentHash });
-    },
+      childTargets: SharedCss.asTargets()
+    }),
+    compiler.bundleTarget(`${targetDir}/page-${Lang}${dev(BuildMode)}.css`, {
+      BuildMode,
+      childTargets: PageCss.asTargets()
+    })
+  ]).then(([sharedBundleName, pageBundleName]) =>
+    tagYaz("link", { rel: "stylesheet", href: sharedBundleName }, true) +
+    tagYaz("link", { rel: "stylesheet", href: pageBundleName }, true)
+  );
 
-    removeAll(entries) {
-      for (const [key] of entries)
-        targets.delete(key);
-    },
-
-    addAll(entries) {
-      for (const [key, target] of entries)
-        targets.set(key, target);
-    },
-
-    entries() { return targets.entries(); }
-  });
-
-  return CssCollection;
+  return StyleSheets;
 }
 
 /**
@@ -73,6 +82,8 @@ const makeStyleSheetCollection = (name) => {
  */
 const StyleSheet = {};
 
+const addStyleSheet = (shared, target) => (shared ? SharedCss : PageCss).add(target);
+
 /**
  * @param {string} fileName
  * @param {string} cssContent
@@ -81,8 +92,8 @@ const StyleSheet = {};
 const makeStyleSheet = (fileName, cssContent) => {
   const { content, enumEntries } = minifyCss(cssContent, fileName);
   const Css = new Proxy(Object.assign(
-    ({ SharedCss, PageCss, shared }) => {
-      (shared ? SharedCss : PageCss).add({
+    ({ shared }) => {
+      addStyleSheet(shared, {
         targetName: "/" + fileName,
         content
       });
@@ -126,9 +137,9 @@ const css = (strings, ...values) => {
 };
 
 export {
+  addStyleSheet,
   css,
   makeStyleSheet,
-  makeStyleSheetCollection,
-  StyleSheet,
-  StyleSheetCollection
+  makeStyleSheets,
+  StyleSheet
 };

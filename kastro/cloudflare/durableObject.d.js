@@ -2,7 +2,6 @@
  * @fileoverview Cloudflare Durable Object definitions.
  *
  * @author KimlikDAO
- * @externs
  */
 
 import cloudflare from "./cloudflare.d";

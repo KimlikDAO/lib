@@ -2,7 +2,6 @@
  * @fileoverview Data structures to be used with `eth_decrypt`.
  *
  * @author KimlikDAO
- * @externs
  */
 
 import eth from "./eth.d";

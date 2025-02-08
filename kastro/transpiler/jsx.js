@@ -38,7 +38,7 @@ const SpecifierState = {
  * @param {DomIdMapper} domIdMapper
  * @return {string} The transpiled js file
  */
-const transpile = (isEntry, file, content, domIdMapper) => {
+const transpile = (isEntry, file, content, domIdMapper, componentProps) => {
   /** @const {!Array<!acorn.Comment>} */
   const comments = [];
   /** @const {!Array<Update>} */
@@ -51,6 +51,8 @@ const transpile = (isEntry, file, content, domIdMapper) => {
   const specifierInfo = {};
   /** @const {!Set} */
   const assetComponents = new Set();
+  /** @const {!Set} */
+  const localComponents = new Set();
 
   /**
    * @param {!acorn.ImportDeclaration} node
@@ -71,30 +73,48 @@ const transpile = (isEntry, file, content, domIdMapper) => {
       if (elem.openingElement && elem.openingElement.name.type === "JSXIdentifier") {
         /** @const {string} */
         const tagName = elem.openingElement.name.name;
-        if (tagName[0] === tagName[0].toUpperCase() && !assetComponents.has(tagName)) {
+        if (tagName.charCodeAt(0) < 91 && !assetComponents.has(tagName)) {
           const info = specifierInfo[tagName];
           if (info && info.state == SpecifierState.Remove)
             info.state = SpecifierState.PinRemove;
 
+          const props = {};
+          let keepImport = false;
+          let instance = null;
           for (const attr of elem.openingElement.attributes) {
             if (attr.type !== 'JSXAttribute') continue;
             const name = attr.name.name;
-            if (name === "id") {
-              if (info) info.state = SpecifierState.Keep;
-              traverse(attr.value.expression, attr.value);
-              statements.push(`${tagName}({ id: ${content.slice(attr.value.start + 1, attr.value.end - 1)} });`);
-            } else if (name.startsWith("on") && name.charCodeAt(2) < 91) {
-              if (info) info.state = SpecifierState.Keep;
+            if (name.startsWith("on") && name.charCodeAt(2) < 91) {
+              keepImport = true;
               traverse(attr.value.expression, attr.value);
               statements.push(`${tagName}.${name.toLowerCase()} = ${content.slice(attr.value.start + 1, attr.value.end - 1)};`);
-            } else if (name == "controlsDropdown") {
-              const controlled = attr.value.expression.name;
-              const controlledInfo = specifierInfo[controlled];
-              if (controlledInfo) controlledInfo.state = SpecifierState.Keep;
-              if (info) info.state = SpecifierState.Keep;
-              statements.push(`dom.bindDropdown(${tagName}, ${controlled});`);
-            }
+            } else if (name.startsWith("controls") && name.charCodeAt(8) < 91) {
+              keepImport = true;
+              traverse(attr.value.expression, attr.value);
+              statements.push(`dom.bind${name.slice(8)}(${tagName}, ${content.slice(attr.value.start + 1, attr.value.end - 1)});`);
+            } else if (name == "instance") {
+              keepImport = true;
+              instance = content.slice(attr.value.start + 1, attr.value.end - 1);
+            } else
+              props[name] = attr.value;
           }
+          if (instance || props.id || localComponents.has(tagName)) {
+            keepImport = true;
+            const serialize = (v) => {
+              if (!v) return "true";
+              if (v.type == "Literal") return JSON.stringify(v.value);
+              traverse(v.expression, null);
+              return content.slice(v.start + 1, v.end - 1);
+            }
+
+            const callParams = Object.keys(props).length
+              ? `{\n    ${Object.entries(props).map(([k, v]) => `${k}: ${serialize(v)}`).join(",\n    ")}\n  }`
+              : "";
+            const call = `${tagName}(${callParams});`;
+            statements.push(instance ? `${instance} = new ${call}` : call);
+          }
+          if (keepImport && info)
+            info.state = SpecifierState.Keep;
         }
       }
     }
@@ -104,17 +124,17 @@ const transpile = (isEntry, file, content, domIdMapper) => {
     });
   }
 
-  const hasIdParam = (params) => {
-    if (!params || params.length === 0) return false;
-    return params.some(param =>
-      param.type === "ObjectPattern" &&  // Must be destructured
-      param.properties.some(prop =>
-        prop.type === "Property" &&
-        prop.key.name === "id"
-      )
-    );
-  };
-
+  const processInlineCss = (node) => {
+    if (node.tag.type != "Identifier" || node.tag.name != "css") return;
+    /** @const {string} */
+    const strippedCss = content.slice(node.start + 4, node.end - 1)
+      .replace(/\$\{[^}]*\}/g, "a"); // Template literals cannot be exported identifiers, simply replace them with a placeholder
+    updates.push({
+      beg: node.start,
+      end: node.end,
+      put: css.getEnum(file, strippedCss, domIdMapper)
+    });
+  }
   /**
    * @param {!acorn.Node} node
    * @param {!acorn.Node} parent
@@ -122,66 +142,206 @@ const transpile = (isEntry, file, content, domIdMapper) => {
   const traverse = (node, parent) => {
     if (!node || typeof node !== 'object') return;
 
-    // Handle identifiers in JS context
     if (node.type === 'Identifier' && specifierInfo[node.name]) {
       const isPropertyName = parent?.type === 'MemberExpression' && parent.property === node;
       const isDestructured = parent?.type === 'Property' && parent.key === node && parent.parent?.type === 'ObjectPattern';
-
       if (!isPropertyName && !isDestructured)
         specifierInfo[node.name].state = SpecifierState.Keep;
     } else if (node.type === "TaggedTemplateExpression") {
-      if (node.tag.type == "Identifier" && node.tag.name == "css") {
-        /** @const {string} */
-        const strippedCss = content.slice(node.start + 4, node.end - 1)
-          .replace(/\$\{[^}]*\}/g, "a"); // Template literals cannot be exported, simply replace them with a placeholder
-        updates.push({
-          beg: node.start,
-          end: node.end,
-          put: css.getEnum(file, strippedCss, domIdMapper)
-        });
-      }
+      processInlineCss(node);
+      return;
     } else if (node.type === "JSXElement" || node.type === "JSXFragment") {
       const statements = [];
       processJsxElement(node, statements);
-      if (statements.length) {
-        if (parent.type === "ReturnStatement") {
+      const statementStr = statements.length ? statements.join("\n  ") + "\n  " : "";
+      if (parent.type === "ArrowFunctionExpression") {
+        const params = parent.params.map(param => content.slice(param.start, param.end)).join(", ");
+        updates.push({
+          beg: parent.start,
+          end: parent.end,
+          put: `(${params}) => {\n  ${statementStr}return null;\n}`
+        });
+      } else {
+        if (statements.length) {
           updates.push({
             beg: parent.start,
-            end: parent.end,
-            put: "\n  " + statements.join("\n  ") + "\n  return null;"
-          });
-        } else if (parent.type === "ArrowFunctionExpression") {
-          const params = parent.params.map(param => content.slice(param.start, param.end)).join(", ");
-          updates.push({
-            beg: parent.start,
-            end: parent.end,
-            put: `(${params}) => {\n  ${statements.join("\n  ")}\n  return null;\n}`
+            end: parent.start,
+            put: statementStr
           });
         }
-      } else updates.push({ beg: node.start, end: node.end, put: "null" });
-      return;
-    } else if (node.type == "VariableDeclaration") {
-      for (const decl of node.declarations) {
-        const name = decl.id.name;
-        if (decl.id.type === "Identifier" && name.charCodeAt(0) < 91 &&
-          decl.init &&
-          (decl.init.type === "ArrowFunctionExpression" ||
-            decl.init.type === "FunctionExpression") &&
-          !hasIdParam(decl.init.params)
-        ) {
-          updates.push({
-            beg: node.end,
-            end: node.end,
-            put: `\n${name}(); // Auto-initialize singleton\n`
-          })
-        }
+        updates.push({
+          beg: node.start,
+          end: node.end,
+          put: "null"
+        });
       }
+      return;
     }
     for (const key in node) {
       if (Array.isArray(node[key]))
         node[key].forEach(child => traverse(child, node));
       else
         traverse(node[key], node);
+    }
+  }
+
+  const processComponents = (ast) => {
+    for (const node of ast.body) {
+      if (node.type != "ImportDeclaration")
+        traverse(node, null);
+    }
+  }
+
+  let defaultComponent = null;
+
+  /**
+   * @param {!acorn.Program} ast
+   */
+  const collectComponents = (ast) => {
+    for (const node of ast.body) {
+      if (node.type == "ImportDeclaration") {
+        /** @const {string} */
+        const source = node.source.value;
+        /** @const {string} */
+        const ext = getExt(source, "js");
+        /** @const {boolean} */
+        const isAsset = ext == "svg" || ext == "png" || ext == "webp"
+          || ext == "ttf" || ext == "woff2"
+          || source.includes(":")
+          || source.includes("kastro/image")
+          || source.includes("kastro/stylesheet");
+        if (isAsset) {
+          for (const specifier of node.specifiers)
+            assetComponents.add(specifier.local.name);
+          updates.push({ beg: node.start, end: node.end, put: "; // Asset component" });
+        } else
+          addImport(node);
+      } else if (node.type == "ExportDefaultDeclaration") {
+        if (node.declaration.type == "Identifier")
+          defaultComponent = node.declaration.name;
+
+        if (isEntry) {
+          updates.push({
+            beg: node.start,
+            end: node.end,
+            put: "; // Entry component, remove the default export\n"
+          });
+        }
+      } else if (node.type == "VariableDeclaration") {
+        for (const decl of node.declarations) {
+          const name = decl.id.name;
+          if (decl.id.type === "Identifier" && name.charCodeAt(0) < 91 &&
+            decl.init &&
+            (decl.init.type === "ArrowFunctionExpression" ||
+              decl.init.type === "FunctionExpression"))
+            localComponents.add(name);
+        }
+      }
+    }
+  }
+
+  const autoInitializeDefaultSingleton = (ast) => {
+    // Until our type parser is ready, we have a hardcoded name to type map here
+    const nameToType = {
+      "Lang": "LangCode",
+      "defaultChain": "ChainId",
+      "chains": "!Array<ChainId>",
+      "chainNotes": "!Object<ChainId, I18nString>",
+    }
+    if (!defaultComponent) return;
+    for (const node of ast.body) {
+      if (node.type == "VariableDeclaration") {
+        for (const decl of node.declarations) {
+          const name = decl.id.name;
+          if (decl.id.type === "Identifier" && name == defaultComponent &&
+            decl.init &&
+            (decl.init.type === "ArrowFunctionExpression" ||
+              decl.init.type === "FunctionExpression")) {
+
+            const propStrings = [];
+            if (decl.init.params.length) {
+              if (decl.init.params.length > 1)
+                throw new Error("Singleton components cannot have more than one parameter");
+
+              const params = decl.init.params[0];
+              if (params.type !== "ObjectPattern")
+                throw new Error("Singleton components must have an object parameter");
+
+              for (const prop of params.properties)
+                if (prop.key.name === "id" || prop.key.name === "instance")
+                  return; // Not a singleton
+
+              const storedProps = componentProps[name] || {};
+              const serializeValueOf = (key) => {
+                const serialized = JSON.stringify(storedProps[key]);
+                const type = nameToType[key];
+                return type ? `/** @type {${type}} */(${serialized})` : serialized;
+              }
+              for (const prop of params.properties) {
+                const propName = prop.key.name;
+                if (propName in storedProps)
+                  propStrings.push(
+                    `${propName}: ${serializeValueOf(propName)}`
+                  );
+              }
+            }
+            const initStatement = propStrings.length
+              ? `\n${name}({\n  ${propStrings.join(",\n  ")}\n});`
+              : `\n${name}();`;
+            updates.push({
+              beg: node.end,
+              end: node.end,
+              put: initStatement
+            });
+          }
+        }
+      }
+    }
+  }
+
+  const processComments = (comments) => {
+    /** @const {RegExp} */
+    const TypePattern = /{[^}]+}/g;
+    /** @const {RegExp} */
+    const IdentPattern = /[^!?,|<>{}\s:()*=]+/g;
+    for (const comment of comments) {
+      /** @const {string} */
+      const text = comment.value;
+      /** @const {!Array<string>} */
+      const typeBlocks = text.match(TypePattern) || [];
+      for (const block of typeBlocks) {
+        /** @const {!Array<string>} */
+        const identifiers = block.match(IdentPattern) || [];
+        for (const ident of identifiers) {
+          const info = specifierInfo[ident];
+          if (info) info.state = SpecifierState.Keep;
+        }
+      }
+    }
+  }
+
+  const pruneImports = () => {
+    for (const importStatement of importStatements) {
+      /** @const {ImportStatement} */
+      const newImportStmt = { source: importStatement.source.value, named: {}, unnamed: "" };
+      /** @type {boolean} */
+      let keepBare = !importStatement.specifiers.length;
+      for (const specifier of importStatement.specifiers) {
+        const state = specifierInfo[specifier.local.name].state;
+        if (state == SpecifierState.Keep)
+          if (specifier.type == "ImportDefaultSpecifier")
+            newImportStmt.unnamed = specifier.local.name;
+          else
+            newImportStmt.named[specifier.local.name] = specifier.imported.name;
+        keepBare ||= !!state;
+      }
+      updates.push({
+        beg: importStatement.start,
+        end: importStatement.end,
+        put: keepBare
+          ? writeImportStatement(newImportStmt, importStatement.source.value)
+          : `; // No pins for "${newImportStmt.source}"`
+      });
     }
   }
 
@@ -192,79 +352,11 @@ const transpile = (isEntry, file, content, domIdMapper) => {
     onComment: comments
   });
 
-  for (const node of ast.body) {
-    if (node.type == "ImportDeclaration") {
-      /** @const {string} */
-      const source = node.source.value;
-      /** @const {string} */
-      const ext = getExt(source, "js");
-      /** @const {boolean} */
-      const isAsset = ext == "svg" || ext == "png" || ext == "webp" || ext == "ttf" || ext == "woff2";
-      if (source.includes(":") || isAsset
-        || source.includes("kastro/image") || source.includes("kastro/stylesheet")) {
-        for (const specifier of node.specifiers)
-          assetComponents.add(specifier.local.name);
-        updates.push({ beg: node.start, end: node.end, put: "; // Asset component" });
-      } else
-        addImport(node);
-    } else if (node.type == "ExportDefaultDeclaration" && isEntry) {
-      updates.push({
-        beg: node.start,
-        end: node.end,
-        put: "; // Entry component, remove the default export\n"
-      });
-    } else
-      traverse(node, ast);
-  }
-
-  /** @const {RegExp} */
-  const TypePattern = /{[^}]+}/g;
-  /** @const {RegExp} */
-  const IdentPattern = /[^!?,|<>{}\s:()*=]+/g;
-
-  /**
-   * @param {!acorn.Comment} comment
-   */
-  const processComment = (comment) => {
-    /** @const {string} */
-    const text = comment.value;
-    /** @const {!Array<string>} */
-    const typeBlocks = text.match(TypePattern) || [];
-    for (const block of typeBlocks) {
-      /** @const {!Array<string>} */
-      const identifiers = block.match(IdentPattern) || [];
-      for (const ident of identifiers) {
-        const info = specifierInfo[ident];
-        if (info) info.state = SpecifierState.Keep;
-      }
-    }
-  }
-
-  for (const comment of comments)
-    processComment(comment);
-
-  for (const importStatement of importStatements) {
-    /** @const {ImportStatement} */
-    const newImportStmt = { source: importStatement.source.value, named: {}, unnamed: "" };
-    /** @type {boolean} */
-    let keepBare = !importStatement.specifiers.length;
-    for (const specifier of importStatement.specifiers) {
-      const state = specifierInfo[specifier.local.name].state;
-      if (state == SpecifierState.Keep)
-        if (specifier.type == "ImportDefaultSpecifier")
-          newImportStmt.unnamed = specifier.local.name;
-        else
-          newImportStmt.named[specifier.local.name] = specifier.imported.name;
-      keepBare ||= !!state;
-    }
-    updates.push({
-      beg: importStatement.start,
-      end: importStatement.end,
-      put: keepBare
-        ? writeImportStatement(newImportStmt, importStatement.source.value)
-        : `; // No pins for "${newImportStmt.source}"`
-    });
-  }
+  collectComponents(ast);
+  processComponents(ast);
+  autoInitializeDefaultSingleton(ast);
+  processComments(comments)
+  pruneImports();
   return update(content, updates);
 };
 

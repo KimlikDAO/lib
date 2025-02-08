@@ -2,7 +2,6 @@
  * @fileoverview Cloudflare workers environment types and definitions.
  *
  * @author KimlikDAO
- * @externs
  */
 
 /**

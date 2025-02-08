@@ -2,7 +2,6 @@
  * @fileoverview KimlikDAO decentralized identifier definitions.
  *
  * @author KimlikDAO
- * @externs
  */
 
 import "../mina/mina.d";

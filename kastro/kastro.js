@@ -217,7 +217,7 @@ const buildCrate = async (crateName, buildMode, lang) => {
     return;
   }
   // If a language is specified, build each page for that language.
-  setupKastro(buildMode);
+  setupKastro();
   /** @const {!Object<string, PageTarget>} */
   const map = crates.getPageTargets(crate, buildMode, lang);
 
