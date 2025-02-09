@@ -97,7 +97,7 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
             } else if (name == "instance") {
               keepImport = true;
               instance = content.slice(attr.value.start + 1, attr.value.end - 1);
-            } else
+            } else if (!name.endsWith("$"))
               props[name] = attr.value;
           }
           if ((tagName in specifierInfo || localComponents.has(tagName)) && !styleSheetComponents.has(tagName)) {

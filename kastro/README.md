@@ -1,6 +1,6 @@
-# `kastro`: KimlikDAO UI framework
+# Kastro: KimlikDAO UI framework
 
-`kastro` is a UI framework for building pico-optimized web applications by
+Kastro is a UI framework for building pico-optimized web applications by
 moving as much computation to compile time as possible. It achieves extreme
 performance while maintaining a familiar React-like developer experience.
 
@@ -9,21 +9,22 @@ Key features:
  - ⚡️ Static rendering at build time for optimal performance
  - 🗜️ Minimal client-side JavaScript bundle
  - 🔍 Advanced compile-time optimizations and type safety through our javascript
-   compiler `kdjs`
+   compiler [`kdjs`](../kdjs/README.md)
  - 🌐 End to end integrated i18n, asset bundling and css modules
 
-Unlike other frameworks that offer static rendering, kastro takes a radical
+Unlike other frameworks that offer static rendering, Kastro takes a radical
 approach to optimization: the client JavaScript bundle contains only the code
 needed to manipulate existing DOM elements. All component structure and
 rendering logic is optimized away at compile time.
 
 This means the client bundle is extremely lightweight - it doesn't contain any
 code for rendering components or managing a virtual DOM. Everything that needs
-to be in DOM is placed into an HTML file at compile time, which then can be
-precompressed and pushed to the edge. Not only does this make the initial
-download faster, but browsers are also highly optimized for constructing the
-DOM directly from HTML, compared to constructing DOM elements one by one
-using JavaScript like most other frameworks do.
+to be in the DOM is placed, at compile time, into an HTML file, which then can
+be minified, pre-compressed and pushed to the edge. This approach not only
+reduces initial download size and latency, but also speeds up page rendering -
+browsers are highly optimized for constructing the DOM from static HTML,
+compared to dynamically creating elements one by one via JavaScript like many
+other frameworks do.
 
 ## Example
 ```jsx filename="LandingPage.jsx"
@@ -54,23 +55,22 @@ const LandingPage = ({ Lang }) => {
 
 export default LandingPage;
 ```
-When you import a .css file, you get a StyleSheet component like the `Css`
-component in the example above. Each selector in the css file becomes available
-as a property on this component, with the selector name converted to PascalCase.
-For example, `.blue-button` becomes `Css.BlueButton`. 
+In Kastro, when you import a .css file, you get a StyleSheet component like
+the `Css` component in the example above. Each selector in the css file becomes
+available as a property on this component, with the selector name converted to
+PascalCase. For example, `.blue-button` becomes `Css.BlueButton`. 
 
-In release mode, these selector values are minified to short strings like "A",
-"B", etc. using a global counter to ensure uniqueness across your application.
-This minification helps reduce the size of your CSS while maintaining the same
-functionality.
+These properties map the selector name to a minified version, such as "A", "B",
+obtained through a global counter. This reduces the bundle size while
+maintaining the same functionality.
 
 Similarly, when you import an image, you get an `Image` component. Under the hood,
 this component optimizes the image, copies it to the bundle with a content hashed
 name and the promise it returns resolves to something like `<img src="vlGA9oOP.svg">`
-If instead we used the image as `<ArrowSvg inline />`, kastro would first
+If instead we used the image as `<ArrowSvg inline />`, Kastro would first
 optimize the svg with svgo and then pass all dom id's in the svg through the
 same global counter to ensure they are unique and minified. The promise returned
-would resolve to something like `<svg><path id="C" d="M10 10L10 10" /><use href="url(#C)" /></svg>`.
+would resolve to something like `<svg><path id="C"d="M10 10L10 10"/><use href="url(#C)"/></svg>`.
 
 When you compile the above example, the client javascript will be literally
 a minified version of the following
@@ -91,39 +91,50 @@ and the following html will be generated (after de-minification):
 In particular, there is no runtime, no framework setup code or boilerplate.
 
 ## Not reactive
-As you may have noticed in the example above, kastro is not a reactive
-framework. Reactivity is a paradigm where you define your component's layout
-using a template such as
+Unlike many modern frameworks, Kastro takes a deliberate stance against
+reactivity. Reactive frameworks allow you to write templates like:
 ```jsx
- <Text>{State.text}</Text>
- <Button onClick={() => State.text = "Clicked!"}>
+<Text>{State.text}</Text>
+<Button onClick={() => State.text = "Clicked!"}>
 ```
-and the template is live: whenever a `State` variable changes, the template
-automatically updates. While this approach simplifies certain aspects of
-development, it comes at a significant cost: the framework must reimplement
-substantial parts of the browser's functionality in JavaScript rather than
-leveraging the browser's native code, which is highly efficient and already
-shipped and installed on client machines.
+and the template automatically updates whenever a `State` variable changes.
+While this reactive approach can simplify development, especially for certain
+types of UI elements, it comes with significant costs. The framework needs to
+reimplement core browser functionality in JavaScript - functionality that
+browsers have already heavily optimized in native code. This duplication wastes
+resources, increases app download times, and bypasses the browser's highly
+efficient built-in capabilities that are already installed on every client
+machine.
+
+Instead, Kastro provides optimized headless components for implementing
+many common ui patterns such as `<Switch>`. Component designers can use these
+or create their own for the particular DOM interaction patterns they need.
+
+A typical Kastro component code will be declarative, intuitive and boilerplate
+free.
 
 ## Components
 
-In kastro, components are function objects: the function part is used to render
-the component html and the object part is used to manage the DOM interactions.
-When building for the client, the function part is stripped to essentially
-a no-op and in particular, the entire jsx expression is removed.
+In Kastro, components are function objects: the function part is used to render
+the component html and setup the DOM bindings while the object part is used to
+manage the DOM interactions. When building for the client, the function part is
+stripped to essentially a no-op and in particular, the entire jsx expression is
+removed.
 
 There are 2 types of components, stateless and stateful. In stateless components
-the function part binds the component to the dom; in stateful components, the
-function part is used as a constructor of the component's instance.
+the function part sets up the dom bindings; in stateful components, the function
+part is used as a constructor of the component's instance.
 
-### **Stateless**:
+### 1. Stateless
 A component that does not take an `instance` property is deemed stateless.
 Their dom id is fixed at compile time either by an `id` property passed by
 their parent component, or by hardcoding it if the component appears at
-most once in a page (thus assigning a unique id by the parent is unnecessary).
+most once in a page. Here, by "hardcoding" we mean that the id is determined
+at compile time, but Kastro provides many ways to manage DOM ids 
+automatically and efficiently; see StyleSheet Component section below.
 
 These components can keep an internal state, however if there are multiple
-copies of the component in a page, they will share this state. This means
+copies of the component in a page, they will share the same state. This means
 that for singleton components, we can freely keep internal state, however
 for reusable components, either the entire state must be kept in the DOM
 or passed into the methods of the component by the caller.
@@ -137,9 +148,9 @@ const StatelessComp = ({ id }) => {
   /** @type {!HTMLDivElement} */
   const Root = dom.div(id);
   return (
-    <Root
-      onClick={() => Root.innerText = Root.innerText == "On" ? "Off" : "On"}
-      >On</Root>
+    <Root onClick={() => Root.innerText = Root.innerText == "On" ? "Off" : "On"}>
+      On
+    </Root>
   );
 }
 
@@ -149,7 +160,7 @@ const Page = () => (
   </html>
 );
 ```
-When transpiled by kastro (but before compilation by kdjs), the above jsx file will become
+When transpiled by Kastro (but before compilation by kdjs), the above jsx file will become
 ```javascript
 /** @param {{ id: string }} props */
 const StatelessComp = ({ id }) => {
@@ -162,10 +173,10 @@ const Page = () => {
   StatelessComp({ id: "A" }); // Initialize the stateless component with id "A"
   return null;
 }
-Page();
+Page(); // The root component is auto initialzied by Kastro transpiler
 ```
 
-### **Stateful**:
+### 2. Stateful
 A component which takes an `instance` property is deemed stateful. These
 components can keep an internal state and for each copy of the component, a
 class instance is created.
@@ -195,7 +206,7 @@ const PageWithCheckBox = () => (
 
 PageWithCheckBox.isChecked = () => PageWithCheckBox.checkBox.on;
 ```
-When the above jsx file is transpiled for the client by kastro (but before compilation by kdjs),
+When the above jsx file is transpiled for the client by Kastro (but before compilation by kdjs),
 it will become
 ```javascript
 /** @param {{ id: string }} props */
@@ -219,3 +230,14 @@ PageWithCheckBox();
 
 PageWithCheckBox.isChecked = () => PageWithCheckBox.checkBox.on;
 ```
+
+## Kastro type system
+
+Kastro leverages the type system of `kdjs` to provide both type safety and
+powerful compile-time optimizations. Unlike TypeScript, where type information
+is erased before optimization, Kastro's type system enables aggressive
+optimizations that would not be possible without the type information being
+available during compilation.
+
+### Types
+
