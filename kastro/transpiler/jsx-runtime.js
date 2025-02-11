@@ -76,10 +76,9 @@ const jsx = (name, props = {}) => {
 
   const nameType = typeof name;
   if (nameType == "function")
-    return name({ ...props, ...globals });
+    return name.call({}, { ...props, ...globals });
 
   let { modifiesChildren, ...prop } = props;
-  resolveElementProps(prop);
 
   if (nameType == "object") {
     // This is a kastro fake dom node; treat it as a real dom node
@@ -106,6 +105,7 @@ const jsx = (name, props = {}) => {
     .then((children) => {
       delete prop.children; // We have rendered the subtree, so we can prune the children
       const { render, ...rest } = prop;
+      resolveElementProps(rest);
       return name == Fragment
         ? children.join("")
         : (children.length || !KapalıTag[name])

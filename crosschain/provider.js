@@ -23,7 +23,7 @@ Provider.prototype.downloadURL = function () { }
  * @param {function(ChainId)} chainChanged
  * @param {function(!Array<string>)} addressChanged
  * @param {boolean=} onlyIfApproved
- * @return {!Promise<void>}
+ * @return {Promise<void>|void}
  */
 Provider.prototype.connect = function (chain, chainChanged, addressChanged, onlyIfApproved) { }
 
@@ -34,7 +34,7 @@ Provider.prototype.disconnect = function () { }
 
 /**
  * @param {string} chain
- * @return {!Promise<void>}
+ * @return {Promise<void>|void}
  */
 Provider.prototype.switchChain = function (chain) { }
 

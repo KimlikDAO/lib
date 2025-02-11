@@ -248,6 +248,8 @@ export default {
   gizle,
   göster,
   gösterGizle,
+  show: göster,
+  hide: gizle,
   // Widgets
   bindDropdown,
   düğmeDurdur,

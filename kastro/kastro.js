@@ -122,6 +122,18 @@ const setupKastro = () => {
     },
   };
   globalThis.document.createElement = (name) => new SinkElement(name);
+
+  /**
+   * @template T
+   * @this {Array<T>}
+   * @param {function(T, number=): void} lambda 
+   * @return {!Array<T>}
+   */
+  Array.prototype.modify = function (lambda) {
+    for (let i = 0, n = this.length; i < n; ++i)
+      lambda(this[i], i);
+    return this;
+  };
 }
 
 const serveCrate = async (crateName, buildMode) => {

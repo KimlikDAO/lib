@@ -9,8 +9,13 @@ const makeImageElement = (bundleName, { inSvg, piggyback, childTargets, ...props
   removeGlobalProps(props);
   if (piggyback)
     bundleName = piggyback + bundleName;
-  if (inSvg) props.href = bundleName;
-  else props.src = bundleName;
+  if (inSvg) {
+    props.href = bundleName;
+    delete props.src;
+  } else {
+    props.src = bundleName;
+    delete props.href;
+  }
   return tagYaz(inSvg ? "image" : "img", props, true);
 }
 

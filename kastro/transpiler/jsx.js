@@ -65,11 +65,39 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
       specifierInfo[specifier.local.name] = { node, state: SpecifierState.Remove };
   }
 
+  const specialComponents = {
+    Switch: (node, props) => {
+      node.children = node.children.filter((c) => c.type == "JSXElement");
+      const length = node.children.length;
+      if (!length) return;
+      /** @const {number} */
+      const selected = props.selected.expression.value;
+      const fnExprs = Array(length);
+      for (let i = 0; i < length; ++i) {
+        const statements = [];
+        if (i != selected)
+          processJsxElement(node.children[i], node, i, statements);
+        const fnExpr = statements.length
+          ? statements.length == 1
+            ? `() => ${statements[0]}`
+            : `() => {\n  ${statements.join(";\n  ")}\n}`
+          : "null";
+        fnExprs[i] = fnExpr;
+      }
+      props.children = `[${fnExprs.join(", ")}]`;
+      node.children[0] = node.children[selected];
+      node.children.length = 1;
+    }
+  }
+
   /**
    * @param {!acorn.JSXElement|!acorn.JSXFragment} node The jsx expression root to process
+   * @param {acorn.JSXElement} parent The parent element
+   * @param {number} childIndex The index of the child element
    * @param {!Array<string>} statements The array to emit the statements into
+   * @return {number} The number of immediate child elements (1 for JSXElement, n for JSXFragment)
    */
-  const processJsxElement = (node, statements) => {
+  const processJsxElement = (node, parent, childIndex, statements) => {
     if (node.type == "JSXElement") {
       const elem = /** @type {!acorn.JSXElement} */(node);
       if (elem.openingElement && elem.openingElement.name.type === "JSXIdentifier") {
@@ -89,11 +117,11 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
             if (name.startsWith("on") && name.charCodeAt(2) < 91) {
               keepImport = true;
               traverse(attr.value.expression, attr.value);
-              statements.push(`${tagName}.${name.toLowerCase()} = ${content.slice(attr.value.start + 1, attr.value.end - 1)};`);
+              statements.push(`${tagName}.${name.toLowerCase()} = ${content.slice(attr.value.start + 1, attr.value.end - 1)}`);
             } else if (name.startsWith("controls") && name.charCodeAt(8) < 91) {
               keepImport = true;
               traverse(attr.value.expression, attr.value);
-              statements.push(`dom.bind${name.slice(8)}(${tagName}, ${content.slice(attr.value.start + 1, attr.value.end - 1)});`);
+              statements.push(`dom.bind${name.slice(8)}(${tagName}, ${content.slice(attr.value.start + 1, attr.value.end - 1)})`);
             } else if (name == "instance") {
               keepImport = true;
               instance = content.slice(attr.value.start + 1, attr.value.end - 1);
@@ -102,28 +130,44 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
           }
           if ((tagName in specifierInfo || localComponents.has(tagName)) && !styleSheetComponents.has(tagName)) {
             keepImport = true;
+
+            const specialComponentHandler = specialComponents[tagName];
+            if (specialComponentHandler)
+              specialComponentHandler(node, props);
+
             const serialize = (v) => {
+              if (typeof v === "string") return v;
               if (!v) return "true";
               if (v.type == "Literal") return JSON.stringify(v.value);
               traverse(v.expression, null);
               return content.slice(v.start + 1, v.end - 1);
             }
-
             const callParams = Object.keys(props).length
               ? `{\n    ${Object.entries(props).map(([k, v]) => `${k}: ${serialize(v)}`).join(",\n    ")}\n  }`
               : "";
-            const call = `${tagName}(${callParams});`;
+            const call = `${tagName}(${callParams})`;
             statements.push(instance ? `${instance} = new ${call}` : call);
           }
           if (keepImport && info)
             info.state = SpecifierState.Keep;
+        } else if (tagName.charCodeAt(0) > 90) {
+          for (const attr of elem.openingElement.attributes) {
+            const name = attr.name.name;
+            if (name.startsWith("on") && name.charCodeAt(2) < 91) {
+              const value = content.slice(attr.value.start + 1, attr.value.end - 1);
+              const element = `${parent.openingElement.name.name}.children[${childIndex}]`;
+              statements.push(`${element}.${name.toLowerCase()} = ${value}`);
+            }
+          }
         }
       }
     }
-    node.children?.forEach((child) => {
+    let childElementCount = 0;
+    for (const child of node.children) {
       if (child.type === 'JSXElement' || child.type === 'JSXFragment')
-        processJsxElement(child, statements);
-    });
+        childElementCount += processJsxElement(child, node, childElementCount, statements);
+    }
+    return 1;
   }
 
   const processInlineCss = (node) => {
@@ -154,27 +198,20 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
       return;
     } else if (node.type === "JSXElement" || node.type === "JSXFragment") {
       const statements = [];
-      processJsxElement(node, statements);
-      const statementStr = statements.length ? statements.join("\n  ") + "\n  " : "";
+      processJsxElement(node, parent, 0, statements);
+      const statementStr = statements.length ? statements.join(";\n  ") + ";" : "";
       if (parent.type === "ArrowFunctionExpression") {
         const params = parent.params.map(param => content.slice(param.start, param.end)).join(", ");
         updates.push({
           beg: parent.start,
           end: parent.end,
-          put: `(${params}) => {\n  ${statementStr}return null;\n}`
+          put: `(${params}) => {\n  ${statementStr}\n}`
         });
       } else {
-        if (statements.length) {
-          updates.push({
-            beg: parent.start,
-            end: parent.start,
-            put: statementStr
-          });
-        }
         updates.push({
-          beg: node.start,
-          end: node.end,
-          put: "null"
+          beg: parent.start,
+          end: parent.end,
+          put: statementStr
         });
       }
       return;

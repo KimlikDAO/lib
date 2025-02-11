@@ -56,6 +56,7 @@ const compile = async (params, checkFreshFn, transpileFn) => {
     "jscomp_error": jsCompErrors,
     "jscomp_warning": jsCompWarnings,
     "language_in": "UNSTABLE",
+    "language_out": "UNSTABLE",
     "chunk_output_type": "ES_MODULES",
     "module_resolution": "NODE",
     "dependency_mode": "PRUNE",
@@ -99,6 +100,7 @@ const compile = async (params, checkFreshFn, transpileFn) => {
       const uglifiedCode = tweakPasses(uglified.code);
       const swcOutputPromise = swc.minify(uglifiedCode, {
         module: true,
+        ecma: 2022,
         sourceMap: false,
         toplevel: true,
         mangle: true,

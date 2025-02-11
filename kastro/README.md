@@ -167,11 +167,9 @@ const StatelessComp = ({ id }) => {
   /** @type {!HTMLDivElement} */
   const Root = dom.div(id);
   Root.onclick = () => Root.innerText = Root.innerText == "On" ? "Off" : "On";
-  return null;
 }
 const Page = () => {
   StatelessComp({ id: "A" }); // Initialize the stateless component with id "A"
-  return null;
 }
 Page(); // The root component is auto initialzied by Kastro transpiler
 ```
@@ -186,14 +184,14 @@ passed to the component itself.
 
 ```jsx
 /** @param {{ id: string }} props */
-const CheckBox = ({ id }) => {
+const CheckBox = function ({ id }) {
   /** @type {!HTMLDivElement} */
   this.root = dom.div(id);
   /** @type {boolean} */
   this.on = true;
   return <div id={id}>on</div>;
 }
-CheckBox.prototype.flip = function() {
+CheckBox.prototype.flip = function () {
   this.on = !this.on;
   this.root.innerText = this.on ? "on" : "off";
 }
@@ -215,7 +213,6 @@ const CheckBox = ({ id }) => {
   this.root = dom.div(id);
   /** @type {boolean} */
   this.on = true;
-  return null;
 }
 CheckBox.prototype.flip = function() {
   this.on = !this.on;
@@ -224,12 +221,56 @@ CheckBox.prototype.flip = function() {
 
 const PageWithCheckBox = () => {
   PageWithCheckBox.checkBox = new CheckBox({ id: "A" });
-  return null;
 }
 PageWithCheckBox();
 
 PageWithCheckBox.isChecked = () => PageWithCheckBox.checkBox.on;
 ```
+## Pseudo components
+
+As mentioned above, Kastro components are function objects that start with a
+capital letter.
+
+Pseudo components are objects created using the `dom` utility methods, such
+as `dom.div("domId")` or `dom.button("domId")`. They are typically given
+capital letter names so they can be used directly in jsx.
+
+One can attach event handlers to pseudo components through jsx onEvent
+properties, or specify `controls[Role]={PseudoComponent}` directives such as 
+`controlsDropdown={Dropdown}`.
+
+```javascript
+/** @enum {string} */
+const Css = css` /** @export */ #Root {}`;
+/** @const {!HTMLDivElement} */
+const Root = dom.div(Css.Root);
+
+const Page = () => (
+  <html>
+    <Root onClick={() => window.alert("clicked")} style="color: red;"/>
+  </html>
+);
+```
+
+At generation time, `dom.()` methods return objects like
+`{ name: "div", id: "A" }`
+whereas in client js code compile down to `document.getElementById("A")` calls.
+
+Further, any direct children of a pseudo component can also be attached event
+handlers like so:
+
+```javascript
+const Page = () => (
+  <html>
+    <Root style="color: red;">
+      <div onClick={() => window.alert("clicked")}/>
+      <hr onClick={() => window.alert("nice!")}/>
+    </Root>
+  </html>
+);
+```
+Currently we do not allow attaching event handlers to grand children of
+pseudo components to encourage more maintainable code.
 
 ## Kastro type system
 
