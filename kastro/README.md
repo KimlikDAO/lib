@@ -171,7 +171,7 @@ const StatelessComp = ({ id }) => {
 const Page = () => {
   StatelessComp({ id: "A" }); // Initialize the stateless component with id "A"
 }
-Page(); // The root component is auto initialzied by Kastro transpiler
+Page(); // The root component is auto initialized by Kastro transpiler
 ```
 
 ### 2. Stateful

@@ -71,7 +71,7 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
       const length = node.children.length;
       if (!length) return;
       /** @const {number} */
-      const selected = props.selected.expression.value;
+      const selected = props.initialSelected.expression.value;
       const fnExprs = Array(length);
       for (let i = 0; i < length; ++i) {
         const statements = [];
@@ -91,6 +91,24 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
   }
 
   /**
+   * @param {!acorn.Node} node
+   * @return {string}
+   */
+  const getJsxTagName = (node) => {
+    /** @type {!Array<string>} */
+    const parts = [];
+    /** @type {!acorn.Node} */
+    let current = node.openingElement.name;
+
+    while (current.type === "JSXMemberExpression") {
+      parts.push(current.property.name);
+      current = current.object;
+    }
+    parts.push(current.name);
+    return parts.reverse().join(".");
+  }
+
+  /**
    * @param {!acorn.JSXElement|!acorn.JSXFragment} node The jsx expression root to process
    * @param {acorn.JSXElement} parent The parent element
    * @param {number} childIndex The index of the child element
@@ -100,9 +118,9 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
   const processJsxElement = (node, parent, childIndex, statements) => {
     if (node.type == "JSXElement") {
       const elem = /** @type {!acorn.JSXElement} */(node);
-      if (elem.openingElement && elem.openingElement.name.type === "JSXIdentifier") {
+      if (elem.openingElement) {
         /** @const {string} */
-        const tagName = elem.openingElement.name.name;
+        const tagName = getJsxTagName(elem);
         if (tagName.charCodeAt(0) < 91 && !assetComponents.has(tagName)) {
           const info = specifierInfo[tagName];
           if (info && info.state == SpecifierState.Remove)
@@ -151,11 +169,12 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
           if (keepImport && info)
             info.state = SpecifierState.Keep;
         } else if (tagName.charCodeAt(0) > 90) {
+          // Handle immediate children of pseudo components.
           for (const attr of elem.openingElement.attributes) {
             const name = attr.name.name;
             if (name.startsWith("on") && name.charCodeAt(2) < 91) {
               const value = content.slice(attr.value.start + 1, attr.value.end - 1);
-              const element = `${parent.openingElement.name.name}.children[${childIndex}]`;
+              const element = `${getJsxTagName(parent)}.children[${childIndex}]`;
               statements.push(`${element}.${name.toLowerCase()} = ${value}`);
             }
           }

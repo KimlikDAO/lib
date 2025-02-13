@@ -32,7 +32,19 @@ const gizle = (birim) => birim.style.display = "none";
  * @noinline
  * @param {Element} birim
  */
+const hide = gizle;
+
+/**
+ * @noinline
+ * @param {Element} birim
+ */
 const göster = (birim) => birim.style.display = "";
+
+/**
+ * @noinline
+ * @param {Element} birim
+ */
+const show = göster;
 
 /**
  * @noinline
@@ -248,8 +260,8 @@ export default {
   gizle,
   göster,
   gösterGizle,
-  show: göster,
-  hide: gizle,
+  show,
+  hide,
   // Widgets
   bindDropdown,
   düğmeDurdur,

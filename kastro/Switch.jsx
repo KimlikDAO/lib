@@ -4,13 +4,13 @@ import dom from "../util/dom";
  * @constructor
  * @param {{
  *   id: string,
- *   selected: number,
+ *   initialSelected: number,
  *   children: !Array<?function():void>,
  * }} props
  */
-const Switch = function ({ id, selected, children }) {
+const Switch = function ({ id, initialSelected, children }) {
   /** @type {number} */
-  this.selectedChild = selected;
+  this.selectedChild = initialSelected;
   /** @const {!Array<?function():void>} */
   this.initializers = children;
   /** @const {!HTMLDivElement} */
@@ -20,7 +20,7 @@ const Switch = function ({ id, selected, children }) {
 
   return (
     <Root modifiesChildren>
-      {children.modify((c, i) => c.nodisplay = i != selected)}
+      {children.modify((c, i) => c.nodisplay = i != initialSelected)}
     </Root>
   );
 }
