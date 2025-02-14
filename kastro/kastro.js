@@ -111,7 +111,9 @@ const setupKastro = () => {
     ethereum: {
       isRabby: false
     },
-  }
+    addEventListener(name, handler) { },
+    dispatchEvent(event) { }
+  };
   globalThis.GEN = true;
   globalThis.window = window;
   globalThis.document = {

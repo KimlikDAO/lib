@@ -129,3 +129,21 @@ eth.WatchAssetParam.prototype.options;
  * }}
  */
 eth.ProviderRpcError = {};
+
+/**
+ * @typedef {{
+ *   uuid: string,
+ *   name: string,
+ *   icon: string,
+ *   rdns: string
+ * }}
+ */
+eth.ProviderInfo = {};
+
+/**
+ * @typedef {{
+ *   provider: !eth.UiProvider,
+ *   info: eth.ProviderInfo,
+ * }}
+ */
+eth.ProviderDetail = {};

@@ -75,7 +75,7 @@ const adlaGöster = (ad) => adla(ad).style.display = "";
  * @param {string} ad
  * @param {boolean} göster
  */
-const adlaGösterGizle = (ad, göster) => gösterGizle(adla(ad), göster);
+const toggleById = (ad, göster) => gösterGizle(adla(ad), göster);
 
 /**
  * @param {!HTMLAnchorElement} düğme Durdurulacak düğme.
@@ -262,7 +262,7 @@ export default {
   adla,
   adlaGizle,
   adlaGöster,
-  adlaGösterGizle,
+  toggleById,
   gizle,
   göster,
   gösterGizle,

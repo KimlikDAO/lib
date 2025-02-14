@@ -11,7 +11,12 @@ function Provider() { }
 /**
  * @return {boolean}
  */
-Provider.prototype.initIfAvailable = function () { }
+Provider.prototype.isInitialized = function () { }
+
+/**
+ * @param {*} nativeProvider
+ */
+Provider.prototype.setNativeProvider = function (nativeProvider) { }
 
 /**
  * @return {string}
@@ -47,6 +52,6 @@ Provider.prototype.isChainSupported = function (chain) { }
 /**
  * @type {?}
  */
-Provider.prototype.provider;
+Provider.prototype.nativeProvider;
 
 export { Provider };
