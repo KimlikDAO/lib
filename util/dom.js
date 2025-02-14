@@ -4,7 +4,7 @@ import { LangCode } from "./i18n";
 const GEN = true;
 
 /** @define {LangCode} */
-const Lang = LangCode.TR;
+const Lang = LangCode.EN;
 
 /**
  * @nosideeffects
@@ -58,6 +58,12 @@ const gösterGizle = (birim, göster) => birim.style.display = göster ? "" : "n
  * @param {string} ad
  */
 const adlaGizle = (ad) => adla(ad).style.display = "none";
+
+/**
+ * @noinline
+ * @param {string} ad
+ */
+const hideById = adlaGizle;
 
 /**
  * @noinline
@@ -262,6 +268,7 @@ export default {
   gösterGizle,
   show,
   hide,
+  hideById,
   // Widgets
   bindDropdown,
   düğmeDurdur,

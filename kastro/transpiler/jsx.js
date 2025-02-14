@@ -121,14 +121,17 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
       if (elem.openingElement) {
         /** @const {string} */
         const tagName = getJsxTagName(elem);
-        if (tagName.charCodeAt(0) < 91 && !assetComponents.has(tagName)) {
+        if (assetComponents.has(tagName)) return 0;
+        if (tagName.charCodeAt(0) < 91) {
           const info = specifierInfo[tagName];
           if (info && info.state == SpecifierState.Remove)
             info.state = SpecifierState.PinRemove;
+          if (styleSheetComponents.has(tagName)) return 0;
 
           const props = {};
           let keepImport = false;
           let instance = null;
+          let hasOptionalProps = false;
           for (const attr of elem.openingElement.attributes) {
             if (attr.type !== 'JSXAttribute') continue;
             const name = attr.name.name;
@@ -145,6 +148,8 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
               instance = content.slice(attr.value.start + 1, attr.value.end - 1);
             } else if (!name.endsWith("$"))
               props[name] = attr.value;
+            else
+              hasOptionalProps = true;
           }
           if ((tagName in specifierInfo || localComponents.has(tagName)) && !styleSheetComponents.has(tagName)) {
             keepImport = true;
@@ -160,7 +165,7 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
               traverse(v.expression, null);
               return content.slice(v.start + 1, v.end - 1);
             }
-            const callParams = Object.keys(props).length
+            const callParams = (Object.keys(props).length || hasOptionalProps)
               ? `{\n    ${Object.entries(props).map(([k, v]) => `${k}: ${serialize(v)}`).join(",\n    ")}\n  }`
               : "";
             const call = `${tagName}(${callParams})`;
@@ -173,6 +178,7 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
           for (const attr of elem.openingElement.attributes) {
             const name = attr.name.name;
             if (name.startsWith("on") && name.charCodeAt(2) < 91) {
+              traverse(attr.value.expression, attr.value);
               const value = content.slice(attr.value.start + 1, attr.value.end - 1);
               const element = `${getJsxTagName(parent)}.children[${childIndex}]`;
               statements.push(`${element}.${name.toLowerCase()} = ${value}`);
@@ -189,11 +195,14 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
     return 1;
   }
 
-  const processInlineCss = (node) => {
-    if (node.tag.type != "Identifier" || node.tag.name != "css") return;
+  const processInlineCss = (node, parent) => {
     /** @const {string} */
     const strippedCss = content.slice(node.start + 4, node.end - 1)
       .replace(/\$\{[^}]*\}/g, "a"); // Template literals cannot be exported identifiers, simply replace them with a placeholder
+
+    if (parent.type == "VariableDeclarator" && parent.id.type == "Identifier")
+      styleSheetComponents.add(parent.id.name);
+
     updates.push({
       beg: node.start,
       end: node.end,
@@ -213,8 +222,10 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
       if (!isPropertyName && !isDestructured)
         specifierInfo[node.name].state = SpecifierState.Keep;
     } else if (node.type === "TaggedTemplateExpression") {
-      processInlineCss(node);
-      return;
+      if (node.tag.type == "Identifier" && node.tag.name == "css") {
+        processInlineCss(node, parent);
+        return;
+      }
     } else if (node.type === "JSXElement" || node.type === "JSXFragment") {
       const statements = [];
       processJsxElement(node, parent, 0, statements);
@@ -303,7 +314,8 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
         /** @const {!Array<string>} */
         const identifiers = block.match(IdentPattern) || [];
         for (const ident of identifiers) {
-          const info = specifierInfo[ident];
+          const rootIdent = ident.split('.')[0];
+          const info = specifierInfo[rootIdent];
           if (info) info.state = SpecifierState.Keep;
         }
       }

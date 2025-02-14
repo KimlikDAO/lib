@@ -71,48 +71,48 @@ const CID = (hash) => {
  * @param {!Uint8Array} cidByte
  * @return {!Promise<string>}
  */
-const cidBytetanOku = (nodeUrl, cidByte) => {
+const readWithCIDBytes = (nodeUrl, cidByte) => {
   /** @const {string} */
-  const yerelCID = CID(cidByte);
-  return fetch(nodeUrl + "/ipfs/" + yerelCID)
+  const localCID = CID(cidByte);
+  return fetch(nodeUrl + "/ipfs/" + localCID)
     .then((res) => res.arrayBuffer())
     .then((/** @type {!ArrayBuffer} */ buf) => hash(new Uint8Array(buf))
-      .then((gelenByte) => CID(gelenByte) === yerelCID
+      .then((gelenByte) => CID(gelenByte) === localCID
         ? new TextDecoder().decode(buf)
-        : Promise.reject("IPFS hash'i tutmadı"))
+        : Promise.reject("IPFS hash mismatch"))
     );
 }
 
 /**
  * @param {string} nodeUrl
- * @param {string} veri IPFS'e yazılacak veri.
- * @param {string} veriŞekli Yazılacak verinin şekli, mimetype standardında
- * @return {!Promise<!Uint8Array>} onaylanmış IPFS cidByte.
+ * @param {string} data Data to be written to IPFS.
+ * @param {string} dataType Mime type of the data.
+ * @return {!Promise<!Uint8Array>} Validated IPFS cidByte's of the data.
  */
-const yaz = (nodeUrl, veri, veriŞekli) => {
+const write = (nodeUrl, data, dataType) => {
   /** @const {!Uint8Array} */
-  const encoded = new TextEncoder().encode(veri);
+  const encoded = new TextEncoder().encode(data);
   /** @const {!FormData} */
   const formData = new FormData()
-  formData.set("blob", new Blob([encoded], { type: veriŞekli }));
+  formData.set("blob", new Blob([encoded], { type: dataType }));
   /** @const {!Promise<string>} */
-  const gelenSöz = fetch(nodeUrl + "/api/v0/add", {
+  const remoteHashPromise = fetch(nodeUrl + "/api/v0/add", {
     method: "POST",
     body: formData
   })
     .then((res) => res.json())
     .then((/** @type {node.ipfs.AddResult} */ res) => res.Hash)
 
-  return Promise.all([hash(encoded), gelenSöz])
-    .then(([/** !Uint8Array */ yerel, /** string */ gelen]) => CID(yerel) == gelen
-      ? yerel
-      : Promise.reject(`IPFS'ten farklı sonuç döndü. Yerel: ${CID(yerel)}, Gelen: ${gelen}`)
+  return Promise.all([hash(encoded), remoteHashPromise])
+    .then(([/** !Uint8Array */ local, /** string */ remote]) => CID(local) == remote
+      ? local
+      : Promise.reject(`IPFS hash mismatch. Local: ${CID(local)}, Remote: ${remote}`)
     )
 }
 
 export default {
   CID,
-  cidBytetanOku,
+  readWithCIDBytes,
   hash,
-  yaz,
+  write,
 };

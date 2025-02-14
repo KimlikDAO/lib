@@ -24,3 +24,5 @@ crosschain.Unlockable = function () { }
 
 /** @type {string} */
 crosschain.Unlockable.prototype.userPrompt;
+
+export default crosschain;
