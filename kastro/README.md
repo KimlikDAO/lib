@@ -27,20 +27,20 @@ compared to dynamically creating elements one by one via JavaScript like many
 other frameworks do.
 
 ## Example
-```jsx filename="LandingPage.jsx"
+```jsx:LandingPage.jsx
 import dom from "@kimlikdao/util/dom";
 import { LangCode } from "@kimlikdao/util/i18n";
 import ArrowSvg from "./arrow.svg";
 import Css from "./LandingPage.css";
 
 /**
- * @param {{ Lang: LangCode }} Lang
+ * @param {{ Lang: LangCode }} props
  */
 const LandingPage = ({ Lang }) => {
   /** @const {!HTMLButtonElement} */
-  const Button = dom.button(Css.ButtonId);
+  const Button = dom.button(Css.Button);
   /** @const {!HTMLSpanElement} */
-  const Text = dom.span(Css.TextId);
+  const Text = dom.span(Css.Text);
 
   return (
     <html lang={Lang}>
@@ -74,13 +74,13 @@ would resolve to something like `<svg><path id="C"d="M10 10L10 10"/><use href="u
 
 When you compile the above example, the client javascript will be literally
 a minified version of the following
-```javascript
+```javascript:build/LandingPage-en.js
 const get = (a) => document.getElementById(a);
 const c = get("B");
 get("A").onclick = () => c.innerText = "Clicked!";
 ```
 and the following html will be generated (after de-minification):
-```html
+```html:build/LandingPage-en.html
 <!DOCTYPE html>
 <html lang="en">
   <head><link rel="stylesheet" href="khmW2F9I.css" /></head>
@@ -113,7 +113,7 @@ or create their own for the particular DOM interaction patterns they need.
 A typical Kastro component code will be declarative, intuitive and boilerplate
 free.
 
-## Components
+## Intro to Kastro components
 
 In Kastro, components are function objects: the function part is used to render
 the component html and setup the DOM bindings while the object part is used to
@@ -137,7 +137,8 @@ These components can keep an internal state, however if there are multiple
 copies of the component in a page, they will share the same state. This means
 that for singleton components, we can freely keep internal state, however
 for reusable components, either the entire state must be kept in the DOM
-or passed into the methods of the component by the caller.
+or passed into the methods of the component by the caller. At this point,
+one can consider using a stateful component instead.
 
 Kastro compiler will generate the `Component({ id: "idAssignedByParent" })`
 invocations from the initialization code of the parent component.
@@ -177,7 +178,8 @@ Page(); // The root component is auto initialized by Kastro transpiler
 ### 2. Stateful
 A component which takes an `instance` property is deemed stateful. These
 components can keep an internal state and for each copy of the component, a
-class instance is created.
+class instance is created and bound to the variable passed as `instance`
+property.
 
 Note the `instance` property is used by the client jsx transpiler and never
 passed to the component itself.
@@ -271,6 +273,11 @@ const Page = () => (
 ```
 Currently we do not allow attaching event handlers to grand children of
 pseudo components to encourage more maintainable code.
+
+## Components
+
+
+
 
 ## Kastro type system
 

@@ -209,6 +209,7 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
       put: css.getEnum(file, strippedCss, domIdMapper)
     });
   }
+
   /**
    * @param {!acorn.Node} node
    * @param {!acorn.Node} parent
@@ -225,6 +226,21 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
       if (node.tag.type == "Identifier" && node.tag.name == "css") {
         processInlineCss(node, parent);
         return;
+      }
+    } else if (node.type == "ObjectExpression") {
+      // Remove name$ properties from all object expressions.
+      for (let i = 0; i < node.properties.length; ++i) {
+        const prop = node.properties[i];
+        if (prop.key.type === "Identifier" && prop.key.name.endsWith("$")) {
+          const end = i < node.properties.length - 1
+            ? node.properties[i + 1].start  // Remove up to next property
+            : prop.end + 1;                     // Last property
+          updates.push({
+            beg: prop.start,
+            end: end,
+            put: ""
+          });
+        }
       }
     } else if (node.type === "JSXElement" || node.type === "JSXFragment") {
       const statements = [];
