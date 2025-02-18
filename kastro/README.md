@@ -1,3 +1,93 @@
+# Kastro: React-like components at zero runtime cost
+
+Kastro is a revolutionary web framework that achieves extreme performance by moving computation to compile time while maintaining a familiar React-like developer experience.
+
+## Key Features
+
+- ✅ React-like JSX components with full type safety
+- ⚡️ Aggressive compile-time optimization and static rendering
+- 🗜️ Ultra-minimal client JavaScript bundle
+- 🔍 Advanced type-driven optimizations through `kdjs` compiler
+- 🌐 Integrated i18n, asset bundling and CSS modules
+
+## Core Philosophy
+
+Unlike traditional frameworks that handle component rendering at runtime, Kastro takes a radical approach:
+
+1. All component structure and rendering logic is processed at compile time
+2. The client bundle contains only the minimal code needed for DOM manipulation
+3. Static HTML is generated at build time for optimal browser rendering
+4. No virtual DOM or runtime component system
+
+This means:
+- Extremely small client bundles
+- Fast initial page loads
+- Optimal browser rendering performance
+- No framework runtime overhead
+
+## Quick Example
+
+```jsx
+import dom from "@kimlikdao/util/dom";
+import { LangCode } from "@kimlikdao/util/i18n";
+import Css from "./Button.css";
+
+/**
+ * @param {{ Lang: LangCode }} props
+ */
+const Button = ({ Lang }) => {
+  /** @const {!HTMLButtonElement} */
+  const Root = dom.button(Css.Root);
+  /** @const {!HTMLSpanElement} */
+  const Text = dom.span(Css.Text);
+
+  return (
+    <Root onClick={() => Text.innerText = "Clicked!"}>
+      <Text>Hello World!</Text>
+    </Root>
+  );
+};
+
+export default Button;
+```
+
+When compiled, this generates minimal client JavaScript:
+
+```javascript
+const get = (a) => document.getElementById(a);
+const b = get("B");
+get("A").onclick = () => b.innerText = "Clicked!";
+```
+
+## Core Concepts
+
+- [Components](./docs/components.md) - Learn about Kastro's stateless and stateful components
+- [DOM Management](./docs/dom.md) - Understanding DOM references and manipulation
+- [CSS Modules](./docs/css.md) - Working with scoped styles and optimizations
+- [Asset Handling](./docs/assets.md) - Image, font and other asset optimizations
+- [Internationalization](./docs/i18n.md) - Built-in i18n support
+- [Type System](./docs/types.md) - Leveraging types for optimization
+- [Compilation](./docs/compilation.md) - How Kastro optimizes at build time
+
+## Design Principles
+
+1. **Compile-Time Over Runtime**: Move as much work as possible to build time
+2. **Direct DOM Manipulation**: Use browser's native DOM APIs instead of abstractions
+3. **Type-Driven Optimization**: Leverage type information for aggressive optimization
+4. **Zero Runtime Framework**: No framework code in the client bundle
+5. **Developer Experience**: Maintain familiar React-like component model
+
+## Getting Started
+
+[Installation and Setup Guide](./docs/getting-started.md)
+
+## Learn More
+
+- [Component Patterns](./docs/patterns.md)
+- [Performance Guide](./docs/performance.md)
+- [Migration Guide](./docs/migration.md)
+- [API Reference](./docs/api.md)
+
 # Kastro: KimlikDAO UI framework
 
 Kastro is a UI framework for building pico-optimized web applications by
@@ -26,7 +116,7 @@ browsers are highly optimized for constructing the DOM from static HTML,
 compared to dynamically creating elements one by one via JavaScript like many
 other frameworks do.
 
-## Example
+## Quick example
 ```jsx:LandingPage.jsx
 import dom from "@kimlikdao/util/dom";
 import { LangCode } from "@kimlikdao/util/i18n";

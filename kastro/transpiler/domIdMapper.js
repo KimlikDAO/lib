@@ -70,6 +70,13 @@ class GlobalMapper {
   /** @const {!Set<string>} */
   minifiedIds = new Set();
 
+  constructor() {
+    this.preserve("mpa", "ndp");
+    this.preserve("mpa", "nsh");
+    this.preserve("mpa", "sel");
+    this.preserve("mpa", "dis");
+  }
+
   /**
    * @param {string} namespace
    * @param {string} context
@@ -89,7 +96,6 @@ class GlobalMapper {
       this.keyToIndex.set(namespace + key, index);
     }
     const minifiedId = indexToMinified(index);
-    if (minifiedId == "zC") console.log("\n\n\n\n\n\n", context, domId, index);
     this.minifiedIds.add(namespace + minifiedId);
     return minifiedId;
   }

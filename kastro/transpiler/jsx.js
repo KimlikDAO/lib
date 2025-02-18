@@ -169,7 +169,7 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
               ? `{\n    ${Object.entries(props).map(([k, v]) => `${k}: ${serialize(v)}`).join(",\n    ")}\n  }`
               : "";
             const call = `${tagName}(${callParams})`;
-            statements.push(instance ? `${instance} = new ${call}` : call);
+            statements.push(instance ? `/** @const {${tagName}} */\n  ${instance} = new ${call}` : call);
           }
           if (keepImport && info)
             info.state = SpecifierState.Keep;

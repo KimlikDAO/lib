@@ -53,19 +53,22 @@ const makeStyleSheets = () => {
   const dev = (BuildMode) => BuildMode == 0 ? "-dev" : "";
   PageCss.clear();
 
-  const StyleSheets = ({ BuildMode, Lang, targetDir }) => Promise.all([
-    compiler.bundleTarget(`/build/shared-${Lang}${dev(BuildMode)}.css`, {
-      BuildMode,
-      childTargets: SharedCss.asTargets()
-    }),
-    compiler.bundleTarget(`${targetDir}/page-${Lang}${dev(BuildMode)}.css`, {
-      BuildMode,
-      childTargets: PageCss.asTargets()
-    })
-  ]).then(([sharedBundleName, pageBundleName]) =>
-    tagYaz("link", { rel: "stylesheet", href: sharedBundleName }, true) +
-    tagYaz("link", { rel: "stylesheet", href: pageBundleName }, true)
-  );
+  const StyleSheets = ({ BuildMode, Lang, targetDir }) => {
+    PageCss.removeAll(SharedCss.entries());
+    return Promise.all([
+      compiler.bundleTarget(`/build/shared-${Lang}${dev(BuildMode)}.css`, {
+        BuildMode,
+        childTargets: SharedCss.asTargets()
+      }),
+      compiler.bundleTarget(`${targetDir}/page-${Lang}${dev(BuildMode)}.css`, {
+        BuildMode,
+        childTargets: PageCss.asTargets()
+      })
+    ]).then(([sharedBundleName, pageBundleName]) =>
+      tagYaz("link", { rel: "stylesheet", href: sharedBundleName }, true) +
+      tagYaz("link", { rel: "stylesheet", href: pageBundleName }, true)
+    );
+  }
 
   return StyleSheets;
 }
@@ -75,8 +78,6 @@ const makeStyleSheets = () => {
  *   function({
  *     src: string,
  *     shared: boolean,
- *     SharedCss: StyleSheetCollection,
- *     PageCss: StyleSheetCollection,
  *   }): null
  * }}
  */
@@ -90,6 +91,7 @@ const addStyleSheet = (shared, target) => (shared ? SharedCss : PageCss).add(tar
  * @return {StyleSheet}
  */
 const makeStyleSheet = (fileName, cssContent) => {
+  console.log("Making stylesheet for", fileName);
   const { content, enumEntries } = minifyCss(cssContent, fileName);
   const Css = new Proxy(Object.assign(
     ({ shared }) => {

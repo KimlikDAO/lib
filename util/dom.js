@@ -20,7 +20,7 @@ const i18n = (i18ned) => i18ned[Lang];
  * @param {string} ad DOM biriminin adı.
  * @return {!Element}
  */
-const adla = (ad) => /** @type {!Element} */(document.getElementById(ad));
+const byId = (ad) => /** @type {!Element} */(document.getElementById(ad));
 
 /**
  * @noinline
@@ -57,7 +57,7 @@ const gösterGizle = (birim, göster) => birim.style.display = göster ? "" : "n
  * @noinline
  * @param {string} ad
  */
-const adlaGizle = (ad) => adla(ad).style.display = "none";
+const adlaGizle = (ad) => byId(ad).style.display = "none";
 
 /**
  * @noinline
@@ -69,13 +69,13 @@ const hideById = adlaGizle;
  * @noinline
  * @param {string} ad
  */
-const adlaGöster = (ad) => adla(ad).style.display = "";
+const adlaGöster = (ad) => byId(ad).style.display = "";
 
 /**
  * @param {string} ad
  * @param {boolean} göster
  */
-const toggleById = (ad, göster) => gösterGizle(adla(ad), göster);
+const toggleById = (ad, göster) => gösterGizle(byId(ad), göster);
 
 /**
  * @param {!HTMLAnchorElement} düğme Durdurulacak düğme.
@@ -168,7 +168,7 @@ const create = (id, name) => {
  */
 const a = (ad) => /** @type {!HTMLAnchorElement} */((GEN && globalThis["GEN"])
   ? create(ad, "a")
-  : adla(ad));
+  : byId(ad));
 
 /**
  * @param {string} ad
@@ -176,7 +176,7 @@ const a = (ad) => /** @type {!HTMLAnchorElement} */((GEN && globalThis["GEN"])
  */
 const button = (ad) => /** @type {!HTMLButtonElement} */((GEN && globalThis["GEN"])
   ? create(ad, "button")
-  : adla(ad));
+  : byId(ad));
 
 /**
  * @param {string} ad
@@ -184,7 +184,7 @@ const button = (ad) => /** @type {!HTMLButtonElement} */((GEN && globalThis["GEN
  */
 const form = (ad) => /** @type {!HTMLFormElement} */((GEN && globalThis["GEN"])
   ? create(ad, "form")
-  : adla(ad));
+  : byId(ad));
 
 /**
  * @param {string} ad
@@ -192,7 +192,7 @@ const form = (ad) => /** @type {!HTMLFormElement} */((GEN && globalThis["GEN"])
  */
 const span = (ad) => /** @type {!HTMLSpanElement} */((GEN && globalThis["GEN"])
   ? create(ad, "span")
-  : adla(ad));
+  : byId(ad));
 
 /**
  * @nosideeffects
@@ -201,7 +201,7 @@ const span = (ad) => /** @type {!HTMLSpanElement} */((GEN && globalThis["GEN"])
  */
 const div = (ad) => /** @type {!HTMLDivElement} */((GEN && globalThis["GEN"])
   ? create(ad, "div")
-  : adla(ad));
+  : byId(ad));
 
 /**
  * @param {string} ad
@@ -209,7 +209,7 @@ const div = (ad) => /** @type {!HTMLDivElement} */((GEN && globalThis["GEN"])
  */
 const img = (ad) => /** @type {!HTMLImageElement} */((GEN && globalThis["GEN"])
   ? create(ad, "img")
-  : adla(ad));
+  : byId(ad));
 
 /**
  * @param {string} ad
@@ -217,15 +217,23 @@ const img = (ad) => /** @type {!HTMLImageElement} */((GEN && globalThis["GEN"])
  */
 const ul = (ad) => /** @type {!HTMLUListElement} */((GEN && globalThis["GEN"])
   ? create(ad, "ul")
-  : adla(ad));
+  : byId(ad));
 
 /**
- * @param {string} ad
+ * @param {string} domId
  * @return {!HTMLLIElement}
  */
-const li = (ad) => /** @type {!HTMLLIElement} */((GEN && globalThis["GEN"])
-  ? create(ad, "li")
-  : adla(ad));
+const li = (domId) => /** @type {!HTMLLIElement} */((GEN && globalThis["GEN"])
+  ? create(domId, "li")
+  : byId(domId));
+
+/**
+ * @param {string} domId
+ * @return {!HTMLTableCellElement}
+ */
+const td = (domId) => /** @type {!HTMLTableCellElement} */((GEN && globalThis["GEN"])
+  ? create(domId, "td")
+  : byId(domId));
 
 /**
  * @param {string} ad
@@ -233,7 +241,7 @@ const li = (ad) => /** @type {!HTMLLIElement} */((GEN && globalThis["GEN"])
  */
 const input = (ad) => /** @type {!HTMLInputElement} */((GEN && globalThis["GEN"])
   ? create(ad, "input")
-  : adla(ad));
+  : byId(ad));
 
 /**
  * @param {function()} f
@@ -258,8 +266,9 @@ export default {
   li,
   span,
   ul,
+  td,
   // DOM manipulation
-  adla,
+  byId,
   adlaGizle,
   adlaGöster,
   toggleById,
