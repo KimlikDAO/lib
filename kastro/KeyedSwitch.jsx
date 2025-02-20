@@ -4,15 +4,18 @@ import dom from "../util/dom";
  * @constructor
  * @param {{
  *   id: string,
- *   initialPane: number,
+ *   initialPane: (string | undefined),
  *   children: !Array<?function():void>,
+ *   keyToIndex: !Object<string, number>,
  * }} props
  */
-const Switch = function ({ id, initialPane = 0, children }) {
+const KeyedSwitch = function ({ id, initialPane, children, keyToIndex }) {
   /** @type {number} */
-  this.selectedPane = initialPane;
+  this.selectedPane = dom.GEN ? 0 : initialPane ? keyToIndex[initialPane] : 0;
   /** @const {!Array<?function():void>} */
   this.initializers = children;
+  /** @const {!Object<string, number>} */
+  this.keyToIndex = keyToIndex;
   /** @const {!HTMLDivElement} */
   const Root = dom.div(id);
   /** @const {!HTMLDivElement} */
@@ -20,18 +23,23 @@ const Switch = function ({ id, initialPane = 0, children }) {
 
   return (
     <Root modifiesChildren>
-      {children.modify((c, i) => c.nodisplay = i != initialPane)}
+      {children.modify((c, i) => {
+        c.nodisplay = initialPane ? c.key != initialPane : i != this.selectedPane;
+        delete c.key;
+      })}
     </Root>
   );
 }
 
 /**
- * Shows the child at the given index and hides the currently shown child.
+ * Shows the child with the given key and hides the currently shown child.
  * If the child is being shown for the first time, initializes it.
  * 
- * @param {number} idx Index of the child to show
+ * @param {string} key Key of the child to show
  */
-Switch.prototype.showPane = function (idx) {
+KeyedSwitch.prototype.showPane = function (key) {
+  /** @const {number} */
+  const idx = this.keyToIndex[key];
   /** @const {number} */
   const old = this.selectedPane;
   if (idx == old) return;
@@ -46,4 +54,4 @@ Switch.prototype.showPane = function (idx) {
   dom.hide(this.root.children[old]);
 }
 
-export default Switch;
+export default KeyedSwitch;

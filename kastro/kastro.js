@@ -111,6 +111,9 @@ const setupKastro = () => {
     ethereum: {
       isRabby: false
     },
+    location: {
+      hash: "",
+    },
     addEventListener(name, handler) { },
     dispatchEvent(event) { }
   };

@@ -71,11 +71,11 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
       const length = node.children.length;
       if (!length) return;
       /** @const {number} */
-      const selected = props.initialSelected.expression.value;
+      const selectedPane = props.initialPane ? props.initialPane.expression.value : 0;
       const fnExprs = Array(length);
       for (let i = 0; i < length; ++i) {
         const statements = [];
-        if (i != selected)
+        if (i != selectedPane)
           processJsxElement(node.children[i], node, i, statements);
         const fnExpr = statements.length
           ? statements.length == 1
@@ -85,7 +85,45 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
         fnExprs[i] = fnExpr;
       }
       props.children = `[${fnExprs.join(", ")}]`;
-      node.children[0] = node.children[selected];
+      node.children[0] = node.children[selectedPane];
+      node.children.length = 1;
+    },
+
+    KeyedSwitch: (node, props) => {
+      node.children = node.children.filter((c) => c.type == "JSXElement");
+      const length = node.children.length;
+      if (!length) return;
+      // Build keyToIndex map and collect keys
+      const keyToIndex = {};
+      node.children.forEach((child, i) => {
+        const keyProp = child.openingElement.attributes
+          .find(attr => attr.name.name === "key");
+        if (!keyProp)
+          throw new Error("KeyedSwitch children must have key prop");
+        const key = keyProp.value.value;
+        keyToIndex[key] = i;
+      });
+
+      /** @const {string} */
+      const initialPane = props.initialPane ? props.initialPane.expression.value : "";
+      /** @const {number} */
+      const selectedPane = initialPane ? keyToIndex[initialPane] : 0;
+
+      const fnExprs = Array(length);
+      for (let i = 0; i < length; ++i) {
+        const statements = [];
+        if (i != selectedPane)
+          processJsxElement(node.children[i], node, i, statements);
+        const fnExpr = statements.length
+          ? statements.length == 1
+            ? `() => ${statements[0]}`
+            : `() => {\n  ${statements.join(";\n  ")}\n}`
+          : "null";
+        fnExprs[i] = fnExpr;
+      }
+      props.keyToIndex = `${JSON.stringify(keyToIndex)}`;
+      props.children = `[${fnExprs.join(", ")}]`;
+      node.children[0] = node.children[selectedPane];
       node.children.length = 1;
     }
   }
@@ -146,6 +184,8 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
             } else if (name == "instance") {
               keepImport = true;
               instance = content.slice(attr.value.start + 1, attr.value.end - 1);
+            } else if (parent.type == "JSXElement" && parent.openingElement.name.name == "KeyedSwitch" && name == "key") {
+              // Ignore key prop for KeyedSwitch
             } else if (!name.endsWith("$"))
               props[name] = attr.value;
             else
@@ -169,7 +209,7 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
               ? `{\n    ${Object.entries(props).map(([k, v]) => `${k}: ${serialize(v)}`).join(",\n    ")}\n  }`
               : "";
             const call = `${tagName}(${callParams})`;
-            statements.push(instance ? `/** @const {${tagName}} */\n  ${instance} = new ${call}` : call);
+            statements.push(instance ? `/** @const {!${tagName}} */\n  ${instance} = new ${call}` : call);
           }
           if (keepImport && info)
             info.state = SpecifierState.Keep;

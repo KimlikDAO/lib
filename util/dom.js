@@ -255,6 +255,7 @@ const schedule = (f, ms) => (GEN && globalThis["GEN"]) ? {} : setTimeout(f, ms);
 const run = (f) => (GEN && globalThis["GEN"]) ? {} : f();
 
 export default {
+  GEN,
   Lang,
   // Elements
   a,
