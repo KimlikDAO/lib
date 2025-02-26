@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { ChainGroup } from "../../../crosschain/chains";
 import { keccak256Uint8 } from "../../../crypto/sha3";
 import { addr as evmAddr } from "../../../ethereum/mock/signer";
-import { base64 } from "../../../util/çevir";
+import base64 from "../../../util/base64";
 import { commit } from "../../commitment";
 import { combineMultiple } from "../../KPass";
 import { recoverSectionSigners, signDecryptedSections } from "../../sectionSigner";
@@ -14,9 +14,9 @@ describe("Combinig multiple KPass'es", () => {
     /** @const {string} */
     const ownerAddress = evmAddr(1n);
     /** @const {string} */
-    const commitmentR = base64(keccak256Uint8(encoder.encode("commitmentR")));
+    const commitmentR = base64.from(keccak256Uint8(encoder.encode("commitmentR")));
     /** @const {string} */
-    const commitmentAnonR = base64(keccak256Uint8(encoder.encode("commitmentAnonR")));
+    const commitmentAnonR = base64.from(keccak256Uint8(encoder.encode("commitmentAnonR")));
     /** @const {string} */
     const commitment = commit(ChainGroup.EVM, ownerAddress, commitmentR);
     /** @const {string} */
@@ -79,9 +79,9 @@ describe("Combinig multiple KPass'es", () => {
     const ownerAddress = evmAddr(1n);
 
     /** @const {string} */
-    const commitmentR = base64(keccak256Uint8(encoder.encode("commitmentR")));
+    const commitmentR = base64.from(keccak256Uint8(encoder.encode("commitmentR")));
     /** @const {string} */
-    const commitmentAnonR = base64(keccak256Uint8(encoder.encode("commitmentAnonR")));
+    const commitmentAnonR = base64.from(keccak256Uint8(encoder.encode("commitmentAnonR")));
 
     /** @const {string} */
     const commitment = commit(ChainGroup.EVM, ownerAddress, commitmentR);
@@ -155,9 +155,9 @@ describe("Combinig multiple KPass'es", () => {
     /** @const {string} */
     const ownerAddress = evmAddr(1n);
     /** @const {string} */
-    const commitmentR = base64(keccak256Uint8(encoder.encode("commitmentR")));
+    const commitmentR = base64.from(keccak256Uint8(encoder.encode("commitmentR")));
     /** @const {string} */
-    const commitmentAnonR = base64(keccak256Uint8(encoder.encode("commitmentAnonR")));
+    const commitmentAnonR = base64.from(keccak256Uint8(encoder.encode("commitmentAnonR")));
     /** @const {string} */
     const commitment = commit(ChainGroup.EVM, ownerAddress, commitmentR);
     /** @const {string} */

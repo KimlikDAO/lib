@@ -3,13 +3,12 @@ import { poseidon } from "../crypto/minaPoseidon";
 import { keccak256Uint32 } from "../crypto/sha3";
 import { PublicKey } from "../mina/mina";
 import {
-  base64,
-  base64ten,
   uint8ArrayeBase64ten,
   uint8ArrayeHexten,
   uint8ArrayLEtoBigInt,
   uint8ArrayLEyeSayıdan
 } from "../util/çevir";
+import base64 from "../util/base64";
 
 /**
  * @param {ChainGroup} chainGroup
@@ -25,16 +24,16 @@ const commit = (chainGroup, ownerAddress, commitmentR) => {
       const buff = new Uint8Array(32 + 20);
       uint8ArrayeBase64ten(buff, commitmentR);
       uint8ArrayeHexten(buff.subarray(32), ownerAddress.slice(2));
-      return base64(new Uint8Array(
+      return base64.from(new Uint8Array(
         keccak256Uint32(new Uint32Array(buff.buffer)).buffer, 0, 32));
     case ChainGroup.MINA:
       const { x, isOdd } = PublicKey.fromBase58(ownerAddress);
-      const commitmentBytes = base64ten(commitmentR);
+      const commitmentBytes = base64.toBytes(commitmentR);
       const outBuff = new Uint8Array(32);
       uint8ArrayLEyeSayıdan(outBuff, poseidon([
         uint8ArrayLEtoBigInt(commitmentBytes), isOdd ? x + 1n : x
       ]));
-      return base64(outBuff);
+      return base64.from(outBuff);
   }
 }
 

@@ -1,14 +1,14 @@
 import { readFile, rm, writeFile } from "node:fs/promises";
-import { base64, base64ten } from "../../util/çevir";
+import base64 from "../../util/base64";
 
 export default {
   read(targetName) {
     return readFile(`${targetName.slice(1)}.marker`, "utf8")
       .then((markerContent) => {
         const marker = JSON.parse(markerContent);
-        marker.contentHash = base64ten(marker.contentHash);
+        marker.contentHash = base64.toBytes(marker.contentHash);
         if (marker.depHash)
-          marker.depHash = base64ten(marker.depHash);
+          marker.depHash = base64.toBytes(marker.depHash);
         return marker;
       });
   },
@@ -22,8 +22,8 @@ export default {
    * @param {CacheEntry} entry 
    */
   write(targetName, entry) {
-    const marker = { contentHash: base64(entry.contentHash) };
-    if (entry.depHash) marker.depHash = base64(entry.depHash);
+    const marker = { contentHash: base64.from(entry.contentHash) };
+    if (entry.depHash) marker.depHash = base64.from(entry.depHash);
     return writeFile(`${targetName.slice(1)}.marker`, JSON.stringify(marker))
       .then(() => entry)
   }

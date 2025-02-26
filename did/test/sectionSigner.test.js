@@ -3,7 +3,7 @@ import { ChainGroup } from "../../crosschain/chains";
 import { addr as evmAddr } from "../../ethereum/mock/signer";
 import { PublicKey } from "../../mina/mina";
 import { addr as minaAddr } from "../../mina/mock/signer";
-import { base64 } from "../../util/çevir";
+import base64 from "../../util/base64";
 import { commit } from "../commitment";
 import {
   recoverHumanIDSigners,
@@ -23,7 +23,7 @@ test("sign section", () => {
     secp256k1: ["incorrect_sign"]
   })
   /** @const {string} */
-  const commitmentR = base64([1, 2, 3]);
+  const commitmentR = base64.from([1, 2, 3]);
   /** @const {number} */
   const signatureTs = Date.now() / 1000 | 0;
   /** @const {string} */
@@ -81,7 +81,7 @@ test("humanID minaSchnorr signature", () => {
     secp256k1: ["incorrect_sign"]
   })
   /** @const {string} */
-  const commitmentR = base64([1, 2, 3]);
+  const commitmentR = base64.from([1, 2, 3]);
   /** @const {number} */
   const signatureTs = Date.now() / 1000 | 0;
   /** @const {string} */

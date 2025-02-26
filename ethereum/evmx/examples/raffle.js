@@ -1,5 +1,5 @@
 import { shuffle } from "@kimlikdao/lib/util/arrays";
-import { hex } from "@kimlikdao/lib/util/çevir";
+import hex from "@kimlikdao/lib/util/hex";
 import { JsonRpcProvider, TransactionResponse, Wallet } from "ethers";
 import { SZABO, batchSendWithKPassNoPush0 } from "../builder";
 
@@ -48,7 +48,7 @@ const send = () => {
 
   return wallet.sendTransaction({
     value: BigInt(valueSzabos) * SZABO,
-    data: "0x" + hex(code),
+    data: "0x" + hex.from(code),
   });
 }
 

@@ -28,14 +28,17 @@ const toBinary = (hexStr) => {
 }
 
 /**
- * @see https://github.com/google/closure-compiler/issues/4046
  * @const {!Array<string>}
  */
-const FromUint8 = Array(256);
-for (let /** number */ i = 0; i < 16; ++i)
-  for (let /** number */ j = 0; j < 16; ++j)
-    FromUint8[(16 * i) | j] = String.fromCharCode(i < 10 ? i + 48 : i + 87) +
-      String.fromCharCode(j < 10 ? j + 48 : j + 87);
+const FromUint8 = /** @pureOrBreakMyCode */((() => {
+  /** @const {!Array<string>} */
+  const arr = Array(256);
+  /** @noinline */
+  const hex = "0123456789abcdef";
+  for (let i = 0; i < 256; ++i)
+    arr[i] = hex[i >> 4] + hex[i & 15];
+  return arr;
+})());
 
 /**
  * @nosideeffects
@@ -45,23 +48,28 @@ for (let /** number */ i = 0; i < 16; ++i)
  */
 const from = (bytes) => {
   /** @const {!Array<string>} */
-  const ikililer = new Array(bytes.length);
+  const octets = new Array(bytes.length);
   for (let /** number */ i = 0; i < bytes.length; ++i)
-    ikililer[i] = FromUint8[bytes[i]];
-  return ikililer.join("");
+    octets[i] = FromUint8[bytes[i]];
+  return octets.join("");
 }
 
 /**
  * @nosideeffects
- * @param {string} str hex olarak kodlanmış veri.
- * @return {!Uint8Array} byte dizisi
+ * @param {string} str hex string
+ * @return {!Uint8Array} byte array
  */
 const toUint8Array = (str) => {
   if (str.length & 1) str = "0" + str;
   /** @const {!Uint8Array} */
   const buff = new Uint8Array(str.length / 2);
-  for (let i = 0, j = 0; i < str.length; ++j, i += 2)
-    buff[j] = parseInt(str.slice(i, i + 2), 16);
+  for (let i = 0, j = 0; i < str.length; ++j, i += 2) {
+    const high = str.charCodeAt(i);
+    const low = str.charCodeAt(i + 1);
+    const highVal = high - (high <= 57 ? 48 : (high <= 70 ? 55 : 87));
+    const lowVal = low - (low <= 57 ? 48 : (low <= 70 ? 55 : 87));
+    buff[j] = (highVal * 16) | lowVal;
+  }
   return buff;
 }
 

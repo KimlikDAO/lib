@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import base58 from "../base58";
-import { hexten } from "../çevir";
+import hex from "../hex";
 
 /** @const {!Array<!Array<string>>} */
 const TestVectors = [
@@ -22,7 +22,7 @@ const TestVectors = [
 
 test("on sample points", () => {
   for (const [b16, b58] of TestVectors) {
-    expect(base58.from(hexten(b16))).toBe(b58);
-    expect(base58.toBytes(b58)).toEqual(hexten(b16));
+    expect(base58.from(hex.toUint8Array(b16))).toBe(b58);
+    expect(base58.toBytes(b58)).toEqual(hex.toUint8Array(b16));
   }
 });

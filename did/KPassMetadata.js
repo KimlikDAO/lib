@@ -8,8 +8,8 @@ import { ChainId } from "../crosschain/chains";
 import "../ethereum/ERC721Unlockable.d";
 import KPass from "../ethereum/KPassLite";
 import dom from "../util/dom";
+import hex from "../util/hex";
 import { I18nString } from "../util/i18n";
-import { hex } from "../util/çevir";
 import { SectionGroup } from "./KPass";
 
 /**
@@ -55,7 +55,7 @@ section${sections.length == 1 ? "" : "s"} of your KPass. Only sign this message 
 const sectionGroup = (sections, chainId) => /** @type {!SectionGroup} */({
   sectionNames: sections,
   userPrompt: userPrompt(sections)
-    + "Nonce: " + hex(/** @type {!Uint8Array} */(crypto.getRandomValues(new Uint8Array(8))))
+    + "Nonce: " + hex.from(/** @type {!Uint8Array} */(crypto.getRandomValues(new Uint8Array(8))))
     + "\nChainId: " + chainId
     + "\nNFT: " + KPass.getAddress(chainId)
 });

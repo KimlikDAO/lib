@@ -1,7 +1,7 @@
 import { ChainGroup } from "../crosschain/chains";
 import { signCompact, signerAddress } from "../ethereum/signer";
 import { signFields, verifyFields } from "../mina/signer";
-import { base64tenSayıya } from "../util/çevir";
+import base64 from "../util/base64";
 import { commit } from "./commitment";
 import { hash } from "./section";
 
@@ -22,7 +22,7 @@ const SignParams = {};
 const signHumanID = (humanID, privateKey) => {
   humanID.minaSchnorr = [signFields([
     BigInt(humanID.signatureTs),
-    base64tenSayıya(humanID.commitment),
+    base64.toBigInt(humanID.commitment),
     BigInt("0x" + humanID.id)
   ], privateKey)];
 }
@@ -39,7 +39,7 @@ const recoverHumanIDSigners = (humanID, ownerAddress) => {
   /** @const {!Array<bigint>} */
   const fields = [
     BigInt(humanID.signatureTs),
-    base64tenSayıya(humanID.commitment),
+    base64.toBigInt(humanID.commitment),
     BigInt("0x" + humanID.id)
   ];
   if (!humanID.minaSchnorr) return [];

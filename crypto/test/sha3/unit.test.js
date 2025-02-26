@@ -1,5 +1,5 @@
 import { describe, expect, it, test } from "bun:test";
-import { hex, hexten } from "../../../util/çevir";
+import hex from "../../../util/hex";
 import {
   keccak256,
   keccak256Uint32,
@@ -57,14 +57,14 @@ describe("keccak256Uint32() tests", () => {
         1877774715, 2536810181, 353523037, 1382876301, 1489394885, 2273392375, 1724133069, 2263322640
       ]));
 
-    expect(hex(new Uint8Array(keccak256Uint32(new Uint32Array([0, 0, 0, 0xFF000000])).buffer, 0, 32)))
+    expect(hex.from(new Uint8Array(keccak256Uint32(new Uint32Array([0, 0, 0, 0xFF000000])).buffer, 0, 32)))
       .toBe("83c1ba322bb919d20c2e09ca70fd27bc245617a9e9abd5315b8afaebc4136044");
   });
 });
 
 test("keccak256Uint32ToHex() and keccak256Uint32() consistency", () => {
   const input = Uint32Array.from("123123123123");
-  expect(hexten(keccak256Uint32ToHex(input)))
+  expect(hex.toUint8Array(keccak256Uint32ToHex(input)))
     .toEqual(new Uint8Array(keccak256Uint32(input).buffer, 0, 32));
 });
 

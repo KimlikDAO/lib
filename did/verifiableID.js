@@ -6,7 +6,7 @@
 
 import { keccak256Uint32, keccak256Uint32ToHex } from "../crypto/sha3";
 import { evaluate, generateChallenge, reconstructY } from "../crypto/wesolowski";
-import { base64, base64ten, base64tenSayıya, sayıdanBase64e } from "../util/çevir";
+import base64 from "../util/base64";
 import "./verifiableID.d";
 
 /** @const {number} */
@@ -21,7 +21,7 @@ const KIMLIKDAO_VERIFIABLE_ID_ITERATIONS = 1 << 20;
  */
 const prepareGenerateKey = (privateKey) => crypto.subtle.importKey(
   "pkcs8",
-  base64ten(privateKey),
+  base64.toBytes(privateKey),
   /** @type {!webCrypto.RsaHashedImportParams} */({
     name: "RSASSA-PKCS1-v1_5",
     hash: "SHA-256"
@@ -42,9 +42,9 @@ const generate = (personKey, generateKey) =>
     const { y, π, l } = evaluate(g, KIMLIKDAO_VERIFIABLE_ID_ITERATIONS);
     return /** @type {!did.VerifiableID} */({
       id: keccak256Uint32ToHex(y),
-      x: base64(new Uint8Array(signature)),
-      wesolowskiP: sayıdanBase64e(π),
-      wesolowskiL: sayıdanBase64e(l),
+      x: base64.from(new Uint8Array(signature)),
+      wesolowskiP: base64.fromBigInt(π),
+      wesolowskiL: base64.fromBigInt(l),
     });
   });
 
@@ -56,13 +56,13 @@ const generate = (personKey, generateKey) =>
  */
 const verify = (verifiableID, personKey, publicKey) => {
   /** @const {!Uint32Array} */
-  const x = new Uint32Array(base64ten(verifiableID.x).buffer);
+  const x = new Uint32Array(base64.toBytes(verifiableID.x).buffer);
   /** @const {!Uint32Array} */
   const g = keccak256Uint32(x);
   /** @const {bigint} */
-  const π = base64tenSayıya(verifiableID.wesolowskiP);
+  const π = base64.toBigInt(verifiableID.wesolowskiP);
   /** @const {bigint} */
-  const l = base64tenSayıya(verifiableID.wesolowskiL);
+  const l = base64.toBigInt(verifiableID.wesolowskiL);
   /** @const {!Uint32Array} */
   const y = reconstructY(
     KIMLIKDAO_VERIFIABLE_ID_LOG_ITERATIONS, g, π, l);
@@ -71,7 +71,7 @@ const verify = (verifiableID, personKey, publicKey) => {
     return Promise.resolve(false);
   if (generateChallenge(g, y) != l)
     return Promise.resolve(false);
-  return crypto.subtle.importKey("spki", base64ten(publicKey),
+  return crypto.subtle.importKey("spki", base64.toBytes(publicKey),
     /** @type {!webCrypto.RsaHashedImportParams} */({
       name: "RSASSA-PKCS1-v1_5",
       hash: "SHA-256"

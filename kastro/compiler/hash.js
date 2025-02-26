@@ -1,4 +1,4 @@
-import { base64 } from "../../util/çevir";
+import base64 from "../../util/base64";
 
 /** @typedef {!Uint8Array} */
 const ContentHash = {};
@@ -13,7 +13,7 @@ const AssetHash = {};
  * @param {!Uint8Array} bytes
  * @return {AssetHash}
  */
-const toStr = (bytes) => base64(bytes.subarray(0, 6))
+const toStr = (bytes) => base64.from(bytes.subarray(0, 6))
   .replaceAll("/", "+")
   .replaceAll("=", "-");
 
@@ -38,9 +38,9 @@ const combine = (a, b) => {
 }
 
 export {
+  AssetHash,
   ContentHash,
   DependencyHash,
-  AssetHash,
 };
 
 export default {

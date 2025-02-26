@@ -1,5 +1,5 @@
 import { keccak256Uint8 } from "../../crypto/sha3";
-import { base64 } from "../../util/çevir";
+import base64 from "../../util/base64";
 
 /**
  * Maps numbers to Excel-like column names
@@ -55,7 +55,7 @@ DomIdMapper.prototype.preserve = function (namespace, domId) { }
  * @return {string}
  */
 const hashKey = (key) => "K" +
-  base64(keccak256Uint8(new TextEncoder().encode(key)).subarray(0, 3))
+  base64.from(keccak256Uint8(new TextEncoder().encode(key)).subarray(0, 3))
     .replaceAll("/", "_")
     .replaceAll("+", "-");
 

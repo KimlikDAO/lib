@@ -1,4 +1,4 @@
-import { hex } from "@kimlikdao/lib/util/çevir";
+import hex from "@kimlikdao/lib/util/hex";
 import { JsonRpcProvider, Wallet } from "ethers";
 import { SZABO, batchSendFixedAmountNoPush0 } from "../builder";
 
@@ -33,7 +33,7 @@ const send = async (program) => {
 
   const res = await wallet.sendTransaction({
     value: 1_000n * SZABO,
-    data: "0x" + hex(program),
+    data: "0x" + hex.from(program),
   });
 
   console.log(res);

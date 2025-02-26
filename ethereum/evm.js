@@ -4,73 +4,71 @@
  * @author KimlikDAO
  */
 import { keccak256, keccak256Uint8 } from '../crypto/sha3';
-import { hex } from "../util/çevir";
+import hex from "../util/hex";
 import eth from "./eth.d";
 
 /**
- * Verilen bir adresin checksum'ı yoksa ekler, varsa sağlamasını yapar.
- * Sadece arabirimde kullanıcı girdisini düzeltmek üzere kullanılmalı.
+ * Implements EIP-55 address checksum encoding.
+ * Returns checksummed address for single-case inputs, null for invalid checksums.
  *
- * @param {string} adres
- * @return {?string} Düzeltilmiş adres veya sağlama hatası varsa `null`.
+ * @param {string} address The Ethereum address (with 0x prefix)
+ * @return {?string} Checksummed address or null if invalid
  */
-const adresDüzelt = (adres) => {
-  if (adres.length != 42 || !adres.startsWith("0x")) return null;
+const correctAddress = (address) => {
+  if (address.length != 42 || !address.startsWith("0x")) return null;
   /** @const {string} */
-  const entropi = keccak256(adres.slice(2).toLowerCase());
+  const entropy = keccak256(address.slice(2).toLowerCase());
   /** @type {boolean} */
-  let büyükVar = false;
+  let hasUpper = false;
   /** @type {boolean} */
-  let küçükVar = false;
+  let hasLower = false;
   /** @type {boolean} */
-  let farkVar = false;
+  let hasDiff = false;
   /** @type {Uint8Array} */
-  let sağlama = new Uint8Array(42);
-
-  sağlama[0] = 48;
-  sağlama[1] = 120;
-  for (let /** number */ i = 2; i < adres.length; ++i) {
-    let c = adres.charCodeAt(i);
-    let e = entropi.charCodeAt(i - 2);
-    if (65 <= c && c <= 90) {
-      büyükVar = true;
-      sağlama[i] = (e > 55) ? c : c + 32;
-      farkVar ||= !(e > 55);
-    } else if (97 <= c && c <= 122) {
-      küçükVar = true;
-      sağlama[i] = (e > 55) ? c - 32 : c;
-      farkVar ||= (e > 55);
-    } else if (48 <= c && c <= 57) {
-      sağlama[i] = c;
+  let checksum = new Uint8Array(42);
+  checksum[0] = 48;  // '0'
+  checksum[1] = 120; // 'x'
+  for (let /** number */ i = 2; i < address.length; ++i) {
+    let c = address.charCodeAt(i);
+    let e = entropy.charCodeAt(i - 2);
+    if (65 <= c && c <= 90) { // uppercase A-Z
+      hasUpper = true;
+      checksum[i] = (e > 55) ? c : c + 32;
+      hasDiff ||= !(e > 55);
+    } else if (97 <= c && c <= 122) { // lowercase a-z
+      hasLower = true;
+      checksum[i] = (e > 55) ? c - 32 : c;
+      hasDiff ||= (e > 55);
+    } else if (48 <= c && c <= 57) { // numbers 0-9
+      checksum[i] = c;
     } else return null;
   }
-  if (küçükVar && büyükVar && farkVar)
+  if (hasLower && hasUpper && hasDiff)
     return null;
-  return new TextDecoder().decode(sağlama);
+  return new TextDecoder().decode(checksum);
 }
 
 /**
- * Verilen bir dizinin cheksumı doğru bir EVM adresi olup olmadığını test eder.
+ * Tests if a given string is a valid EVM address with correct checksum.
  *
- * @param {string} adres
- * @return {boolean} adresin geçerli olup olmadığı
+ * @param {string} address
+ * @return {boolean} whether the address is valid
  */
-const adresGeçerli = (adres) => {
-  if (adres.length != 42 || !adres.startsWith("0x")) return false;
-  adres = adres.slice(2);
+const isAddressValid = (address) => {
+  if (address.length != 42 || !address.startsWith("0x")) return false;
+  address = address.slice(2);
   /** @const {string} */
-  const entropi = keccak256(adres.toLowerCase());
+  const entropy = keccak256(address.toLowerCase());
 
-  for (let /** number */ i = 0; i < adres.length; ++i) {
-    let c = adres.charCodeAt(i);
-    let e = entropi.charCodeAt(i);
-    if (65 <= c && c <= 90) {
+  for (let /** number */ i = 0; i < address.length; ++i) {
+    let c = address.charCodeAt(i);
+    let e = entropy.charCodeAt(i);
+    if (65 <= c && c <= 90) {  // uppercase A-Z
       if (e <= 55) return false;
-    } else if (97 <= c && c <= 122) {
+    } else if (97 <= c && c <= 122) { // lowercase a-z
       if (e > 55) return false;
-    } else if (c < 48 || 57 < c) {
+    } else if (c < 48 || 57 < c)
       return false;
-    }
   }
   return true;
 }
@@ -109,7 +107,7 @@ const personalDigest = (msg) => {
   encoder.encodeInto("\x19Ethereum Signed Message:\n", encoded);
   encoded.set(lenEncoded, 26);
   encoded.set(msgEncoded, 26 + lenEncoded.length);
-  return hex(keccak256Uint8(encoded));
+  return hex.from(keccak256Uint8(encoded));
 }
 
 /**
@@ -146,16 +144,17 @@ const uint64 = (sayı) => sayı.toString(16).padStart(16, "0");
 const isZero = (value) => value == "0x" || value.replaceAll("0", "") == 'x';
 
 /**
+ * We need the pureOrBreakMyCode annotation since repeat is not inferred
+ * to be pure due to polyfills.
  * @see https://github.com/google/closure-compiler/issues/4018
- *
  * @const {string}
  */
-const Uint256Max = "".padEnd(64, "f");
+const Uint256Max = /** @pureOrBreakMyCode */("f".repeat(64));
 
 export default {
   address,
-  adresDüzelt,
-  adresGeçerli,
+  correctAddress,
+  isAddressValid,
   compactSignature,
   isZero,
   packedAddress,

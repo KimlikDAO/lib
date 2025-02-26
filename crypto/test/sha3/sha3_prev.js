@@ -1,4 +1,4 @@
-import { hex } from '../../../util/çevir';
+import hex from '../../../util/hex';
 
 /** @const {Array<number>} */
 const KECCAK_PADDING = [1, 256, 65536, 16777216];
@@ -73,7 +73,7 @@ export const keccak256 = (veri) => {
   }
   f(s);
 
-  return hex(new Uint8Array(s.buffer).subarray(0, 32));
+  return hex.from(new Uint8Array(s.buffer).subarray(0, 32));
 }
 
 const f = (s) => {

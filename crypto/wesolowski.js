@@ -1,4 +1,4 @@
-import { hex, uint32ArrayeHexten } from "../util/çevir";
+import hex from "../util/hex";
 import { expTimesExp } from "./modular";
 import { getNonsmooth } from "./primes";
 import { keccak256Uint32ToHex } from "./sha3";
@@ -47,7 +47,7 @@ const evaluate = (gArr, t) => {
    *
    * @const {bigint}
    */
-  const g = BigInt("0x" + hex(new Uint8Array(gArr.buffer, 0, 32)));
+  const g = BigInt("0x" + hex.from(new Uint8Array(gArr.buffer, 0, 32)));
 
   /**
    * (1) Calculate y = g^{2^t} (mod N)
@@ -59,7 +59,7 @@ const evaluate = (gArr, t) => {
     y = y * y % N;
   /** @const {!Uint32Array} */
   const yArr = new Uint32Array(32);
-  uint32ArrayeHexten(yArr, y.toString(16).padStart(256, "0"));
+  hex.intoUint32Array(yArr, y.toString(16).padStart(256, "0"));
 
   /**
    * (2) Generate the challenge l = generateChallenge(gArr, yArr).
@@ -95,7 +95,7 @@ const evaluate = (gArr, t) => {
  */
 const reconstructY = (logT, gArr, π, l) => {
   /** @const {bigint} */
-  const g = BigInt("0x" + hex(new Uint8Array(gArr.buffer, 0, 32)));
+  const g = BigInt("0x" + hex.from(new Uint8Array(gArr.buffer, 0, 32)));
   /** @type {bigint} */
   let r = 2n;
   for (let i = 0; i < logT; ++i)
@@ -104,7 +104,7 @@ const reconstructY = (logT, gArr, π, l) => {
   const y = expTimesExp(π, l, g, r, N);
   /** @const {!Uint32Array} */
   const yArr = new Uint32Array(32);
-  uint32ArrayeHexten(yArr, y.toString(16).padStart(256, "0"));
+  hex.intoUint32Array(yArr, y.toString(16).padStart(256, "0"));
   return yArr;
 }
 

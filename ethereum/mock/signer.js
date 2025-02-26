@@ -2,7 +2,8 @@ import { Signer } from "../../crosschain/signer";
 import { inverse } from "../../crypto/modular";
 import { G, Point, Q } from "../../crypto/secp256k1";
 import { keccak256Uint32, keccak256Uint32ToHex } from "../../crypto/sha3";
-import { hex, hexten, uint8ArrayBEyeSayıdan } from "../../util/çevir";
+import hex from "../../util/hex";
+import { uint8ArrayBEyeSayıdan } from "../../util/çevir";
 import evm from "../evm";
 
 /**
@@ -12,8 +13,8 @@ import evm from "../evm";
 const addr = (privKey) => {
   const { x, y } = G.copy().multiply(privKey).project();
   /** @const {!Uint8Array} */
-  const buff = hexten(evm.uint256(x) + evm.uint256(y));
-  return "0x" + hex(new Uint8Array(
+  const buff = hex.toUint8Array(evm.uint256(x) + evm.uint256(y));
+  return "0x" + hex.from(new Uint8Array(
     keccak256Uint32(new Uint32Array(buff.buffer)).buffer, 12, 20));
 }
 
@@ -143,7 +144,7 @@ class MockSigner {
       return Promise.reject();
     /** @const {bigint} */
     const digest = BigInt("0x" + evm.personalDigest(message));
-    return crypto.subtle.digest("SHA-256", hexten(signWide(digest, this.privKey)));
+    return crypto.subtle.digest("SHA-256", hex.toUint8Array(signWide(digest, this.privKey)));
   }
 }
 

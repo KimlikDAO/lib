@@ -1,4 +1,4 @@
-import { base64 } from "../../util/çevir";
+import base64 from "../../util/base64";
 
 /**
  * @return {!Promise<void>}
@@ -12,8 +12,8 @@ const generateKeyPair = () => crypto.subtle.generateKey({
   crypto.subtle.exportKey("pkcs8", /** @type {!webCrypto.CryptoKeyPair} */(res).privateKey),
   crypto.subtle.exportKey("spki", /** @type {!webCrypto.CryptoKeyPair} */(res).publicKey),
 ])).then((/** @type {!Array<!ArrayBuffer>} */[privateKey, publicKey]) => {
-  console.log("private key:", base64(new Uint8Array(privateKey)));
-  console.log("public key:", base64(new Uint8Array(publicKey)));
+  console.log("private key:", base64.from(new Uint8Array(privateKey)));
+  console.log("public key:", base64.from(new Uint8Array(publicKey)));
 });
 
 generateKeyPair();

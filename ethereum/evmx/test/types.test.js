@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { hexten } from "../../../util/çevir";
+import hex from "../../../util/hex";
 import { Op, OpData } from "../opcodes";
 import { byteLength, concat, evm, pushBytes, pushNumber, toOpData } from "../types";
 
@@ -30,7 +30,7 @@ test("pushes empty bytes correctly", () => {
   expect(pushBytes(evm.bytes.from(""))).toEqual(OpData.from([Op.PUSH0]));
   expect(pushBytes(evm.bytes.from("0"))).toEqual(OpData.from([Op.PUSH0]));
   expect(pushBytes(evm.bytes.from("1"))).toEqual(OpData.from([Op.PUSH1, 1]));
-  expect(pushBytes(hexten("AABBCC"))).toEqual(OpData.from([Op.PUSH3, 0xaa, 0xbb, 0xcc]));
+  expect(pushBytes(hex.toUint8Array("AABBCC"))).toEqual(OpData.from([Op.PUSH3, 0xaa, 0xbb, 0xcc]));
 });
 
 test("concatenates OpData correctly", () => {

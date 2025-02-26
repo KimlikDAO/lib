@@ -4,7 +4,7 @@
  * @author KimlikDAO
  */
 
-import { base64, base64ten } from "../util/çevir";
+import base64 from "../util/base64";
 import { Signer } from "./signer";
 import "./unlockable.d";
 
@@ -23,11 +23,11 @@ const decrypt = (unlockable, signer, address) => {
         .then((/** @type {!webCrypto.CryptoKey}*/ key) =>
           crypto.subtle.decrypt({
             name: "AES-CTR",
-            counter: base64ten(unlockable.nonce),
+            counter: base64.toBytes(unlockable.nonce),
             length: 64
           },
             key,
-            base64ten(unlockable.ciphertext)
+            base64.toBytes(unlockable.ciphertext)
           ))
         .then((/** @type {!ArrayBuffer} */ decrypted) => {
           const decoded = new TextDecoder().decode(decrypted);
@@ -76,8 +76,8 @@ const encrypt = (text, userPrompt, version, signer, address) => {
             ))
           .then((/** @type {!ArrayBuffer} */ encrypted) => /** @type {!crosschain.Unlockable} */({
             version: "promptsign-sha256-aes-ctr",
-            nonce: base64(counter),
-            ciphertext: base64(new Uint8Array(encrypted)),
+            nonce: base64.from(counter),
+            ciphertext: base64.from(new Uint8Array(encrypted)),
             userPrompt
           }));
       /** @return {!Promise<!ArrayBuffer>} */
