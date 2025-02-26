@@ -4,7 +4,7 @@ import {
   ImportStatement, writeImportStatement
 } from "../../kdjs/modules";
 import { Update, update } from "../../kdjs/textual";
-import { getExt } from "../../util/paths";
+import { getExt, getDir, combine } from "../../util/paths";
 import css from "./css";
 import { DomIdMapper } from "./domIdMapper";
 
@@ -19,6 +19,10 @@ const SpecifierState = {
   PinRemove: 1, // Pin the import but remove the specifier.
   Keep: 2,
 };
+
+const resolveModulePath = (importer, source) => source.startsWith('.')
+  ? combine(getDir(importer), source)
+  : source.slice(1);
 
 /**
  * Applies the kastro/kdjs transpilation rules to a jsx file obtaining a pure
@@ -55,6 +59,8 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
   const localComponents = new Set();
   /** @const {!Set} */
   const styleSheetComponents = new Set();
+  /** @const {!Map<string, string>} */
+  const workerComponents = new Map();
 
   /**
    * @param {!acorn.ImportDeclaration} node
@@ -159,7 +165,7 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
       if (elem.openingElement) {
         /** @const {string} */
         const tagName = getJsxTagName(elem);
-        if (assetComponents.has(tagName)) return 0;
+        if (assetComponents.has(tagName) && !workerComponents.has(tagName)) return 0;
         if (tagName.charCodeAt(0) < 91) {
           const info = specifierInfo[tagName];
           if (info && info.state == SpecifierState.Remove)
@@ -191,7 +197,10 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
             else
               hasOptionalProps = true;
           }
-          if ((tagName in specifierInfo || localComponents.has(tagName)) && !styleSheetComponents.has(tagName)) {
+          const maybeWorkerBundleName = workerComponents.get(tagName);
+          if (maybeWorkerBundleName) {
+            statements.push(`/** @const {!Worker} */\n  ${instance} = new Worker("${maybeWorkerBundleName}", { type: "module" });`);
+          } else if ((tagName in specifierInfo || localComponents.has(tagName)) && !styleSheetComponents.has(tagName)) {
             keepImport = true;
 
             const specialComponentHandler = specialComponents[tagName];
@@ -328,9 +337,11 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
         /** @const {string} */
         const ext = getExt(source, "js");
         /** @const {boolean} */
+        const isWorkerComponent = source.startsWith("kastro:") && ext == "js";
+        /** @const {boolean} */
         const isAsset = ext == "svg" || ext == "png" || ext == "webp"
           || ext == "ttf" || ext == "woff2"
-          || source.includes(":")
+          || source.startsWith("kastro:")
           || source.includes("kastro/image")
           || source.includes("kastro/stylesheet");
         if (isAsset) {
@@ -342,6 +353,18 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
         if (ext == "css") {
           for (const specifier of node.specifiers)
             styleSheetComponents.add(specifier.local.name);
+        } else if (isWorkerComponent) {
+          let defaultImport = null;
+          for (const specifier of node.specifiers) {
+            if (specifier.type === "ImportDefaultSpecifier")
+              defaultImport = specifier.local.name;
+            else if (specifier.type === "ImportSpecifier")
+              throw new Error("Named imports are not allowed for worker components.");
+          }
+          if (!defaultImport)
+            throw new Error("At least one default import is required for worker components.");
+          const workerImportSource = resolveModulePath(file, source.slice("kastro:".length));
+          workerComponents.set(defaultImport, globals.Workers[workerImportSource]);
         }
       } else if (node.type == "VariableDeclaration") {
         for (const decl of node.declarations) {

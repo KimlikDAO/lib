@@ -66,9 +66,9 @@ const setupKastro = () => {
           `export default (props) => SvgJsxImage({...props, src: "${path(args)}" });`;
         return { contents: code, loader: "js" };
       });
-      build.onLoad({ filter: /.jsx$/, namespace: "kastro" }, (args) => {
-        const code = `import { Script } from "@kimlikdao/lib/kastro/script";\n` +
-          `export default (props) => Script({...props, src: "${path(args)}" });`;
+      build.onLoad({ filter: /.js$/, namespace: "kastro" }, (args) => {
+        const code = `import { Worker } from "@kimlikdao/lib/kastro/script";\n` +
+          `export default (props) => Worker({...props, src: "${path(args)}" });`;
         return { contents: code, loader: "js" };
       });
     },
@@ -139,6 +139,16 @@ const setupKastro = () => {
       lambda(this[i], i);
     return this;
   };
+}
+
+/**
+ *
+ * @param {string} mpaConfig
+ * @param {compiler.BuildMode} buildMode
+ */
+const serverMpa = async (mpaConfigFile, buildMode) => {
+  const mpaConfig = await import(mpaConfigFile);
+
 }
 
 const serveCrate = async (crateName, buildMode) => {
