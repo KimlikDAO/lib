@@ -2,8 +2,8 @@ import { Signer } from "../../crosschain/signer";
 import { inverse } from "../../crypto/modular";
 import { G, Point, Q } from "../../crypto/secp256k1";
 import { keccak256Uint32, keccak256Uint32ToHex } from "../../crypto/sha3";
+import bigints from "../../util/bigints";
 import hex from "../../util/hex";
-import { uint8ArrayBEyeSayıdan } from "../../util/çevir";
 import evm from "../evm";
 
 /**
@@ -37,8 +37,8 @@ const addr = (privKey) => {
 const sign = (digest, privKey) => {
   /** @type {!Uint8Array} */
   const bytes = new Uint8Array(64);
-  uint8ArrayBEyeSayıdan(bytes, 32, digest);
-  uint8ArrayBEyeSayıdan(bytes, 64, privKey);
+  bigints.intoBytesBE(bytes, 32, digest);
+  bigints.intoBytesBE(bytes, 64, privKey);
   /** @const {!Uint32Array} */
   const buff = new Uint32Array(bytes.buffer);
 

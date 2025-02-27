@@ -1,7 +1,7 @@
 import { spawn } from "bun";
 import { readFile } from "node:fs/promises";
 import { Clear, Green, Red } from "../util/cli";
-import { darboğaz as bottleneck } from "../util/promises";
+import { throttle } from "../util/promises";
 
 /**
  * @param {!Array<string>} files
@@ -9,7 +9,7 @@ import { darboğaz as bottleneck } from "../util/promises";
  * @return {!Promise<boolean>}
  */
 const runSimple = (files, concurrency) => {
-  const bn = bottleneck(concurrency);
+  const bn = throttle(concurrency);
   return Promise.all(
     files.map((file) => readFile(file, "utf8")
       .then((fileContent) => bn(() => spawn(fileContent.includes('"bun:test"')

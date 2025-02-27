@@ -1,7 +1,7 @@
 
 import { IC, g as sha256F } from "../crypto/sha2";
 import base58 from "../util/base58";
-import { uint8ArrayLEtoBigInt, uint8ArrayLEyeSayıdan } from "../util/çevir";
+import bigints from "../util/bigints";
 
 /**
  * @constructor
@@ -23,7 +23,7 @@ const PublicKey = function (x, isOdd) {
 PublicKey.fromBase58 = (addr) => {
   /** @const {!Uint8Array} */
   const bytes = base58.toBytes(addr);
-  return new PublicKey(uint8ArrayLEtoBigInt(bytes.subarray(3, 35)), !!bytes[35]);
+  return new PublicKey(bigints.fromBytesLE(bytes.subarray(3, 35)), !!bytes[35]);
 }
 
 /** @return {string} */
@@ -33,7 +33,7 @@ PublicKey.prototype.toBase58 = function () {
   buff[0] = 203;
   buff[1] = buff[2] = 1;
   buff[35] = +this.isOdd;
-  uint8ArrayLEyeSayıdan(buff.subarray(3), this.x);
+  bigints.intoBytesLE(buff.subarray(3), this.x);
   addChecksum(buff);
   return base58.from(buff);
 }
@@ -47,14 +47,14 @@ PublicKey.prototype.toBase58 = function () {
 PublicKey.fromBytes = (bytes) => {
   const isOdd = bytes[31] >= 128;
   if (isOdd) bytes[31] -= 128;
-  return new PublicKey(uint8ArrayLEtoBigInt(bytes.subarray(0, 32)), isOdd);
+  return new PublicKey(bigints.fromBytesLE(bytes.subarray(0, 32)), isOdd);
 }
 
 /**
  * @param {!Uint8Array} buff a buffer of length at least 32
  */
 PublicKey.prototype.serializeInto = function (buff) {
-  uint8ArrayLEyeSayıdan(buff, this.x);
+  bigints.intoBytesLE(buff, this.x);
   if (this.isOdd) buff[31] += 128;
 }
 
@@ -63,7 +63,7 @@ PublicKey.prototype.serializeInto = function (buff) {
  * @return {bigint}
  */
 const parsePrivateKey = (privateKey) =>
-  uint8ArrayLEtoBigInt(base58.toBytes(privateKey).subarray(2, 34));
+  bigints.fromBytesLE(base58.toBytes(privateKey).subarray(2, 34));
 
 /**
  * @constructor
@@ -86,8 +86,8 @@ Signature.fromBase58 = function (sig) {
   /** @const {!Uint8Array} */
   const bytes = base58.toBytes(sig);
   return new Signature(
-    uint8ArrayLEtoBigInt(bytes.subarray(2, 34)),
-    uint8ArrayLEtoBigInt(bytes.subarray(34, 66))
+    bigints.fromBytesLE(bytes.subarray(2, 34)),
+    bigints.fromBytesLE(bytes.subarray(34, 66))
   );
 }
 
@@ -97,8 +97,8 @@ Signature.prototype.toBase58 = function () {
   const buff = new Uint8Array(70);
   buff[0] = 154;
   buff[1] = 1;
-  uint8ArrayLEyeSayıdan(buff.subarray(2), this.r);
-  uint8ArrayLEyeSayıdan(buff.subarray(34), this.s);
+  bigints.intoBytesLE(buff.subarray(2), this.r);
+  bigints.intoBytesLE(buff.subarray(34), this.s);
   addChecksum(buff);
   return base58.from(buff);
 }

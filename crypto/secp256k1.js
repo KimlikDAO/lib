@@ -10,7 +10,7 @@
  * @author KimlikDAO
  */
 
-import { uint8ArrayBEtoBigInt } from "../util/çevir";
+import bigints from "../util/bigints";
 import { arfCurve, aX_bY, Point as IPoint } from "./arfCurve";
 import { inverse } from "./modular";
 
@@ -126,7 +126,7 @@ const equal = (p, q) => {
 const sign = (digest, privKey) => {
   for (; ;) {
     /** @const {bigint} */
-    const k = uint8ArrayBEtoBigInt(/** @type {!Uint8Array} */(
+    const k = bigints.fromBytesBE(/** @type {!Uint8Array} */(
       crypto.getRandomValues(new Uint8Array(32))));
     if (k <= 0 || Q <= k) continue; // probability ~2^{-128}, i.e., a near impossibility.
     /** @const {!Point} */

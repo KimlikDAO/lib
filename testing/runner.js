@@ -2,7 +2,7 @@ import { Glob, spawn } from "bun";
 import process from "node:process";
 import { compile } from "../kdjs/compile";
 import { Clear, CliArgs, Green, Red, parseArgs } from "../util/cli";
-import { darboğaz as bottleneck } from "../util/promises";
+import { throttle } from "../util/promises";
 
 /** @const {CliArgs} */
 const args = parseArgs(process.argv.slice(2), "target", {
@@ -32,8 +32,8 @@ const createMatcher = (patterns) => {
 const compileAndRunMatching = async (pattern, command, args) => {
   const glob = new Glob(pattern);
   const compileTasks = [];
-  const compileBN = bottleneck(args["buildConcurrency"] || args["concurrency"]);
-  const runBN = bottleneck(args["runConcurrency"] || args["concurrency"]);
+  const compileBN = throttle(args["buildConcurrency"] || args["concurrency"]);
+  const runBN = throttle(args["runConcurrency"] || args["concurrency"]);
 
   for await (const f of glob.scan(".")) {
     if (filter.test(f)) continue;

@@ -46,9 +46,23 @@ const toBytes = (base64) => {
   return buffer;
 }
 
+/**
+ * @param {!Uint8Array|!Array<number>} bytes
+ * @param {string} base64
+ */
+const intoBytes = (bytes, base64) => {
+  /** @const {string} */
+  const decoded = atob(base64);
+  /** @const {number} */
+  const len = decoded.length;
+  for (let i = 0; i < len; ++i)
+    bytes[i] = decoded.charCodeAt(i);
+}
+
 export default {
   fromBigInt,
   from,
   toBigInt,
   toBytes,
+  intoBytes,
 };

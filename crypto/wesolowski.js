@@ -59,7 +59,7 @@ const evaluate = (gArr, t) => {
     y = y * y % N;
   /** @const {!Uint32Array} */
   const yArr = new Uint32Array(32);
-  hex.intoUint32Array(yArr, y.toString(16).padStart(256, "0"));
+  hex.intoUint32ArrayBE(yArr, 32, y.toString(16));
 
   /**
    * (2) Generate the challenge l = generateChallenge(gArr, yArr).
@@ -104,7 +104,7 @@ const reconstructY = (logT, gArr, π, l) => {
   const y = expTimesExp(π, l, g, r, N);
   /** @const {!Uint32Array} */
   const yArr = new Uint32Array(32);
-  hex.intoUint32Array(yArr, y.toString(16).padStart(256, "0"));
+  hex.intoUint32ArrayBE(yArr, 32, y.toString(16));
   return yArr;
 }
 

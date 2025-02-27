@@ -2,13 +2,9 @@ import { ChainGroup } from "../crosschain/chains";
 import { poseidon } from "../crypto/minaPoseidon";
 import { keccak256Uint32 } from "../crypto/sha3";
 import { PublicKey } from "../mina/mina";
-import {
-  uint8ArrayeBase64ten,
-  uint8ArrayeHexten,
-  uint8ArrayLEtoBigInt,
-  uint8ArrayLEyeSayıdan
-} from "../util/çevir";
 import base64 from "../util/base64";
+import bigints from "../util/bigints";
+import hex from "../util/hex";
 
 /**
  * @param {ChainGroup} chainGroup
@@ -22,16 +18,16 @@ const commit = (chainGroup, ownerAddress, commitmentR) => {
     case ChainGroup.EVM:
       /** @const {!Uint8Array} */
       const buff = new Uint8Array(32 + 20);
-      uint8ArrayeBase64ten(buff, commitmentR);
-      uint8ArrayeHexten(buff.subarray(32), ownerAddress.slice(2));
+      base64.intoBytes(buff, commitmentR);
+      hex.intoBytes(buff.subarray(32), ownerAddress.slice(2));
       return base64.from(new Uint8Array(
         keccak256Uint32(new Uint32Array(buff.buffer)).buffer, 0, 32));
     case ChainGroup.MINA:
       const { x, isOdd } = PublicKey.fromBase58(ownerAddress);
       const commitmentBytes = base64.toBytes(commitmentR);
       const outBuff = new Uint8Array(32);
-      uint8ArrayLEyeSayıdan(outBuff, poseidon([
-        uint8ArrayLEtoBigInt(commitmentBytes), isOdd ? x + 1n : x
+      bigints.intoBytesLE(outBuff, poseidon([
+        bigints.fromBytesLE(commitmentBytes), isOdd ? x + 1n : x
       ]));
       return base64.from(outBuff);
   }
@@ -57,7 +53,7 @@ const commitDouble = (chainGroup, ownerAddress, random) => {
     case ChainGroup.EVM: {
       /** @const {!Uint8Array} */
       const buff = new Uint8Array(32 + 20);
-      uint8ArrayeHexten(buff.subarray(32), ownerAddress.slice(2));
+      hex.intoBytes(buff.subarray(32), ownerAddress.slice(2));
       buff.set(random.subarray(0, 32));
       /** @const {!Uint8Array} */
       const commitment = new Uint8Array(
@@ -72,12 +68,12 @@ const commitDouble = (chainGroup, ownerAddress, random) => {
       const commitment = new Uint8Array(64);
       const { /** bigint */ x, isOdd } = PublicKey.fromBase58(ownerAddress);
       const /** bigint */ h = isOdd ? x + 1n : x;
-      uint8ArrayLEyeSayıdan(
+      bigints.intoBytesLE(
         commitment,
-        poseidon([uint8ArrayLEtoBigInt(random.subarray(0, 32)), h]));
-      uint8ArrayLEyeSayıdan(
+        poseidon([bigints.fromBytesLE(random.subarray(0, 32)), h]));
+      bigints.intoBytesLE(
         commitment.subarray(32),
-        poseidon([uint8ArrayLEtoBigInt(random.subarray(32)), h]));
+        poseidon([bigints.fromBytesLE(random.subarray(32)), h]));
       return commitment;
   }
 }

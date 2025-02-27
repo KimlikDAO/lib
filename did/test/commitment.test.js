@@ -5,10 +5,7 @@ import { keccak256Uint8 } from "../../crypto/sha3";
 import { addr } from "../../ethereum/mock/signer";
 import { PublicKey } from "../../mina/mina";
 import base64 from "../../util/base64";
-import {
-  uint8ArrayLEtoBigInt,
-  uint8ArrayLEyeSayıdan
-} from "../../util/çevir";
+import bigints from "../../util/bigints";
 import { commit, commitDouble } from "../commitment";
 
 test("EVM commit with 0 input", () => {
@@ -18,7 +15,7 @@ test("EVM commit with 0 input", () => {
 
 test("MINA commit with select values", () => {
   const buff = new Uint8Array(32);
-  uint8ArrayLEyeSayıdan(buff, poseidon([0n, 32n]))
+  bigints.intoBytesLE(buff, poseidon([0n, 32n]))
 
   expect(base64.toBytes(commit(
     ChainGroup.MINA,
@@ -34,8 +31,8 @@ test("MINA commitDouble()", () => {
   r[32] = 2;
   let c = commitDouble(ChainGroup.MINA, new PublicKey(31n, false).toBase58(), r);
 
-  expect(uint8ArrayLEtoBigInt(c.subarray(0, 32))).toBe(poseidon([1n, 31n]));
-  expect(uint8ArrayLEtoBigInt(c.subarray(32, 64))).toBe(poseidon([2n, 31n]));
+  expect(bigints.fromBytesLE(c.subarray(0, 32))).toBe(poseidon([1n, 31n]));
+  expect(bigints.fromBytesLE(c.subarray(32, 64))).toBe(poseidon([2n, 31n]));
 });
 
 test("MINA commitDouble()", () => {
@@ -44,8 +41,8 @@ test("MINA commitDouble()", () => {
   r[32] = 2;
   let c = commitDouble(ChainGroup.MINA, new PublicKey(31n, true).toBase58(), r);
 
-  expect(uint8ArrayLEtoBigInt(c.subarray(0, 32))).toBe(poseidon([1n, 32n]));
-  expect(uint8ArrayLEtoBigInt(c.subarray(32, 64))).toBe(poseidon([2n, 32n]));
+  expect(bigints.fromBytesLE(c.subarray(0, 32))).toBe(poseidon([1n, 32n]));
+  expect(bigints.fromBytesLE(c.subarray(32, 64))).toBe(poseidon([2n, 32n]));
 });
 
 test("commit() == commitDouble()[0] on EVM", () => {

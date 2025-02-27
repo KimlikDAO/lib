@@ -3,7 +3,7 @@
  * @see https://hackmd.io/@dJO3Nbl4RTirkR2uDM6eOA/Bk0NvC8Vo
  */
 import { assertEq } from "../../testing/assert";
-import { uint8ArrayBEtoBigInt } from "../../util/çevir";
+import bigints from "../../util/bigints";
 import { arfCurve, Point as IPoint } from "../arfCurve";
 import { P, Q, sqrt } from "../secp256k1";
 
@@ -41,7 +41,7 @@ const Qoint = arfCurve(Q);
  */
 Point.random = () => {
   for (; ;) {
-    const x = uint8ArrayBEtoBigInt(/** @type {!Uint8Array} */(
+    const x = bigints.fromBytesBE(/** @type {!Uint8Array} */(
       crypto.getRandomValues(new Uint8Array(32)))) % P;
     const y2 = (x * x * x + 1n) % P;
     const y = sqrt(y2);

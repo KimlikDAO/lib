@@ -1,7 +1,7 @@
 import { Point, recoverSigner, sign } from "../crypto/secp256k1";
 import { keccak256Uint32 } from "../crypto/sha3";
 import hex from "../util/hex";
-import { uint8ArrayBEyeSayıdan } from "../util/çevir";
+import bigints from "../util/bigints";
 import eth from "./eth.d";
 import evm from "./evm";
 
@@ -12,8 +12,8 @@ import evm from "./evm";
 const pointToAddress = (Q) => {
   /** @const {!Uint8Array} */
   const buff = new Uint8Array(64);
-  uint8ArrayBEyeSayıdan(buff, 32, Q.x);
-  uint8ArrayBEyeSayıdan(buff, 64, Q.y);
+  bigints.intoBytesBE(buff, 32, Q.x);
+  bigints.intoBytesBE(buff, 64, Q.y);
   /** @const {!Uint8Array} */
   const hash = new Uint8Array(
     keccak256Uint32(new Uint32Array(buff.buffer)).buffer, 12, 20);

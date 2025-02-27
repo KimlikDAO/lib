@@ -1,9 +1,7 @@
 import { keccak256, keccak256Uint32ToHex } from "../crypto/sha3";
-import {
-  uint8ArrayBEyeSayıdan,
-  uint8ArrayeBase64ten,
-  uint8ArrayeHexten,
-} from "../util/çevir";
+import base64 from "../util/base64";
+import bigints from "../util/bigints";
+import hex from "../util/hex";
 import "./section.d";
 
 /** @const {string} */
@@ -23,8 +21,8 @@ const hashExposureReport = (exposureReport) => {
    * @const {!Uint8Array} */
   const buff = new Uint8Array(64);
   new TextEncoder().encodeInto(KIMLIKDAO_HASH_PREFIX, buff);
-  uint8ArrayBEyeSayıdan(buff, 32, exposureReport.signatureTs);
-  uint8ArrayeHexten(buff.subarray(32), exposureReport.id);
+  bigints.intoBytesBE(buff, 32, exposureReport.signatureTs);
+  hex.intoBytes(buff.subarray(32), exposureReport.id);
   return keccak256Uint32ToHex(new Uint32Array(buff.buffer));
 };
 
@@ -42,9 +40,9 @@ const hashHumanID = (humanID) => {
    * @const {!Uint8Array} */
   const buff = new Uint8Array(96);
   new TextEncoder().encodeInto(KIMLIKDAO_HASH_PREFIX, buff);
-  uint8ArrayBEyeSayıdan(buff, 32, humanID.signatureTs);
-  uint8ArrayeBase64ten(buff.subarray(32), humanID.commitment);
-  uint8ArrayeHexten(buff.subarray(64), humanID.id);
+  bigints.intoBytesBE(buff, 32, humanID.signatureTs);
+  base64.intoBytes(buff.subarray(32), humanID.commitment);
+  hex.intoBytes(buff.subarray(64), humanID.id);
   return keccak256Uint32ToHex(new Uint32Array(buff.buffer));
 };
 

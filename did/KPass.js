@@ -1,7 +1,7 @@
 import { Signer } from "../crosschain/signer";
 import { decrypt, encrypt } from "../crosschain/unlockable";
 import "../ethereum/ERC721Unlockable.d";
-import { bekle } from "../util/promises";
+import { wait } from "../util/promises";
 import { hash } from "./section";
 import { verify } from "./verifiableID";
 
@@ -129,7 +129,7 @@ const fromUnlockableNFT = async (nft, sectionNames, signer, address) => {
 
   for (let i = 0; i < encryptedSectionsKeys.length; ++i) {
     if (i > 0)
-      await bekle(100);
+      await wait(100);
     /** @type {!crosschain.Unlockable} */
     const encryptedSections = /** @type {!crosschain.Unlockable} */(
       nft.unlockables[encryptedSectionsKeys[i]]);
@@ -203,7 +203,7 @@ const toUnlockableNFT = async (metadata, decryptedSections, sectionGroups, signe
   const unlockables = {};
   for (let i = 0; i < sectionGroups.length; ++i) {
     /** @const {!Promise<void>} */
-    const duraklatıcı = bekle(2000);
+    const duraklatıcı = wait(2000);
     /** @const {did.DecryptedSections} */
     const sections = {};
     for (const /** @type {string} */ name of sectionGroups[i].sectionNames)
@@ -287,10 +287,10 @@ const combineMultiple = (
 }
 
 export {
-  SectionGroup,
   checkVerifiableIDs,
   combineMultiple,
   fromUnlockableNFT,
+  SectionGroup,
   selectEncryptedSections,
   toUnlockableNFT
 };

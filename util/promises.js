@@ -1,54 +1,54 @@
 /**
  * @template T
- * @param {number} süre
- * @param {T=} cevap
+ * @param {number} delay
+ * @param {T=} response
  * @return {!Promise<T>}
  */
-const bekle = (süre, cevap) => new Promise(
-  (/** @type {function(T):void} */ resolve) => setTimeout(() => resolve(cevap), süre));
+const wait = (delay, response) => new Promise(
+  (/** @type {function(T):void} */ resolve) => setTimeout(() => resolve(response), delay));
 
 /**
- * @param {number} enFazla
+ * @param {number} maxConcurrent
  */
-const darboğaz = (enFazla) => {
+const throttle = (maxConcurrent) => {
   /**
    * @typedef {{
-   *   sözVer: function(): !Promise,
-   *   sonuç: function(*): void,
-   *   hata: function(*): void
+   *   promise: function(): !Promise,
+   *   resolve: function(*): void,
+   *   reject: function(*): void
    * }}
    */
-  const Görev = {};
-  /** @const {!Array<Görev>} */
-  const sıra = [];
+  const Task = {};
+  /** @type {!Array<Task>} */
+  const queue = [];
 
-  const adım = () => {
-    if (sıra.length > 0 && enFazla > 0) {
-      --enFazla;
-      const { sözVer, sonuç, hata } = sıra.shift();
-      sözVer()
+  const step = () => {
+    if (queue.length > 0 && maxConcurrent > 0) {
+      --maxConcurrent;
+      const { promise, resolve, reject } = queue.shift();
+      promise()
         .finally(() => {
-          ++enFazla;
-          adım();
+          ++maxConcurrent;
+          step();
         })
-        .then(sonuç, hata);
+        .then(resolve, reject);
     }
   }
 
   /**
    * @template T
-   * @param {function():!Promise<T>} sözVer
+   * @param {function():!Promise<T>} promise
    * @return {!Promise<T>}
    */
-  const ekle = (sözVer) => new Promise((sonuç, hata) => {
-    sıra.push({ sözVer, sonuç, hata });
-    adım();
+  const add = (promise) => new Promise((resolve, reject) => {
+    queue.push({ promise, resolve, reject });
+    step();
   });
 
-  return ekle;
+  return add;
 };
 
 export {
-  bekle,
-  darboğaz
+  wait,
+  throttle
 };

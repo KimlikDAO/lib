@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import process from "node:process";
-import { bekle as wait } from "../../../util/promises";
+import { wait } from "../../../util/promises";
 import { Auth } from "../api";
 import workers from "../workers";
 

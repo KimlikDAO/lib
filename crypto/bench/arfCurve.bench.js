@@ -1,6 +1,6 @@
 import { assertEq } from "../../testing/assert";
 import { compareImpls } from "../../testing/bench";
-import { uint8ArrayBEtoBigInt } from "../../util/çevir";
+import bigints from "../../util/bigints";
 import { arfCurve, Point as IPoint } from "../arfCurve";
 import { P } from "../secp256k1";
 
@@ -96,7 +96,7 @@ const G = new Point(
 );
 
 /** @const {bigint} */
-const k = uint8ArrayBEtoBigInt(/** @type {!Uint8Array} */(
+const k = bigints.fromBytesBE(/** @type {!Uint8Array} */(
   crypto.getRandomValues(new Uint8Array(32)))) % P;
 const kG = G.copy().multiply(k).project();
 
