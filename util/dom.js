@@ -36,7 +36,7 @@ const hide = gizle;
 
 /**
  * @noinline
- * @param {Element} birim
+https://x.com/home * @param {Element} birim
  */
 const göster = (birim) => birim.style.display = "";
 
@@ -57,13 +57,7 @@ const gösterGizle = (birim, göster) => birim.style.display = göster ? "" : "n
  * @noinline
  * @param {string} ad
  */
-const adlaGizle = (ad) => byId(ad).style.display = "none";
-
-/**
- * @noinline
- * @param {string} ad
- */
-const hideById = adlaGizle;
+const hideById = (ad) => byId(ad).style.display = "none";;
 
 /**
  * @noinline
@@ -76,6 +70,46 @@ const adlaGöster = (ad) => byId(ad).style.display = "";
  * @param {boolean} göster
  */
 const toggleById = (ad, göster) => gösterGizle(byId(ad), göster);
+
+/** @const */
+const text = {
+  /**
+   * @param {!Element} element
+   * @param {string} text
+   * @return {string}
+   */
+  update: (element, text) => /** @type {!Text} */(element.firstChild).data = text,
+
+  /**
+   * @param {!Element} element
+   * @param {string=} text
+   */
+  setPreserve: (element, text) => {
+    /** @const {!Text} */
+    const textNode = /** @type {!Text} */(element.firstChild);
+    /** @const {string|undefined} */
+    const preserved = element["1"];
+    if (!preserved) {
+      if (!text) return;
+      element["1"] = textNode.data;
+    }
+    textNode.data = /** @type {string} */(text || preserved);
+  },
+
+  /**
+   * @param {!Element} element
+   * @param {string} text
+   */
+  appendPreserve: (element, text) => {
+    /** @const {!Text} */
+    const textNode = /** @type {!Text} */(element.firstChild);
+    /** @type {string|undefined} */
+    let preserved = element["1"];
+    if (!preserved)
+      element["1"] = preserved = textNode.data;
+    textNode.data = preserved + text;
+  }
+}
 
 /**
  * @param {!HTMLAnchorElement} düğme Durdurulacak düğme.
@@ -140,14 +174,14 @@ const pencere = (url, en, boy) => {
  * @param {number} para
  * @return {string} metin olarak yazılmış para miktarı
  */
-const paradanMetne = (para) => (para / 1_000_000).toLocaleString(Lang);
+const renderCurrency = (para) => (para / 1_000_000).toLocaleString(Lang);
 
 /**
  * @nosideeffects
  * @param {string} telefon
  * @return {string} formatlanmış telefon numarası
  */
-const telefondanMetne = (telefon) =>
+const renderPhone = (telefon) =>
   telefon.slice(0, 3) + " (" + telefon.slice(3, 6) + ") " + telefon.slice(6, 9) + " " +
   telefon.slice(9, 11) + " " + telefon.slice(11);
 
@@ -270,9 +304,9 @@ export default {
   td,
   // DOM manipulation
   byId,
-  adlaGizle,
   adlaGöster,
   toggleById,
+  text,
   gizle,
   göster,
   gösterGizle,
@@ -286,8 +320,8 @@ export default {
   slideCard,
   // Render
   i18n,
-  paradanMetne,
-  telefondanMetne,
+  renderCurrency,
+  renderPhone,
   // Scheduling
   schedule,
   run,

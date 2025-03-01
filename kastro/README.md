@@ -42,7 +42,7 @@ const Button = ({ Lang }) => {
   const Text = dom.span(Css.Text);
 
   return (
-    <Root onClick={() => Text.innerText = "Clicked!"}>
+    <Root onClick={() => dom.text.update(Text, "Clicked!")}>
       <Text>Hello World!</Text>
     </Root>
   );
@@ -56,7 +56,7 @@ When compiled, this generates minimal client JavaScript:
 ```javascript
 const get = (a) => document.getElementById(a);
 const b = get("B");
-get("A").onclick = () => b.innerText = "Clicked!";
+get("A").onclick = () => b.firstChild.data = "Clicked!";
 ```
 
 ## Core Concepts
@@ -135,7 +135,7 @@ const LandingPage = ({ Lang }) => {
   return (
     <html lang={Lang}>
       <Css />
-      <Button onClick={() => Text.innerText = "Clicked!"}>
+      <Button onClick={() => dom.text.update(Text, "Clicked!")}>
         <ArrowSvg />Click here!
       </Button>
       <Text>Hello World!</Text>
@@ -167,7 +167,7 @@ a minified version of the following
 ```javascript:build/LandingPage-en.js
 const get = (a) => document.getElementById(a);
 const c = get("B");
-get("A").onclick = () => c.innerText = "Clicked!";
+get("A").onclick = () => c.firstChild.data = "Clicked!";
 ```
 and the following html will be generated (after de-minification):
 ```html:build/LandingPage-en.html
@@ -239,7 +239,7 @@ const StatelessComp = ({ id }) => {
   /** @type {!HTMLDivElement} */
   const Root = dom.div(id);
   return (
-    <Root onClick={() => Root.innerText = Root.innerText == "On" ? "Off" : "On"}>
+    <Root onClick={() => dom.text.update(Root, Root.innerText == "On" ? "Off" : "On")}>
       On
     </Root>
   );
@@ -257,7 +257,7 @@ When transpiled by Kastro (but before compilation by kdjs), the above jsx file w
 const StatelessComp = ({ id }) => {
   /** @type {!HTMLDivElement} */
   const Root = dom.div(id);
-  Root.onclick = () => Root.innerText = Root.innerText == "On" ? "Off" : "On";
+  Root.onclick = () => Root.firstChild.data = Root.firstChild.data == "On" ? "Off" : "On";
 }
 const Page = () => {
   StatelessComp({ id: "A" }); // Initialize the stateless component with id "A"
@@ -285,7 +285,7 @@ const CheckBox = function ({ id }) {
 }
 CheckBox.prototype.flip = function () {
   this.on = !this.on;
-  this.root.innerText = this.on ? "on" : "off";
+  dom.text.update(this.root, this.on ? "on" : "off");
 }
 
 const PageWithCheckBox = () => (
@@ -308,7 +308,7 @@ const CheckBox = ({ id }) => {
 }
 CheckBox.prototype.flip = function() {
   this.on = !this.on;
-  this.root.innerText = this.on ? "on" : "off";
+  this.root.firstChild.data = this.on ? "on" : "off";
 }
 
 const PageWithCheckBox = () => {

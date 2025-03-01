@@ -12,6 +12,7 @@ for (let i = 0; i < Base58Chars.length; ++i)
   Base58Map[Base58Chars.charCodeAt(i)] = i;
 
 /**
+ * @nosideeffects
  * @param {!Uint8Array|!Array<number>} bytes
  * @return {string}
  */
@@ -38,6 +39,7 @@ const from = (bytes) => {
 }
 
 /**
+ * @nosideeffects
  * @param {string} str
  * @return {!Uint8Array}
  */

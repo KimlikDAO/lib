@@ -15,7 +15,6 @@ const FromUint8 = /** @pureOrBreakMyCode */((() => {
   return arr;
 })());
 
-
 /** @const {!Object<string, string>} */
 const ToBinary = /** @pureOrBreakMyCode */((() => {
   /** @const {!Object<string, string>} */
@@ -72,37 +71,30 @@ const fromBytesLE = (bytes) => {
  * @return {!Uint8Array} byte array
  */
 const toUint8Array = (str) => {
-  if (str.length & 1) str = "0" + str;
   /** @const {!Uint8Array} */
-  const buff = new Uint8Array(str.length / 2);
-  for (let i = 0, j = 0; i < str.length; ++j, i += 2) {
-    const high = str.charCodeAt(i);
-    const low = str.charCodeAt(i + 1);
-    const highVal = high - (high <= 57 ? 48 : (high <= 70 ? 55 : 87));
-    const lowVal = low - (low <= 57 ? 48 : (low <= 70 ? 55 : 87));
-    buff[j] = (highVal * 16) | lowVal;
-  }
-  return buff;
+  const bytes = new Uint8Array((str.length + 1) / 2);
+  intoBytes(bytes, str);
+  return bytes;
 }
 
 /**
- * @param {!Uint8Array} buff
+ * @param {!Uint8Array|!Array<number>} bytes
  * @param {string} str
  */
-const intoBytes = (buff, str) => {
+const intoBytes = (bytes, str) => {
   const n = str.length;
   for (let i = -(n & 1), j = 0; i < n; ++j, i += 2)
-    buff[j] = parseInt(str.substring(i, i + 2), 16);
+    bytes[j] = parseInt(str.substring(i, i + 2), 16);
 }
 
 /**
- * @param {!Uint32Array} buff
+ * @param {!Uint32Array|!Array<number>} words
  * @param {number} length of the Uint32Array segment to fill
  * @param {string} str
  */
-const intoUint32ArrayBE = (buff, length, str) => {
+const intoUint32ArrayBE = (words, length, str) => {
   for (let i = str.length - 8, j = length - 1; i >= 0; --j, i -= 8)
-    buff[j] = parseInt(str.slice(i, i + 8), 16);
+    words[j] = parseInt(str.slice(i, i + 8), 16);
 }
 
 export default {

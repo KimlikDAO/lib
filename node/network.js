@@ -31,7 +31,21 @@ const getNodes = (numNodes) => Promise.resolve([
  */
 const getPoWThreshold = () => Promise.resolve(20_000);
 
+/** @const */
+const nko = {
+  /**
+   * @param {string} commitmentPow
+   * @return {!Promise<string>}
+   */
+  getPDFCommitment(commitmentPow) {
+    return fetch(`https://node.kimlikdao.org/edevlet/nko/commit?${commitmentPow}`)
+      .then((res) => res.text())
+      .catch(console.log);
+  }
+}
+
 export default {
   getNodes,
   getPoWThreshold,
+  nko,
 };

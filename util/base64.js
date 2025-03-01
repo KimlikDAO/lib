@@ -40,10 +40,10 @@ const toBytes = (base64) => {
   /** @const {number} */
   const len = decoded.length;
   /** @const {!Uint8Array} */
-  const buffer = new Uint8Array(len);
+  const bytes = new Uint8Array(len);
   for (let i = 0; i < len; ++i)
-    buffer[i] = decoded.charCodeAt(i);
-  return buffer;
+    bytes[i] = decoded.charCodeAt(i);
+  return bytes;
 }
 
 /**
