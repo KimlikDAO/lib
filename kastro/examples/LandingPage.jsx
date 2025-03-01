@@ -15,8 +15,8 @@ const LandingPage = ({ Lang }) => {
   return (
     <html lang={Lang}>
       <Css />
-      <Button onClick={() => Text.innerText = "Clicked!"}>
-        <ArrowSvg />Click here!
+      <Button onClick={() => dom.text.update(Text, "Clicked!")}>
+        Click here!<ArrowSvg />
       </Button>
       <Text>Hello World!</Text>
     </html>

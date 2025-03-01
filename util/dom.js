@@ -24,52 +24,28 @@ const byId = (ad) => /** @type {!Element} */(document.getElementById(ad));
 
 /**
  * @noinline
- * @param {Element} birim
+ * @param {Element} element
  */
-const gizle = (birim) => birim.style.display = "none";
+const hide = (element) => element.style.display = "none";
 
 /**
  * @noinline
- * @param {Element} birim
+ * @param {Element} element
+ * @param {boolean=} show
  */
-const hide = gizle;
+const show = (element, show = true) => element.style.display = show ? "" : "none";
 
 /**
  * @noinline
-https://x.com/home * @param {Element} birim
+ * @param {string} id
  */
-const göster = (birim) => birim.style.display = "";
+const hideById = (id) => byId(id).style.display = "none";;
 
 /**
- * @noinline
- * @param {Element} birim
+ * @param {string} id
+ * @param {boolean=} isVisible
  */
-const show = göster;
-
-/**
- * @noinline
- * @param {Element} birim
- * @param {boolean} göster
- */
-const gösterGizle = (birim, göster) => birim.style.display = göster ? "" : "none";
-
-/**
- * @noinline
- * @param {string} ad
- */
-const hideById = (ad) => byId(ad).style.display = "none";;
-
-/**
- * @noinline
- * @param {string} ad
- */
-const adlaGöster = (ad) => byId(ad).style.display = "";
-
-/**
- * @param {string} ad
- * @param {boolean} göster
- */
-const toggleById = (ad, göster) => gösterGizle(byId(ad), göster);
+const showById = (id, isVisible) => show(byId(id), isVisible);
 
 /** @const */
 const text = {
@@ -88,10 +64,10 @@ const text = {
     /** @const {!Text} */
     const textNode = /** @type {!Text} */(element.firstChild);
     /** @const {string|undefined} */
-    const preserved = element["1"];
+    const preserved = element["o"];
     if (!preserved) {
       if (!text) return;
-      element["1"] = textNode.data;
+      element["o"] = textNode.data;
     }
     textNode.data = /** @type {string} */(text || preserved);
   },
@@ -104,19 +80,11 @@ const text = {
     /** @const {!Text} */
     const textNode = /** @type {!Text} */(element.firstChild);
     /** @type {string|undefined} */
-    let preserved = element["1"];
+    let preserved = element["o"];
     if (!preserved)
-      element["1"] = preserved = textNode.data;
+      element["o"] = preserved = textNode.data;
     textNode.data = preserved + text;
   }
-}
-
-/**
- * @param {!HTMLAnchorElement} düğme Durdurulacak düğme.
- */
-const düğmeDurdur = (düğme) => {
-  düğme.onclick = null;
-  düğme.classList.add("dis");
 }
 
 /**
@@ -304,18 +272,13 @@ export default {
   td,
   // DOM manipulation
   byId,
-  adlaGöster,
-  toggleById,
-  text,
-  gizle,
-  göster,
-  gösterGizle,
+  showById,
+  hideById,
   show,
   hide,
-  hideById,
+  text,
   // Widgets
   bindDropdown,
-  düğmeDurdur,
   pencere,
   slideCard,
   // Render
