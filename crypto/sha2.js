@@ -2,6 +2,8 @@
  * @author KimlikDAO
  */
 
+import hex from "../util/hex";
+
 /**
  * Initial constants
  * @const {!Array<number>}
@@ -147,9 +149,33 @@ const f = (s, t) => {
   s[4] += e; s[5] += f; s[6] += g; s[7] += h;
 }
 
+/**
+ * Computes HMAC-SHA256 for a key of length at most 16 words (64 bytes).
+ *
+ * @param {!Uint32Array} key The key for HMAC
+ * @param {!Uint32Array} message The message to authenticate
+ * @return {!Uint32Array} The HMAC-SHA256 output as a Uint32Array of length 8
+ */
+const hmacUint32 = (key, message) => {
+  const m = key.length;
+  const inner = new Uint32Array(16 + message.length);
+  const outer = new Uint32Array(16 + 8);
+
+  for (let i = 0; i < m; ++i) {
+    inner[i] = key[i] ^ 0x36363636;
+    outer[i] = key[i] ^ 0x5c5c5c5c;
+  }
+  inner.fill(0x36363636, m, 16);
+  inner.set(message, 16);
+  outer.fill(0x5c5c5c5c, m, 16);
+  outer.set(sha256Uint32(inner), 16);
+  return sha256Uint32(outer);
+};
+
 export {
   IC,
   f,
   g,
-  sha256Uint32
+  sha256Uint32,
+  hmacUint32,
 };

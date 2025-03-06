@@ -67,6 +67,24 @@ const fromBytesLE = (bytes) => {
 
 /**
  * @nosideeffects
+ * @param {!Uint32Array} words
+ * @return {string}
+ */
+const fromUint32ArrayBE = (words) => {
+  const n = 4 * words.length;
+  /** @const {!Array<string>} */
+  const octets = Array(n);
+  for (let /** number */ i = 0, j = 0; i < n; i += 4, ++j) {
+    octets[i + 0] = FromUint8[words[j] >>> 24];
+    octets[i + 1] = FromUint8[(words[j] >>> 16) & 255];
+    octets[i + 2] = FromUint8[(words[j] >>> 8) & 255];
+    octets[i + 3] = FromUint8[words[j] & 255];
+  }
+  return octets.join("");
+}
+
+/**
+ * @nosideeffects
  * @param {string} str hex string
  * @return {!Uint8Array} byte array
  */
@@ -98,9 +116,10 @@ const intoUint32ArrayBE = (words, length, str) => {
 }
 
 export default {
+  FromUint8,
   from,
   fromBytesLE,
-  FromUint8,
+  fromUint32ArrayBE,
   intoBytes,
   intoUint32ArrayBE,
   toBinary,

@@ -159,12 +159,12 @@ did.AddressInfo = function () { }
  */
 did.AddressInfo.prototype.country;
 
-import "../node/nvi.d";
+import "../protocol/nko/nvi.d";
 
 /**
  * @interface
  * @extends {did.AddressInfo}
- * @extends {node.nvi.AdresBilgileri}
+ * @extends {protocol.nvi.AdresBilgileri}
  */
 did.TürkiyeAdresi = function () { }
 
@@ -173,7 +173,7 @@ did.TürkiyeAdresi = function () { }
  *
  * @interface
  * @extends {did.Section}
- * @extends {node.nvi.KutukBilgileri}
+ * @extends {protocol.nvi.KutukBilgileri}
  */
 did.KütükBilgileri = function () { }
 

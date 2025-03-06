@@ -1,13 +1,13 @@
 /**
- * @fileoverview e-devlet API veri şekli tanımları.
+ * @fileoverview Structs as defined by e-devlet NVI.
  *
  * @author KimlikDAO
  */
 
-import node from "./node.d";
+import protocol from "../protocol.d";
 
 /** @const */
-node.nvi = {};
+protocol.nvi = {};
 
 /**
  * @typedef {{
@@ -19,7 +19,7 @@ node.nvi = {};
  *   cinsiyet: string
  * }}
  */
-node.nvi.TemelBilgileri;
+protocol.nvi.TemelBilgileri;
 
 /**
  * @typedef {{
@@ -35,7 +35,7 @@ node.nvi.TemelBilgileri;
  *   mhali: string
  * }}
  */
-node.nvi.KutukBilgileri;
+protocol.nvi.KutukBilgileri;
 
 /**
  * @typedef {{
@@ -45,7 +45,7 @@ node.nvi.KutukBilgileri;
  *   UETS: string,
  * }}
  */
-node.nvi.IletisimBilgileri;
+protocol.nvi.IletisimBilgileri;
 
 /**
  * @typedef {{
@@ -57,4 +57,4 @@ node.nvi.IletisimBilgileri;
  *   içKapı: string,
  * }}
  */
-node.nvi.AdresBilgileri;
+protocol.nvi.AdresBilgileri;

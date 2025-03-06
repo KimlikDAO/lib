@@ -2,14 +2,14 @@
  * @author KimlikDAO
  */
 
-import node from "./node.d";
+import protocol from "../protocol.d";
 
 /** @const */
-node.ipfs = {};
+protocol.ipfs = {};
 
 /**
  * @typedef {{
  *   Hash: string
  * }}
  */
-node.ipfs.AddResult;
+protocol.ipfs.AddResult;

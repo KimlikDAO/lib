@@ -18,6 +18,25 @@ describe("hex.fromBytesLE", () => {
   });
 });
 
+describe("hex.fromUint32ArrayBE", () => {
+  it("should convert Uint32Array to hex string in big-endian order", () => {
+    expect(hex.fromUint32ArrayBE(new Uint32Array([]))).toBe("");
+    expect(hex.fromUint32ArrayBE(new Uint32Array([0x01020304]))).toBe("01020304");
+    expect(hex.fromUint32ArrayBE(new Uint32Array([0x01020304, 0x05060708]))).toBe("0102030405060708");
+    expect(hex.fromUint32ArrayBE(new Uint32Array([0xffffffff]))).toBe("ffffffff");
+    expect(hex.fromUint32ArrayBE(new Uint32Array([0xdeadbeef]))).toBe("deadbeef");
+    expect(hex.fromUint32ArrayBE(new Uint32Array([0x00000000, 0xffffffff]))).toBe("00000000ffffffff");
+
+    const shaOutput = new Uint32Array([
+      0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+      0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
+    ]);
+    expect(hex.fromUint32ArrayBE(shaOutput)).toBe(
+      "6a09e667bb67ae853c6ef372a54ff53a510e527f9b05688c1f83d9ab5be0cd19"
+    );
+  });
+});
+
 describe("hex.toUint8Array", () => {
   it("should convert hex string to bytes", () => {
     expect(hex.toUint8Array("")).toEqual(new Uint8Array([]));

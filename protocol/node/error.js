@@ -4,29 +4,15 @@
  * @author KimlikDAO
  */
 
-import "./error.d";
-
-/** @enum {number} */
-const ErrorCode = {
-  DOCUMENT_EXPIRED: 0,
-  INVALID_RECORD: 1,
-  INCORRECT_INSTITUTION: 2,
-  PERSON_NOT_ALIVE: 3,
-  INVALID_CHALLENGE: 4,
-  AUTHENTICATION_FAILURE: 5,
-  INVALID_POW: 6,
-  INCORRECT_FILE_FORMAT: 7,
-  INVALID_TIMESTAMP: 8,
-  INVALID_REQUEST: 9
-};
+import "../error.d";
 
 /**
- * @param {!ErrorCode} kod
- * @param {!Array<string>=} ek
+ * @param {number} code
+ * @param {!Array<string>=} messages
  * @return {!Promise<*>}
  */
-const reject = (kod, ek) =>
-  Promise.reject(/** @type {!node.HataBildirimi} */({ kod, ek }));
+const reject = (code, messages) =>
+  Promise.reject(/** @type {!protocol.ErrorMessage} */({ code, messages }));
 
 /** @const {!Object<string, string>} */
 const HEADERS = {
@@ -42,7 +28,7 @@ const HEADERS = {
  */
 const err = (httpStatus, errorCode) => errorResponse(
   httpStatus,
-  /** @type {!node.HataBildirimi} */({ kod: errorCode })
+  /** @type {!protocol.ErrorMessage} */({ code: errorCode })
 );
 
 /**
@@ -53,22 +39,21 @@ const err = (httpStatus, errorCode) => errorResponse(
  */
 const errWithMessage = (httpStatus, errorCode, messages) => errorResponse(
   httpStatus,
-  /** @type {!node.HataBildirimi} */({ kod: errorCode, ek: messages })
+  /** @type {!protocol.ErrorMessage} */({ code: errorCode, messages })
 );
 
 /**
  * @param {number} httpStatus
- * @param {!node.HataBildirimi} hataBildirimi
+ * @param {!protocol.ErroMessage} errorMessage
  * @return {!Response}
  */
-const errorResponse = (httpStatus, hataBildirimi) => new Response(
-  JSON.stringify(hataBildirimi),
+const errorResponse = (httpStatus, errorMessage) => new Response(
+  JSON.stringify(errorMessage),
   { status: httpStatus, headers: HEADERS }
 );
 
 export {
   err,
-  ErrorCode,
   errorResponse,
   errWithMessage,
   reject

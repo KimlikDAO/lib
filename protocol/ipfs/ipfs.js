@@ -1,4 +1,4 @@
-import base58 from "../util/base58";
+import base58 from "../../util/base58";
 import "./ipfs.d";
 
 /**
@@ -101,7 +101,7 @@ const write = (nodeUrl, data, dataType) => {
     body: formData
   })
     .then((res) => res.json())
-    .then((/** @type {node.ipfs.AddResult} */ res) => res.Hash)
+    .then((/** @type {protocol.ipfs.AddResult} */ res) => res.Hash)
 
   return Promise.all([hash(encoded), remoteHashPromise])
     .then(([/** !Uint8Array */ local, /** string */ remote]) => CID(local) == remote

@@ -38,7 +38,7 @@ kimlikdao-js is a repository containing JavaScript modules essential to KimlikDA
 
 🪶 `mina`: Tools for working with Mina dApps and nodes.
 
-📡 `node`: Utilities for communicating with KimlikDAO protocol nodes
+📡 `protocol`: KimlikDAO protocol definitions and node interfaces
 
 🧪 `testing`: Testing utils and runners
 
