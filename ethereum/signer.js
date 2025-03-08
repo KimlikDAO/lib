@@ -11,12 +11,12 @@ import evm from "./evm";
  */
 const pointToAddress = (Q) => {
   /** @const {!Uint8Array} */
-  const buff = new Uint8Array(64);
-  bigints.intoBytesBE(buff, 32, Q.x);
-  bigints.intoBytesBE(buff, 64, Q.y);
+  const bytes = new Uint8Array(64);
+  bigints.intoBytesBE(bytes, 32, Q.x);
+  bigints.intoBytesBE(bytes, 64, Q.y);
   /** @const {!Uint8Array} */
   const hash = new Uint8Array(
-    keccak256Uint32(new Uint32Array(buff.buffer)).buffer, 12, 20);
+    keccak256Uint32(new Uint32Array(bytes.buffer)).buffer, 12, 20);
   return "0x" + hex.from(hash);
 }
 

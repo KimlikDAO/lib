@@ -8,8 +8,10 @@ import hex from "../util/hex";
 import eth from "./eth.d";
 
 /**
- * Implements EIP-55 address checksum encoding.
- * Returns checksummed address for single-case inputs, null for invalid checksums.
+ * Implements EIP-55 address checksum encoding, for UI validation.
+ * Single-case inputs are converted to checksummed addresses.
+ * For mixed-case inputs, returns null if the address is invalid, returns
+ * the original address if valid.
  *
  * @param {string} address The Ethereum address (with 0x prefix)
  * @return {?string} Checksummed address or null if invalid

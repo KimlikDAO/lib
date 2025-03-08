@@ -1,5 +1,5 @@
+import "../../did/section.d";
 import { SeedNodes } from "../network/network";
-import did from "../did/section.d";
 
 /** @enum {number} */
 const ErrorCode = {

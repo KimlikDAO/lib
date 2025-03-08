@@ -29,3 +29,18 @@ ProjectivePoint.prototype.add = function (other) { }
  * }}
  */
 ProjectivePoint.prototype.toAffine = function () { }
+
+/**
+ * @param {!Uint8Array|string} digest
+ * @param {bigint|string} privKey
+ * @param {{
+ *   lowS: (boolean|undefined),
+ *   extraEntropy: (!Uint8Array|boolean|undefined)
+ * }} options
+ * @return {!Promise<{
+ *   r: bigint,
+ *   s: bigint,
+ *   recovery: number
+ * }>}
+ */
+const signAsync = function (digest, privKey, options) { }
