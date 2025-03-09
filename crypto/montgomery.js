@@ -54,4 +54,12 @@ const mont = (n) => P - (n * MinusRmodP % P);
  */
 const unmont = (i) => i * InvRmodP % P;
 
-export { mont, montint, mul, P, S, unmont };
+export {
+  M,
+  mont,
+  montint,
+  mul,
+  P,
+  S,
+  unmont
+};

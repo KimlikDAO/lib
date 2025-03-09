@@ -1,6 +1,7 @@
 /** @enum {number} */
 const Modifier = {
   Nullable: 1,
+  Optional: 2,
 
   PureOrBreakMyCode: 64,
   NoSideEffects: 128
@@ -16,7 +17,7 @@ class Type {
   }
 
   isNullable() {
-    return this.modifiers & Modifier.Nullable;
+    return (this.modifiers & Modifier.Nullable) !== 0;
   }
 
   toExpr() {
@@ -27,6 +28,18 @@ class Type {
     throw new Error("Abstract method");
   }
 }
+
+/** @enum {string} */
+const PrimitiveTypes = {
+  String: "string",
+  Number: "number",
+  Boolean: "boolean",
+  Symbol: "symbol",
+  BigInt: "bigint",
+  Undefined: "undefined",
+  Null: "null",
+  Void: "void"
+};
 
 class PrimitiveType extends Type {
   /**
@@ -70,7 +83,7 @@ class UnionType extends Type {
    */
   constructor(types) {
     const idx = types.findIndex((type) =>
-      type instanceof InstanceType && type.name == "null");
+      type instanceof PrimitiveType && type.name == PrimitiveTypes.Null);
     if (idx != -1) {
       if (idx == types.length - 1) types.pop();
       else types[idx] = types.pop();
@@ -79,13 +92,14 @@ class UnionType extends Type {
     this.types = types;
   }
 
-  toExpr(sep = " | ") {
-    return this.types.map(t => t.toExpr()).join(sep) +
-      (this.isNullable() ? sep + "null" : "");
+  toExpr() {
+    return this.types.map((t) => t.toExpr()).join(" | ") +
+      (this.isNullable() ? " | null" : "");
   }
 
   toClosureExpr() {
-    return `(${this.toExpr("|")})`;
+    return this.types.map((t) => t.toClosureExpr()).join("|") +
+      (this.isNullable() ? "|null" : "");
   }
 }
 
@@ -143,12 +157,14 @@ class FunctionType extends Type {
    * @param {!Array<!Type>} params
    * @param {!Type} returnType
    * @param {number=} optionalAfter
+   * @param {Type=} thisType - The type of 'this' for methods
    */
-  constructor(params, returnType, optionalAfter) {
+  constructor(params, returnType, optionalAfter, thisType = null) {
     super();
     this.params = params;
     this.returnType = returnType;
     this.optionalAfter = optionalAfter ?? params.length;
+    this.thisType = thisType;
   }
 
   toExpr() {
@@ -163,6 +179,10 @@ class FunctionType extends Type {
       ` * @param {${type.toExpr()}${i >= this.optionalAfter ? "=" : ""}} param${++counter}`
     ).join("\n");
     return `/**\n${paramDocs}\n * @return {${this.returnType.toExpr()}}\n */`;
+  }
+
+  isMethod() {
+    return this.thisType !== null;
   }
 }
 
@@ -192,13 +212,11 @@ class ConstructorType extends FunctionType {
 }
 
 export {
-  Modifier,
   ConstructorType,
   FunctionType,
   GenericType,
-  InstanceType,
-  PrimitiveType,
-  StructType,
+  InstanceType, Modifier, PrimitiveType, PrimitiveTypes, StructType,
   Type,
   UnionType
 };
+

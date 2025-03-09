@@ -2,8 +2,6 @@
  * @author KimlikDAO
  */
 
-import hex from "../util/hex";
-
 /**
  * Initial constants
  * @const {!Array<number>}
@@ -174,8 +172,9 @@ const hmacUint32 = (key, message) => {
 
 export {
   IC,
+  RC,
   f,
   g,
-  sha256Uint32,
   hmacUint32,
+  sha256Uint32
 };

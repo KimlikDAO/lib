@@ -27,7 +27,7 @@ const Q = P - 0x14551231950b75fc4402da1722fc9baeen;
 /**
  * @typedef {IPoint} Point */
 /**
- * @const {function(new:IPoint, bigint, bigint, bigint=)}
+ * @type {function(new:IPoint, bigint, bigint, bigint=)}
  */
 const Point = arfCurve(P);
 

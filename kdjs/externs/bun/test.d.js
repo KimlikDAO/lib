@@ -91,6 +91,9 @@ Matcher.prototype.toBeTruthy = function () { }
 
 Matcher.prototype.toThrow = function () { }
 
+/** @param {*} type */
+Matcher.prototype.toBeInstanceOf = function (type) { }
+
 /** @param {string=} message */
 Matcher.prototype.fail = function (message) { }
 
