@@ -16,10 +16,9 @@ import {
  * @return {!Type}
  */
 const parseType = (input, stopAtClosingBrace = false) => {
+  /** @type {number} */
   let pos = 0;
-  let braceLevel = 0;
 
-  /** @return {void} */
   const skipWhitespace = () => {
     while (pos < input.length && /\s/.test(input[pos])) ++pos;
   }
@@ -40,8 +39,8 @@ const parseType = (input, stopAtClosingBrace = false) => {
   const parseFunctionType = () => {
     /** @const {!Array<!Type>} */
     const params = [];
-    let optionalAfter = Number.MAX_SAFE_INTEGER;
-    /** @type {Type | null} */
+    let optionalAfter = 1e9;
+    /** @type {Type} */
     let thisType = null;
 
     // Handle empty parameter list
@@ -103,6 +102,8 @@ const parseType = (input, stopAtClosingBrace = false) => {
         if (pos < input.length && input[pos] === '=') {
           isOptional = true;
           pos++; // skip =
+          // Set optional modifier on the parameter type
+          paramType.modifiers |= Modifier.Optional;
         }
 
         // If this is the first optional parameter, record its position
@@ -148,27 +149,36 @@ const parseType = (input, stopAtClosingBrace = false) => {
       optionalAfter = params.length;
     }
 
-    return new FunctionType(params, returnType, optionalAfter, thisType);
+    const functionType = new FunctionType(params, returnType, optionalAfter, thisType);
+
+    return functionType;
   }
 
   /** @return {!Type} */
   const parseUnionType = () => {
-    const types = [parseTypeExpression()];
+    const type = parseTypeExpression();
+    if (type === null) return null; // Propagate the stop signal
+
+    const types = [type];
 
     skipWhitespace();
-    // Stop if we hit a closing brace at the top level
-    if (stopAtClosingBrace && braceLevel === 0 && pos < input.length && input[pos] === '}') {
-      return types[0];
+    // Simplified check for closing brace
+    if (stopAtClosingBrace && pos < input.length && input[pos] === '}') {
+      return type; // Return the single type we parsed
     }
 
     while (pos < input.length && input[pos] === '|') {
       pos++; // skip |
       skipWhitespace();
-      types.push(parseTypeExpression());
+
+      const nextType = parseTypeExpression();
+      if (nextType === null) break; // Stop if we hit a closing brace
+
+      types.push(nextType);
 
       // Check again after parsing the next expression
       skipWhitespace();
-      if (stopAtClosingBrace && braceLevel === 0 && pos < input.length && input[pos] === '}') {
+      if (stopAtClosingBrace && pos < input.length && input[pos] === '}') {
         break;
       }
     }
@@ -218,17 +228,9 @@ const parseType = (input, stopAtClosingBrace = false) => {
       skipWhitespace();
       let propType = parseUnionType();
 
-      // If property is optional, make it a union with undefined
+      // If property is optional, set the Optional modifier
       if (isOptional) {
-        const undefinedType = new PrimitiveType(PrimitiveTypes.Undefined, false);
-
-        // If the property type is already a union, add undefined to it
-        if (propType instanceof UnionType) {
-          propType = new UnionType([...propType.types, undefinedType]);
-        } else {
-          // Otherwise create a new union
-          propType = new UnionType([propType, undefinedType]);
-        }
+        propType.modifiers |= Modifier.Optional;
       }
 
       // Store the property
@@ -250,9 +252,9 @@ const parseType = (input, stopAtClosingBrace = false) => {
   const parseTypeExpression = () => {
     skipWhitespace();
 
-    // Stop if we hit a closing brace at the top level
-    if (stopAtClosingBrace && braceLevel === 0 && pos < input.length && input[pos] === '}') {
-      throw new Error("Unexpected closing brace");
+    // Simplified check for closing brace
+    if (stopAtClosingBrace && pos < input.length && input[pos] === '}') {
+      return null; // Signal to stop parsing
     }
 
     // Handle nullable prefix
@@ -310,10 +312,8 @@ const parseType = (input, stopAtClosingBrace = false) => {
     // Handle object types with braces
     else if (input[pos] === '{') {
       pos++; // skip {
-      braceLevel++;
       type = parseStructType();
       if (pos >= input.length || input[pos] !== '}') throw new Error("Expected }");
-      braceLevel--;
       pos++; // skip }
     }
     else {
@@ -322,19 +322,24 @@ const parseType = (input, stopAtClosingBrace = false) => {
       if (!name) throw new Error(`Expected type name at ${pos}`);
 
       // Special handling for primitive types
-      if (Object.values(PrimitiveTypes).includes(name))
-        type = new PrimitiveType(name, isNullable);
-      else {
+      if (Object.values(PrimitiveTypes).includes(name)) {
+        type = new PrimitiveType(name);
+      } else {
         // Handle generic types
         skipWhitespace();
         if (pos < input.length && input[pos] === '<') {
           pos++; // skip <
           const params = parseTypeParams();
-          type = new GenericType(name, params, isNullable);
+          type = new GenericType(name, params);
         } else {
-          type = new InstanceType(name, isNullable);
+          type = new InstanceType(name);
         }
       }
+    }
+
+    // Set nullable modifier if needed
+    if (isNullable) {
+      type.modifiers |= Modifier.Nullable;
     }
 
     // Handle array notation
@@ -344,28 +349,21 @@ const parseType = (input, stopAtClosingBrace = false) => {
       if (pos >= input.length || input[pos] !== ']') throw new Error("Expected ]");
       pos++; // skip ]
       // Convert Type[] to Array<Type>
-      type = new GenericType("Array", [type], isNullable);
+      const arrayType = new GenericType("Array", [type]);
+      // Transfer modifiers from the element type to the array type
+      if (type.modifiers & Modifier.Nullable) {
+        arrayType.modifiers |= Modifier.Nullable;
+      }
+      type = arrayType;
     }
 
     // Handle nullable suffix
     skipWhitespace();
     if (pos < input.length && input[pos] === '?') {
       pos++; // skip ?
-      isNullable = true;
-
-      // Update the type to be nullable
-      if (type instanceof PrimitiveType) {
-        type = new PrimitiveType(type.name, true);
-      } else if (type instanceof InstanceType) {
-        type = new InstanceType(type.name, true);
-      } else if (type instanceof GenericType) {
-        type = new GenericType(type.name, type.params, true);
-      } else {
-        // For other types, we might need to handle differently
-        // For now, just set the nullable flag
-        type.modifiers |= Modifier.Nullable;
-      }
+      type.modifiers |= Modifier.Nullable;
     }
+
     return type;
   }
 
@@ -385,7 +383,10 @@ const parseType = (input, stopAtClosingBrace = false) => {
     return params;
   }
 
-  const result = parseUnionType(); // Start with union parsing
+  const result = parseUnionType();
+  if (result === null) {
+    throw new Error("Unexpected closing brace at the beginning of input");
+  }
 
   // Ensure we've consumed the entire input, unless we're stopping at a closing brace
   skipWhitespace();

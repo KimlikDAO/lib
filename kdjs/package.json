@@ -24,10 +24,11 @@
     "optimize"
   ],
   "dependencies": {
-    "acorn": "^8.12.1",
-    "acorn-walk": "^8.3.3",
+    "acorn": "^8.14.1",
+    "acorn-typescript": "^1.4.13",
+    "acorn-walk": "^8.3.4",
     "astring": "^1.9.0",
     "google-closure-compiler": "^20240317.0.0",
-    "uglify-js": "^3.19.2"
+    "uglify-js": "^3.19.3"
   }
 }

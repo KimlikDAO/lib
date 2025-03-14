@@ -6,10 +6,10 @@
 
 import base64 from "../util/base64";
 import { Signer } from "./signer";
-import "./unlockable.d";
+import { Unlockable } from "./unlockable.d";
 
 /**
- * @param {!crosschain.Unlockable} unlockable
+ * @param {!Unlockable} unlockable
  * @param {!Signer} signer
  * @param {string} address
  * @return {!Promise<string>}
@@ -44,7 +44,7 @@ const decrypt = (unlockable, signer, address) => {
  * @param {string} version
  * @param {!Signer} signer
  * @param {string} address
- * @return {!Promise<!crosschain.Unlockable>}
+ * @return {!Promise<!Unlockable>}
  */
 const encrypt = (text, userPrompt, version, signer, address) => {
   switch (version) {
@@ -61,7 +61,7 @@ const encrypt = (text, userPrompt, version, signer, address) => {
 
       /**
        * @param {!ArrayBuffer} secret
-       * @return {!Promise<!crosschain.Unlockable>}
+       * @return {!Promise<!Unlockable>}
        */
       const encryptWithSecret = (secret) =>
         crypto.subtle.importKey("raw", secret, "AES-CTR", false, ["encrypt"])
@@ -74,7 +74,7 @@ const encrypt = (text, userPrompt, version, signer, address) => {
               key,
               padded
             ))
-          .then((/** @type {!ArrayBuffer} */ encrypted) => /** @type {!crosschain.Unlockable} */({
+          .then((/** @type {!ArrayBuffer} */ encrypted) => /** @type {!Unlockable} */({
             version: "promptsign-sha256-aes-ctr",
             nonce: base64.from(counter),
             ciphertext: base64.from(new Uint8Array(encrypted)),
@@ -86,7 +86,7 @@ const encrypt = (text, userPrompt, version, signer, address) => {
       return requestSecret()
         .then(encryptWithSecret)
         .catch(() => requestSecret().then((signature) => new Promise(
-          (/** @type {function(!Promise<!crosschain.Unlockable>):void} */ resolve) =>
+          (/** @type {function(!Promise<!Unlockable>):void} */ resolve) =>
             setTimeout(() => resolve(encryptWithSecret(signature)), 200)))
         );
     }

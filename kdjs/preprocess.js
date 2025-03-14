@@ -6,23 +6,11 @@ import { combine, getDir } from "../util/paths";
 import { ExportStatement, ImportStatement } from "./modules";
 import { serializeWithStringKeys } from "./objects";
 import { Update, update } from "./textual";
+import { pathToNamespace, transpile as transpileDeclaration } from "./transpiler/declaration";
+import { resolveExtension } from "./util/resolver";
 
 const PACKAGE_EXTERNS = "node_modules/@kimlikdao/kdjs/externs/";
-
-/**
- * To be consistent with bun, we guess the extension in the following order:
- *  - jsx
- *  - js
- *
- * @param {string} fileName
- * @return {string}
- */
-const resolveExtension = (fileName) => {
-  if (existsSync(fileName)) return fileName;
-  if (existsSync(fileName + ".jsx")) return fileName + ".jsx";
-  if (existsSync(fileName + ".js")) return fileName + ".js";
-  return fileName;
-}
+const DeclarationFile = /\.d\.(js|ts)$/;
 
 /**
  * @param {ExportStatement} exportStmt
@@ -71,6 +59,12 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
     named: []
   };
 
+  // Track declaration imports and their aliases
+  /** @type {number} */
+  let lastImportEnd = 0;
+  /** @type {!Array<string>} */
+  const typeAliases = [];
+
   /**
    * @param {!acorn.Comment} comment
    */
@@ -107,7 +101,7 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
   for (const comment of comments)
     processComment(comment);
 
-  if (file.endsWith(".d.js") && !content.includes("@externs"))
+  if (DeclarationFile.test(file) && !content.includes("@externs"))
     updates.push({
       beg: 0,
       end: 0,
@@ -122,6 +116,8 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
       let nextFile = "";
       /** @type {boolean} */
       let addBack = false;
+
+      lastImportEnd = node.end;
       switch (sourceName.at(0)) {
         case "/": nextFile = sourceName.slice(1); break;
         case ".": nextFile = combine(getDir(file), sourceName); break;
@@ -138,13 +134,33 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
       nextFile = resolveExtension(nextFile);
       files.push(nextFile);
 
-      if (file.endsWith(".d.js") || nextFile.endsWith(".d.js"))
+      if (DeclarationFile.test(file))
+        updates.push({
+          beg: node.start,
+          end: node.end,
+          put: "; // imports from declaration files are removed for gcc"
+        });
+      else if (DeclarationFile.test(nextFile)) {
+        if (!nextFile.startsWith(PACKAGE_EXTERNS) && nextFile.endsWith("d.ts")) {
+          const namespace = pathToNamespace(nextFile);
+          for (const specifier of node.specifiers) {
+            if (specifier.type === "ImportDefaultSpecifier") {
+              // Default import: import name from "./path"
+              typeAliases.push(`/** @const */\nconst ${specifier.local.name} = ${namespace};`);
+            } else if (specifier.type === "ImportSpecifier") {
+              // Named import: import { name } from "./path"
+              typeAliases.push(
+                `/** @const */\nconst ${specifier.local.name} = ${namespace}.${specifier.imported.name};`
+              );
+            }
+          }
+        }
         updates.push({
           beg: node.start,
           end: node.end,
           put: "; // type only import"
         });
-      else if (nextFile.endsWith(".jsx") && !sourceName.endsWith(".jsx"))
+      } else if (nextFile.endsWith(".jsx") && !sourceName.endsWith(".jsx"))
         updates.push({
           beg: node.source.start,
           end: node.source.end,
@@ -232,9 +248,14 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
       }
     },
   }));
+  if (typeAliases.length > 0)
+    updates.push({
+      beg: lastImportEnd,
+      end: lastImportEnd + 1,
+      put: "\n" + typeAliases.join(" ")
+    });
   return update(content, updates) + exportStmtToExportMap(exportStmt);
 }
-
 
 /**
  * @param {!Object<string, *>} params
@@ -273,7 +294,10 @@ const preprocessAndIsolate = async (params, transpileFn) => {
     allFiles.add(file);
     /** @type {string} */
     let content = await readFile(file, "utf8");
-    if (!file.endsWith(".js")) {
+    if (file.endsWith(".d.ts")) {
+      content = transpileDeclaration(content, file);
+
+    } else if (!file.endsWith(".js")) {
       if (!transpileFn) throw "For non-js files please provide a transpile function: " + file;
       /** @const {?string} */
       const transpiled = transpileFn(content, file, file == entry);

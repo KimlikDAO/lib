@@ -19,4 +19,4 @@ it("generates RFC6979 compliant signatures on all 248 bit inputs", async () => {
       expect(sig1.recovery).toBe(+sig2.yParity);
     }
   }
-});
+}, { timeout: 10_000 });

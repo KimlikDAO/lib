@@ -1,0 +1,3 @@
+preload = ["./kdjs/util/plugin.js"]
+[test]
+preload = ["./kdjs/util/plugin.js"]

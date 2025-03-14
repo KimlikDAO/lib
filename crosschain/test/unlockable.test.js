@@ -1,8 +1,9 @@
-import { expect, it, describe } from "bun:test";
+import { describe, expect, it } from "bun:test";
+import { EthersSigner } from "../../ethereum/mock/ethersSigner";
 import { ChainGroup } from "../chains";
 import { MockSigner } from "../mock/signer";
 import { decrypt, encrypt } from "../unlockable";
-import { EthersSigner } from "../../ethereum/mock/ethersSigner";
+import { Unlockable } from "../unlockable.d";
 
 it("should encrypt / decrypt small text on ChainGroup.EVM", () => {
   /** @const {bigint} */
@@ -47,8 +48,8 @@ describe("Golden tests", () => {
   const signer = new EthersSigner(1337n);
 
   it("should decrypt golden text 1", () => {
-    /** @const {!crosschain.Unlockable} */
-    const unlockable = /** @type {!crosschain.Unlockable} */ ({
+    /** @const {!Unlockable} */
+    const unlockable = /** @type {!Unlockable} */ ({
       version: "promptsign-sha256-aes-ctr",
       nonce: "0+65lpD4UK01Ljy90sdYCA==",
       ciphertext: "y4GV2MBVZml0uT69UIdOKv0DEolaTgTaSOyhtz5DvWcIGB/KrjFNCxuaA" +

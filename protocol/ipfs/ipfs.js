@@ -1,5 +1,5 @@
 import base58 from "../../util/base58";
-import "./ipfs.d";
+import { AddResult } from "./ipfs.d";
 
 /**
  * Write an integer in the Continue-Bit-Encoding.
@@ -101,7 +101,7 @@ const write = (nodeUrl, data, dataType) => {
     body: formData
   })
     .then((res) => res.json())
-    .then((/** @type {protocol.ipfs.AddResult} */ res) => res.Hash)
+    .then((/** @type {!AddResult} */ res) => res.Hash)
 
   return Promise.all([hash(encoded), remoteHashPromise])
     .then(([/** !Uint8Array */ local, /** string */ remote]) => CID(local) == remote

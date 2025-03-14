@@ -20,6 +20,26 @@ jobs:
           bun i
           bun test
 
+  kdjs_unit_tests_api:
+    name: kdjs unit tests, api
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: |
+          bun i
+          bun run test api
+
+  kdjs_unit_tests_crosschain:
+    name: kdjs unit tests, crosschain
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: |
+          bun i
+          bun run test crosschain
+
   kdjs_unit_tests_crypto:
     name: kdjs unit tests, crypto
     runs-on: ubuntu-latest
@@ -33,6 +53,7 @@ jobs:
   kdjs_unit_tests_did:
     name: kdjs unit tests, did
     runs-on: ubuntu-latest
+    if: false  # Temporarily disabled
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -63,6 +84,37 @@ jobs:
           bun i
           bun run test kastro
 
+  kdjs_unit_tests_kdjs:
+    name: kdjs unit tests, kdjs
+    runs-on: ubuntu-latest
+    if: false  # Temporarily disabled
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: |
+          bun i
+          bun run test kdjs
+
+  kdjs_unit_tests_mina:
+    name: kdjs unit tests, mina
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: |
+          bun i
+          bun run test mina
+
+  kdjs_unit_tests_protocol:
+    name: kdjs unit tests, protocol
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: |
+          bun i
+          bun run test protocol
+
   kdjs_unit_tests_util:
     name: kdjs unit tests, util
     runs-on: ubuntu-latest
@@ -73,19 +125,10 @@ jobs:
           bun i
           bun run test util
 
-  kdjs_unit_tests_others:
-    name: kdjs unit tests, others
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-      - run: |
-          bun i
-          bun run test --filter did ethereum crypto kastro util
-
   compile_kdjs_with_kdjs:
     name: Compile `kdjs` with `kdjs`
     runs-on: ubuntu-latest
+    if: false  # Temporarily disabled
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2

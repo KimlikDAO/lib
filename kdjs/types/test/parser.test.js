@@ -50,6 +50,7 @@ describe("Type Parser", () => {
     const nullableMap = /** @type {!GenericType} */(parseType("?Map<string, number>"));
     expect(nullableMap).toBeInstanceOf(GenericType);
     expect(nullableMap.isNullable()).toBe(true);
+    expect(nullableMap.params.length).toBe(2);
   });
 
   it("should parse array shorthand notation", () => {
@@ -97,17 +98,28 @@ describe("Type Parser", () => {
     expect(complexUnion).toBeInstanceOf(UnionType);
     expect(complexUnion.types.length).toBe(2); // null is handled specially
     expect(complexUnion.isNullable()).toBe(true);
+
+    const nullableOptUnion = /** @type {!UnionType} */(parseType("string | bigint | null | undefined"));
+    expect(nullableOptUnion).toBeInstanceOf(UnionType);
+    expect(nullableOptUnion.types.length).toBe(2);
+    expect(nullableOptUnion.isNullable()).toBe(true);
+    expect(nullableOptUnion.isOptional()).toBe(true);
   });
 
-  // it("should respect precedence of union types", () => {
-  //   const union = parseType("(string | number)[]");
-  //   expect(union).toBeInstanceOf(GenericType);
-  //   expect(union.name).toBe("Array");
-  //   expect(union.params[0]).toBeInstanceOf(UnionType);
-  //   expect(union.params[0].types.length).toBe(2);
-  //   expect(union.params[0].types[0]).toBeInstanceOf(PrimitiveType);
-  //   expect(union.params[0].types[0].name).toBe("string");
-  // });
+  it.only("should respect precedence of union types", () => {
+    const union = /** @type {!GenericType} */(parseType("(string | number)[]"));
+    expect(union).toBeInstanceOf(GenericType);
+    expect(union.name).toBe("Array");
+    const innerUnion = /** @type {!UnionType} */(union.params[0]);
+    expect(innerUnion).toBeInstanceOf(UnionType);
+    expect(innerUnion.types.length).toBe(2);
+    const stringType = /** @type {!PrimitiveType} */(innerUnion.types[0]);
+    expect(stringType).toBeInstanceOf(PrimitiveType);
+    expect(stringType.name).toBe("string");
+    const numberType = /** @type {!PrimitiveType} */(innerUnion.types[1]);
+    expect(numberType).toBeInstanceOf(PrimitiveType);
+    expect(numberType.name).toBe("number");
+  });
 
   // it("should parse parenthesized types", () => {
   //   const parenthesized = parseType("(string | number)");

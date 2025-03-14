@@ -40,13 +40,19 @@ eth.UiProvider.prototype.on = function (eventName, handler) { };
 eth.UiProvider.prototype.removeAllListeners = function () { };
 
 /**
- * @typedef {{
- *   message: string,
- *   code: number,
- *   data: *
- * }}
+ * @struct
+ * @interface
  */
-eth.ProviderError;
+eth.ProviderError = function () { };
+
+/** @type {string} */
+eth.ProviderError.prototype.message;
+
+/** @type {number} */
+eth.ProviderError.prototype.code;
+
+/** @type {*} */
+eth.ProviderError.prototype.data;
 
 /**
  * The container object that is passed to the provider.
@@ -111,39 +117,67 @@ eth.WatchAssetParam = function () { }
 eth.WatchAssetParam.prototype.type;
 
 /**
- * @type {{
- *   address: string,
- *   symbol: string,
- *   decimals: number,
- *   image: string,
- *   tokenId: string
- * }}
+ * @struct
+ * @interface
  */
-eth.WatchAssetParam.prototype.options;
+eth.WatchAssetParamOptions = function () { }
+
+/** @type {string} */
+eth.WatchAssetParamOptions.prototype.address;
+
+/** @type {string} */
+eth.WatchAssetParamOptions.prototype.symbol;
+
+/** @type {number} */
+eth.WatchAssetParamOptions.prototype.decimals;
+
+/** @type {string} */
+eth.WatchAssetParamOptions.prototype.image;
+
+/** @type {string} */
+eth.WatchAssetParamOptions.prototype.tokenId;
 
 /**
- * @typedef {{
- *   message: string,
- *   code: number,
- *   data: *
- * }}
+ * @struct
+ * @interface
  */
-eth.ProviderRpcError = {};
+eth.ProviderRpcError = function () { };
+
+/** @type {string} */
+eth.ProviderRpcError.prototype.message;
+
+/** @type {number} */
+eth.ProviderRpcError.prototype.code;
+
+/** @type {*} */
+eth.ProviderRpcError.prototype.data;
 
 /**
- * @typedef {{
- *   uuid: string,
- *   name: string,
- *   icon: string,
- *   rdns: string
- * }}
+ * @struct
+ * @interface
  */
-eth.ProviderInfo = {};
+eth.ProviderInfo = function () { };
+
+/** @type {string} */
+eth.ProviderInfo.prototype.uuid;
+
+/** @type {string} */
+eth.ProviderInfo.prototype.name;
+
+/** @type {string} */
+eth.ProviderInfo.prototype.icon;
+
+/** @type {string} */
+eth.ProviderInfo.prototype.rdns;
 
 /**
- * @typedef {{
- *   provider: !eth.UiProvider,
- *   info: eth.ProviderInfo,
- * }}
+ * @struct
+ * @interface
  */
-eth.ProviderDetail = {};
+eth.ProviderDetail = function () { };
+
+/** @type {!eth.UiProvider} */
+eth.ProviderDetail.prototype.provider;
+
+/** @type {eth.ProviderInfo} */
+eth.ProviderDetail.prototype.info;
