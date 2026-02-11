@@ -40,8 +40,11 @@ class Parser {
    * Skips whitespace characters
    */
   skipWhitespace() {
-    while (this.pos < this.input.length && /\s/.test(this.input[this.pos]))
-      this.pos++;
+    for (; this.pos < this.input.length; ++this.pos) {
+      const ch = this.input.charCodeAt(this.pos);
+      if (ch != 32 && ch != 9 && ch != 10 && ch != 13)
+        break;
+    }
   }
 
   /**
@@ -88,7 +91,7 @@ class Parser {
    */
   testChar(ch) {
     this.skipWhitespace();
-    if (this.pos < this.input.length && this.input.charCodeAt(this.pos) === ch) {
+    if (this.input.charCodeAt(this.pos) == ch) {
       this.pos++;
       return true;
     }
@@ -101,11 +104,36 @@ class Parser {
    */
   readIdentifier() {
     this.skipWhitespace();
-    const match = /^[a-zA-Z0-9_$.]+/.exec(this.input.slice(this.pos));
-    if (!match)
+    let i = this.pos;
+    for (; i < this.input.length; ++i) {
+      const ch = this.input.charCodeAt(i);
+      // a-z: 97-122, A-Z: 65-90, 0-9: 48-57, _: 95, $: 36, .: 46
+      if (!((ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122) ||
+            (ch >= 48 && ch <= 57) || ch == 95 || ch == 36 || ch == 46))
+        break;
+    }
+    if (i == this.pos)
       throw `Expected identifier at position ${this.pos}`;
-    this.pos += match[0].length;
-    return match[0];
+    return this.input.slice(this.pos, this.pos = i);
+  }
+
+  /**
+   * Detects whether the upcoming paren group is a function type
+   * @return {boolean} Whether the group is a function type
+   */
+  detectFunctionType() {
+    let i = this.pos + 1;
+    for (let parenLevel = 1; i < this.input.length; ++i) {
+      const ch = this.input.charCodeAt(i);
+      if (ch == 40) parenLevel++;
+      else if (ch == 41 && --parenLevel == 0) break;
+    }
+    for (; ++i < this.input.length;) {
+      const ch = this.input.charCodeAt(i);
+      if (ch != 32 && ch != 9 && ch != 10 && ch != 13)
+        break;
+    }
+    return this.input.slice(i, i + 2) == "=>";
   }
 
   /**
@@ -122,7 +150,7 @@ class Parser {
 
     this.expectChar("(".charCodeAt(0));
     if (!this.testChar(")".charCodeAt(0)))
-      for (;;) {
+      for (; ;) {
         const paramName = this.readIdentifier();
 
         let isOptional = this.testChar("?".charCodeAt(0));
@@ -165,10 +193,11 @@ class Parser {
     if (!this.testChar("}".charCodeAt(0)))
       for (; ;) {
         const propName = this.readIdentifier();
-
-        const isOptional = propName.endsWith("$") | this.testChar("?".charCodeAt(0));
+        let isOptional = propName.endsWith("$") | this.testChar("?".charCodeAt(0));
         this.expectChar(":".charCodeAt(0));
         const propType = this.parseType();
+        isOptional |= this.testChar("=".charCodeAt(0));
+
         if (isOptional)
           propType.modifiers |= Modifier.Optional;
         members[propName] = propType;
@@ -180,6 +209,26 @@ class Parser {
   }
 
   /**
+   * @return {!Type}
+   * @throws {Error}
+   */
+  parseNamedType() {
+    const name = this.readIdentifier();
+    const topTypeName = TopTypeNames.get(name);
+    if (topTypeName)
+      return new TopType(topTypeName);
+
+    const primitiveName = name == "void" ? "undefined" : name;
+    if (PrimitiveNames.has(primitiveName))
+      return new PrimitiveType(primitiveName);
+
+    const params = this.parseTypeParams();
+    if (params)
+      return new GenericType(name, params);
+    return new InstanceType(name);
+  }
+
+  /**
    * Parses a type expression
    * @return {!Type} The parsed type
    * @throws {Error} If parsing fails
@@ -187,89 +236,32 @@ class Parser {
   parseType() {
     const union = new UnionType();
     for (; ;) {
-      this.skipWhitespace();
-
-      if (this.pos >= this.input.length)
-        throw new Error(`Unexpected end of input at position ${this.pos}`);
-
-      // Handle nullable prefix
       let isNullable = this.testChar("?".charCodeAt(0));
       let type;
 
-      // Handle function types
-      if (this.pos < this.input.length && this.input[this.pos] == '(') {
-        // Look ahead to see if this is a function type or just a parenthesized type
-        const startPos = this.pos;
-        this.pos++; // skip (
+      if (this.pos >= this.input.length)
+        break;
 
-        // Try to determine if this is a function type
-        let isFunctionType = false;
-        let parenLevel = 1;
-        let foundArrow = false;
-
-        // Simple lookahead to check for => after a closing parenthesis
-        for (let i = this.pos; i < this.input.length && !foundArrow; i++) {
-          if (this.input[i] == '(') parenLevel++;
-          else if (this.input[i] == ')') {
-            parenLevel--;
-            if (parenLevel == 0) {
-              // Check for => after the closing parenthesis
-              for (let j = i + 1; j < this.input.length; j++) {
-                if (/\s/.test(this.input[j])) continue;
-                if (j + 1 < this.input.length && this.input[j] == '=' && this.input[j + 1] == '>') {
-                  isFunctionType = true;
-                  foundArrow = true;
-                }
-                break;
-              }
-            }
+      switch(this.input.charCodeAt(this.pos)) {
+        case "(".charCodeAt(0):
+          if (this.detectFunctionType())
+            type = this.parseFunctionType();
+          else {
+            this.pos++; // skip (
+            type = this.parseType();
+            this.expectChar(")".charCodeAt(0));
           }
-        }
-
-        // Reset position
-        this.pos = startPos;
-
-        if (isFunctionType) {
-          type = this.parseFunctionType();
-        } else {
-          this.pos++; // skip (
-          type = this.parseType();
-          this.expectChar(")".charCodeAt(0));
-        }
-      }
-      // Handle object types with braces
-      else if (this.pos < this.input.length && this.input[this.pos] == '{') {
-        type = this.parseStructType();
-      } else {
-        let name = this.readIdentifier();
-        const topTypeName = TopTypeNames.get(name);
-        if (topTypeName) {
-          type = new TopType(topTypeName);
-        } else if (name == "void") {
-          type = new PrimitiveType(PrimitiveTypeName.Undefined);
-        } else if (PrimitiveNames.has(name)) {
-          type = new PrimitiveType(name);
-        } else {
-          // Handle generic types
-          this.skipWhitespace();
-          if (this.pos < this.input.length && this.input[this.pos] == '<') {
-            const params = this.parseTypeParams();
-            type = new GenericType(name, params);
-          } else {
-            type = new InstanceType(name);
-          }
-        }
+          break;
+        case "{".charCodeAt(0):
+          type = this.parseStructType();
+          break;
+        default:
+          type = this.parseNamedType();
       }
 
-      // Handle array notation
-      this.skipWhitespace();
-      while (this.pos < this.input.length && this.input[this.pos] == '[') {
-        this.pos++; // skip [
+      while (this.testChar("[".charCodeAt(0))) {
         this.expectChar("]".charCodeAt(0));
-
-        // Convert Type[] to Array<Type>
         const arrayType = new GenericType("Array", [type]);
-        // Transfer modifiers from the element type to the array type
         if (type.modifiers & Modifier.Nullable)
           arrayType.modifiers |= Modifier.Nullable;
         type = arrayType;
@@ -280,10 +272,8 @@ class Parser {
         type.modifiers |= Modifier.Nullable;
 
       type.addToUnion(union);
-      this.skipWhitespace();
-      if (this.pos < this.input.length && this.input[this.pos] == '|')
-        this.pos++; // skip |
-      else break;
+      if (!this.testChar("|".charCodeAt(0)))
+        break;
     }
 
     if (union.typeMap.size == 1) {
@@ -299,12 +289,13 @@ class Parser {
 
   /**
    * Parses type parameters
-   * @return {!Array<!Type>} The parsed type parameters
+   * @return {Array<!Type>} The parsed type parameters
    * @throws {Error} If parsing fails
    */
   parseTypeParams() {
     const params = [];
-    this.expectChar("<".charCodeAt(0));
+    if (!this.testChar("<".charCodeAt(0)))
+      return null;
     for (; ;) {
       params.push(this.parseType());
       if (this.expectEitherChar(",".charCodeAt(0), ">".charCodeAt(0)))
