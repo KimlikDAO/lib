@@ -98,7 +98,7 @@ const Op = {
 }
 
 /**
- * @typedef {!Uint8Array}
+ * @typedef {Uint8Array}
  */
 const OpData = Uint8Array;
 

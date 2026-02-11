@@ -4,18 +4,18 @@
  * @author KimlikDAO
  */
 
-interface Request {
+interface RpcRequest {
   readonly jsonrpc: string;
   readonly method: string;
   readonly params: unknown[];
   readonly id: number | string;
 }
 
-interface Response {
+interface RpcResponse {
   readonly jsonrpc: string;
   readonly result: unknown;
   readonly error: unknown;
   readonly id: number | string;
 }
 
-export default { Request, Response };
+export { RpcRequest, RpcResponse };

@@ -17,7 +17,7 @@ Usage: kdjs entry.js [parameters]
 Parameters:
   --output (-o)  : The name of the output file
   --print        : Print the compiled code to stdout
-  --strict       : Report unknown type
+  --strict       : Report unknown types
   --loose        : Don't perform strictTypeCheck
   --nologs       : Strip all console.log() calls
   --define       : Values for @define annotated variables

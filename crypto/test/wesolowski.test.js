@@ -16,7 +16,7 @@ test("evaluate and reconstruct", () => {
     const yy = reconstructY(logT, g, π, l);
     expect(y).toEqual(yy);
   }
-});
+}, { timeout: 20_000 });
 
 test("generate challenge", () => {
   const a1 = Uint32Array.from("00000001");

@@ -8,7 +8,7 @@ const evm = {};
 /** @typedef {string} */
 evm.address = {};
 
-/** @typedef {!Uint8Array} */
+/** @typedef {Uint8Array} */
 evm.bytes = Uint8Array;
 
 /**
@@ -26,10 +26,10 @@ const byteLength = (ops) => {
  * evm.bytes (Uint8Array).
  *
  * @param {Ops} ops
- * @return {OpData}
+ * @return {!OpData}
  */
 const toOpData = (ops) => {
-  /** @const {evm.bytes} */
+  /** @const {!evm.bytes} */
   const out = new evm.bytes(byteLength(ops));
   let /** number */ i = 0, /** number */ j = 0;
 
@@ -49,7 +49,7 @@ const toOpData = (ops) => {
 
 /**
  * @param {evm.address} addr
- * @return {OpData}
+ * @return {!OpData}
  */
 const address = (addr) => {
   if (addr.startsWith("0x")) addr = addr.slice(2);
@@ -59,10 +59,10 @@ const address = (addr) => {
 
 /**
  * @param {evm.address} addr
- * @return {OpData}
+ * @return {!OpData}
  */
 const pushAddress = (addr) => {
-  /** @const {OpData} */
+  /** @const {!Uint8Array} */
   const out = new OpData(21);
   out[0] = Op.PUSH20;
   out.set(address(addr), 1);
@@ -71,7 +71,7 @@ const pushAddress = (addr) => {
 
 /**
  * @param {bigint|number} n
- * @return {OpData}
+ * @return {!OpData}
  */
 const pushNumber = (n) => {
   if (n == 0) return new OpData([Op.PUSH0]);
@@ -79,7 +79,7 @@ const pushNumber = (n) => {
   let ser = n.toString(16);
   if (ser.length & 1) ser = "0" + ser;
   /** @const {OpData} */
-  const out = new OpData(ser.length / 2 + 1);
+  const out = new Uint8Array(ser.length / 2 + 1);
   out[0] = pushN(ser.length / 2);
   for (let i = 0, j = 1; i < ser.length; ++j, i += 2)
     out[j] = parseInt(ser.slice(i, i + 2), 16);
@@ -88,12 +88,12 @@ const pushNumber = (n) => {
 
 /**
  * @param {evm.bytes} bytes
- * @return {OpData}
+ * @return {!OpData}
  */
 const pushBytes = (bytes) => {
   if (bytes.length == 0 || bytes.length == 1 && bytes[0] == 0)
-    return new OpData([Op.PUSH0]);
-  /** @const {OpData} */
+    return new Uint8Array([Op.PUSH0]);
+  /** @const {!OpData} */
   const out = new OpData(bytes.length + 1);
   out[0] = pushN(bytes.length);
   out.set(bytes, 1);
@@ -101,7 +101,7 @@ const pushBytes = (bytes) => {
 }
 
 /**
- * @param {...OpData} opdatas
+ * @param {...!OpData} opdatas
  * @return {OpData}
  */
 const concat = (...opdatas) => {

@@ -1,7 +1,7 @@
-import { expect, test, describe } from "bun:test";
+import { expect, test } from "bun:test";
 import { OddPrimes, getNonsmooth, millerRabinBase2 } from "../primes";
 
-test("millerRabiBase2() smoke tests", () => {
+test("millerRabinBase2() smoke tests", () => {
   expect(millerRabinBase2(37n, 9n, 2,)).toBeTrue();
   expect(millerRabinBase2(41n, 10n, 2)).toBeTrue();
   expect(millerRabinBase2(17n, 1n, 4)).toBeTrue();

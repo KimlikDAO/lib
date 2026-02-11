@@ -5,7 +5,7 @@ import KPass, { TokenData, TokenInfo } from "../KPass";
 
 /**
  * @param {!TokenInfo} tokenInfo
- * @param {ChainId} chainId
+ * @param {!ChainId} chainId
  * @param {string} domainSeparator
  */
 const checkDomainSeparator = (tokenInfo, chainId, domainSeparator) => {

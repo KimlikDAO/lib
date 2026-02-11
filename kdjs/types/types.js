@@ -4,8 +4,8 @@ const Modifier = {
   Optional: 2,
   Readonly: 4,
 
-  PureOrBreakMyCode: 64,
-  NoSideEffects: 128
+  NoSideEffects: 64,
+  PureOrBreakMyCode: 128,
 };
 
 /**
@@ -13,7 +13,7 @@ const Modifier = {
  * @param {string} typeStr The type string to process
  * @return {string} The type string without prefixes
  */
-const bareType = (typeStr) =>
+const stripModifiers = (typeStr) =>
   typeStr.startsWith('!') || typeStr.startsWith('?')
     ? typeStr.substring(1) : typeStr;
 
@@ -21,6 +21,7 @@ const bareType = (typeStr) =>
  * @typedef {{
  *   toParam: (boolean|undefined),
  *   wrap: (boolean|undefined),
+ *   bare: (boolean|undefined)
  * }} Context
  */
 const Context = {};
@@ -34,12 +35,14 @@ class Type {
     this.modifiers = modifiers || 0;
   }
 
+  /** @return {boolean} */
   isNullable() {
-    return (this.modifiers & Modifier.Nullable) !== 0;
+    return !!(this.modifiers & Modifier.Nullable);
   }
 
+  /** @return {boolean} */
   isOptional() {
-    return (this.modifiers & Modifier.Optional) !== 0;
+    return !!(this.modifiers & Modifier.Optional);
   }
 
   /**
@@ -49,11 +52,94 @@ class Type {
   toClosureExpr(context) {
     throw new Error("Abstract method" + context);
   }
+
+  /**
+   * @param {!UnionType} union
+   */
+  addToUnion(union) {
+    union.addSingle(this);
+  }
+}
+
+class UnionType extends Type {
+  /**
+   * @param {!Array<!Type>=} types
+   */
+  constructor(types) {
+    super();
+    /** @type {!Map<string, !Type>} */
+    this.typeMap = new Map();
+
+    if (types)
+      for (const type of types)
+        type.addToUnion(this);
+  }
+
+  clear() {
+    this.typeMap.clear();
+  }
+
+  /** @return {!Array<!Type>} */
+  get types() {
+    return Array.from(this.typeMap.values());
+  }
+
+  /**
+   * @override
+   * @param {!UnionType} union 
+   */
+  addToUnion(union) {
+    union.modifiers |= this.modifiers;
+    for (const type of this.typeMap.values())
+      type.addToUnion(union);    
+  }
+
+  /**
+   * @param {!Type} type
+   */
+  addSingle(type) {
+    this.modifiers |= type.modifiers;
+    this.typeMap.set(type.toClosureExpr({ bare: true }), type);
+  }
+
+  /**
+   * @param {Context=} context
+   * @return {string}
+   */
+  toClosureExpr({ toParam, wrap, bare } = {}) {
+    const modifiers = bare ? 0 : this.modifiers;
+
+    if (this.typeMap.size == 1) {
+      const type = this.typeMap.values().next().value;
+      if (type instanceof TopType)
+        return type.toClosureExpr({ toParam }); 
+    }
+
+    let expr = "";
+    let separator = "";
+    for (const type of this.typeMap.values()) {
+      expr += separator + type.toClosureExpr({ bare: true });
+      separator = "|";
+    }
+    if (modifiers & Modifier.Nullable)
+      expr += "|null";
+    if ((modifiers & Modifier.Optional) && !toParam)
+      expr += "|undefined";
+    if (wrap && ( // Count whether we've added >1 types into the closure expression.
+      this.typeMap.size > 1
+      || modifiers & Modifier.Nullable 
+      || modifiers & Modifier.Optional && !toParam
+    ))
+      expr = `(${expr})`;
+    if ((modifiers & Modifier.Optional) && toParam)
+      expr += "=";
+
+    return expr;
+  }
 }
 
 /** @enum {string} */
-const PrimitiveTypes = {
-  Any: "?",
+const PrimitiveTypeName = {
   BigInt: "bigint",
   Boolean: "boolean",
   Null: "null",
@@ -61,16 +147,23 @@ const PrimitiveTypes = {
   String: "string",
   Symbol: "symbol",
   Undefined: "undefined",
+};
+
+/** @enum {string} */
+const TopTypeName = {
+  Any: "?",
   Unknown: "*",
-  Void: "void",
 };
 
 class PrimitiveType extends Type {
   /**
-   * @param {string} name
+   * @param {PrimitiveTypeName} name
    */
   constructor(name) {
-    super();
+    const modifiers = (name == PrimitiveTypeName.Null)
+      ? Modifier.Nullable : (name == PrimitiveTypeName.Undefined) 
+        ? Modifier.Optional : 0;
+    super(modifiers);
     this.name = name;
   }
 
@@ -79,11 +172,53 @@ class PrimitiveType extends Type {
    * @param {Context=} context
    * @return {string}
    */
+  toClosureExpr({ toParam, bare, wrap } = {}) {
+    const modifiers = bare ? 0 : this.modifiers;
+    let expr = this.name;
+    if (modifiers & Modifier.Nullable && this.name != PrimitiveTypeName.Null)
+      expr = "?" + expr;
+    if (modifiers & Modifier.Optional) {
+      const addingUndefined = !toParam && this.name != PrimitiveTypeName.Undefined;
+      expr += addingUndefined ? "|undefined" 
+        : toParam ? "=" : "";
+      if (wrap && addingUndefined)
+        expr = `(${expr})`;
+    }
+    return expr;
+  }
+
+  addToUnion(union) {
+    if (this.name === PrimitiveTypeName.Null || this.name === PrimitiveTypeName.Undefined)
+      union.modifiers |= this.modifiers;
+    else
+      union.addSingle(this);
+  }
+}
+
+class TopType extends Type {
+  /**
+   * @param {TopTypeName} name
+   */
+  constructor(name) {
+    super(Modifier.Nullable | Modifier.Optional);
+    this.name = name;
+  }
+
+  /**
+   * @param {!UnionType} union 
+   */
+  addToUnion(union) {
+    union.clear();
+    union.addSingle(this);
+  }
+
+  /**
+   * @override
+   * @param {Context=} context
+   * @return {string}
+   */
   toClosureExpr({ toParam } = {}) {
-    const modifiers = this.modifiers;
-    const prefix = modifiers & Modifier.Nullable ? "?" : "";
-    return prefix + this.name +
-      ((modifiers & Modifier.Optional) ? (toParam ? "=" : "|undefined") : "");
+    return this.name + (toParam ? "=" : "");
   }
 }
 
@@ -100,54 +235,17 @@ class InstanceType extends Type {
    * @param {Context=} context
    * @return {string}
    */
-  toClosureExpr({ toParam } = {}) {
-    const modifiers = this.modifiers;
-    const prefix = modifiers & Modifier.Nullable ? "" : "!";
-    return prefix + this.name +
-      ((modifiers & Modifier.Optional) ? (toParam ? "=" : "|undefined") : "");
-  }
-}
-
-class UnionType extends Type {
-  /**
-   * @param {!Array<!Type>} types
-   */
-  constructor(types) {
-    const nullIdx = types.findIndex((type) =>
-      type instanceof PrimitiveType && type.name == PrimitiveTypes.Null);
-    if (nullIdx != -1) {
-      if (nullIdx == types.length - 1) types.pop();
-      else types[nullIdx] = types.pop();
+  toClosureExpr({ toParam, bare, wrap } = {}) {
+    const modifiers = bare ? 0 : this.modifiers;
+    let expr = this.name;
+    if (!(modifiers & Modifier.Nullable))
+      expr = "!" + expr;
+    if (modifiers & Modifier.Optional) {
+      expr += toParam ? "=" : "|undefined";
+      if (!toParam && wrap)
+        expr = `(${expr})`;
     }
-    const undefIdx = types.findIndex((type) =>
-      type instanceof PrimitiveType && type.name == PrimitiveTypes.Undefined);
-    if (undefIdx != -1) {
-      if (undefIdx == types.length - 1) types.pop();
-      else types[undefIdx] = types.pop();
-    }
-    super(
-      (nullIdx == -1 ? 0 : Modifier.Nullable) |
-      (undefIdx == -1 ? 0 : Modifier.Optional)
-    );
-    this.types = types;
-  }
-
-  /**
-   * @param {Context=} context
-   * @return {string}
-   */
-  toClosureExpr({ toParam, wrap } = {}) {
-    const modifiers = this.modifiers;
-    const types = this.types
-      .map((t) => t.toClosureExpr())
-      .join("|");
-    let expr = types + (modifiers & Modifier.Nullable ? "|null" : "");
-    const optional = modifiers & Modifier.Optional;
-    if (toParam)
-      return `(${expr})${optional ? "=" : ""}`;
-    if (optional)
-      expr = expr + "|undefined";
-    return wrap ? `(${expr})` : expr;
+    return expr;
   }
 }
 
@@ -170,12 +268,21 @@ class GenericType extends Type {
    * @param {Context=} context
    * @return {string}
    */
-  toClosureExpr({ toParam } = {}) {
-    const modifiers = this.modifiers;
-    const typeParams = this.params.map(p => p.toClosureExpr()).join(",");
+  toClosureExpr({ toParam, bare, wrap } = {}) {
+    const modifiers = bare ? 0 : this.modifiers;
+
+    // Build base expression
     const typeName = this.name === "Record" ? "Object" : this.name;
-    return `${modifiers & Modifier.Nullable ? "" : "!"}${typeName}<${typeParams}>`
-      + (modifiers & Modifier.Optional ? toParam ? "=" : "|undefined" : "");
+    const typeParams = this.params.map(p => p.toClosureExpr()).join(",");
+    let expr = `${typeName}<${typeParams}>`;
+    if (!(modifiers & Modifier.Nullable))
+      expr = "!" + expr;
+    if (modifiers & Modifier.Optional) {
+      expr += toParam ? "=" : "|undefined";
+      if (!toParam && wrap)
+        expr = `(${expr})`;
+    }
+    return expr;
   }
 }
 
@@ -193,17 +300,25 @@ class StructType extends Type {
    * @param {Context=} context
    * @return {string}
    */
-  toClosureExpr({ toParam } = {}) {
+  toClosureExpr({ toParam, wrap, bare } = {}) {
+    const modifiers = bare ? 0 : this.modifiers;
     const members = this.members;
-    const modifiers = this.modifiers;
     let expr = "";
-    let sep = ""
+    let sep = "";
     for (const key in members) {
       expr += `${sep}${key}: ${members[key].toClosureExpr({ wrap: true })}`;
       sep = ", ";
     }
-    return `${modifiers & Modifier.Nullable ? "?" : ""}{ ${expr} }`
-      + (modifiers & Modifier.Optional ? toParam ? "=" : "|undefined" : "");
+    expr = `{ ${expr} }`;
+
+    if (modifiers & Modifier.Nullable)
+      expr = "?" + expr;
+    if (modifiers & Modifier.Optional) {
+      expr += toParam ? "=" : "|undefined";
+      if (!toParam && wrap)
+        expr = `(${expr})`;
+    }
+    return expr;
   }
 }
 
@@ -228,8 +343,8 @@ class FunctionType extends Type {
    * @param {Context=} context
    * @return {string}
    */
-  toClosureExpr({ toParam } = {}) {
-    const modifiers = this.modifiers;
+  toClosureExpr({ toParam, wrap, bare } = {}) {
+    const modifiers = bare ? 0 : this.modifiers;
 
     const paramTypes = this.params.map((param, i) => {
       const isOptional = i >= this.optionalAfter;
@@ -243,7 +358,7 @@ class FunctionType extends Type {
 
     // Add this type for methods
     if (this.thisType) {
-      const thisTypeStr = bareType(this.thisType.toClosureExpr());
+      const thisTypeStr = stripModifiers(this.thisType.toClosureExpr());
       functionType = `function(this:${thisTypeStr}${paramTypes ? ", " + paramTypes : ""})`;
     } else {
       functionType = `function(${paramTypes})`;
@@ -251,13 +366,23 @@ class FunctionType extends Type {
 
     // Add return type if not void
     if (!(this.returnType instanceof PrimitiveType &&
-      this.returnType.name === PrimitiveTypes.Void)) {
+      this.returnType.name == PrimitiveTypeName.Undefined)) {
       functionType += `: ${returnTypeStr}`;
     }
 
-    // Add optional/nullable modifiers
-    return functionType +
-      (modifiers & Modifier.Optional ? (toParam ? "=" : "|undefined") : "");
+    if (modifiers & Modifier.Nullable)
+      functionType = "?" + functionType;
+    if (modifiers & Modifier.Optional) {
+      functionType += toParam ? "=" : "|undefined";
+      if (!toParam && wrap)
+        functionType = `(${functionType})`;
+    }
+    return functionType;
+  }
+
+  /** @return {boolean} */
+  isMethod() {
+    return !!this.thisType;
   }
 }
 
@@ -288,8 +413,10 @@ export {
   InstanceType,
   Modifier,
   PrimitiveType,
-  PrimitiveTypes,
+  PrimitiveTypeName,
   StructType,
+  TopType,
+  TopTypeName,
   Type,
   UnionType
 };

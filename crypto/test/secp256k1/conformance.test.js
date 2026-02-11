@@ -1,4 +1,4 @@
-import { ProjectivePoint } from "@noble/secp256k1";
+import { Point as ProjectivePoint } from "@noble/secp256k1";
 import { describe, expect, it } from "bun:test";
 import { G, Point } from "../../secp256k1";
 

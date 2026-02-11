@@ -4,10 +4,10 @@ import { evm, pushAddress, pushBytes, pushNumber, toOpData } from "./types.js";
 /**
  * @param {number} offset
  * @param {evm.bytes} slot
- * @return {OpData}
+ * @return {!OpData}
  */
 const delegateCall = (offset, slot) => {
-  /** @const {OpData}  */
+  /** @const {!OpData}  */
   const pushSlot = pushBytes(slot);
   return toOpData([
     Op.CALLDATASIZE,

@@ -4,39 +4,63 @@ import {
   InstanceType,
   Modifier,
   PrimitiveType,
-  PrimitiveTypes,
+  PrimitiveTypeName,
   StructType,
+  TopType,
+  TopTypeName,
   Type,
   UnionType
 } from "./types";
 
-/**
- * @param {string} input
- * @param {boolean=} stopAtClosingBrace Whether to stop parsing when encountering an unmatched closing brace
- * @return {!Type}
- */
-const parseType = (input, stopAtClosingBrace = false) => {
-  /** @type {number} */
-  let pos = 0;
+/** @type {!Set<string>} */
+const PrimitiveNames = new Set(Object.values(PrimitiveTypeName));
 
-  const skipWhitespace = () => {
-    while (pos < input.length && /\s/.test(input[pos])) ++pos;
+/** @type {!Map<string, string>} */
+const TopTypeNames = new Map([
+  ["any", TopTypeName.Any],
+  ["unknown", TopTypeName.Unknown]
+]);
+
+/**
+ * A parser for type expressions
+ */
+class Parser {
+  /**
+   * @param {string} input The input string to parse
+   * @param {number=} pos The starting position (defaults to 0)
+   */
+  constructor(input, pos = 0) {
+    /** @const {string} */
+    this.input = input;
+    /** @private {number} */
+    this.pos = pos;
   }
 
-  /** @return {string} */
-  const readIdentifier = () => {
+  /**
+   * Skips whitespace characters
+   */
+  skipWhitespace() {
+    while (this.pos < this.input.length && /\s/.test(this.input[this.pos]))
+      this.pos++;
+  }
+
+  /**
+   * Reads an identifier
+   * @return {string} The identifier
+   */
+  readIdentifier() {
     let ident = "";
-    while (pos < input.length && /[a-zA-Z0-9_$]/.test(input[pos])) {
-      ident += input[pos++];
-    }
+    while (this.pos < this.input.length && /[a-zA-Z0-9_$]/.test(this.input[this.pos]))
+      ident += this.input[this.pos++];
     return ident;
   }
 
   /**
    * Parses a function type expression
-   * @return {!FunctionType}
+   * @return {!FunctionType} The parsed function type
+   * @throws {Error} If parsing fails
    */
-  const parseFunctionType = () => {
+  parseFunctionType() {
     /** @const {!Array<!Type>} */
     const params = [];
     let optionalAfter = 1e9;
@@ -44,379 +68,395 @@ const parseType = (input, stopAtClosingBrace = false) => {
     let thisType = null;
 
     // Handle empty parameter list
-    skipWhitespace();
-    if (input[pos] === ')') {
-      pos++; // skip )
+    this.skipWhitespace();
+    if (this.input[this.pos] == ')') {
+      this.pos++; // skip )
     } else {
       // Parse parameters
       let paramIndex = 0;
 
-      while (pos < input.length && input[pos] !== ')') {
-        skipWhitespace();
+      while (this.pos < this.input.length && this.input[this.pos] !== ')') {
+        this.skipWhitespace();
 
         // Read parameter name (required)
-        const paramName = readIdentifier();
-        if (!paramName) {
-          throw new Error(`Expected parameter name at position ${pos}`);
-        }
+        const paramName = this.readIdentifier();
+        if (!paramName)
+          throw new Error(`Expected parameter name at position ${this.pos}`);
 
-        skipWhitespace();
+        this.skipWhitespace();
 
         // Check for optional parameter with ?
         let isOptional = false;
-        if (pos < input.length && input[pos] === '?') {
+        if (this.pos < this.input.length && this.input[this.pos] == '?') {
           isOptional = true;
-          pos++; // skip ?
-          skipWhitespace();
+          this.pos++; // skip ?
+          this.skipWhitespace();
         }
 
         // Expect colon after parameter name (or after ? if optional)
-        if (pos >= input.length || input[pos] !== ':') {
-          throw new Error(`Expected ':' after parameter${isOptional ? ' optional marker' : ' name'} at position ${pos}`);
-        }
-        pos++; // skip :
-        skipWhitespace();
+        if (this.pos >= this.input.length || this.input[this.pos] !== ':')
+          throw new Error(`Expected ':' after parameter${isOptional ? ' optional marker' : ' name'} at position ${this.pos}`);
+        this.pos++; // skip :
+        this.skipWhitespace();
 
         // Special handling for 'this' parameter
-        if (paramName === 'this' && paramIndex === 0) {
-          thisType = parseUnionType();
+        if (paramName == 'this' && paramIndex == 0) {
+          thisType = this.parseType();
 
           // Skip to next parameter or end of list
-          skipWhitespace();
-          if (pos < input.length && input[pos] === ',') {
-            pos++; // skip ,
-            skipWhitespace();
+          this.skipWhitespace();
+          if (this.pos < this.input.length && this.input[this.pos] == ',') {
+            this.pos++; // skip ,
+            this.skipWhitespace();
             continue;
-          } else if (pos < input.length && input[pos] === ')') {
+          } else if (this.pos < this.input.length && this.input[this.pos] == ')') {
             break;
+          } else if (this.pos >= this.input.length) {
+            throw new Error(`Unexpected end of input after 'this' parameter at position ${this.pos}`);
           } else {
-            throw new Error(`Expected ',' or ')' after 'this' parameter at position ${pos}`);
+            throw new Error(`Expected ',' or ')' after 'this' parameter at position ${this.pos}`);
           }
         }
 
         // Parse parameter type
-        const paramType = parseUnionType();
+        const paramType = this.parseType();
 
         // Check for optional parameter with =
-        skipWhitespace();
-        if (pos < input.length && input[pos] === '=') {
+        this.skipWhitespace();
+        if (this.pos < this.input.length && this.input[this.pos] == '=') {
           isOptional = true;
-          pos++; // skip =
-          // Set optional modifier on the parameter type
-          paramType.modifiers |= Modifier.Optional;
+          this.pos++; // skip =
         }
 
-        // If this is the first optional parameter, record its position
-        if (isOptional && paramIndex < optionalAfter)
-          optionalAfter = paramIndex;
+        if (isOptional) {
+          paramType.modifiers |= Modifier.Optional;
+          if (paramIndex < optionalAfter)
+            optionalAfter = paramIndex;
+        }
 
         // Add parameter to the list
         params.push(paramType);
         paramIndex++;
 
         // Skip to next parameter or end of list
-        skipWhitespace();
-        if (pos < input.length && input[pos] === ',') {
-          pos++; // skip ,
-          skipWhitespace();
-        } else if (pos < input.length && input[pos] === ')') {
+        this.skipWhitespace();
+        if (this.pos < this.input.length && this.input[this.pos] == ',') {
+          this.pos++; // skip ,
+          this.skipWhitespace();
+        } else if (this.pos < this.input.length && this.input[this.pos] == ')') {
           break;
+        } else if (this.pos >= this.input.length) {
+          throw new Error(`Unexpected end of input after parameter at position ${this.pos}`);
         } else {
-          throw new Error(`Expected ',' or ')' after parameter at position ${pos}`);
+          throw new Error(`Expected ',' or ')' after parameter at position ${this.pos}`);
         }
       }
 
-      // Skip closing parenthesis
-      if (pos >= input.length || input[pos] !== ')') {
-        throw new Error(`Expected ')' at position ${pos}`);
+      // Skip closing parenthesis if present
+      if (this.pos < this.input.length && this.input[this.pos] == ')') {
+        this.pos++; // skip )
+      } else {
+        throw new Error(`Expected ')' at position ${this.pos}`);
       }
-      pos++; // skip )
     }
+
+    // Check if we've reached the end
+    this.skipWhitespace();
+    if (this.pos >= this.input.length)
+      throw new Error(`Unexpected end of input after parameter list at position ${this.pos}`);
 
     // Expect => for return type
-    skipWhitespace();
-    if (pos + 1 >= input.length || input[pos] !== '=' || input[pos + 1] !== '>') {
-      throw new Error(`Expected '=>' after parameter list at position ${pos}`);
-    }
-    pos += 2; // skip =>
+    if (this.pos + 1 >= this.input.length || this.input[this.pos] !== '=' || this.input[this.pos + 1] !== '>')
+      throw new Error(`Expected '=>' after parameter list at position ${this.pos}`);
+    this.pos += 2; // skip =>
 
     // Parse return type
-    skipWhitespace();
-    const returnType = parseUnionType();
+    this.skipWhitespace();
+    const returnType = this.parseType();
 
-    // If optionalAfter is still MAX_SAFE_INTEGER, all parameters are required
-    if (optionalAfter === Number.MAX_SAFE_INTEGER) {
+    // If optionalAfter is still very large, all parameters are required
+    if (optionalAfter == 1e9)
       optionalAfter = params.length;
-    }
 
-    const functionType = new FunctionType(params, returnType, optionalAfter, thisType);
-
-    return functionType;
+    return new FunctionType(params, returnType, optionalAfter, thisType);
   }
 
-  /** @return {!Type} */
-  const parseUnionType = () => {
-    const type = parseTypeExpression();
-    if (type === null) return null; // Propagate the stop signal
-
-    const types = [type];
-
-    skipWhitespace();
-    // Simplified check for closing brace
-    if (stopAtClosingBrace && pos < input.length && input[pos] === '}') {
-      return type; // Return the single type we parsed
-    }
-
-    while (pos < input.length && input[pos] === '|') {
-      pos++; // skip |
-      skipWhitespace();
-
-      const nextType = parseTypeExpression();
-      if (nextType === null) break; // Stop if we hit a closing brace
-
-      types.push(nextType);
-
-      // Check again after parsing the next expression
-      skipWhitespace();
-      if (stopAtClosingBrace && pos < input.length && input[pos] === '}') {
-        break;
-      }
-    }
-
-    return types.length === 1 ? types[0] : new UnionType(types);
-  }
 
   /**
    * Parses a struct/object type
-   * @return {!StructType}
+   * @return {!StructType} The parsed struct type
+   * @throws {Error} If parsing fails
    */
-  const parseStructType = () => {
+  parseStructType() {
     const members = {};
 
-    while (pos < input.length && input[pos] !== '}') {
-      skipWhitespace();
+    while (this.pos < this.input.length) {
+      this.skipWhitespace();
 
-      // Check for end of struct
-      if (input[pos] === '}') break;
+      // Check for closing brace to end the struct
+      if (this.input[this.pos] == '}') {
+        this.pos++; // skip }
+        break;
+      }
 
       // Read property name
-      const propName = readIdentifier();
-      if (!propName) throw new Error(`Expected property name at position ${pos}`);
+      const propName = this.readIdentifier();
+      if (!propName) throw new Error(`Expected property name at position ${this.pos}`);
 
       // Check for optional property marker
-      let isOptional = false;
-
-      // Handle the special case where property name ends with $
-      // This makes the type optional but keeps the $ in the name
-      if (propName.endsWith('$')) {
-        isOptional = true;
-      }
+      let isOptional = propName.endsWith('$');
       // Check for the standard optional property marker ?
-      else if (pos < input.length && input[pos] === '?') {
+      if (this.pos < this.input.length && this.input[this.pos] == '?') {
         isOptional = true;
-        pos++; // skip ?
+        this.pos++; // skip ?
       }
 
       // Expect colon
-      skipWhitespace();
-      if (pos >= input.length || input[pos] !== ':') {
-        throw new Error(`Expected ':' after property name at position ${pos}`);
-      }
-      pos++; // skip :
+      this.skipWhitespace();
+      if (this.pos >= this.input.length || this.input[this.pos] !== ':')
+        throw new Error(`Expected ':' after property name at position ${this.pos}`);
+      this.pos++; // skip :
 
       // Parse the property type
-      skipWhitespace();
-      let propType = parseUnionType();
+      this.skipWhitespace();
+      let propType = this.parseType();
 
       // If property is optional, set the Optional modifier
-      if (isOptional) {
+      if (isOptional)
         propType.modifiers |= Modifier.Optional;
-      }
-
-      // Store the property
       members[propName] = propType;
 
       // Skip trailing comma if present
-      skipWhitespace();
-      if (pos < input.length && input[pos] === ',') {
-        pos++; // skip ,
-      } else if (pos < input.length && input[pos] !== '}') {
-        throw new Error(`Expected ',' or '}' after property type at position ${pos}`);
+      this.skipWhitespace();
+      if (this.pos < this.input.length && this.input[this.pos] == ',') {
+        this.pos++; // skip ,
+      } else if (this.pos >= this.input.length) {
+        throw new Error(`Unexpected end of input, expected ',' or '}'`);
       }
     }
 
     return new StructType(members);
   }
 
-  /** @return {!Type} */
-  const parseTypeExpression = () => {
-    skipWhitespace();
+  /**
+   * Parses a type expression
+   * @return {!Type} The parsed type
+   * @throws {Error} If parsing fails
+   */
+  parseType() {
+    const union = new UnionType();
+    for (; ;) {
+      this.skipWhitespace();
 
-    // Simplified check for closing brace
-    if (stopAtClosingBrace && pos < input.length && input[pos] === '}') {
-      return null; // Signal to stop parsing
-    }
+      if (this.pos >= this.input.length)
+        throw new Error(`Unexpected end of input at position ${this.pos}`);
 
-    // Handle nullable prefix
-    let isNullable = false;
-    if (input[pos] === '?') {
-      isNullable = true;
-      pos++; // skip ?
-    }
+      // Handle nullable prefix
+      let isNullable = false;
+      if (this.pos < this.input.length && this.input[this.pos] == '?') {
+        isNullable = true;
+        this.pos++; // skip ?
+      }
 
-    let type;
+      let type;
 
-    // Handle function types
-    if (input[pos] === '(') {
-      // Look ahead to see if this is a function type or just a parenthesized type
-      const startPos = pos;
-      pos++; // skip (
+      // Handle function types
+      if (this.pos < this.input.length && this.input[this.pos] == '(') {
+        // Look ahead to see if this is a function type or just a parenthesized type
+        const startPos = this.pos;
+        this.pos++; // skip (
 
-      // Try to determine if this is a function type
-      let isFunctionType = false;
-      let parenLevel = 1;
-      let foundArrow = false;
+        // Try to determine if this is a function type
+        let isFunctionType = false;
+        let parenLevel = 1;
+        let foundArrow = false;
 
-      // Simple lookahead to check for => after a closing parenthesis
-      for (let i = pos; i < input.length && !foundArrow; i++) {
-        if (input[i] === '(') parenLevel++;
-        else if (input[i] === ')') {
-          parenLevel--;
-          if (parenLevel === 0) {
-            // Check for => after the closing parenthesis
-            for (let j = i + 1; j < input.length; j++) {
-              if (/\s/.test(input[j])) continue;
-              if (j + 1 < input.length && input[j] === '=' && input[j + 1] === '>') {
-                isFunctionType = true;
-                foundArrow = true;
+        // Simple lookahead to check for => after a closing parenthesis
+        for (let i = this.pos; i < this.input.length && !foundArrow; i++) {
+          if (this.input[i] == '(') parenLevel++;
+          else if (this.input[i] == ')') {
+            parenLevel--;
+            if (parenLevel == 0) {
+              // Check for => after the closing parenthesis
+              for (let j = i + 1; j < this.input.length; j++) {
+                if (/\s/.test(this.input[j])) continue;
+                if (j + 1 < this.input.length && this.input[j] == '=' && this.input[j + 1] == '>') {
+                  isFunctionType = true;
+                  foundArrow = true;
+                }
+                break;
               }
-              break;
             }
+          }
+        }
+
+        // Reset position
+        this.pos = startPos;
+
+        if (isFunctionType) {
+          this.pos++; // skip (
+          type = this.parseFunctionType();
+        } else {
+          this.pos++; // skip (
+          type = this.parseType();
+
+          // Skip closing parenthesis if present
+          if (this.pos < this.input.length && this.input[this.pos] == ')') {
+            this.pos++; // skip )
+          } else {
+            throw new Error(`Expected ')' at position ${this.pos}`);
+          }
+        }
+      }
+      // Handle object types with braces
+      else if (this.pos < this.input.length && this.input[this.pos] == '{') {
+        this.pos++; // skip {
+        type = this.parseStructType();
+      }
+      else {
+        // Handle basic types
+        const name = this.readIdentifier();
+        if (!name) throw new Error(`Expected type name at position ${this.pos}`);
+
+        const topTypeName = TopTypeNames.get(name);
+        if (topTypeName) {
+          type = new TopType(topTypeName);
+        } else if (name == "void") {
+          type = new PrimitiveType(PrimitiveTypeName.Undefined);
+        } else if (PrimitiveNames.has(name)) {
+          type = new PrimitiveType(name);
+        } else {
+          // Handle generic types
+          this.skipWhitespace();
+          if (this.pos < this.input.length && this.input[this.pos] == '<') {
+            this.pos++; // skip <
+            const params = this.parseTypeParams();
+            type = new GenericType(name, params);
+          } else {
+            type = new InstanceType(name);
           }
         }
       }
 
-      // Reset position
-      pos = startPos;
+      // Handle array notation
+      this.skipWhitespace();
+      while (this.pos < this.input.length && this.input[this.pos] == '[') {
+        this.pos++; // skip [
 
-      if (isFunctionType) {
-        pos++; // skip (
-        type = parseFunctionType();
-      } else {
-        pos++; // skip (
-        type = parseUnionType();
-        if (pos >= input.length || input[pos] !== ')') throw new Error("Expected )");
-        pos++; // skip )
+        this.skipWhitespace();
+        if (this.pos >= this.input.length)
+          throw new Error(`Unexpected end of input after '[' at position ${this.pos}`);
+
+        if (this.pos >= this.input.length || this.input[this.pos] !== ']')
+          throw new Error(`Expected ']' at position ${this.pos}`);
+        this.pos++; // skip ]
+
+        // Convert Type[] to Array<Type>
+        const arrayType = new GenericType("Array", [type]);
+        // Transfer modifiers from the element type to the array type
+        if (type.modifiers & Modifier.Nullable)
+          arrayType.modifiers |= Modifier.Nullable;
+        type = arrayType;
       }
-    }
-    // Handle object types with braces
-    else if (input[pos] === '{') {
-      pos++; // skip {
-      type = parseStructType();
-      if (pos >= input.length || input[pos] !== '}') throw new Error("Expected }");
-      pos++; // skip }
-    }
-    else {
-      // Handle basic types
-      const name = readIdentifier();
-      if (!name) throw new Error(`Expected type name at ${pos}`);
 
-      // Special handling for primitive types
-      if (Object.values(PrimitiveTypes).includes(name)) {
-        type = new PrimitiveType(name);
-      } else {
-        // Handle generic types
-        skipWhitespace();
-        if (pos < input.length && input[pos] === '<') {
-          pos++; // skip <
-          const params = parseTypeParams();
-          type = new GenericType(name, params);
-        } else {
-          type = new InstanceType(name);
-        }
+      // Handle nullable suffix
+      if (this.pos < this.input.length && this.input[this.pos] == '?') {
+        isNullable = true;
+        this.pos++; // skip ?
       }
+
+      if (isNullable)
+        type.modifiers |= Modifier.Nullable;
+
+      type.addToUnion(union);
+
+      this.skipWhitespace();
+      if (this.pos < this.input.length && this.input[this.pos] == '|')
+        this.pos++; // skip |
+      else break;
     }
 
-    // Set nullable modifier if needed
-    if (isNullable) {
-      type.modifiers |= Modifier.Nullable;
-    }
+    if (union.typeMap.size == 1) {
+      const type = union.typeMap.values().next().value;
+      type.modifiers |= union.modifiers;
+      return type;
+    } else if (union.typeMap.size == 0)
+      return new PrimitiveType(union.isNullable()
+        ? PrimitiveTypeName.Null : PrimitiveTypeName.Undefined);
 
-    // Handle array notation
-    skipWhitespace();
-    while (pos < input.length && input[pos] === '[') {
-      pos++; // skip [
-      if (pos >= input.length || input[pos] !== ']') throw new Error("Expected ]");
-      pos++; // skip ]
-      // Convert Type[] to Array<Type>
-      const arrayType = new GenericType("Array", [type]);
-      // Transfer modifiers from the element type to the array type
-      if (type.modifiers & Modifier.Nullable) {
-        arrayType.modifiers |= Modifier.Nullable;
-      }
-      type = arrayType;
-    }
-
-    // Handle nullable suffix
-    skipWhitespace();
-    if (pos < input.length && input[pos] === '?') {
-      pos++; // skip ?
-      type.modifiers |= Modifier.Nullable;
-    }
-
-    return type;
+    return union;
   }
 
-  /** @return {!Array<!Type>} */
-  const parseTypeParams = () => {
+  /**
+   * Parses type parameters
+   * @return {!Array<!Type>} The parsed type parameters
+   * @throws {Error} If parsing fails
+   */
+  parseTypeParams() {
     const params = [];
-    while (pos < input.length && input[pos] !== '>') {
-      params.push(parseUnionType()); // Parse unions in type params
-      skipWhitespace();
-      if (pos < input.length && input[pos] === ',') {
-        pos++;
-        skipWhitespace();
+    while (this.pos < this.input.length && this.input[this.pos] !== '>') {
+      const paramType = this.parseType();
+      params.push(paramType);
+
+      this.skipWhitespace();
+      if (this.pos < this.input.length && this.input[this.pos] == ',') {
+        this.pos++;
+        this.skipWhitespace();
+      } else if (this.pos >= this.input.length) {
+        throw new Error(`Unexpected end of input, expected ',' or '>' at position ${this.pos}`);
+      } else if (this.input[this.pos] !== '>') {
+        throw new Error(`Expected ',' or '>' at position ${this.pos}, found '${this.input[this.pos]}'`);
       }
     }
-    if (pos >= input.length) throw new Error("Unexpected end of input, expected '>'");
-    pos++; // skip >
+
+    if (this.pos >= this.input.length)
+      throw new Error(`Unexpected end of input, expected '>' at position ${this.pos}`);
+
+    if (this.input[this.pos] == '>')
+      this.pos++; // skip >
+    else
+      throw new Error(`Expected '>' at position ${this.pos}`);
+
     return params;
   }
 
-  const result = parseUnionType();
-  if (result === null) {
-    throw new Error("Unexpected closing brace at the beginning of input");
+  /**
+   * Gets the current position in the input
+   * @return {number} The current position
+   */
+  getPosition() {
+    return this.pos;
   }
-
-  // Ensure we've consumed the entire input, unless we're stopping at a closing brace
-  skipWhitespace();
-  if (!stopAtClosingBrace && pos < input.length) {
-    throw new Error(`Unexpected characters at position ${pos}: ${input.slice(pos)}`);
-  }
-
-  return result;
 }
 
 /**
- * Parses a type expression from a JSDoc comment.
- * @param {string} input - The JSDoc type expression, including the curly braces
- * @return {!Type}
+ * Parses a type expression and returns both the parsed type and the position where parsing ended
+ * @param {string} input The input string to parse
+ * @param {number=} startPos Optional starting position (defaults to 0)
+ * @return {{type: !Type, endPos: number}} The parsed type and the position where parsing ended
+ * @throws {Error} If parsing fails
  */
-const parseJSDocType = (input) => {
-  // Find the opening brace
-  const openBraceIndex = input.indexOf('{');
-  if (openBraceIndex === -1) {
-    throw new Error("No opening brace found in JSDoc type");
-  }
+const parseTypePrefix = (input, startPos = 0) => {
+  const parser = new Parser(input, startPos);
+  const type = parser.parseType();
+  const endPos = parser.getPosition();
 
-  // Extract the content between braces, but include the closing brace
-  // so the parser can detect it and stop
-  const typeExpression = input.substring(openBraceIndex + 1);
+  return {
+    type,
+    endPos
+  };
+};
 
-  // Parse with the stopAtClosingBrace flag set to true
-  return parseType(typeExpression, true);
-}
+/**
+ * Parses a type expression and returns only the parsed type
+ * @param {string} input The input string to parse
+ * @return {!Type} The parsed type
+ * @throws {Error} If parsing fails
+ */
+const parseType = (input) => new Parser(input).parseType();
 
 export {
-  parseJSDocType, parseType
+  Parser,
+  parseTypePrefix,
+  parseType
 };

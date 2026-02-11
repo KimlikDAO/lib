@@ -1,5 +1,5 @@
 import * as swc from "@swc/core";
-import ClosureCompiler from "google-closure-compiler";
+import { compiler as ClosureCompiler } from "google-closure-compiler";
 import { writeFile } from "node:fs/promises";
 import UglifyJS from "uglify-js";
 import { ImportStatement } from "./modules";
@@ -44,7 +44,7 @@ const compile = async (params, checkFreshFn, transpileFn) => {
   if (ignoreUnusedLocals)
     jsCompErrors.shift();
 
-  /** @const {ClosureCompiler.Options} */
+  /** @const {!Object<string, string|boolean|!Array<string>>} */
   const options = {
     "js": allFilesArray,
     "compilation_level": "ADVANCED",
@@ -65,7 +65,7 @@ const compile = async (params, checkFreshFn, transpileFn) => {
   if (params["define"])
     options["define"] = /** @type {(!Array<string>|boolean|string)} */(params["define"]);
 
-  const closureCompiler = new ClosureCompiler.compiler(options);
+  const closureCompiler = new ClosureCompiler(options);
   closureCompiler.spawnOptions = {
     "cwd": isolateDir
   };

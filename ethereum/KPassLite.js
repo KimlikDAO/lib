@@ -42,7 +42,7 @@ const hasKPass = (provider, chainId, addr) => handleOf(provider, chainId, addr).
  * @return {!Promise<!Array<boolean>>}
  */
 const hasKPasses = (providerURLs, addresses) => {
-  /** @const {!Array<ChainId>} */
+  /** @const {!Array<!ChainId>} */
   const chains = Object.keys(providerURLs);
 
   /** @const {!Promise<!Array<!Array<boolean>>>} */

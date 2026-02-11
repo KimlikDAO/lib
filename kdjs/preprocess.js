@@ -279,7 +279,7 @@ const preprocessAndIsolate = async (params, transpileFn) => {
 
   const unlinkedImports = new Map();
   /** @const {!Array<string>} */
-  const externs = [PACKAGE_EXTERNS + "html5.d.js"].concat(params["externs"] || []);
+  const externs = params["externs"] || [];
   /** @const {!Array<string>} */
   const files = [entry, ...externs];
   /** @const {!Set<string>} */

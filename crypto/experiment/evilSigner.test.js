@@ -12,11 +12,14 @@ it("generates RFC6979 compliant signatures on all 248 bit inputs", async () => {
       const digest = new Uint8Array(32);
       digest.set(/** @type {!Uint8Array} */(crypto.getRandomValues(new Uint8Array(31))), 1);
 
-      const sig1 = await signAsync(digest, privKey, { lowS: true });
+
+      const sig1 = await signAsync(digest, privKeyBytes, { prehash: false, lowS: true, format: "recovered" });
       const sig2 = await signEvil(digest, privKey);
-      expect(sig1.r).toBe(sig2.r);
-      expect(sig1.s).toBe(sig2.s);
-      expect(sig1.recovery).toBe(+sig2.yParity);
+      const r1 = bigints.fromBytesBE(sig1.subarray(1, 33));
+      const s1 = bigints.fromBytesBE(sig1.subarray(33, 65));
+      expect(r1).toBe(sig2.r);
+      expect(s1).toBe(sig2.s);
+      expect(sig1[0]).toBe(+sig2.yParity);
     }
   }
 }, { timeout: 10_000 });

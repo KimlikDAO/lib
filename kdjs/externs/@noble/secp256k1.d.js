@@ -31,16 +31,14 @@ ProjectivePoint.prototype.add = function (other) { }
 ProjectivePoint.prototype.toAffine = function () { }
 
 /**
- * @param {!Uint8Array|string} digest
- * @param {bigint|string} privKey
+ * @param {!Uint8Array} digest
+ * @param {!Uint8Array} privKey
  * @param {{
+ *   prehash: (boolean|undefined),
  *   lowS: (boolean|undefined),
- *   extraEntropy: (!Uint8Array|boolean|undefined)
+ *   extraEntropy: (!Uint8Array|boolean|undefined),
+ *   format: (string|undefined)
  * }} options
- * @return {!Promise<{
- *   r: bigint,
- *   s: bigint,
- *   recovery: number
- * }>}
+ * @return {!Promise<!Uint8Array>}
  */
 const signAsync = function (digest, privKey, options) { }
