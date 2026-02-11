@@ -252,7 +252,7 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
     updates.push({
       beg: lastImportEnd,
       end: lastImportEnd + 1,
-      put: "\n" + typeAliases.join(" ")
+      put: "\n" + typeAliases.join("\n")
     });
   return update(content, updates) + exportStmtToExportMap(exportStmt);
 }
@@ -296,7 +296,6 @@ const preprocessAndIsolate = async (params, transpileFn) => {
     let content = await readFile(file, "utf8");
     if (file.endsWith(".d.ts")) {
       content = transpileDeclaration(content, file);
-
     } else if (!file.endsWith(".js")) {
       if (!transpileFn) throw "For non-js files please provide a transpile function: " + file;
       /** @const {?string} */

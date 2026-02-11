@@ -45,14 +45,67 @@ class Parser {
   }
 
   /**
+   * Skips whitespace and expects a specific character
+   * @param {number} ch The expected character code
+   */
+  expectChar(ch) {
+    this.skipWhitespace();
+    if (this.pos >= this.input.length || this.input.charCodeAt(this.pos) !== ch) {
+      throw `Expected '${String.fromCharCode(ch)}' at position ${this.pos}`;
+    }
+    this.pos++; // skip expected character
+  }
+
+  /**
+   * Skips whitespace and expects either of two specific characters
+   * @param {number} ch1 The first expected character code
+   * @param {number} ch2 The second expected character code
+   * @return {boolean} Whether the second character was found (true) or the first (false)
+   */
+  expectEitherChar(ch1, ch2) {
+    this.skipWhitespace();
+    if (this.pos >= this.input.length || (this.input.charCodeAt(this.pos) != ch1 && this.input.charCodeAt(this.pos) != ch2)) {
+      throw `Expected '${String.fromCharCode(ch1)}' or '${String.fromCharCode(ch2)}' at position ${this.pos}`;
+    }
+    return this.input.charCodeAt(this.pos++) == ch2;
+  }
+
+  /**
+   * Skips whitespace and expects a specific string
+   * @param {string} value The expected string
+   */
+  expect(value) {
+    this.skipWhitespace();
+    if (this.input.slice(this.pos, this.pos + value.length) != value)
+      throw `Expected '${value}' at position ${this.pos}`;
+    this.pos += value.length;
+  }
+
+  /**
+   * Skips whitespace and consumes a character if present
+   * @param {number} ch The character code to consume
+   * @return {boolean} Whether the character was consumed
+   */
+  testChar(ch) {
+    this.skipWhitespace();
+    if (this.pos < this.input.length && this.input.charCodeAt(this.pos) === ch) {
+      this.pos++;
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Reads an identifier
    * @return {string} The identifier
    */
   readIdentifier() {
-    let ident = "";
-    while (this.pos < this.input.length && /[a-zA-Z0-9_$]/.test(this.input[this.pos]))
-      ident += this.input[this.pos++];
-    return ident;
+    this.skipWhitespace();
+    const match = /^[a-zA-Z0-9_$.]+/.exec(this.input.slice(this.pos));
+    if (!match)
+      throw `Expected identifier at position ${this.pos}`;
+    this.pos += match[0].length;
+    return match[0];
   }
 
   /**
@@ -67,120 +120,39 @@ class Parser {
     /** @type {Type} */
     let thisType = null;
 
-    // Handle empty parameter list
-    this.skipWhitespace();
-    if (this.input[this.pos] == ')') {
-      this.pos++; // skip )
-    } else {
-      // Parse parameters
-      let paramIndex = 0;
-
-      while (this.pos < this.input.length && this.input[this.pos] !== ')') {
-        this.skipWhitespace();
-
-        // Read parameter name (required)
+    this.expectChar("(".charCodeAt(0));
+    if (!this.testChar(")".charCodeAt(0)))
+      for (;;) {
         const paramName = this.readIdentifier();
-        if (!paramName)
-          throw new Error(`Expected parameter name at position ${this.pos}`);
 
-        this.skipWhitespace();
-
-        // Check for optional parameter with ?
-        let isOptional = false;
-        if (this.pos < this.input.length && this.input[this.pos] == '?') {
-          isOptional = true;
-          this.pos++; // skip ?
-          this.skipWhitespace();
-        }
-
-        // Expect colon after parameter name (or after ? if optional)
-        if (this.pos >= this.input.length || this.input[this.pos] !== ':')
-          throw new Error(`Expected ':' after parameter${isOptional ? ' optional marker' : ' name'} at position ${this.pos}`);
-        this.pos++; // skip :
-        this.skipWhitespace();
-
-        // Special handling for 'this' parameter
-        if (paramName == 'this' && paramIndex == 0) {
-          thisType = this.parseType();
-
-          // Skip to next parameter or end of list
-          this.skipWhitespace();
-          if (this.pos < this.input.length && this.input[this.pos] == ',') {
-            this.pos++; // skip ,
-            this.skipWhitespace();
-            continue;
-          } else if (this.pos < this.input.length && this.input[this.pos] == ')') {
-            break;
-          } else if (this.pos >= this.input.length) {
-            throw new Error(`Unexpected end of input after 'this' parameter at position ${this.pos}`);
-          } else {
-            throw new Error(`Expected ',' or ')' after 'this' parameter at position ${this.pos}`);
-          }
-        }
-
-        // Parse parameter type
+        let isOptional = this.testChar("?".charCodeAt(0));
+        this.expectChar(":".charCodeAt(0));
         const paramType = this.parseType();
-
-        // Check for optional parameter with =
-        this.skipWhitespace();
-        if (this.pos < this.input.length && this.input[this.pos] == '=') {
-          isOptional = true;
-          this.pos++; // skip =
-        }
+        isOptional |= this.testChar("=".charCodeAt(0));
 
         if (isOptional) {
           paramType.modifiers |= Modifier.Optional;
-          if (paramIndex < optionalAfter)
-            optionalAfter = paramIndex;
+          if (params.length < optionalAfter)
+            optionalAfter = params.length;
         }
 
-        // Add parameter to the list
-        params.push(paramType);
-        paramIndex++;
-
-        // Skip to next parameter or end of list
-        this.skipWhitespace();
-        if (this.pos < this.input.length && this.input[this.pos] == ',') {
-          this.pos++; // skip ,
-          this.skipWhitespace();
-        } else if (this.pos < this.input.length && this.input[this.pos] == ')') {
+        if (paramName == "this") {
+          thisType = paramType;
+          if (params.length != 0)
+            throw `'this' parameter must be the first parameter at position ${this.pos}`;
+        } else
+          params.push(paramType);
+        if (this.expectEitherChar(",".charCodeAt(0), ")".charCodeAt(0)))
           break;
-        } else if (this.pos >= this.input.length) {
-          throw new Error(`Unexpected end of input after parameter at position ${this.pos}`);
-        } else {
-          throw new Error(`Expected ',' or ')' after parameter at position ${this.pos}`);
-        }
       }
 
-      // Skip closing parenthesis if present
-      if (this.pos < this.input.length && this.input[this.pos] == ')') {
-        this.pos++; // skip )
-      } else {
-        throw new Error(`Expected ')' at position ${this.pos}`);
-      }
-    }
-
-    // Check if we've reached the end
-    this.skipWhitespace();
-    if (this.pos >= this.input.length)
-      throw new Error(`Unexpected end of input after parameter list at position ${this.pos}`);
-
-    // Expect => for return type
-    if (this.pos + 1 >= this.input.length || this.input[this.pos] !== '=' || this.input[this.pos + 1] !== '>')
-      throw new Error(`Expected '=>' after parameter list at position ${this.pos}`);
-    this.pos += 2; // skip =>
-
-    // Parse return type
-    this.skipWhitespace();
+    this.expect("=>");
     const returnType = this.parseType();
-
-    // If optionalAfter is still very large, all parameters are required
     if (optionalAfter == 1e9)
       optionalAfter = params.length;
 
     return new FunctionType(params, returnType, optionalAfter, thisType);
   }
-
 
   /**
    * Parses a struct/object type
@@ -189,52 +161,21 @@ class Parser {
    */
   parseStructType() {
     const members = {};
+    this.expectChar("{".charCodeAt(0));
+    if (!this.testChar("}".charCodeAt(0)))
+      for (; ;) {
+        const propName = this.readIdentifier();
 
-    while (this.pos < this.input.length) {
-      this.skipWhitespace();
+        const isOptional = propName.endsWith("$") | this.testChar("?".charCodeAt(0));
+        this.expectChar(":".charCodeAt(0));
+        const propType = this.parseType();
+        if (isOptional)
+          propType.modifiers |= Modifier.Optional;
+        members[propName] = propType;
 
-      // Check for closing brace to end the struct
-      if (this.input[this.pos] == '}') {
-        this.pos++; // skip }
-        break;
+        if (this.expectEitherChar(",".charCodeAt(0), "}".charCodeAt(0)))
+          break;
       }
-
-      // Read property name
-      const propName = this.readIdentifier();
-      if (!propName) throw new Error(`Expected property name at position ${this.pos}`);
-
-      // Check for optional property marker
-      let isOptional = propName.endsWith('$');
-      // Check for the standard optional property marker ?
-      if (this.pos < this.input.length && this.input[this.pos] == '?') {
-        isOptional = true;
-        this.pos++; // skip ?
-      }
-
-      // Expect colon
-      this.skipWhitespace();
-      if (this.pos >= this.input.length || this.input[this.pos] !== ':')
-        throw new Error(`Expected ':' after property name at position ${this.pos}`);
-      this.pos++; // skip :
-
-      // Parse the property type
-      this.skipWhitespace();
-      let propType = this.parseType();
-
-      // If property is optional, set the Optional modifier
-      if (isOptional)
-        propType.modifiers |= Modifier.Optional;
-      members[propName] = propType;
-
-      // Skip trailing comma if present
-      this.skipWhitespace();
-      if (this.pos < this.input.length && this.input[this.pos] == ',') {
-        this.pos++; // skip ,
-      } else if (this.pos >= this.input.length) {
-        throw new Error(`Unexpected end of input, expected ',' or '}'`);
-      }
-    }
-
     return new StructType(members);
   }
 
@@ -252,12 +193,7 @@ class Parser {
         throw new Error(`Unexpected end of input at position ${this.pos}`);
 
       // Handle nullable prefix
-      let isNullable = false;
-      if (this.pos < this.input.length && this.input[this.pos] == '?') {
-        isNullable = true;
-        this.pos++; // skip ?
-      }
-
+      let isNullable = this.testChar("?".charCodeAt(0));
       let type;
 
       // Handle function types
@@ -294,30 +230,18 @@ class Parser {
         this.pos = startPos;
 
         if (isFunctionType) {
-          this.pos++; // skip (
           type = this.parseFunctionType();
         } else {
           this.pos++; // skip (
           type = this.parseType();
-
-          // Skip closing parenthesis if present
-          if (this.pos < this.input.length && this.input[this.pos] == ')') {
-            this.pos++; // skip )
-          } else {
-            throw new Error(`Expected ')' at position ${this.pos}`);
-          }
+          this.expectChar(")".charCodeAt(0));
         }
       }
       // Handle object types with braces
       else if (this.pos < this.input.length && this.input[this.pos] == '{') {
-        this.pos++; // skip {
         type = this.parseStructType();
-      }
-      else {
-        // Handle basic types
-        const name = this.readIdentifier();
-        if (!name) throw new Error(`Expected type name at position ${this.pos}`);
-
+      } else {
+        let name = this.readIdentifier();
         const topTypeName = TopTypeNames.get(name);
         if (topTypeName) {
           type = new TopType(topTypeName);
@@ -329,7 +253,6 @@ class Parser {
           // Handle generic types
           this.skipWhitespace();
           if (this.pos < this.input.length && this.input[this.pos] == '<') {
-            this.pos++; // skip <
             const params = this.parseTypeParams();
             type = new GenericType(name, params);
           } else {
@@ -342,14 +265,7 @@ class Parser {
       this.skipWhitespace();
       while (this.pos < this.input.length && this.input[this.pos] == '[') {
         this.pos++; // skip [
-
-        this.skipWhitespace();
-        if (this.pos >= this.input.length)
-          throw new Error(`Unexpected end of input after '[' at position ${this.pos}`);
-
-        if (this.pos >= this.input.length || this.input[this.pos] !== ']')
-          throw new Error(`Expected ']' at position ${this.pos}`);
-        this.pos++; // skip ]
+        this.expectChar("]".charCodeAt(0));
 
         // Convert Type[] to Array<Type>
         const arrayType = new GenericType("Array", [type]);
@@ -359,17 +275,11 @@ class Parser {
         type = arrayType;
       }
 
-      // Handle nullable suffix
-      if (this.pos < this.input.length && this.input[this.pos] == '?') {
-        isNullable = true;
-        this.pos++; // skip ?
-      }
-
+      isNullable |= this.testChar("?".charCodeAt(0));
       if (isNullable)
         type.modifiers |= Modifier.Nullable;
 
       type.addToUnion(union);
-
       this.skipWhitespace();
       if (this.pos < this.input.length && this.input[this.pos] == '|')
         this.pos++; // skip |
@@ -394,29 +304,12 @@ class Parser {
    */
   parseTypeParams() {
     const params = [];
-    while (this.pos < this.input.length && this.input[this.pos] !== '>') {
-      const paramType = this.parseType();
-      params.push(paramType);
-
-      this.skipWhitespace();
-      if (this.pos < this.input.length && this.input[this.pos] == ',') {
-        this.pos++;
-        this.skipWhitespace();
-      } else if (this.pos >= this.input.length) {
-        throw new Error(`Unexpected end of input, expected ',' or '>' at position ${this.pos}`);
-      } else if (this.input[this.pos] !== '>') {
-        throw new Error(`Expected ',' or '>' at position ${this.pos}, found '${this.input[this.pos]}'`);
-      }
+    this.expectChar("<".charCodeAt(0));
+    for (; ;) {
+      params.push(this.parseType());
+      if (this.expectEitherChar(",".charCodeAt(0), ">".charCodeAt(0)))
+        break;
     }
-
-    if (this.pos >= this.input.length)
-      throw new Error(`Unexpected end of input, expected '>' at position ${this.pos}`);
-
-    if (this.input[this.pos] == '>')
-      this.pos++; // skip >
-    else
-      throw new Error(`Expected '>' at position ${this.pos}`);
-
     return params;
   }
 
@@ -440,11 +333,7 @@ const parseTypePrefix = (input, startPos = 0) => {
   const parser = new Parser(input, startPos);
   const type = parser.parseType();
   const endPos = parser.getPosition();
-
-  return {
-    type,
-    endPos
-  };
+  return { type, endPos };
 };
 
 /**

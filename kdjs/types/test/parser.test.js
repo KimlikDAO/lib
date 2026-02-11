@@ -80,6 +80,13 @@ describe("Primitives, TopTypes and simple UnionTypes", () => {
     expect(nullableType.name).toBe("string");
     expect(nullableType.isNullable()).toBe(true);
   });
+
+  it("parses scoped instance types", () => {
+    const scopedType = /** @type {!InstanceType} */(parseType("namespace.MyClass"));
+    expect(scopedType).toBeInstanceOf(InstanceType);
+    expect(scopedType.name).toBe("namespace.MyClass");
+    expect(scopedType.isNullable()).toBe(false);
+  });
 });
 
 describe("Unions", () => {
@@ -305,6 +312,15 @@ describe("Functions", () => {
     expect(basicFn.returnType.name).toBe("undefined");
     expect(basicFn.optionalAfter).toBe(0);
   });
+
+  test("whitespace", () => {
+    const basicFn = parseType("( )=>void");
+    expect(basicFn).toBeInstanceOf(FunctionType);
+    expect(basicFn.params.length).toBe(0);
+    expect(basicFn.returnType).toBeInstanceOf(PrimitiveType);
+    expect(basicFn.returnType.name).toBe("undefined");
+    expect(basicFn.optionalAfter).toBe(0);
+  })
 
   it("parses (a:string,b:number)=>boolean", () => {
     const fnWithParams = parseType("(a: string, b: number) => boolean");

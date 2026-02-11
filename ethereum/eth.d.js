@@ -23,7 +23,7 @@ eth.PackedAddress;
 eth.WideSignature;
 
 /**
- * A string of length 128 denoting a comapct signature where s and yParity are
+ * A string of length 128 denoting a compact signature where s and yParity are
  * packed into a single uint128.
  * @see {@link evm.signCompact}
  * @see {@link evm.compactSignature}
