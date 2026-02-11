@@ -14,7 +14,7 @@ function Provider() { }
 Provider.prototype.isInitialized = function () { }
 
 /**
- * @param {*} nativeProvider
+ * @param {any} nativeProvider
  */
 Provider.prototype.setNativeProvider = function (nativeProvider) { }
 
@@ -25,8 +25,8 @@ Provider.prototype.downloadURL = function () { }
 
 /**
  * @param {ChainId} chain
- * @param {function(ChainId)} chainChanged
- * @param {function(!Array<string>)} addressChanged
+ * @param {(chainId: ChainId) => void} chainChanged
+ * @param {(addresses: string[]) => void} addressChanged
  * @param {boolean=} onlyIfApproved
  * @return {Promise<void>|void}
  */
@@ -50,7 +50,7 @@ Provider.prototype.switchChain = function (chain) { }
 Provider.prototype.isChainSupported = function (chain) { }
 
 /**
- * @type {?}
+ * @type {any}
  */
 Provider.prototype.nativeProvider;
 

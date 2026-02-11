@@ -24,7 +24,7 @@ const ChainGroup = {
  * iterating over this array. This way the `ChainGroup` enum can be completely
  * optimized away.
  *
- * @const {!Array<ChainGroup>}
+ * @const {ChainGroup[]}
  */
 const ChainGroups = [ChainGroup.EVM, ChainGroup.MINA];
 

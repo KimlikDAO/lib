@@ -38,36 +38,36 @@ class Point {
   constructor(x, y, z) { }
 
   /**
-   * @return {!Point}
+   * @return {Point}
    */
   project() { }
 
   /**
    * Negates the point in place.
-   * @return {!Point}
+   * @return {Point}
    */
   negate() { }
 
   /**
    * Doubles the point in place.
-   * @return {!Point}
+   * @return {Point}
    */
   double() { }
 
   /**
-   * @param {!Point} other
-   * @return {!Point}
+   * @param {Point} other
+   * @return {Point}
    */
   increment(other) { }
 
   /**
    * @param {bigint} n
-   * @return {!Point}
+   * @return {Point}
    */
   multiply(n) { }
 
   /**
-   * @return {!Point}
+   * @return {Point}
    */
   copy() { }
 }

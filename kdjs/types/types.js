@@ -395,14 +395,13 @@ class ConstructorType extends FunctionType {
    * @param {number=} optionalAfter
    */
   constructor(instanceType, extendsType, implementsTypes, params, optionalAfter) {
-    super(params, instanceType, optionalAfter);
+    super(params, new PrimitiveType(PrimitiveTypeName.Undefined), optionalAfter, instanceType);
     this.extendsType = extendsType;
     this.implementsTypes = implementsTypes;
   }
 
-  toClosureExpr() {
-    const paramStr = this.params.map(p => p.toClosureExpr()).join(",");
-    return `function(new:${this.returnType.toClosureExpr()}${paramStr ? "," + paramStr : ""})`;
+  toClosureExpr(context) {
+    return super.toClosureExpr(context).replace("this:", "new:");
   }
 }
 

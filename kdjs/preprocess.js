@@ -7,6 +7,7 @@ import { ExportStatement, ImportStatement } from "./modules";
 import { serializeWithStringKeys } from "./objects";
 import { Update, update } from "./textual";
 import { pathToNamespace, transpile as transpileDeclaration } from "./transpiler/declaration";
+import { transpile as transpileJsDoc } from "./transpiler/jsdoc";
 import { resolveExtension } from "./util/resolver";
 
 const PACKAGE_EXTERNS = "node_modules/@kimlikdao/kdjs/externs/";
@@ -70,7 +71,11 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
    */
   const processComment = (comment) => {
     const defineIdx = comment.value.indexOf("@define");
-    if (defineIdx == -1) return;
+    if (defineIdx == -1) {
+      const ups = transpileJsDoc(comment);
+      updates.push(...ups);
+      return;
+    };
     const constDeclIndex = content.indexOf("const", comment.end);
     if (constDeclIndex == -1) return;
     const equalIndex = content.indexOf("=", constDeclIndex);

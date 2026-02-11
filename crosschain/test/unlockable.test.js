@@ -8,7 +8,7 @@ import { Unlockable } from "../unlockable.d";
 it("should encrypt / decrypt small text on ChainGroup.EVM", () => {
   /** @const {bigint} */
   const privKey = 0x1337ACCn;
-  /** @const {!MockSigner} */
+  /** @const {MockSigner} */
   const signer = new MockSigner(privKey);
   /** @const {string} */
   const text = "Text to encrypt";
@@ -27,7 +27,7 @@ it("should encrypt / decrypt small text on ChainGroup.EVM", () => {
 it("should encrypt / decrypt large text on ChainGroup.EVM", () => {
   /** @const {bigint} */
   const privKey = 0x1337ADD3n;
-  /** @const {!MockSigner} */
+  /** @const {MockSigner} */
   const signer = new MockSigner(privKey);
   /** @const {string} */
   const text = "Text to encrypt".repeat(1000);
@@ -44,12 +44,12 @@ it("should encrypt / decrypt large text on ChainGroup.EVM", () => {
 });
 
 describe("Golden tests", () => {
-  /** @const {!EthersSigner} */
+  /** @const {EthersSigner} */
   const signer = new EthersSigner(1337n);
 
   it("should decrypt golden text 1", () => {
-    /** @const {!Unlockable} */
-    const unlockable = /** @type {!Unlockable} */ ({
+    /** @const {Unlockable} */
+    const unlockable = /** @type {Unlockable} */ ({
       version: "promptsign-sha256-aes-ctr",
       nonce: "0+65lpD4UK01Ljy90sdYCA==",
       ciphertext: "y4GV2MBVZml0uT69UIdOKv0DEolaTgTaSOyhtz5DvWcIGB/KrjFNCxuaA" +

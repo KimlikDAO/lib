@@ -1,4 +1,5 @@
 import {
+  ConstructorType,
   FunctionType,
   GenericType,
   InstanceType,
@@ -137,6 +138,46 @@ class Parser {
   }
 
   /**
+   * Parses a constructor type expression
+   * @return {ConstructorType | null} The parsed constructor type
+   * @throws {Error} If parsing fails
+   */
+  parseConstructorType() {
+    if (!this.test("new ")) return null;
+
+    /** @const {!Array<!Type>} */
+    const params = [];
+    let optionalAfter = 1e9;
+
+    this.expectChar("(".charCodeAt(0));
+    if (!this.testChar(")".charCodeAt(0)))
+      for (; ;) {
+        const paramName = this.readIdentifier();
+        let isOptional = this.testChar("?".charCodeAt(0));
+        this.expectChar(":".charCodeAt(0));
+        const paramType = this.parseType();
+        isOptional |= this.testChar("=".charCodeAt(0));
+
+        if (isOptional) {
+          paramType.modifiers |= Modifier.Optional;
+          if (params.length < optionalAfter)
+            optionalAfter = params.length;
+        }
+
+        params.push(paramType);
+        if (this.expectEitherChar(",".charCodeAt(0), ")".charCodeAt(0)))
+          break;
+      }
+
+    this.expect("=>");
+    const instanceType = this.parseType();
+    if (optionalAfter == 1e9)
+      optionalAfter = params.length;
+
+    return new ConstructorType(instanceType, null, [], params, optionalAfter);
+  }
+
+  /**
    * Parses a function type expression
    * @return {!FunctionType} The parsed function type
    * @throws {Error} If parsing fails
@@ -255,6 +296,11 @@ class Parser {
         case "{".charCodeAt(0):
           type = this.parseStructType();
           break;
+        case "n".charCodeAt(0):
+          type = this.parseConstructorType();
+          if (type)
+            break;
+          // fallthrough
         default:
           type = this.parseNamedType();
       }
@@ -262,8 +308,6 @@ class Parser {
       while (this.testChar("[".charCodeAt(0))) {
         this.expectChar("]".charCodeAt(0));
         const arrayType = new GenericType("Array", [type]);
-        if (type.modifiers & Modifier.Nullable)
-          arrayType.modifiers |= Modifier.Nullable;
         type = arrayType;
       }
 
@@ -317,14 +361,22 @@ class Parser {
  * Parses a type expression and returns both the parsed type and the position where parsing ended
  * @param {string} input The input string to parse
  * @param {number=} startPos Optional starting position (defaults to 0)
- * @return {{type: !Type, endPos: number}} The parsed type and the position where parsing ended
+ * @return {{
+ *   type: !Type,
+ *   endPos: number,
+ *   paramOpt: boolean
+ * }} The parsed type and the position where parsing ended
  * @throws {Error} If parsing fails
  */
 const parseTypePrefix = (input, startPos = 0) => {
   const parser = new Parser(input, startPos);
   const type = parser.parseType();
+  const paramOpt = parser.testChar("=".charCodeAt(0));
+  if (paramOpt)
+    type.modifiers |= Modifier.Optional;
+  parser.skipWhitespace();
   const endPos = parser.getPosition();
-  return { type, endPos };
+  return { type, endPos, paramOpt };
 };
 
 /**

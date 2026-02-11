@@ -1,5 +1,5 @@
 import { describe, expect, it, test } from "bun:test";
-import { parseType } from "../parser";
+import { parseType, parseTypePrefix } from "../parser";
 import {
   FunctionType,
   GenericType,
@@ -151,6 +151,14 @@ describe("Arrays", () => {
     const nestedStringType = /** @type {!PrimitiveType} */(nestedStringArray.params[0]);
     expect(nestedStringType).toBeInstanceOf(PrimitiveType);
     expect(nestedStringType.name).toBe("string");
+  });
+
+  it("parses (number|bigint)[]=", () => {
+    const { type, paramOpt } = /** @type {!GenericType} */(
+      parseTypePrefix("(number | bigint)[]="));
+    expect(type).toBeInstanceOf(GenericType);
+    expect(type.isOptional()).toBeTrue();
+    expect(paramOpt).toBeTrue();
   });
 })
 
