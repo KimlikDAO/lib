@@ -42,5 +42,5 @@ eth.ERC721Metadata.prototype.youtube_url;
  */
 eth.ERC721Unlockable = function () { }
 
-/** @type {!Object<string, !crosschain.Unlockable>} */
+/** @type {Record<string, crosschain.Unlockable>} */
 eth.ERC721Unlockable.prototype.unlockables;

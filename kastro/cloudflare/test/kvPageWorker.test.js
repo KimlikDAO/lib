@@ -6,10 +6,10 @@ import { Context, ModuleWorker } from "../moduleWorker.d";
 import { CfRequest } from "../types.d";
 
 globalThis["caches"] = {};
-globalThis["caches"]["default"] = /** @type {!Cache} */({
+globalThis["caches"]["default"] = /** @type {Cache} */({
   /**
    * @param {string} key
-   * @return {!Promise<Response>}
+   * @return {Promise<Response | null>}
    */
   match(key) {
     return Promise.resolve(null);
@@ -17,7 +17,7 @@ globalThis["caches"]["default"] = /** @type {!Cache} */({
 
   /**
    * @param {string} key
-   * @param {!Response} res
+   * @param {Response} res
    */
   put(key, res) { return Promise.resolve(); },
 });
@@ -27,10 +27,10 @@ const env = /** @type {KvPageWorkerEnv} */({
   KV: new MockKeyValue()
 });
 
-/** @const {!Context} */
-const ctx = /** @type {!Context} */({
+/** @const {Context} */
+const ctx = /** @type {Context} */({
   /**
-   * @param {!Promise<*>} promise
+   * @param {Promise<unknown>} promise
    */
   waitUntil(promise) { }
 })
@@ -39,14 +39,14 @@ const ctx = /** @type {!Context} */({
  * @param {string} url
  * @param {string} encoding
  * @param {string} cookie
- * @return {!CfRequest}
+ * @return {CfRequest}
  */
-const createRequest = (url, encoding, cookie) => /** @type {!CfRequest} */({
+const createRequest = (url, encoding, cookie) => /** @type {CfRequest} */({
   url,
   headers: {
     /**
      * @param {string} key
-     * @return {?string}
+     * @return {string | null}
      */
     get(key) { return key.toLowerCase() == "cookie" ? cookie : ""; }
   },
@@ -57,7 +57,7 @@ const createRequest = (url, encoding, cookie) => /** @type {!CfRequest} */({
 
 const testKvName = (url, acceptEncoding, cookie, kvName) => it(
   `returns the correct result for ${acceptEncoding}, ${cookie}, ${kvName}`,
-  () => /** @type {!Promise<Response>} */(
+  () => /** @type {Promise<Response>} */(
     KvPageWorker.fetch(
       createRequest(url, acceptEncoding, cookie), env, ctx))
     .then((res) => res.text())

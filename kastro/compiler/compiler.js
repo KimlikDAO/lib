@@ -72,7 +72,7 @@ const populateChildTargets = (props) => {
 
 /**
  * @param {Props} props
- * @return {!Promise<string>}
+ * @return {Promise<string>}
  */
 const computeDepHash = (props) => {
   populateChildTargets(props);
@@ -212,7 +212,7 @@ const bundleTarget = (targetName, props) => props.BuildMode == BuildMode.Dev
       PIGGYBACK_ASSETS[piggybackUrl] = contentHashStr;
       return piggybackUrl;
     }
-    /** @const {!Promise<void>} */
+    /** @const {Promise<void>} */
     const bundle = mkdir("build/bundle", { recursive: true })
       .catch(() => { })
       .then(() =>

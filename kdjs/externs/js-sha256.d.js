@@ -2,7 +2,7 @@
 const sha256 = {};
 
 /**
- * @param {!Uint8Array|!Array<number>|string} arr
- * @return {!Array<number>}
+ * @param {Uint8Array|number[]|string} arr
+ * @return {number[]}
  */
 sha256.array = function (arr) { }

@@ -17,7 +17,7 @@ const Fragment = "";
  * We also have an obsolete i18n mechanism through the data-{LangCode} attribute.
  * We still support it but we don't use it in new code.
  *
- * @param {!Object} props
+ * @param {Record<string, unknown>} props
  * @param {LangCode} lang
 */
 const resolveComponentProps = (props, lang) => {
@@ -54,7 +54,7 @@ const resolveComponentProps = (props, lang) => {
  * Otherwise, we eagerly start rendering the subtree and prune the tree when
  * the rendering is finished.
  *
- * @param {!Object} props
+ * @param {Record<string, unknown>} props
  */
 const resolveElementProps = (props) => {
   for (const key in props)
@@ -88,7 +88,7 @@ const jsx = (name, props = {}) => {
   }
 
   const normalizedChildren = [].concat(prop.children || []);
-  /** @const {function(): !Promise<string>} */
+  /** @const {function(): Promise<string>} */
   const renderChildren = () => Promise.all(
     normalizedChildren
       .flat()

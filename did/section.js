@@ -18,7 +18,7 @@ const hashExposureReport = (exposureReport) => {
    * 16 bytes signatureTs (big endian),
    * 32 bytes exposureReport.id
    *
-   * @const {!Uint8Array} */
+   * @const {Uint8Array} */
   const buff = new Uint8Array(64);
   new TextEncoder().encodeInto(KIMLIKDAO_HASH_PREFIX, buff);
   bigints.intoBytesBE(buff, 32, exposureReport.signatureTs);
@@ -37,7 +37,7 @@ const hashHumanID = (humanID) => {
    * 32 bytes commitment,
    * 32 bytes humanID.id
    *
-   * @const {!Uint8Array} */
+   * @const {Uint8Array} */
   const buff = new Uint8Array(96);
   new TextEncoder().encodeInto(KIMLIKDAO_HASH_PREFIX, buff);
   bigints.intoBytesBE(buff, 32, humanID.signatureTs);

@@ -2,7 +2,7 @@ import { compareImpls } from "../../testing/bench";
 import { poseidon } from "../minaPoseidon";
 import { mont, mul, P, unmont } from "../montgomery";
 
-/** @const {!Array<bigint>} */
+/** @const {bigint[]} */
 const arr = new Array(2000);
 arr[0] = 1337n;
 arr[1] = 3169n;

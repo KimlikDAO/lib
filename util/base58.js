@@ -5,7 +5,7 @@
 const Base58Chars = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
 /**
- * @const {!Array<number>}
+ * @const {number[]}
  */
 const Base58Map = Array(256);
 for (let i = 0; i < Base58Chars.length; ++i)
@@ -13,11 +13,11 @@ for (let i = 0; i < Base58Chars.length; ++i)
 
 /**
  * @nosideeffects
- * @param {!Uint8Array|!Array<number>} bytes
+ * @param {Uint8Array|number[]} bytes
  * @return {string}
  */
 const from = (bytes) => {
-  /** @const {!Array<number>} */
+  /** @const {number[]} */
   const codes = [];
 
   for (const byte of bytes) {
@@ -41,12 +41,12 @@ const from = (bytes) => {
 /**
  * @nosideeffects
  * @param {string} str
- * @return {!Uint8Array}
+ * @return {Uint8Array}
  */
 const toBytes = (str) => {
   /** @const {number} */
   const n = str.length;
-  /** @const {!Array<number>} */
+  /** @const {number[]} */
   const bytes = [];
   for (let i = 0; i < n; ++i) {
     let carry = Base58Map[str.charCodeAt(i)];

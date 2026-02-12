@@ -6,7 +6,7 @@ import { getDir } from "../../util/paths";
  * Converts a TTF font file to WOFF2 format.
  *
  * @param {string} inputFile - The path to the input TTF file.
- * @return {!Promise<void>} A promise that resolves when the conversion is complete.
+ * @return {Promise<void>} A promise that resolves when the conversion is complete.
  */
 const woff2 = (inputFile) => spawn({
   cmd: [

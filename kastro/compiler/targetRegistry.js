@@ -4,7 +4,7 @@ import { ContentHash, DependencyHash } from "./hash";
 /**
  * @typedef {{
  *   targetName: (string|undefined)
- *   content: !Uint8Array,
+ *   content: Uint8Array,
  *   contentHash: ContentHash,
  *   depHash: (DependencyHash|undefined)
  * }}
@@ -13,7 +13,7 @@ const Target = {};
 
 /**
  * A target function
- * @typedef {function(string, Props): !Promise<Target|string|!Uint8Array|void>}
+ * @typedef {function(string, Props): Promise<Target|string|Uint8Array|void>}
  */
 const TargetFunction = {};
 

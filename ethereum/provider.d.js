@@ -12,8 +12,8 @@ import eth from "./eth.d";
 eth.Provider = function () { }
 
 /**
- * @param {!eth.Request} params
- * @return {!Promise<string>|!Promise<!Array<string>>}
+ * @param {eth.Request} params
+ * @return {Promise<string>|Promise<string[]>}
  **/
 eth.Provider.prototype.request = function (params) { };
 
@@ -30,12 +30,12 @@ eth.UiProvider.prototype.isConnected = function () { };
 
 /**
  * @param {string} eventName
- * @param {function(?)} handler
+ * @param {(event: any) => void} handler
  */
 eth.UiProvider.prototype.on = function (eventName, handler) { };
 
 /**
- * @return {!eth.UiProvider}
+ * @return {eth.UiProvider}
  */
 eth.UiProvider.prototype.removeAllListeners = function () { };
 
@@ -51,7 +51,7 @@ eth.ProviderError.prototype.message;
 /** @type {number} */
 eth.ProviderError.prototype.code;
 
-/** @type {*} */
+/** @type {unknown} */
 eth.ProviderError.prototype.data;
 
 /**
@@ -98,10 +98,10 @@ eth.AddChainParam.prototype.chainName;
  */
 eth.AddChainParam.prototype.nativeCurrency;
 
-/** @const {!Array<string>} */
+/** @const {string[]} */
 eth.AddChainParam.prototype.rpcUrls;
 
-/** @const {!Array<string>} */
+/** @const {string[]} */
 eth.AddChainParam.prototype.blockExplorerUrls;
 
 /**
@@ -149,7 +149,7 @@ eth.ProviderRpcError.prototype.message;
 /** @type {number} */
 eth.ProviderRpcError.prototype.code;
 
-/** @type {*} */
+/** @type {unknown} */
 eth.ProviderRpcError.prototype.data;
 
 /**
@@ -176,7 +176,7 @@ eth.ProviderInfo.prototype.rdns;
  */
 eth.ProviderDetail = function () { };
 
-/** @type {!eth.UiProvider} */
+/** @type {eth.UiProvider} */
 eth.ProviderDetail.prototype.provider;
 
 /** @type {eth.ProviderInfo} */

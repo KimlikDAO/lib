@@ -39,20 +39,20 @@ TokenInfo.prototype.basamak;
 /** @const {number} */
 TokenInfo.prototype.sürüm;
 
-/** @const {!Object<ChainId, !Array<TokenInfo>>} */
+/** @const {Record<ChainId, TokenInfo[]>} */
 const TokenData = {
   [ChainId.x1]: [
-    null, /** @type {!TokenInfo} */({
+    null, /** @type {TokenInfo} */({
       adres: "dAC17F958D2ee523a2206206994597C13D831ec7".toLowerCase(),
       uzunAd: "Tether USD",
       basamak: 6,
       sürüm: 0
-    }), /** @type {!TokenInfo} */({
+    }), /** @type {TokenInfo} */({
       adres: "A0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48".toLowerCase(),
       uzunAd: "USD Coin",
       basamak: 6,
       sürüm: 2
-    }), /** @type {!TokenInfo} */({
+    }), /** @type {TokenInfo} */({
       adres: "2C537E5624e4af88A7ae4060C022609376C8D0EB".toLowerCase(),
       uzunAd: "BiLira",
       basamak: 6,
@@ -60,17 +60,17 @@ const TokenData = {
     })
   ],
   [ChainId.xa86a]: [
-    null, /** @type {!TokenInfo} */({
+    null, /** @type {TokenInfo} */({
       adres: "9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7".toLowerCase(),
       uzunAd: "TetherToken",
       basamak: 6,
       sürüm: 1
-    }), /** @type {!TokenInfo} */({
+    }), /** @type {TokenInfo} */({
       adres: "B97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E".toLowerCase(),
       uzunAd: "USD Coin",
       basamak: 6,
       sürüm: 2
-    }), /** @type {!TokenInfo} */({
+    }), /** @type {TokenInfo} */({
       adres: "564A341Df6C126f90cf3ECB92120FD7190ACb401".toLowerCase(),
       uzunAd: "BiLira",
       basamak: 6,
@@ -85,17 +85,17 @@ const TokenData = {
   // after the above fields. User-agents should accept fields in any order as
   // specified by the EIPT712Domain type."
   [ChainId.x89]: [
-    null, /** @type {!TokenInfo} */({
+    null, /** @type {TokenInfo} */({
       adres: "c2132D05D31c914a87C6611C10748AEb04B58e8F".toLowerCase(),
       uzunAd: "(PoS) Tether USD",
       basamak: 6,
       sürüm: 0
-    }), /** @type {!TokenInfo} */({
+    }), /** @type {TokenInfo} */({
       adres: "2791Bca1f2de4661ED88A30C99A7a9449Aa84174".toLowerCase(),
       uzunAd: "USD Coin (PoS)",
       basamak: 6,
       sürüm: 0
-    }), /** @type {!TokenInfo} */({
+    }), /** @type {TokenInfo} */({
       adres: "4Fb71290Ac171E1d144F7221D882BECAc7196EB5".toLowerCase(),
       uzunAd: "BiLira",
       basamak: 6,
@@ -103,12 +103,12 @@ const TokenData = {
     })
   ],
   [ChainId.xa4b1]: [
-    null, /** @type {!TokenInfo} */({
+    null, /** @type {TokenInfo} */({
       adres: "Fd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9".toLowerCase(),
       uzunAd: "Tether USD",
       basamak: 6,
       sürüm: 1
-    }), /** @type {!TokenInfo} */({
+    }), /** @type {TokenInfo} */({
       adres: "FF970A61A04b1cA14834A43f5dE4533eBDDB5CC8".toLowerCase(),
       uzunAd: "USD Coin (Arb1)",
       basamak: 6,
@@ -116,12 +116,12 @@ const TokenData = {
     }), null
   ],
   [ChainId.x38]: [
-    null, null, /** @type {!TokenInfo} */({
+    null, null, /** @type {TokenInfo} */({
       adres: "8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d".toLowerCase(),
       uzunAd: "USD Coin",
       basamak: 18,
       sürüm: 0
-    }), /** @type {!TokenInfo} */({
+    }), /** @type {TokenInfo} */({
       adres: "C1fdbed7Dac39caE2CcC0748f7a80dC446F6a594".toLowerCase(),
       uzunAd: "BiLira",
       basamak: 6,
@@ -131,8 +131,8 @@ const TokenData = {
   [ChainId.MinaMainnet]: [null, null, null, null]
 };
 
-/** @type {!eth.Provider} */
-let Provider = /** @type {!eth.Provider} */({
+/** @type {eth.Provider} */
+let Provider = /** @type {eth.Provider} */({
   request: (req) => {
     console.log(req)
     return Promise.resolve("");
@@ -140,7 +140,7 @@ let Provider = /** @type {!eth.Provider} */({
 });
 
 /**
- * @param {!eth.Provider} provider
+ * @param {eth.Provider} provider
  */
 const setProvider = (provider) => Provider = provider;
 
@@ -152,9 +152,9 @@ const setProvider = (provider) => Provider = provider;
  * @param {ChainId} chainId
  * @param {string} tokenId
  */
-const addToWallet = (chainId, tokenId) => Provider.request(/** @type {!eth.Request} */({
+const addToWallet = (chainId, tokenId) => Provider.request(/** @type {eth.Request} */({
   method: 'wallet_watchAsset',
-  params: /** @type {!eth.WatchAssetParam} */({
+  params: /** @type {eth.WatchAssetParam} */({
     type: 'ERC721',
     options: {
       address: KPass.getAddress(chainId),
@@ -170,24 +170,24 @@ const addToWallet = (chainId, tokenId) => Provider.request(/** @type {!eth.Reque
  * @param {string} value value in native token, encoded as a hex string.
  * @param {number | undefined} gas
  * @param {string} calldata hex encoded calldata.
- * @return {!Promise<string>} transaction hash
+ * @return {Promise<string>} transaction hash
  */
 const sendTransactionTo = (from, to, value, gas, calldata) => {
-  /** @type {!eth.Transaction} */
-  let tx = /** @type {!eth.Transaction} */({
+  /** @type {eth.Transaction} */
+  let tx = /** @type {eth.Transaction} */({
     from,
     to,
     value: "0x" + value,
     data: calldata
   });
   if (gas) tx.gas = "0x" + gas.toString(16);
-  return Provider.request(/** @type {!eth.Request} */({
+  return Provider.request(/** @type {eth.Request} */({
     method: "eth_sendTransaction",
     params: [tx]
   }));
 }
 
-/** @const {!Object<ChainId, boolean>} */
+/** @const {Record<ChainId, boolean>} */
 const NO_GAS_ESTIMATE = {
   "0xa4b1": true,
   "0x144": true,
@@ -208,19 +208,19 @@ const maybeGasLimit = (chainId, gasLimit) => chainId in NO_GAS_ESTIMATE
  * @param {string} value value in native tokens, encoded as a hex string.
  * @param {number | undefined} gas
  * @param {string} calldata hex encoded calldata.
- * @return {!Promise<string>} transaction hash
+ * @return {Promise<string>} transaction hash
  */
 const sendTransaction = (chainId, address, value, gas, calldata) =>
   sendTransactionTo(address, KPass.getAddress(chainId), value, gas, calldata);
 
-/** @const {!Object<string, string>} */
+/** @const {Record<string, string>} */
 const NonceCache = {};
 
 /**
  * @param {ChainId} chainId
  * @param {string} address Owner address including the 0x.
  * @param {number} token
- * @return {!Promise<string>} The nonce for (chain, token, address).
+ * @return {Promise<string>} The nonce for (chain, token, address).
  */
 const getNonce = (chainId, address, token) => {
   const cached = NonceCache[chainId + address + token];
@@ -236,14 +236,14 @@ const getNonce = (chainId, address, token) => {
 /**
  * @param {ChainId} chainId
  * @param {string} address
- * @return {!Promise<string>}
+ * @return {Promise<string>}
  */
 const handleOf = (chainId, address) => KPass.handleOf(Provider, chainId, address);
 
 /**
  * @param {ChainId} chainId
  * @param {string} sender
- * @return {!Promise<number>}
+ * @return {Promise<number>}
  */
 const revokesRemaining = (chainId, sender) =>
   callMethod(Provider, KPass.getAddress(chainId), "0x165c44f3", sender)
@@ -253,7 +253,7 @@ const revokesRemaining = (chainId, sender) =>
  * @param {ChainId} chainId
  * @param {string} address
  * @param {number} deltaWeight
- * @return {!Promise<*>}
+ * @return {Promise<unknown>}
  */
 const reduceRevokeThreshold = (chainId, address, deltaWeight) =>
   sendTransaction(chainId, address, "0", maybeGasLimit(chainId, 22_000),
@@ -264,7 +264,7 @@ const reduceRevokeThreshold = (chainId, address, deltaWeight) =>
  * @param {string} address
  * @param {number} deltaWeight revoker weight.
  * @param {string} revokerAddress revoker address.
- * @return {!Promise<*>}
+ * @return {Promise<unknown>}
  */
 const addRevoker = (chainId, address, deltaWeight, revokerAddress) =>
   sendTransaction(chainId, address, "0", maybeGasLimit(chainId, 49_000),
@@ -273,7 +273,7 @@ const addRevoker = (chainId, address, deltaWeight, revokerAddress) =>
 /**
  * @param {ChainId} chainId
  * @param {string} address
- * @return {!Promise<*>}
+ * @return {Promise<unknown>}
  */
 const revoke = (chainId, address) =>
   sendTransaction(chainId, address, "0", maybeGasLimit(chainId, 53_000), "0xb6549f75");
@@ -282,7 +282,7 @@ const revoke = (chainId, address) =>
  * @param {ChainId} chainId
  * @param {string} address
  * @param {string} friend
- * @return {!Promise<*>}
+ * @return {Promise<unknown>}
  */
 const revokeFriend = (chainId, address, friend) =>
   sendTransaction(chainId, address, "0", maybeGasLimit(chainId, 80_000),
@@ -293,14 +293,12 @@ const revokeFriend = (chainId, address, friend) =>
  *
  * @param {ChainId} chainId
  * @param {string} revoker
- * @return {!Promise<!Array<{
- *   topics: !Array<string>
- * }>>}
+ * @return {Promise<{ topics: string[] }[]>}
  */
 const getRevokeeAddresses = (chainId, revoker) =>
-  Provider.request(/** @type {!eth.Request} */({
+  Provider.request(/** @type {eth.Request} */({
     method: "eth_getLogs",
-    params: [/** @type {!eth.GetLogs} */({
+    params: [/** @type {eth.GetLogs} */({
       address: KPass.getAddress(chainId),
       fromBlock: "0x12A3AE7",
       toBlock: "0x12A3AE7",
@@ -317,8 +315,8 @@ const getRevokeeAddresses = (chainId, revoker) =>
  * @param {string} address
  * @param {string} cid
  * @param {number} revokeThreshold
- * @param {!Object<string, number>} revokers
- * @return {!Promise<*>}
+ * @param {Record<string, number>} revokers
+ * @return {Promise<unknown>}
  */
 const createWithRevokers = (chainId, address, cid, revokeThreshold, revokers) =>
   priceIn(chainId, 0).then(([high, low]) => {
@@ -334,7 +332,7 @@ const createWithRevokers = (chainId, address, cid, revokeThreshold, revokers) =>
 /**
  * @param {number} revokeThreshold The threshold for vote weight after which
  *                                 the KPass is revoked.
- * @param {!Object<string, number>} revokers (Address, weight) pairs for the
+ * @param {Record<string, number>} revokers (Address, weight) pairs for the
  *                                           revokers.
  * @return {string} serialized revoker list.
  */
@@ -357,9 +355,9 @@ const serializeRevokers = (revokeThreshold, revokers) => {
  * @param {string} address
  * @param {string} cid
  * @param {number} revokeThreshold
- * @param {!Object<string, number>} revokers
+ * @param {Record<string, number>} revokers
  * @param {string} signature as a length 64 hex string.
- * @return {!Promise<*>}
+ * @return {Promise<unknown>}
  */
 const createWithRevokersWithTokenPermit = (chainId, address, cid, revokeThreshold, revokers, signature) =>
   revokeThreshold == 0
@@ -374,9 +372,9 @@ const createWithRevokersWithTokenPermit = (chainId, address, cid, revokeThreshol
  * @param {string} address
  * @param {string} cid
  * @param {number} revokeThreshold
- * @param {!Object<string, number>} revokers
+ * @param {Record<string, number>} revokers
  * @param {number} token
- * @return {!Promise<*>}
+ * @return {Promise<unknown>}
  */
 const createWithRevokersWithTokenPayment = (chainId, address, cid, revokeThreshold, revokers, token) => {
   /** @const {string} */
@@ -392,7 +390,7 @@ const createWithRevokersWithTokenPayment = (chainId, address, cid, revokeThresho
 /**
  * @param {ChainId} chainId
  * @param {number} token
- * @return {!Promise<!Array<number>>} price of KPass in the given currency
+ * @return {Promise<number[]>} price of KPass in the given currency
  */
 const priceIn = (chainId, token) => {
   if (chainId == "0x38" && token == 0)
@@ -406,7 +404,7 @@ const priceIn = (chainId, token) => {
     "0xfa": [2_300_000, 1 * MILLION, 1 * MILLION, 19 * MILLION, 0],
     "0x144": [600, 1 * MILLION, 1 * MILLION, 19 * MILLION, 0],
 
-    "m:berkeley": [MILLION],
+    "mina:berkeley": [MILLION],
   }
   return Promise.resolve([
     fiyat[chainId][token] * 1.5, fiyat[chainId][token]
@@ -415,7 +413,7 @@ const priceIn = (chainId, token) => {
 
 /**
  * @param {ChainId} chainId
- * @return {!Promise<number>}
+ * @return {Promise<number>}
  */
 const estimateNetworkFee = (chainId) => {
   const placeholder = {
@@ -427,7 +425,7 @@ const estimateNetworkFee = (chainId) => {
     "0x406": 100,
     "0xfa": 200,
     "0x144": 200,
-    "m:berkeley": 200
+    "mina:berkeley": 200
   }
   return Promise.resolve(placeholder[chainId]);
 }
@@ -443,7 +441,7 @@ const getDeadline = () => 60 * 60 + (Date.now() / 1000 | 0);
  * @param {ChainId} chainId
  * @param {string} address     Address of the message sender (asset owner also).
  * @param {number} token       A ERC20 token address to get the approval from.
- * @return {!Promise<*>}
+ * @return {Promise<unknown>}
  */
 const getApprovalFor = (chainId, address, token) => sendTransactionTo(
   address,
@@ -459,15 +457,15 @@ const getApprovalFor = (chainId, address, token) => sendTransactionTo(
  *                               [1..3].
  * @param {boolean} withRevokers Whether the user has set up valid revokers to
  *                               qualify for a discount.
- * @return {!Promise<string>}    Calldata serialized permission.
+ * @return {Promise<string>}    Calldata serialized permission.
  */
 const getPermitFor = (chainId, owner, token, withRevokers) =>
   Promise.all([priceIn(chainId, token), getNonce(chainId, owner, token)])
-    .then(([/** !Array<number> */ price, /** string */ nonce]) => {
+    .then(([/** @type {number[]} */ price, /** @type {string} */ nonce]) => {
       /** @const {string} */
       const deadline = evm.uint96(getDeadline());
-      /** @const {!TokenInfo} */
-      const tokenData = /** @type {!TokenInfo} */(TokenData[chainId][token]);
+      /** @const {TokenInfo} */
+      const tokenData = /** @type {TokenInfo} */(TokenData[chainId][token]);
       /** @const {string} */
       const typedSignData = JSON.stringify({
         "types": {
@@ -500,7 +498,7 @@ const getPermitFor = (chainId, owner, token, withRevokers) =>
           "deadline": "0x" + deadline
         }
       });
-      return Provider.request(/** @type {!eth.Request} */({
+      return Provider.request(/** @type {eth.Request} */({
         method: "eth_signTypedData_v4",
         params: [owner, typedSignData]
       })).then((/** @type {string} */ signature) =>

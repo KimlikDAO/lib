@@ -17,7 +17,7 @@ const KIMLIKDAO_VERIFIABLE_ID_ITERATIONS = 1 << 20;
 
 /**
  * @param {string} privateKey A base64 encoded RSA private key.
- * @return {!Promise<!webCrypto.CryptoKey>}
+ * @return {Promise<!webCrypto.CryptoKey>}
  */
 const prepareGenerateKey = (privateKey) => crypto.subtle.importKey(
   "pkcs8",
@@ -31,13 +31,13 @@ const prepareGenerateKey = (privateKey) => crypto.subtle.importKey(
 /**
  * @param {string} personKey An arbitrary string about a person.
  * @param {!webCrypto.CryptoKey} generateKey
- * @return {!Promise<!did.VerifiableID>}
+ * @return {Promise<!did.VerifiableID>}
  */
 const generate = (personKey, generateKey) =>
   crypto.subtle.sign(
     "RSASSA-PKCS1-v1_5", generateKey, new TextEncoder().encode(personKey)
-  ).then((/** @type {!ArrayBuffer} */ signature) => {
-    /** @const {!Uint32Array} */
+  ).then((/** @type {ArrayBuffer} */ signature) => {
+    /** @const {Uint32Array} */
     const g = keccak256Uint32(new Uint32Array(signature));
     const { y, π, l } = evaluate(g, KIMLIKDAO_VERIFIABLE_ID_ITERATIONS);
     return /** @type {!did.VerifiableID} */({
@@ -52,18 +52,18 @@ const generate = (personKey, generateKey) =>
  * @param {!did.VerifiableID} verifiableID
  * @param {string} personKey
  * @param {string} publicKey
- * @return {!Promise<boolean>}
+ * @return {Promise<boolean>}
  */
 const verify = (verifiableID, personKey, publicKey) => {
-  /** @const {!Uint32Array} */
+  /** @const {Uint32Array} */
   const x = new Uint32Array(base64.toBytes(verifiableID.x).buffer);
-  /** @const {!Uint32Array} */
+  /** @const {Uint32Array} */
   const g = keccak256Uint32(x);
   /** @const {bigint} */
   const π = base64.toBigInt(verifiableID.wesolowskiP);
   /** @const {bigint} */
   const l = base64.toBigInt(verifiableID.wesolowskiL);
-  /** @const {!Uint32Array} */
+  /** @const {Uint32Array} */
   const y = reconstructY(
     KIMLIKDAO_VERIFIABLE_ID_LOG_ITERATIONS, g, π, l);
 

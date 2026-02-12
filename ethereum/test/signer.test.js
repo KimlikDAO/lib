@@ -54,7 +54,7 @@ describe("Signature tests", () => {
 test("signerAddress(d, signCompact(d, s)) == pointToAddress(s.G)", () => {
   /** @const {string} */
   const digest = keccak256("sign me!");
-  for (let /** bigint */ i = 1n; i < 100n; ++i)
+  for (let /** @type {bigint} */ i = 1n; i < 100n; ++i)
     expect(signerAddress(digest, signCompact(digest, i)))
       .toBe(pointToAddress(G.copy().multiply(i).project()));
 });

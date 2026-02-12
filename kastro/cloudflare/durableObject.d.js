@@ -15,8 +15,8 @@ cloudflare.DurableObjectState = function () { }
 
 /**
  * @template T
- * @param {function():!Promise<T>} callback
- * @return {!Promise<T>}
+ * @param {function():Promise<T>} callback
+ * @return {Promise<T>}
  */
 cloudflare.DurableObjectState.prototype.blockConcurrencyWhile = function (callback) { }
 
@@ -35,8 +35,8 @@ cloudflare.DurableObjectStorage = function () { }
 
 /**
  * @nosideeffects
- * @param {string|!Array<string>} key
- * @return {!Promise<?>}
+ * @param {string|string[]} key
+ * @return {Promise<?>}
  */
 cloudflare.DurableObjectStorage.prototype.get = function (key) { };
 
@@ -44,26 +44,26 @@ cloudflare.DurableObjectStorage.prototype.get = function (key) { };
  * @nosideeffects
  * @param {string|!Object<string, *>} key
  * @param {*=} val
- * @return {!Promise<void>}
+ * @return {Promise<void>}
  */
 cloudflare.DurableObjectStorage.prototype.put = function (key, val) { };
 
 /**
  * @nosideeffects
  * @param {string} key
- * @return {!Promise<boolean>}
+ * @return {Promise<boolean>}
  */
 cloudflare.DurableObjectStorage.prototype.delete = function (key) { };
 
 /**
  * @nosideeffects
- * @return {!Promise<?number>}
+ * @return {Promise<?number>}
  */
 cloudflare.DurableObjectStorage.prototype.getAlarm = function () { };
 
 /**
  * @param {number|Date} scheduledTime
- * @return {!Promise<void>}
+ * @return {Promise<void>}
  */
 cloudflare.DurableObjectStorage.prototype.setAlarm = function (scheduledTime) { };
 
@@ -84,7 +84,7 @@ cloudflare.DurableObjectStub = function () { }
 *
 * @param {!RequestInfo} input
 * @param {!RequestInit=} init
-* @return {!Promise<!Response>}
+* @return {Promise<!Response>}
 * @see https://fetch.spec.whatwg.org/#fetch-method
 * @see https://developers.cloudflare.com/workers/runtime-apis/fetch/
 */
@@ -105,7 +105,7 @@ cloudflare.DurableObject = function (state, env) { }
 
 /**
  * @param {!Request} req
- * @return {!Promise<!Response>}
+ * @return {Promise<!Response>}
  */
 cloudflare.DurableObject.prototype.fetch = function (req) { }
 

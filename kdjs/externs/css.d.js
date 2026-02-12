@@ -33,7 +33,7 @@ css.BaseNode.prototype.position;
  */
 css.Rule = function () { }
 
-/** @const {!Array<string>} */
+/** @const {string[]} */
 css.Rule.prototype.selectors;
 
 /**

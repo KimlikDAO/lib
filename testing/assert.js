@@ -42,8 +42,8 @@ const assertEq = (given, expected) => {
 
 /**
  * @template T
- * @param {!Array<T>|!Uint8Array|!Uint32Array} given
- * @param {!Array<T>|!Uint8Array|!Uint32Array} expected
+ * @param {T[]|Uint8Array|Uint32Array} given
+ * @param {T[]|Uint8Array|Uint32Array} expected
  * @return {boolean}
  */
 const assertArrayEq = (given, expected) => {
@@ -68,12 +68,12 @@ const assertArrayEq = (given, expected) => {
 
 /**
  * @template T
- * @param {!Array<T>} given
- * @param {!Array<T>} expected
+ * @param {T[]} given
+ * @param {T[]} expected
  * @return {boolean}
  */
 const assertElemEq = (given, expected) => {
-  /** @const {!Set<T>} */
+  /** @const {Set<T>} */
   const expectSet = new Set(expected);
   /** @const {boolean} */
   const value = given.length == expectSet.size && given.every((x) => expectSet.has(x));

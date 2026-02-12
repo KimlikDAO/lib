@@ -278,7 +278,7 @@ acorn.SourceLocation;
  *   start: number,
  *   end: number,
  *   loc: acorn.SourceLocation,
- *   range: (!Array<number>|undefined)
+ *   range: (number[]|undefined)
  * }}
  */
 acorn.Comment;

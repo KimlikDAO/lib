@@ -10,7 +10,7 @@ import { KeyValue } from "./types.d";
  */
 const KvPageWorkerEnv = function () { };
 
-/** @type {!KeyValue} */
+/** @type {KeyValue} */
 KvPageWorkerEnv.prototype.KV;
 
 export { KvPageWorkerEnv };

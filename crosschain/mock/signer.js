@@ -21,7 +21,7 @@ class MockSigner {
    *
    * @param {string} message
    * @param {string} address
-   * @return {!Promise<!ArrayBuffer>}
+   * @return {Promise<ArrayBuffer>}
    */
   deriveSecret(message, address) {
     if (address.startsWith("0x"))
@@ -38,7 +38,7 @@ class MockSigner {
    *
    * @param {string} message
    * @param {string} address
-   * @return {!Promise<Signature>}
+   * @return {Promise<Signature>}
    */
   signMessage(message, address) {
     if (address.startsWith("0x"))

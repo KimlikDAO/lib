@@ -4,11 +4,11 @@ import { f, keccak256Uint32 } from "../sha3";
 /**
  * Computes the keccak256 of an Uint32Array.
  *
- * @param {!Uint32Array} words A typed array of `uint32`s to be hashed.
- * @return {!Uint32Array} hash as a Uint32Arrray of length 8.
+ * @param {Uint32Array} words A typed array of `uint32`s to be hashed.
+ * @return {Uint32Array} hash as a Uint32Arrray of length 8.
  */
 const keccak256Uint32_2 = (words) => {
-  /** @const {!Array<number>} */
+  /** @const {number[]} */
   const s = Array(50);
   /** @type {number} */
   let i = 0;

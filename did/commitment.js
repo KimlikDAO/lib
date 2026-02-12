@@ -16,7 +16,7 @@ const commit = (chainGroup, ownerAddress, commitmentR) => {
   switch (chainGroup) {
     default:
     case ChainGroup.EVM:
-      /** @const {!Uint8Array} */
+      /** @const {Uint8Array} */
       const buff = new Uint8Array(32 + 20);
       base64.intoBytes(buff, commitmentR);
       hex.intoBytes(buff.subarray(32), ownerAddress.slice(2));
@@ -44,18 +44,18 @@ const commit = (chainGroup, ownerAddress, commitmentR) => {
  *
  * @param {ChainGroup} chainGroup
  * @param {string} ownerAddress wallet address to commit to
- * @param {!Uint8Array} random 2x32 bits random seed
- * @return {!Uint8Array} 2x32 bits cryptographic commitment
+ * @param {Uint8Array} random 2x32 bits random seed
+ * @return {Uint8Array} 2x32 bits cryptographic commitment
  */
 const commitDouble = (chainGroup, ownerAddress, random) => {
   switch (chainGroup) {
     default:
     case ChainGroup.EVM: {
-      /** @const {!Uint8Array} */
+      /** @const {Uint8Array} */
       const buff = new Uint8Array(32 + 20);
       hex.intoBytes(buff.subarray(32), ownerAddress.slice(2));
       buff.set(random.subarray(0, 32));
-      /** @const {!Uint8Array} */
+      /** @const {Uint8Array} */
       const commitment = new Uint8Array(
         keccak256Uint32(new Uint32Array(buff.buffer)).buffer, 0, 64);
       buff.set(random.subarray(32, 64));
@@ -64,7 +64,7 @@ const commitDouble = (chainGroup, ownerAddress, random) => {
       return commitment;
     }
     case ChainGroup.MINA:
-      /** @const {!Uint8Array} */
+      /** @const {Uint8Array} */
       const commitment = new Uint8Array(64);
       const { /** bigint */ x, isOdd } = PublicKey.fromBase58(ownerAddress);
       const /** bigint */ h = isOdd ? x + 1n : x;

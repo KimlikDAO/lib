@@ -19,7 +19,7 @@ import { SectionGroup } from "./KPass";
 const KIMLIKDAO_URL = "https://kimlikdao.org";
 
 /**
- * @param {!Array<string>} sections
+ * @param {string[]} sections
  * @return {string}
  */
 const userPrompt = (sections) => {
@@ -48,14 +48,14 @@ section${sections.length == 1 ? "" : "s"} of your KPass. Only sign this message 
 }
 
 /**
- * @param {!Array<string>} sections
+ * @param {string[]} sections
  * @param {ChainId} chainId
  * @return {!SectionGroup}
  */
 const sectionGroup = (sections, chainId) => /** @type {!SectionGroup} */({
   sectionNames: sections,
   userPrompt: userPrompt(sections)
-    + "Nonce: " + hex.from(/** @type {!Uint8Array} */(crypto.getRandomValues(new Uint8Array(8))))
+    + "Nonce: " + hex.from(/** @type {Uint8Array} */(crypto.getRandomValues(new Uint8Array(8))))
     + "\nChainId: " + chainId
     + "\nNFT: " + KPass.getAddress(chainId)
 });

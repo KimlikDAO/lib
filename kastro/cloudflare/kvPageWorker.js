@@ -19,10 +19,10 @@ const KvPageWorker = {
   /**
    * @override
    *
-   * @param {!CfRequest} req
-   * @param {!KvPageWorkerEnv=} env
-   * @param {!Context=} ctx
-   * @return {!Promise<!Response>|!Response}
+   * @param {CfRequest} req
+   * @param {KvPageWorkerEnv=} env
+   * @param {Context=} ctx
+   * @return {Promise<Response> | Response}
    */
   fetch(req, env, ctx) {
     /** @const {string} */
@@ -46,7 +46,7 @@ const KvPageWorker = {
       : enc.includes("br") ? ".br" : enc.includes("gz") ? ".gzip" : "";
 
     if (!kvKey) {
-      /** @const {?string} */
+      /** @const {string | null} */
       const cookie = req.headers.get("cookie")
       /** @const {number} */
       const leq = cookie ? cookie.indexOf("l=") : -1;
@@ -63,7 +63,7 @@ const KvPageWorker = {
     /**
      * We search the CF cache for the asset.
      *
-     * @const {!Promise<!Response>}
+     * @const {Promise<Response>}
      */
     const fromCache = caches.default.match(cacheKey).then((response) => {
       if (!response) return Promise.reject();
@@ -80,12 +80,12 @@ const KvPageWorker = {
     });
 
     /**
-     * @param {!ArrayBuffer} body
+     * @param {ArrayBuffer} body
      * @param {string} toCache
-     * @return {!Response}
+     * @return {Response}
      */
     const makeResponse = (body, toCache) => {
-      /** @type {!Object<string, string>} */
+      /** @type {Record<string, string>} */
       let headers = {
         "cache-control": (toCache || (dot != -1))
           ? STATIC_CACHE_CONTROL
@@ -120,7 +120,7 @@ const KvPageWorker = {
      * CF cache is taking unusually long), the response will be served from the
      * KV.
      *
-     * @const {!Promise<!Response>}
+     * @const {Promise<Response>}
      */
     const fromKV = env.KV.get(kvKey, "arrayBuffer").then((body) => {
       if (!body) return Promise.reject();
@@ -128,7 +128,7 @@ const KvPageWorker = {
       // request.
       ctx.waitUntil(new Promise((/** function(?):void */ resolve) =>
         resolve(inCache ? null : caches.default.put(/** @type {string} */(cacheKey),
-          makeResponse(/** @type {!ArrayBuffer} */(body), "Y")))
+          makeResponse(/** @type {ArrayBuffer} */(body), "Y")))
       ));
       return makeResponse(body, "");
     })

@@ -24,7 +24,7 @@ it("should fetch KPass `balanceOf()`, `maxSupply()`, `decimals()` and `supplyCap
       "data": "0x8f770ad0", // supplyCap()
       "to": OLD_TCKO_ADDR
     }, "latest"],
-  ]).then((/** @type {!Array<string>} */ res) => {
+  ]).then((/** @type {string[]} */ res) => {
     expect(parseInt(res[0].slice(-12), 16)).toBe(200_000 * MILLION);
     expect(parseInt(res[1].slice(-12), 16)).toBe(100_000_000 * MILLION);
     expect(parseInt(res[2].slice(-4), 16)).toBe(6);

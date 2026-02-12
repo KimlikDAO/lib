@@ -1,25 +1,66 @@
 import { expect, test } from "bun:test";
 import { chunk } from "../arrays";
 
-/** @const {!Array<!Array>} */
-const TestVectors = [
-  // [input array, chunk size, expected result]
-  [[], 2, []],
-  [[1], 2, [[1]]],
-  [[1, 2, 3, 4], 2, [[1, 2], [3, 4]]],
-  [[1, 2, 3, 4, 5], 2, [[1, 2], [3, 4], [5]]],
-  [[1, 2, 3], 1, [[1], [2], [3]]],
-  [['a', 'b', 'c', 'd'], 3, [['a', 'b', 'c'], ['d']]],
-  [[1, 2, 3, 4, 5, 6], 3, [[1, 2, 3], [4, 5, 6]]],
-];
-
-test("chunk arrays on sample points", () => {
-  for (const [input, size, expected] of TestVectors) {
-    expect(chunk(input, size)).toEqual(expected);
-  }
+test("chunk empty array", () => {
+  /** @const {number[]} */
+  const array = [];
+  /** @const {number[][]} */
+  const chunks = [];
+  expect(chunk(array, 2)).toEqual(chunks);
 });
 
-test("throws on invalid chunk size", () => {
+test("chunk single element", () => {
+  /** @const {number[]} */
+  const array = [1];
+  /** @const {number[][]} */
+  const chunks = [[1]];
+  expect(chunk(array, 2)).toEqual(chunks);
+});
+
+test("chunk even array", () => {
+  /** @const {number[]} */
+  const array = [1, 2, 3, 4];
+  /** @const {number[][]} */
+  const chunks = [[1, 2], [3, 4]];
+  expect(chunk(array, 2)).toEqual(chunks);
+});
+
+test("chunk array with remainder", () => {
+  /** @const {number[]} */
+  const array = [1, 2, 3, 4, 5];
+  /** @const {number[][]} */
+  const chunks = [[1, 2], [3, 4], [5]];
+  expect(chunk(array, 2)).toEqual(chunks);
+});
+
+test("chunk size 1", () => {
+  /** @const {number[]} */
+  const array = [1, 2, 3];
+  /** @const {number[][]} */
+  const chunks = [[1], [2], [3]];
+  expect(chunk(array, 1)).toEqual(chunks);
+});
+
+test("chunk strings", () => {
+  /** @const {string[]} */
+  const array = ['a', 'b', 'c', 'd'];
+  /** @const {string[][]} */
+  const chunks = [['a', 'b', 'c'], ['d']];
+  expect(chunk(array, 3)).toEqual(chunks);
+});
+
+test("chunk size 3", () => {
+  /** @const {number[]} */
+  const array = [1, 2, 3, 4, 5, 6];
+  /** @const {number[][]} */
+  const chunks = [[1, 2, 3], [4, 5, 6]];
+  expect(chunk(array, 3)).toEqual(chunks);
+});
+
+test("throws on zero chunk size", () => {
   expect(() => chunk([1, 2, 3], 0)).toThrow();
+});
+
+test("throws on negative chunk size", () => {
   expect(() => chunk([1, 2, 3], -1)).toThrow();
 });

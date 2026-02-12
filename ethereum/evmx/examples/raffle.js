@@ -32,7 +32,7 @@ const Addys = [
 ];
 
 /**
- * @return {!Promise<!TransactionResponse>}
+ * @return {Promise<!TransactionResponse>}
  */
 const send = () => {
   const { code, valueSzabos } = batchSendWithKPassNoPush0(

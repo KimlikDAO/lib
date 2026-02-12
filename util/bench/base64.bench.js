@@ -24,7 +24,7 @@ const from_3 = (bytes) => btoa(Array.from(bytes, (b) => String.fromCharCode(b)).
 /**
  * String concatenation version (fastest in JSC/Bun)
  * @nosideeffects
- * @param {!Uint8Array|!Array<number>} bytes
+ * @param {Uint8Array|number[]} bytes
  * @return {string}
  */
 const from_4 = (bytes) => {
@@ -40,11 +40,11 @@ const from_4 = (bytes) => {
 /**
  * Array join version (common assumption but slower in JSC/Bun)
  * @nosideeffects
- * @param {!Uint8Array|!Array<number>} bytes
+ * @param {Uint8Array|number[]} bytes
  * @return {string}
  */
 const from_5 = (bytes) => {
-  /** @const {!Array<string>} */
+  /** @const {string[]} */
   const chars = new Array(bytes.length);
   for (let i = 0; i < bytes.length; ++i)
     chars[i] = String.fromCharCode(bytes[i]);
@@ -53,7 +53,7 @@ const from_5 = (bytes) => {
 
 /** @const {string} */
 const output = "U29tZSBiYXNlNjQgZGF0YS4=";
-/** @const {!Uint8Array} */
+/** @const {Uint8Array} */
 const input = base64.toBytes(output);
 
 compareImpls([from, from_2, from_3, from_4, from_5], 1000, [input], output);

@@ -14,7 +14,7 @@ import eth from "./eth.d";
  * the original address if valid.
  *
  * @param {string} address The Ethereum address (with 0x prefix)
- * @return {?string} Checksummed address or null if invalid
+ * @return {string | null} Checksummed address or null if invalid
  */
 const correctAddress = (address) => {
   if (address.length != 42 || !address.startsWith("0x")) return null;
@@ -98,13 +98,13 @@ const compactSignature = (signature) => {
  * @return {string} hex encoded hash
  */
 const personalDigest = (msg) => {
-  /** @const {!TextEncoder} */
+  /** @const {TextEncoder} */
   const encoder = new TextEncoder();
-  /** @const {!Uint8Array} */
+  /** @const {Uint8Array} */
   const msgEncoded = encoder.encode(msg);
-  /** @const {!Uint8Array} */
+  /** @const {Uint8Array} */
   const lenEncoded = encoder.encode("" + msgEncoded.length);
-  /** @const {!Uint8Array} */
+  /** @const {Uint8Array} */
   const encoded = new Uint8Array(26 + lenEncoded.length + msgEncoded.length);
   encoder.encodeInto("\x19Ethereum Signed Message:\n", encoded);
   encoded.set(lenEncoded, 26);
@@ -125,19 +125,19 @@ const packedAddress = (addr) => addr.slice(2).toLowerCase();
 const address = (addr) => "0".repeat(24) + packedAddress(addr)
 
 /**
- * @param {number|bigint} sayı
+ * @param {number | bigint} num
  * @return {string}
  */
-const uint256 = (sayı) => sayı.toString(16).padStart(64, "0");
+const uint256 = (num) => num.toString(16).padStart(64, "0");
 
-/** @type {function(number):string} */
-const uint160 = (sayı) => sayı.toString(16).padStart(40, "0");
+/** @const {(num: number) => string} */
+const uint160 = (num) => num.toString(16).padStart(40, "0");
 
-/** @type {function(number):string} */
-const uint96 = (sayı) => sayı.toString(16).padStart(24, "0");
+/** @const {(num: number) => string} */
+const uint96 = (num) => num.toString(16).padStart(24, "0");
 
-/** @type {function(number):string} */
-const uint64 = (sayı) => sayı.toString(16).padStart(16, "0");
+/** @const {(num: number) => string} */
+const uint64 = (num) => num.toString(16).padStart(16, "0");
 
 /**
  * @param {string} value
@@ -151,7 +151,7 @@ const isZero = (value) => value == "0x" || value.replaceAll("0", "") == 'x';
  * @see https://github.com/google/closure-compiler/issues/4018
  * @const {string}
  */
-const Uint256Max = /** @pureOrBreakMyCode */("f".repeat(64));
+const Uint256Max = "f".repeat(64);
 
 export default {
   address,

@@ -1,16 +1,16 @@
 import "./provider.d";
 
 /**
- * @param {!eth.Provider} provider
+ * @param {eth.Provider} provider
  * @param {string} contract Contract adddress given with the 0x prefix
  * @param {string} calldata Calldata transmitted to the contract verbatim.
  * @param {string=} from
- * @return {!Promise<string>}
+ * @return {Promise<string>}
  */
 const callMethod = (provider, contract, calldata, from) =>
-  provider.request(/** @type {!eth.Request} */({
+  provider.request(/** @type {eth.Request} */({
     method: "eth_call",
-    params: [/** @type {!eth.Transaction} */({
+    params: [/** @type {eth.Transaction} */({
       to: contract,
       data: calldata,
       from

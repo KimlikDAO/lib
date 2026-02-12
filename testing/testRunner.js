@@ -4,9 +4,9 @@ import { Clear, Green, Red } from "../util/cli";
 import { throttle } from "../util/promises";
 
 /**
- * @param {!Array<string>} files
+ * @param {string[]} files
  * @param {number} concurrency
- * @return {!Promise<boolean>}
+ * @return {Promise<boolean>}
  */
 const runSimple = (files, concurrency) => {
   const bn = throttle(concurrency);

@@ -29,7 +29,7 @@ const makeTargetName = (parentTarget, suffix) => {
  * We optimize the inline svgs regardless of the build mode.
  *
  * @param {Props} props
- * @returns {!Promise<string>}
+ * @returns {Promise<string>}
  */
 const InlineSvgImage = ({ src, childTargets, bundleWidth, bundleHeight, ...props }) =>
   compiler.buildTarget(makeTargetName(src, ".inl.svg"), {
@@ -109,7 +109,7 @@ const Favicon = ({ src, raster, BuildMode, ...props }) => {
 
 /**
  * @param {!Object<string, *>} props
- * @return {!Promise<string>}
+ * @return {Promise<string>}
  */
 const Image = ({ inline, ...props }) => {
   if (inline && (props.src.endsWith(".svg") || props.src.endsWith(".svg.jsx")))

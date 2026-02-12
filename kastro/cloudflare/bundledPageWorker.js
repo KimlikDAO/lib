@@ -4,7 +4,7 @@ import { CfRequest } from "./types.d";
 
 /** @define {string} */
 const HOST_URL = "";
-/** @define {!Object<string, string>} */
+/** @define {Record<string, string>} */
 const ETAGS = {};
 /** @const {string} */
 const PAGE_CACHE_CONTROL = "max-age=100,public,no-transform";
@@ -15,8 +15,8 @@ const STATIC_CACHE_CONTROL = "max-age=29000000,public,immutable,no-transform";
 const Worker = {
   /**
    * @override
-   * @param {!CfRequest} req
-   * @return {!Promise<!Response>|!Response}
+   * @param {CfRequest} req
+   * @return {Promise<Response> | Response}
    */
   fetch(req) {
     /** @const {string} */
@@ -34,7 +34,7 @@ const Worker = {
     /** @type {string} */
     let resolvedPath = path;
     if (!path) {
-      /** @const {?string} */
+      /** @const {string | null} */
       const cookie = req.headers.get("cookie")
       /** @const {number} */
       const leq = cookie ? cookie.indexOf("l=") : -1;
@@ -43,14 +43,14 @@ const Worker = {
         : req.headers.get("accept-language")
           ?.includes("tr") ? "tr" : "en"
     }
-    /** @const {?string} */
+    /** @const {string | null} */
     const maybeEtag = ETAGS[resolvedPath];
     if (maybeEtag && req.headers.get("if-none-match") == maybeEtag)
       return new Response(null, { status: 304 });
 
     return import(resolvedPath + ext.slice(0, 3))
       .then(({ default: file }) => {
-        /** @const {!Object<string, (string|number)>} */
+        /** @const {Record<string, string | number>} */
         const headers = {
           "cache-control": (dot == -1 || maybeEtag) ? PAGE_CACHE_CONTROL : STATIC_CACHE_CONTROL,
           "content-type": dot == -1 ? "text/html;charset=utf-8" : Mimes[suffix],

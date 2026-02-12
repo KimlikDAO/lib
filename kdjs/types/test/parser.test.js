@@ -310,6 +310,52 @@ describe("Structs", () => {
     expect(withDollarOptional.members["name$"].name).toBe("string");
     expect(withDollarOptional.members["name$"].isOptional()).toBeTrue();
   });
+
+  it("parses multi-line structs", () => {
+    const struct = parseType(`{
+      name: string,
+      age: number
+    }`);
+    expect(struct).toBeInstanceOf(StructType);
+    expect(struct.members["name"]).toBeInstanceOf(PrimitiveType);
+    expect(struct.members["name"].name).toBe("string");
+    expect(struct.members["age"]).toBeInstanceOf(PrimitiveType);
+    expect(struct.members["age"].name).toBe("number");
+  });
+
+  it("parses multi-line complex structs", () => {
+    const complexStruct = parseType(`{
+     *   promise: () => Promise<unknown>,
+     *   resolve: (val: unknown) => void,
+     *   reject: (err: unknown) => void
+     * }}
+     */}`);
+
+    expect(complexStruct).toBeInstanceOf(StructType);
+    const promiseType = /** @type {!FunctionType} */(complexStruct.members["promise"]);
+    expect(promiseType).toBeInstanceOf(FunctionType);
+    expect(promiseType.returnType).toBeInstanceOf(GenericType);
+    expect(promiseType.returnType.name).toBe("Promise");
+    expect(promiseType.returnType.params.length).toBe(1);
+    expect(promiseType.returnType.params[0]).toBeInstanceOf(TopType);
+    expect(promiseType.returnType.params[0].name).toBe("*");
+
+    const resolveType = /** @type {!FunctionType} */(complexStruct.members["resolve"]);
+    expect(resolveType).toBeInstanceOf(FunctionType);
+    expect(resolveType.params.length).toBe(1);
+    expect(resolveType.params[0]).toBeInstanceOf(TopType);
+    expect(resolveType.params[0].name).toBe("*");
+    expect(resolveType.returnType).toBeInstanceOf(PrimitiveType);
+    expect(resolveType.returnType.name).toBe("undefined");
+
+    const rejectType = /** @type {!FunctionType} */(complexStruct.members["reject"]);
+    expect(rejectType).toBeInstanceOf(FunctionType);
+    expect(rejectType.params.length).toBe(1);
+    expect(rejectType.params[0]).toBeInstanceOf(TopType);
+    expect(rejectType.params[0].name).toBe("*");
+    expect(rejectType.returnType).toBeInstanceOf(PrimitiveType);
+    expect(rejectType.returnType.name).toBe("undefined");
+  });
 });
 
 describe("Functions", () => {

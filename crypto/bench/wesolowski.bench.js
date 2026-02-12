@@ -1,7 +1,7 @@
 import { assertEq } from "../../testing/assert";
 import { evaluate } from "../wesolowski";
 
-/** @const {!Uint32Array} */
+/** @const {Uint32Array} */
 const buff = Uint32Array.from("00000001".repeat(5));
 
 assertEq(buff.length, 40);

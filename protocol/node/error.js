@@ -8,8 +8,8 @@ import "../error.d";
 
 /**
  * @param {number} code
- * @param {!Array<string>=} messages
- * @return {!Promise<*>}
+ * @param {string[]=} messages
+ * @return {Promise<*>}
  */
 const reject = (code, messages) =>
   Promise.reject(/** @type {!protocol.ErrorMessage} */({ code, messages }));
@@ -34,7 +34,7 @@ const err = (httpStatus, errorCode) => errorResponse(
 /**
  * @param {number} httpStatus
  * @param {!ErrorCode} errorCode
- * @param {!Array<string>} messages
+ * @param {string[]} messages
  * @return {!Response}
  */
 const errWithMessage = (httpStatus, errorCode, messages) => errorResponse(

@@ -1,16 +1,16 @@
 import base64 from "../../util/base64";
 
-/** @typedef {!Uint8Array} */
+/** @typedef {Uint8Array} */
 const ContentHash = {};
 
-/** @typedef {!Uint8Array} */
+/** @typedef {Uint8Array} */
 const DependencyHash = {};
 
 /** @typedef {string} */
 const AssetHash = {};
 
 /**
- * @param {!Uint8Array} bytes
+ * @param {Uint8Array} bytes
  * @return {AssetHash}
  */
 const toStr = (bytes) => base64.from(bytes.subarray(0, 6))

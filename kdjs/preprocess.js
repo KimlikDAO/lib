@@ -33,7 +33,7 @@ const exportStmtToExportMap = (exportStmt) => {
  * @param {boolean} isEntry
  * @param {string} file name of the file
  * @param {string} content contents of the file
- * @param {!Array<string>} files the stack of files, which will be pushed new files
+ * @param {string[]} files the stack of files, which will be pushed new files
  * @param {!Object<string, *>} globals
  * @param {!Map<string, ImportStatement>} unlinkedImports
  * @return {string} the content after preprocessing
@@ -63,7 +63,7 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
   // Track declaration imports and their aliases
   /** @type {number} */
   let lastImportEnd = 0;
-  /** @type {!Array<string>} */
+  /** @type {string[]} */
   const typeAliases = [];
 
   /**
@@ -265,7 +265,7 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
 /**
  * @param {!Object<string, *>} params
  * @param {function(string, string, boolean=):?string=} transpileFn
- * @return {!Promise<{
+ * @return {Promise<{
  *   unlinkedImports: !Map<string, ImportStatement>,
  *   allFiles: !Set<string>,
  *   isolateDir: string,
@@ -283,13 +283,13 @@ const preprocessAndIsolate = async (params, transpileFn) => {
     ? JSON.parse(/** @type {string} */(params["globals"])) : (params["globals"] || {}));
 
   const unlinkedImports = new Map();
-  /** @const {!Array<string>} */
+  /** @const {string[]} */
   const externs = params["externs"] || [];
-  /** @const {!Array<string>} */
+  /** @const {string[]} */
   const files = [entry, ...externs];
   /** @const {!Set<string>} */
   const allFiles = new Set();
-  /** @const {!Array<!Promise<void>>} */
+  /** @const {!Array<Promise<void>>} */
   const writePromises = [];
   /** @type {boolean} */
   let ignoreUnusedLocals = false;

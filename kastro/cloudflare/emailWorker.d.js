@@ -21,7 +21,7 @@ cloudflare.EmailMessage.prototype.to;
 /** @const {Headers} */
 cloudflare.EmailMessage.prototype.headers;
 
-/** @const {!ReadableStream} */
+/** @const {ReadableStream} */
 cloudflare.EmailMessage.prototype.raw;
 
 /** @const {number} */
@@ -30,7 +30,7 @@ cloudflare.EmailMessage.prototype.rawSize;
 /**
  * @param {string} rcptTo Verified destination address
  * @param {Headers=} headers
- * @return {!Promise<void>}
+ * @return {Promise<void>}
  */
 cloudflare.EmailMessage.prototype.forward = function (rcptTo, headers) { };
 
@@ -45,9 +45,9 @@ cloudflare.EmailMessage.prototype.setReject = function (reason) { };
 cloudflare.EmailWorker = function () { };
 
 /**
- * @param {!cloudflare.EmailMessage} message
- * @param {!cloudflare.Environment=} env
- * @param {!cloudflare.Context=} ctx
- * @return {!Promise<void>|void}
+ * @param {cloudflare.EmailMessage} message
+ * @param {cloudflare.Environment=} env
+ * @param {cloudflare.Context=} ctx
+ * @return {Promise<void> | void}
  */
 cloudflare.EmailWorker.prototype.email = function (message, env, ctx) { }

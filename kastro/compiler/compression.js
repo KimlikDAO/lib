@@ -4,7 +4,7 @@ import { cp } from "node:fs/promises";
 /**
  * @param {string} inputName The asset to be compressed
  * @param {string} outputName without the .gz extension
- * @return {!Promise<string>}
+ * @return {Promise<string>}
  */
 const zopfli = (inputName, outputName) => spawn({
   cmd: [
@@ -29,7 +29,7 @@ const zopfli = (inputName, outputName) => spawn({
 /**
  * @param {string} inputName The asset to be compressed
  * @param {string} outputName without the .br extension
- * @return {!Promise<string>}
+ * @return {Promise<string>}
  */
 const brotli = (inputName, outputName) => {
   console.info(`brotli: ${inputName} -> ${outputName}.br`);

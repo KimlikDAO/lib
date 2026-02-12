@@ -27,6 +27,6 @@ swc.MinifyOptions
 /**
  * @param {string} code
  * @param {swc.MinifyOptions} options
- * @return {!Promise<{ code: string }>}
+ * @return {Promise<{ code: string }>}
  */
 swc.minify = (code, options) => { }

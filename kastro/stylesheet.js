@@ -14,7 +14,7 @@ class StyleSheetCollection {
    * @param {{ targetName: string, content: string }} target
    */
   add({ targetName, content: contentString }) {
-    /** @const {!Uint8Array} */
+    /** @const {Uint8Array} */
     const content = Encoder.encode(contentString);
     /** @const {!ContentHash} */
     const contentHash = keccak256Uint8(content);
@@ -126,7 +126,7 @@ const makeStyleSheet = (fileName, cssContent) => {
  * This way, files associated with a component are grouped together and can
  * attach new styles to the same selectors with ease.
  *
- * @param {!Array<string>} strings
+ * @param {string[]} strings
  * @param {...string} values
  * @return {StyleSheet}
  */

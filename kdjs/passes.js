@@ -136,7 +136,7 @@ For other types, if you want to disallow null, you explicitly need to type !
 before the type. Example:
 
 \`\`\`javascript
-/** @const {!Array<bigint>} */
+/** @const {bigint[]} */
 const x = [1n, 2n, 3n];
 
 /**

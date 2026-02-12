@@ -1,7 +1,7 @@
 /**
  * @template T
- * @param {!Array<T>} arr
- * @return {!Array<T>}
+ * @param {T[]} arr
+ * @return {T[]}
  */
 const shuffle = (arr) => {
   for (let i = arr.length - 1; i > 0; --i) {
@@ -16,13 +16,13 @@ const shuffle = (arr) => {
  * Splits an array into chunks of size n.
  *
  * @template T
- * @param {!Array<T>} arr
+ * @param {T[]} arr
  * @param {number} n
- * @return {!Array<!Array<T>>}
+ * @return {T[][]}
  */
 const chunk = (arr, n) => {
   if (n <= 0) throw 0;
-  /** @const {!Array<!Array<T>>} */
+  /** @const {T[][]} */
   const result = [];
   for (let i = 0; i < arr.length; i += n)
     result.push(arr.slice(i, i + n));

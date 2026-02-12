@@ -2,10 +2,10 @@
  * @template T
  * @param {number} delay
  * @param {T=} response
- * @return {!Promise<T>}
+ * @return {Promise<T>}
  */
 const wait = (delay, response) => new Promise(
-  (/** @type {function(T):void} */ resolve) => setTimeout(() => resolve(response), delay));
+  (/** @type {(val: T) => void} */ resolve) => setTimeout(() => resolve(response), delay));
 
 /**
  * @param {number} maxConcurrent
@@ -13,13 +13,13 @@ const wait = (delay, response) => new Promise(
 const throttle = (maxConcurrent) => {
   /**
    * @typedef {{
-   *   promise: function(): !Promise,
-   *   resolve: function(*): void,
-   *   reject: function(*): void
+   *   promise: () => Promise<unknown>,
+   *   resolve: (val: unknown) => void,
+   *   reject: (err: unknown) => void
    * }}
    */
   const Task = {};
-  /** @type {!Array<Task>} */
+  /** @type {Task[]} */
   const queue = [];
 
   const step = () => {
@@ -37,8 +37,8 @@ const throttle = (maxConcurrent) => {
 
   /**
    * @template T
-   * @param {function():!Promise<T>} promise
-   * @return {!Promise<T>}
+   * @param {() => Promise<T>} promise
+   * @return {Promise<T>}
    */
   const add = (promise) => new Promise((resolve, reject) => {
     queue.push({ promise, resolve, reject });

@@ -9,17 +9,17 @@ const LangCode = {
 };
 
 /**
- * @typedef {!Object<LangCode, string>}
+ * @typedef {Record<LangCode, string>}
  */
 const I18nString = {};
 
 /**
- * @typedef {!Object<LangCode, !Array<string>>}
+ * @typedef {Record<LangCode, string[]>}
  */
 const I18nStrings = {};
 
 /**
- * @param {!Array<string>} strings
+ * @param {string[]} strings
  * @param {...(I18nString|string)} values
  * @return {I18nString}
  */
@@ -28,15 +28,23 @@ const i18n = (strings, ...values) => {
   const result = {};
   /** @const {I18nString} */
   const firstI18n = /** @type {I18nString} */(values.find((v) => typeof v === "object") || { [LangCode.EN]: "" });
-  /** @const {!Array<LangCode>} */
+  /** @const {LangCode[]} */
   const langs = Object.keys(firstI18n);
 
-  for (const lang of langs) {
-    result[lang] = strings.reduce((acc, str, i) => {
-      const value = values[i] || "";
-      return acc + str + (typeof value === "object" ? value[lang] : value);
-    }, "");
-  }
+  for (const lang of langs)
+    result[lang] = strings.reduce(
+      /**
+       * @param {string} acc 
+       * @param {string} str 
+       * @param {number} i 
+       * @return {string}
+       */
+      (acc, str, i) => {
+        /** @const {I18nString | string} */
+        const value = values[i] || "";
+        return acc + str + (typeof value === "object" ? value[lang] : value);
+      }, "");
+
   return result;
 };
 

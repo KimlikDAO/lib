@@ -47,7 +47,7 @@ test("MINA commitDouble()", () => {
 
 test("commit() == commitDouble()[0] on EVM", () => {
   const evmAddr = addr(123123n);
-  const random = /** @type {!Uint8Array} */(crypto.getRandomValues(new Uint8Array(64)));
+  const random = /** @type {Uint8Array} */(crypto.getRandomValues(new Uint8Array(64)));
 
   let commitment = commitDouble(ChainGroup.EVM, evmAddr, random);
 
@@ -59,7 +59,7 @@ test("commit() == commitDouble()[0] on EVM", () => {
 
 test("commit() == commitDouble()[0] on MINA", () => {
   const minaAddr = new PublicKey(1337n, false).toBase58();
-  const random = /** @type {!Uint8Array} */(crypto.getRandomValues(new Uint8Array(64)));
+  const random = /** @type {Uint8Array} */(crypto.getRandomValues(new Uint8Array(64)));
 
   let commitment = commitDouble(ChainGroup.MINA, minaAddr, random);
 

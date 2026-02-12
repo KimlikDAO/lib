@@ -20,7 +20,7 @@ csstree.Position;
 csstree.Location;
 
 /**
- * @typedef {{
+ * @typedef {?{
  *   prev: ?csstree.ListItem,
  *   next: ?csstree.ListItem,
  *   data: !csstree.CssNode

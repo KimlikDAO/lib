@@ -14,7 +14,7 @@ import { addStyleSheet } from "./stylesheet";
  *   name: string,
  *   weight: number
  * }} params
- * @return {!Promise<string>}
+ * @return {Promise<string>}
  */
 const TtfFont = ({ Lang, BuildMode, SharedCss, PageCss, shared, href, name, weight }) => {
   const match = href.match(/([^/]+?)(\d{3})?\.[^.]+$/);

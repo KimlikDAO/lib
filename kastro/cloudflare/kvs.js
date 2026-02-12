@@ -1,7 +1,7 @@
 /**
  * Gets existing keys from CloudFlare KV.
  *
- * @return {!Promise<!Set<string>>}
+ * @return {Promise<Set<string>>}
  */
 export const getExisting = (auth, namespaceId) =>
   fetch(`${CloudflareV4}/accounts/${auth.accountId}/storage/kv/namespaces/${namespaceId}/keys`, {

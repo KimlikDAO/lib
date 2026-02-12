@@ -11,7 +11,7 @@ const PAGE_CACHE_CONTROL = "max-age=60,public,no-transform";
  * Reads the crate as Uint8Array's.
  *
  * @param {string} crateName
- * @return {!Promise<Object<string, !Uint8Array>>}
+ * @return {Promise<Object<string, Uint8Array>>}
  */
 const loadCrate = (crateName) => readdir(crateName)
   .then((files) => Promise.all(files.map((file) => readFile(crateName + "/" + file)
@@ -45,7 +45,7 @@ loadCrate("./crate").then((files) => serve({
           ?.includes("tr")
           ? "tr" : "en"
     }
-    /** @const {!Uint8Array|undefined} */
+    /** @const {Uint8Array|undefined} */
     const file = files[resolvedPath + ext.slice(0, 3)];
     if (!file) return Response.redirect("/");
     /** @const {!Object<string, string>} */

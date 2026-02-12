@@ -1,7 +1,7 @@
 /**
  * @param {string} fileName
  * @param {string=} outputType
- * @return {!Uint8Array|string}
+ * @return {Uint8Array|string}
  */
 const readFileSync = (fileName, outputType) => { }
 

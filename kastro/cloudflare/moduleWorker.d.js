@@ -13,13 +13,13 @@ import { CfRequest } from "./types.d";
 function Context() { }
 
 /**
- * @param {!Promise<*>} promise
+ * @param {Promise<*>} promise
  */
 Context.prototype.waitUntil = function (promise) { }
 
 /**
  * @typedef {{
- *   fetch: function(!CfRequest, ?=, !Context=):(!Promise<!Response>|!Response)
+ *   fetch: function(!CfRequest, ?=, !Context=):(Promise<!Response>|!Response)
  * }}
  */
 const ModuleWorker = {};
@@ -34,7 +34,7 @@ function ModuleWorkerStub() { }
  *
  * @param {!RequestInfo} input
  * @param {!RequestInit=} init
- * @return {!Promise<!Response>}
+ * @return {Promise<!Response>}
  * @see https://fetch.spec.whatwg.org/#fetch-method
  * @see https://developers.cloudflare.com/workers/runtime-apis/fetch/
  */

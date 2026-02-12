@@ -12,7 +12,7 @@ import evm from "../evm";
  */
 const addr = (privKey) => {
   const { x, y } = G.copy().multiply(privKey).project();
-  /** @const {!Uint8Array} */
+  /** @const {Uint8Array} */
   const buff = hex.toUint8Array(evm.uint256(x) + evm.uint256(y));
   return "0x" + hex.from(new Uint8Array(
     keccak256Uint32(new Uint32Array(buff.buffer)).buffer, 12, 20));
@@ -35,11 +35,11 @@ const addr = (privKey) => {
 * }}
 */
 const sign = (digest, privKey) => {
-  /** @type {!Uint8Array} */
+  /** @type {Uint8Array} */
   const bytes = new Uint8Array(64);
   bigints.intoBytesBE(bytes, 32, digest);
   bigints.intoBytesBE(bytes, 64, privKey);
-  /** @const {!Uint32Array} */
+  /** @const {Uint32Array} */
   const buff = new Uint32Array(bytes.buffer);
 
   for (; ; ++buff[0]) {
@@ -119,7 +119,7 @@ class MockSigner {
    *
    * @param {string} message
    * @param {string} address
-   * @return {!Promise<eth.CompactSignature>}
+   * @return {Promise<eth.CompactSignature>}
    */
   signMessage(message, address) {
     if (address.toLowerCase() != addr(this.privKey))
@@ -137,7 +137,7 @@ class MockSigner {
    *
    * @param {string} message
    * @param {string} address
-   * @return {!Promise<!ArrayBuffer>}
+   * @return {Promise<ArrayBuffer>}
    */
   deriveSecret(message, address) {
     if (address.toLowerCase() != addr(this.privKey))

@@ -6,7 +6,7 @@ import { getGlobals } from "./transpiler/pageGlobals";
 
 /**
  * @param {Props} props
- * @return {!Promise<string>}
+ * @return {Promise<string>}
  */
 const Script = (props) => {
   const [file,] = splitFullExt(props.src);

@@ -5,13 +5,13 @@ import { arfCurve, Point as IPoint } from "../arfCurve";
 import { P } from "../secp256k1";
 
 /** @typedef {IPoint} Point */
-/** @const {function(new: IPoint, bigint, bigint, bigint=)} */
+/** @const {new (x: bigint, y: bigint, z?: bigint) => IPoint} */
 const Point = arfCurve(P);
 
 /**
- * @param {!Point} P
+ * @param {Point} P
  * @param {bigint} n
- * @return {!Point}
+ * @return {Point}
  */
 const multiply2 = (P, n) => {
   if (!n) {
@@ -19,7 +19,7 @@ const multiply2 = (P, n) => {
   } else {
     /** @const {string} */
     const nBits = n.toString(2);
-    /** @const {!Point} */
+    /** @const {Point} */
     const d = P.copy();
 
     for (let i = 1; i < nBits.length; ++i) {
@@ -31,13 +31,13 @@ const multiply2 = (P, n) => {
   return P;
 }
 
-/** @const {!Point} */
-const O = /** @type {!Point} */({ x: 0n, y: 0n, z: 0n });
+/** @const {Point} */
+const O = /** @type {Point} */({ x: 0n, y: 0n, z: 0n });
 
 /**
- * @param {!Point} P
+ * @param {Point} P
  * @param {bigint} n
- * @return {!Point}
+ * @return {Point}
  */
 const multiply4 = (P, n) => {
   if (!n) {
@@ -47,7 +47,7 @@ const multiply4 = (P, n) => {
     const nNibbles = n.toString(4);
     const P2 = P.copy().double();
     const P3 = P2.copy().increment(P);
-    /** @const {!Array<!Point>} */
+    /** @const {Point[]} */
     const d = [O, P.copy(), P2, P3];
     ({ x: P.x, y: P.y, z: P.z } = d[nNibbles.charCodeAt(0) - 48]);
     for (let i = 1; i < nNibbles.length; ++i) {
@@ -59,9 +59,9 @@ const multiply4 = (P, n) => {
 }
 
 /**
- * @param {!Point} P
+ * @param {Point} P
  * @param {bigint} n
- * @return {!Point}
+ * @return {Point}
  */
 const multiply8 = (P, n) => {
   if (!n) {
@@ -72,7 +72,7 @@ const multiply8 = (P, n) => {
     const P2 = P.copy().double();
     const P3 = P2.copy().increment(P);
     const P4 = P2.copy().double();
-    /** @const {!Array<!Point>} */
+    /** @const {Point[]} */
     const d = [
       O, P.copy(), P2, P3, P4, P4.copy().increment(P),
       P4.copy().increment(P2), P3.copy().increment(P4)
@@ -88,7 +88,7 @@ const multiply8 = (P, n) => {
 
 /**
  * @noinline
- * @const {!Point}
+ * @const {Point}
  */
 const G = new Point(
   0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798n,
@@ -96,7 +96,7 @@ const G = new Point(
 );
 
 /** @const {bigint} */
-const k = bigints.fromBytesBE(/** @type {!Uint8Array} */(
+const k = bigints.fromBytesBE(/** @type {Uint8Array} */(
   crypto.getRandomValues(new Uint8Array(32)))) % P;
 const kG = G.copy().multiply(k).project();
 
@@ -124,8 +124,8 @@ const modP = (x) => {
 /**
  * Here is a incorrect "optimization".
  *
- * @param {!Point} R
- * @return {!Point}
+ * @param {Point} R
+ * @return {Point}
  */
 const double = (R) => {
   const { x, y, z } = R;
@@ -144,8 +144,8 @@ const double = (R) => {
 }
 
 /**
- * @param {!Point} R
- * @return {!Point}
+ * @param {Point} R
+ * @return {Point}
  */
 const doubleRight = (R) => {
   const { x, y, z } = R;
@@ -163,8 +163,8 @@ const doubleRight = (R) => {
 }
 
 /**
- * @param {!Point} R
- * @return {!Point}
+ * @param {Point} R
+ * @return {Point}
  */
 const doubleRight2 = (R) => {
   const { x, y, z } = R;
@@ -183,8 +183,8 @@ const doubleRight2 = (R) => {
 
 
 /**
- * @param {!Point} R
- * @return {!Point}
+ * @param {Point} R
+ * @return {Point}
  */
 const doubleRightShift = (R) => {
   const { x, y } = R;
@@ -201,8 +201,8 @@ const doubleRightShift = (R) => {
 }
 
 /**
- * @param {!Point} R
- * @return {!Point}
+ * @param {Point} R
+ * @return {Point}
  */
 const doubleRightShift2 = (R) => {
   const { x, y } = R;
@@ -219,8 +219,8 @@ const doubleRightShift2 = (R) => {
 }
 
 /**
- * @param {!Point} R
- * @return {!Point}
+ * @param {Point} R
+ * @return {Point}
  */
 const doubleGPT = (R) => {
   const { x, y, z } = R;

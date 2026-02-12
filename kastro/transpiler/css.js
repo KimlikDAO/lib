@@ -4,14 +4,14 @@ import { DomIdMapper } from "./domIdMapper";
 
 /**
  * @typedef {{
- *   default: !Object<string, string>
+ *   default: Record<string, string>
  * }}
  */
 export const CssModule = {};
 
-/** @const {!RegExp} */
+/** @const {RegExp} */
 const ExportAsPattern = /@export\s*{(.*)}/;
-/** @const {!RegExp} */
+/** @const {RegExp} */
 const DomNamespacePattern = /@domNamespace\s*{(.*)}/;
 
 /**
@@ -31,7 +31,7 @@ const selectorToEnumKey = (selector) => {
 
 /**
  * @param {string} file
- * @param {!csstree.Node} node
+ * @param {csstree.Node} node
  * @param {string} message
  * @return {string}
  */
@@ -40,7 +40,7 @@ const errorMessage = (file, node, message) => `Error in ${file}:${node.loc}: ${m
 /**
  * @param {string} file The name of the file
  * @param {string} content css file content to be converted to a js enum
- * @param {!DomIdMapper} domIdMapper
+ * @param {DomIdMapper} domIdMapper
  * @return {string}
  */
 const getEnum = (file, content, domIdMapper) => {
@@ -48,23 +48,23 @@ const getEnum = (file, content, domIdMapper) => {
   const context = `${splitFullExt(file)[0]}.jsx`;
   /** @const {!csstree.StyleSheet} */
   const ast = csstree.parse(content.replaceAll("/**", "/*!"));
-  /** @const {!Object<string, string>} */
+  /** @const {Record<string, string>} */
   const enumEntries = {};
   /** @type {string} */
   let namespace = "mpa";
-  /** @const {!Array<?csstree.ListItem>} */
+  /** @const {(csstree.ListItem | null)[]} */
   const stack = [];
 
   for (
-    let /** @type {?csstree.ListItem} */ current = ast.children.head;
+    let /** @type {csstree.ListItem | null} */ current = ast.children.head;
     current;
-    current = /** @type {?csstree.ListItem} */(current.next || stack.pop())
+    current = /** @type {csstree.ListItem | null} */(current.next || stack.pop())
   ) {
-    /** @const {!csstree.CssNode} */
+    /** @const {csstree.CssNode} */
     const node = current.data;
 
     if (node.type === "Comment") {
-      const comment = /** @type {!csstree.Comment} */(node);
+      const comment = /** @type {csstree.Comment} */(node);
       const nsMatch = comment.value.match(DomNamespacePattern);
       if (nsMatch) {
         if (Object.keys(enumEntries).length > 0)
@@ -72,13 +72,13 @@ const getEnum = (file, content, domIdMapper) => {
         namespace = nsMatch[1].trim();
       }
     } else if (node.type === "Rule") {
-      /** @type {?string} */
+      /** @type {string | null} */
       let enumKey = null;
       /** @type {boolean} */
       let isPreserved = false;
       if (current.prev && current.prev.data.type === "Comment") {
         /** @const {string} */
-        const comment = /** @type {!csstree.Comment} */(current.prev.data).value;
+        const comment = /** @type {csstree.Comment} */(current.prev.data).value;
         const exportMatch = comment.match(ExportAsPattern);
         if (exportMatch)
           enumKey = exportMatch[1].trim();
@@ -87,20 +87,20 @@ const getEnum = (file, content, domIdMapper) => {
         isPreserved = comment.includes("@preserve");
       }
       if (enumKey !== null) {
-        /** @const {!csstree.Rule} */
-        const rule = /** @type {!csstree.Rule} */(node);
+        /** @const {csstree.Rule} */
+        const rule = /** @type {csstree.Rule} */(node);
         if (!rule.prelude || rule.prelude.type !== "SelectorList")
           throw errorMessage(file, node, "Invalid selector");
 
-        /** @const {!csstree.SelectorList} */
+        /** @const {csstree.SelectorList} */
         const selector = rule.prelude;
-        /** @const {!csstree.Selector} */
-        const simpleSelector = /** @type {!csstree.Selector} */(selector.children.head.data);
+        /** @const {csstree.Selector} */
+        const simpleSelector = /** @type {csstree.Selector} */(selector.children.head.data);
 
         if (selector.children.head !== selector.children.tail)
           throw errorMessage(file, node, "Only simple singleton selectors can be exported");
 
-        /** @type {?string} */
+        /** @type {string | null} */
         let baseSelector = null;
         for (let part = simpleSelector.children.head; part; part = part.next) {
           if (part.data.type === "ClassSelector" || part.data.type === "IdSelector") {
@@ -120,8 +120,8 @@ const getEnum = (file, content, domIdMapper) => {
           ? domIdMapper.preserve(namespace, baseSelector)
           : domIdMapper.map(namespace, context, baseSelector);
       }
-    } else if (node.type === "Atrule" && /** @type {!csstree.Atrule} */(node).name === "media")
-      stack.push(/** @type {!csstree.Atrule} */(node).block.children.head);
+    } else if (node.type === "Atrule" && /** @type {csstree.Atrule} */(node).name === "media")
+      stack.push(/** @type {csstree.Atrule} */(node).block.children.head);
 
   }
   const entries = Object.keys(enumEntries).sort();
@@ -135,7 +135,7 @@ const getEnum = (file, content, domIdMapper) => {
 /**
  * @param {string} file The name of the file
  * @param {string} content css file content to be converted to a js enum
- * @param {!DomIdMapper} domIdMapper
+ * @param {DomIdMapper} domIdMapper
  * @return {string} js code that exports the enum
  */
 const transpile = (file, content, domIdMapper) => {
@@ -150,22 +150,22 @@ const transpile = (file, content, domIdMapper) => {
  *
  * @param {string} file Path to the css file
  * @param {string} content css file content to be minified
- * @param {!DomIdMapper} domIdMapper
+ * @param {DomIdMapper} domIdMapper
  * @return {{
  *   content: string,
- *   enumEntries: (!Object<string, string>)
+ *   enumEntries: Record<string, string>
  * }}
  */
 const minify = (file, content, domIdMapper) => {
   /** @const {string} */
   const context = `${splitFullExt(file)[0]}.jsx`;
-  /** @const {!csstree.StyleSheet} */
+  /** @const {csstree.StyleSheet} */
   const ast = csstree.parse(content.replaceAll("/**", "/*!"));
-  /** @const {!Object<string, string>} */
+  /** @const {Record<string, string>} */
   const enumEntries = {};
   /** @type {string} */
   let namespace = "mpa";
-  /** @const {!Array<?csstree.ListItem>} */
+  /** @const {(csstree.ListItem | null)[]} */
   const stack = [];
 
   for (
@@ -173,11 +173,11 @@ const minify = (file, content, domIdMapper) => {
     current;
     current = current.next || stack.pop()
   ) {
-    /** @const {!csstree.CssNode} */
+    /** @const {csstree.CssNode} */
     const node = current.data;
 
     if (node.type === "Comment") {
-      const comment = /** @type {!csstree.Comment} */(node);
+      const comment = /** @type {csstree.Comment} */(node);
       const nsMatch = comment.value.match(DomNamespacePattern);
       if (nsMatch) {
         if (Object.keys(enumEntries).length > 0)
@@ -185,27 +185,27 @@ const minify = (file, content, domIdMapper) => {
         namespace = nsMatch[1].trim();
       }
     } else if (node.type === "Rule") {
-      /** @type {?string} */
+      /** @type {string | null} */
       let enumKey;
       /** @type {boolean} */
       let isPreserved = false;
       if (current.prev && current.prev.data.type === "Comment") {
         /** @const {string} */
-        const comment = /** @type {!csstree.Comment} */(current.prev.data).value;
+        const comment = /** @type {csstree.Comment} */(current.prev.data).value;
         const exportMatch = comment.match(ExportAsPattern);
         if (exportMatch)
           enumKey = exportMatch[1].trim();
         isPreserved = comment.includes("@preserve");
       }
 
-      /** @const {!csstree.Rule} */
-      const rule = /** @type {!csstree.Rule} */(node);
+      /** @const {csstree.Rule} */
+      const rule = /** @type {csstree.Rule} */(node);
       if (!rule.prelude || rule.prelude.type !== "SelectorList") {
         console.log("second", rule);
         throw errorMessage(file, node, "Invalid selector");
       }
 
-      /** @const {!csstree.SelectorList} */
+      /** @const {csstree.SelectorList} */
       const selectorList = rule.prelude;
 
       if (enumKey && selectorList.children.head !== selectorList.children.tail)
@@ -227,8 +227,8 @@ const minify = (file, content, domIdMapper) => {
           }
         }
       }
-    } else if (node.type === "Atrule" && /** @type {!csstree.Atrule} */(node).name === "media")
-      stack.push(/** @type {!csstree.Atrule} */(node).block.children.head);
+    } else if (node.type === "Atrule" && /** @type {csstree.Atrule} */(node).name === "media")
+      stack.push(/** @type {csstree.Atrule} */(node).block.children.head);
   }
   return { content: csstree.generate(ast), enumEntries };
 };

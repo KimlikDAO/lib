@@ -2,7 +2,7 @@ import dom from "../util/dom";
 
 /**
  * @param {{
- *   routeHandler: function(string):void
+ *   routeHandler: (string) => void
  * }} props
  */
 const Router = ({ routeHandler }) => {

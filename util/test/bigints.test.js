@@ -48,6 +48,7 @@ describe("intoBytesBE", () => {
   });
 
   it("should handle leading zeros", () => {
+    /** @const {{ size: number, value: bigint, expected: number[] }[]} */
     const testCases = [
       { size: 2, value: 0x0012n, expected: [0x00, 0x12] },
       { size: 3, value: 0x000789n, expected: [0x00, 0x07, 0x89] },
@@ -117,6 +118,7 @@ describe("intoBytesLE", () => {
 
 describe("fromBytesBE", () => {
   it("should convert bytes back to BigInt", () => {
+    /** @const {{ value: bigint, bytes: Uint8Array }[]} */
     const testCases = [
       { value: 0n, bytes: new Uint8Array([0]) },
       { value: 255n, bytes: new Uint8Array([255]) },
@@ -133,6 +135,7 @@ describe("fromBytesBE", () => {
 
 describe("fromBytesLE", () => {
   it("should convert little-endian bytes to BigInt", () => {
+    /** @const {{ value: bigint, bytes: Uint8Array }[]} */
     const testCases = [
       { value: 0n, bytes: new Uint8Array([0]) },
       { value: 255n, bytes: new Uint8Array([255]) },
@@ -160,6 +163,7 @@ describe("fromBytesLE", () => {
 
 describe("round trip conversions", () => {
   it("should preserve values through BE conversions", () => {
+    /** @const {bigint[]} */
     const testValues = [
       0n,
       1n,
@@ -180,6 +184,7 @@ describe("round trip conversions", () => {
   });
 
   it("should preserve values through LE conversions", () => {
+    /** @const {bigint[]} */
     const testValues = [
       0n,
       1n,

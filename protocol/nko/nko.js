@@ -17,7 +17,7 @@ const ErrorCode = {
 
 /**
  * @param {string} commitmentPow 
- * @return {!Promise<string>}
+ * @return {Promise<string>}
  */
 const getPDFCommitment = (commitmentPow) => fetch(`//${SeedNodes[0]}/edevlet/nko/commit?${commitmentPow}`)
   .then((res) => res.text())
@@ -25,10 +25,10 @@ const getPDFCommitment = (commitmentPow) => fetch(`//${SeedNodes[0]}/edevlet/nko
 
 /**
  * @param {string} commitmentPow
- * @param {!FormData} pdfFormData
+ * @param {FormData} pdfFormData
  * @param {number} clientTime
  * @param {number} numSigners
- * @return {!Promise<!Array<!did.DecryptedSections>>}
+ * @return {Promise<did.DecryptedSections[]>}
  */
 const getCredentialsFromPDF = (commitmentPow, pdfFormData, clientTime, numSigners) =>
   Promise.allSettled(SeedNodes
@@ -37,17 +37,17 @@ const getCredentialsFromPDF = (commitmentPow, pdfFormData, clientTime, numSigner
       fetch(`//${node}/edevlet/nko?${commitmentPow}&ts=${clientTime}`, {
         method: "POST",
         body: pdfFormData
-      }).then((/** @type {!Response} */ res) => res.json()
+      }).then((/** @type {Response} */ res) => res.json()
         .then((data) => res.ok && data ? data : Promise.reject(data))
       ))
-  ).then((/** @type {!Array<!Promise.AllSettledResultElement<!did.DecryptedSections>>} */
+  ).then((/** @type {Promise.AllSettledResultElement<did.DecryptedSections>[]} */
     results) => results
       .filter((result) => result.status == "fulfilled")
       .map((result) => result.value)
   );
 
 /**
- * @return {!Promise<number>}
+ * @return {Promise<number>}
  */
 const getPoWThreshold = () => Promise.resolve(20_000);
 

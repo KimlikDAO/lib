@@ -23,5 +23,5 @@ eth.GetLogs.prototype.toBlock;
 /** @type {string} */
 eth.GetLogs.prototype.address;
 
-/** @type {Array<string>} */
+/** @type {string[]} */
 eth.GetLogs.prototype.topics;

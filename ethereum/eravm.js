@@ -1,7 +1,7 @@
 import { keccak256Uint8 } from "../crypto/sha3";
 import hex from "../util/hex";
 
-/** @const {!Uint8Array} */
+/** @const {Uint8Array} */
 const CreatePrefix = keccak256Uint8(new TextEncoder().encode("zksyncCreate"));
 
 /**
@@ -13,7 +13,7 @@ const CreatePrefix = keccak256Uint8(new TextEncoder().encode("zksyncCreate"));
  * @return {string}
  */
 const getCreateAddress = (deployer, nonce) => {
-  /** @const {!Uint8Array} */
+  /** @const {Uint8Array} */
   const out = new Uint8Array(96);
   out.set(CreatePrefix);
   for (let /** number */ i = 1; i <= 20; ++i)

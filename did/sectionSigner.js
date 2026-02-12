@@ -29,14 +29,14 @@ const signHumanID = (humanID, privateKey) => {
 
 /**
  * @param {!did.HumanID} humanID
- * @return {!Array<string>}
+ * @return {string[]}
  */
 const recoverHumanIDSigners = (humanID, ownerAddress) => {
   if (!humanID.commitment)
     humanID.commitment = commit(ChainGroup.MINA, ownerAddress, humanID.commitmentR);
   /** @const {!Set<string>} */
   const signers = new Set();
-  /** @const {!Array<bigint>} */
+  /** @const {bigint[]} */
   const fields = [
     BigInt(humanID.signatureTs),
     base64.toBigInt(humanID.commitment),
@@ -75,7 +75,7 @@ const signSection = (sectionName, section, signParams) => {
  * @param {!did.Section} section
  * @param {ChainGroup} chainGroup
  * @param {string} ownerAddress
- * @return {!Array<string>}
+ * @return {string[]}
  */
 const recoverSectionSigners = (sectionName, section, chainGroup, ownerAddress) => {
   if (sectionName != "exposureReport" && !section.commitment)
@@ -83,7 +83,7 @@ const recoverSectionSigners = (sectionName, section, chainGroup, ownerAddress) =
 
   /** @const {string} */
   const h = hash(sectionName, section);
-  /** @const {!Array<string>} */
+  /** @const {string[]} */
   const signers = section.secp256k1.map((signature) => signerAddress(h, signature));
   return [...new Set(signers)];
 }

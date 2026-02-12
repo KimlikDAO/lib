@@ -216,7 +216,7 @@ const expTimesExpW = (a, x, b, y, M) => {
     yBits = yBits.padStart(xBits.length, "0");
   else if (yBits.length > xBits.length)
     xBits = xBits.padStart(yBits.length, "0");
-  /** @const {!Array<bigint>} */
+  /** @const {bigint[]} */
   const d = [1n, a, b, a * b % M];
   /** @type {bigint} */
   let r = d[(xBits.charCodeAt(0) - 48) + 2 * (yBits.charCodeAt(0) - 48)];

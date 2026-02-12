@@ -5,7 +5,7 @@ import { keccak256Uint8 } from "../sha3";
 
 const benchGetNonsmooth = () => {
   console.time("getNonsmooth()");
-  /** @type {!Uint8Array} */
+  /** @type {Uint8Array} */
   let seed = Uint8Array.from("00000000000000000000000000000123");
 
   for (let i = 0; i < 1000; ++i) {

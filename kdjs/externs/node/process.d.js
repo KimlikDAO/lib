@@ -17,7 +17,7 @@ process.cwd = () => { };
  */
 process.on = (event, handler) => { }
 
-/** @const {!Array<string>} */
+/** @const {string[]} */
 process.argv;
 
 /** @const {!Object<string, string>} */

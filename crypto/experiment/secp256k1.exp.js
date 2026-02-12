@@ -20,7 +20,7 @@ assertEq(2n * 2n * 3n * 20412485227n
  *
  * y^2 = x^3 + 1
  *
- * @const {function(new:IPoint, bigint, bigint, bigint=)}
+ * @const {new (x: bigint, y: bigint, z?: bigint) => IPoint}
  */
 const Point = arfCurve(P);
 /**
@@ -30,18 +30,18 @@ const Point = arfCurve(P);
  *
  * y^2 = x^3 + 1
  *
- * @const {function(new:IPoint, bigint, bigint, bigint=)}
+ * @const {new (x: bigint, y: bigint, z?: bigint) => IPoint}
  */
 const Qoint = arfCurve(Q);
 
 /**
  * Returns a random even point.
  *
- * @return {!Point}
+ * @return {Point}
  */
 Point.random = () => {
   for (; ;) {
-    const x = bigints.fromBytesBE(/** @type {!Uint8Array} */(
+    const x = bigints.fromBytesBE(/** @type {Uint8Array} */(
       crypto.getRandomValues(new Uint8Array(32)))) % P;
     const y2 = (x * x * x + 1n) % P;
     const y = sqrt(y2);
@@ -54,7 +54,7 @@ console.log(Q % 4n, P % 4n);
 console.log(P % 3n, Q % 3n);
 
 /**
- * @const {!Point}
+ * @const {Point}
  */
 const G1 = new Point(1n, 0n);
 const G2 = new Point(P - 1n, 0n)

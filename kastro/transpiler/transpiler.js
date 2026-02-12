@@ -3,7 +3,7 @@ import { DomIdMapper, GlobalMapper } from "./domIdMapper";
 import jsx from "./jsx";
 import { getGlobals } from "./pageGlobals";
 
-/** @type {!DomIdMapper} */
+/** @type {DomIdMapper} */
 const IdMapper = new GlobalMapper();
 
 const minifyCss = (content, file) =>

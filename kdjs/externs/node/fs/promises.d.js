@@ -1,20 +1,20 @@
 /**
  * @param {string} dirName
- * @return {!Promise<!Array<string>>}
+ * @return {Promise<string[]>}
  */
 const readdir = (dirName) => { }
 
 /**
  * @param {string} fileName
  * @param {string=} outputType
- * @return {!Promise<!Uint8Array>|!Promise<string>}
+ * @return {Promise<Uint8Array>|Promise<string>}
  */
 const readFile = (fileName, outputType) => { }
 
 /**
  * @param {string} fileName
  * @param {string} content
- * @return {!Promise<void>}
+ * @return {Promise<void>}
  */
 const writeFile = (fileName, content) => { }
 
@@ -23,6 +23,6 @@ const writeFile = (fileName, content) => { }
  * @param {{
  *   recursive: boolean
  * }=} options
- * @return {!Promise<void>}
+ * @return {Promise<void>}
  */
 const mkdir = (fileName, options) => { }

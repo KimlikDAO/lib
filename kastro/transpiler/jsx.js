@@ -139,7 +139,7 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
    * @return {string}
    */
   const getJsxTagName = (node) => {
-    /** @type {!Array<string>} */
+    /** @type {string[]} */
     const parts = [];
     /** @type {!acorn.Node} */
     let current = node.openingElement.name;
@@ -156,7 +156,7 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
    * @param {!acorn.JSXElement|!acorn.JSXFragment} node The jsx expression root to process
    * @param {acorn.JSXElement} parent The parent element
    * @param {number} childIndex The index of the child element
-   * @param {!Array<string>} statements The array to emit the statements into
+   * @param {string[]} statements The array to emit the statements into
    * @return {number} The number of immediate child elements (1 for JSXElement, n for JSXFragment)
    */
   const processJsxElement = (node, parent, childIndex, statements) => {
@@ -387,10 +387,10 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
     for (const comment of comments) {
       /** @const {string} */
       const text = comment.value;
-      /** @const {!Array<string>} */
+      /** @const {string[]} */
       const typeBlocks = text.match(TypePattern) || [];
       for (const block of typeBlocks) {
-        /** @const {!Array<string>} */
+        /** @const {string[]} */
         const identifiers = block.match(IdentPattern) || [];
         for (const ident of identifiers) {
           const rootIdent = ident.split('.')[0];

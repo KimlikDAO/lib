@@ -3,6 +3,7 @@ import base64 from "../base64";
 
 describe("base64.from", () => {
   it("should encode bytes to base64", () => {
+    /** @const {{ input: Uint8Array, expected: string }[]} */
     const testCases = [
       { input: new Uint8Array([]), expected: "" },
       { input: new Uint8Array([104, 101, 108, 108, 111]), expected: "aGVsbG8=" },  // "hello"
@@ -18,6 +19,7 @@ describe("base64.from", () => {
 
 describe("base64.toBytes", () => {
   it("should decode base64 to bytes", () => {
+    /** @const {{ input: string, expected: Uint8Array }[]} */
     const testCases = [
       { input: "", expected: new Uint8Array([]) },
       { input: "aGVsbG8=", expected: new Uint8Array([104, 101, 108, 108, 111]) },  // "hello"
@@ -33,6 +35,7 @@ describe("base64.toBytes", () => {
 
 describe("base64.intoBytes", () => {
   it("should decode base64 into existing buffer", () => {
+    /** @const {{ input: string, length: number }[]} */
     const testCases = [
       { input: "aGVsbG8=", length: 5 },  // "hello"
       { input: "dGVzdA==", length: 4 },  // "test"
@@ -49,6 +52,7 @@ describe("base64.intoBytes", () => {
 
 describe("base64.fromBigInt", () => {
   it("should encode BigInts to base64", () => {
+    /** @const {{ input: bigint, expected: string }[]} */
     const testCases = [
       { input: 0n, expected: "AA==" },
       { input: 255n, expected: "/w==" },
@@ -64,6 +68,7 @@ describe("base64.fromBigInt", () => {
 
 describe("base64.toBigInt", () => {
   it("should decode base64 to BigInt", () => {
+    /** @const {{ input: string, expected: bigint }[]} */
     const testCases = [
       { input: "AA==", expected: 0n },
       { input: "/w==", expected: 255n },
@@ -79,6 +84,7 @@ describe("base64.toBigInt", () => {
 
 describe("round trip conversions", () => {
   it("should preserve bytes through base64 conversion", () => {
+    /** @const {Uint8Array[]} */
     const testCases = [
       new Uint8Array([]),
       new Uint8Array([0]),
@@ -95,6 +101,7 @@ describe("round trip conversions", () => {
   });
 
   it("should preserve BigInts through base64 conversion", () => {
+    /** @const {bigint[]} */
     const testValues = [
       0n,
       1n,

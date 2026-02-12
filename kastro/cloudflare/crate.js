@@ -6,11 +6,11 @@ import workers from "./workers";
 /**
  * @param {string} crateName
  * @param {{ CloudflareAuth: Auth }} secrets
- * @param {!Object<string, string>} namedAssets
+ * @param {Record<string, string>} namedAssets
  */
 const deploy = (crateName, secrets, namedAssets) => import(crateName)
   .then((crate) => {
-    /** @const {!Object<string, string>} */
+    /** @const {Record<string, string>} */
     const etags = {};
     for (const name of namedAssets)
       etags[name] = `"${namedAssets[name]}"`;

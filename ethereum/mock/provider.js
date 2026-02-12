@@ -18,7 +18,7 @@ function MockProvider(privKey) {
  * @override
  *
  * @param {!eth.Request} req
- * @return {!Promise<string>|!Promise<!Array<string>>}
+ * @return {Promise<string>|Promise<string[]>}
  */
 MockProvider.prototype.request = function (req) {
   switch (req.method) {

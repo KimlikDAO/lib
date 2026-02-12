@@ -3,14 +3,14 @@ import { ApiV4 } from "./api";
 
 /**
  * @param {string} crateName
- * @param {!Object} secrets
- * @param {!Array<string>} namedAssets
+ * @param {Record<string, unknown>} secrets
+ * @param {string[]} namedAssets
  */
 const purge = async (crateName, secrets, namedAssets) => {
   const { HostUrl } = await import(crateName);
   const { zoneId, token } = secrets.CloudflareAuth;
   namedAssets.push("");
-  /** @const {!Array<!Array<string>>} */
+  /** @const {string[][]} */
   const batches = chunk(namedAssets, 30);
   for (let i = 0; i < batches.length; ++i) {
     console.log(`Purging batch ${i + 1} of ${batches.length}:`, batches[i]);

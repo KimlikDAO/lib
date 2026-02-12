@@ -24,7 +24,7 @@ UglifyJS.MinifyOptions = {};
  * @param {UglifyJS.MinifyOptions} options
  * @return {{
  *   code: string,
- *   warnings: (!Array<string>|undefined),
+ *   warnings: (string[]|undefined),
  *   error: ?,
  * }}
  */

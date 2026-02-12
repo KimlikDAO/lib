@@ -7,16 +7,16 @@ const FromUint4 = "0123456789abcdef";
 /**
  * @const {string[]}
  */
-const FromUint8 = /** @pureOrBreakMyCode */((() => {
+const FromUint8 = (/** @return {string[]} */ () => {
   /** @const {string[]} */
   const arr = Array(256);
   for (let i = 0; i < 256; ++i)
-    arr[i] = FromUint4[i >> 4] + FromUint4[i & 15];
+    arr[i] = /** @type {string} */(FromUint4[i >> 4]) + FromUint4[i & 15];
   return arr;
-})());
+})();
 
 /** @const {Record<string, string>} */
-const ToBinary = /** @pureOrBreakMyCode */((() => {
+const ToBinary = (/** @return {Record<string, string>} */ () => {
   /** @const {Record<string, string>} */
   const toBinary = {};
   for (let i = 0; i < 16; ++i) {
@@ -26,7 +26,7 @@ const ToBinary = /** @pureOrBreakMyCode */((() => {
       = i.toString(2).padStart(4, "0");
   }
   return toBinary;
-})());
+})();
 
 /**
  * @nosideeffects
@@ -34,9 +34,10 @@ const ToBinary = /** @pureOrBreakMyCode */((() => {
  * @return {string}
  */
 const toBinary = (hexStr) =>
-  Array.from(hexStr, (/** string */ s) => ToBinary[s]).join("");
+  Array.from(hexStr, (/** @type {string} */ s) => ToBinary[s]).join("");
 
 /**
+ * TODO(KimlikDAO-bot): Switch to Uint8Array.toHex() once GCC supports it.
  * @nosideeffects
  * @noinline
  * @param {Uint8Array|number[]} bytes

@@ -1,11 +1,11 @@
 import { filterGlobalProps } from "../props";
 
-/** @type {!Object<string, *>} */
+/** @type {Record<string, unknown>} */
 let Globals = {};
 
 /**
- * @param {!Object<string, *>} newGlobals - An object containing key-value pairs to set as globals.
- * @return {!Object<string, *>} The new globals object.
+ * @param {Record<string, unknown>} newGlobals - An object containing key-value pairs to set as globals.
+ * @return {Record<string, unknown>} The new globals object.
  */
 const initGlobals = (globalsData) => Globals = new Proxy(filterGlobalProps(globalsData), {
   set(target, key, value) {
@@ -20,7 +20,7 @@ const initGlobals = (globalsData) => Globals = new Proxy(filterGlobalProps(globa
 /**
  * Retrieves the current page compile time globals.
  *
- * @return {!Object<string, *>} The current page global state.
+ * @return {Record<string, unknown>} The current page global state.
  */
 const getGlobals = () => Globals;
 

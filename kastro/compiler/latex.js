@@ -85,7 +85,7 @@ const Substitute = {
 /**
  * TeX book p. 170
  *
- * @const {!Array<!Array<number>>}
+ * @const {!Array<number[]>}
  */
 const SpaceTable = [
   [0, 1, 2, 3, 0, 0, 0, 1],
@@ -273,7 +273,7 @@ const renderParagraph = (paragraph) => {
 
   }
 
-  /** @const {!Array<string>} */
+  /** @const {string[]} */
   const parts = paragraph.split("$");
   if (parts.length % 2 == 0)
     return paragraph;

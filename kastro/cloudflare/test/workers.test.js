@@ -5,7 +5,7 @@ import { Auth } from "../api";
 import workers from "../workers";
 
 /**
- * @return {!Promise<Auth>}
+ * @return {Promise<Auth>}
  */
 const getAuth = () => {
   /** @const {Auth} */
@@ -32,7 +32,7 @@ describe("Tests with Cloudflare auth", async () => {
     /** @const {string} */
     const code = `export default {fetch(){return new Response("${name}",{headers:{"content-type":"text/plain"}})}}`;
 
-    const uploadResult = await workers.upload(auth, name, code);
+    const uploadResult = await workers.upload(auth, name, code, []);
     expect(uploadResult.success).toBeTrue();
 
     const workersDevResult = await workers.enableWorkersDev(auth, name);

@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import base58 from "../base58";
 import hex from "../hex";
 
-/** @const {!Array<!Array<string>>} */
+/** @const {string[][]} */
 const TestVectors = [
   ["", ""],
   ["61", "2g"],

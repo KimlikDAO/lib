@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { selectEncryptedSections } from "../../KPass";
 
 describe("Select encrypted section tests", () => {
-  /** @const {!Array<string>} */
+  /** @const {string[]} */
   const encryptedSectionsKeys = [
     "a",
     "a,b",
@@ -21,11 +21,11 @@ describe("Select encrypted section tests", () => {
   ];
 
   /**
-   * @param {!Array<string>} sections
-   * @param {!Array<string>} expected
+   * @param {string[]} sections
+   * @param {string[]} expected
    */
   const check = (sections, expected) => {
-    /** @const {!Array<string>} */
+    /** @const {string[]} */
     const selected = selectEncryptedSections(encryptedSectionsKeys, sections);
     /** @const {!Set<string>} */
     const expectSet = new Set(expected);

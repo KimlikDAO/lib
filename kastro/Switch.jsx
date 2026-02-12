@@ -5,13 +5,13 @@ import dom from "../util/dom";
  * @param {{
  *   id: string,
  *   initialPane: number,
- *   children: !Array<?function():void>,
+ *   children: (() => void | null)[],
  * }} props
  */
 const Switch = function ({ id, initialPane = 0, children }) {
   /** @type {number} */
   this.selectedPane = initialPane;
-  /** @const {!Array<?function():void>} */
+  /** @const {(() => void | null)[]} */
   this.initializers = children;
   /** @const {!HTMLDivElement} */
   const Root = dom.div(id);
@@ -35,7 +35,7 @@ Switch.prototype.showPane = function (idx) {
   /** @const {number} */
   const old = this.selectedPane;
   if (idx == old) return;
-  /** @const {?function():void} */
+  /** @const {() => void | null} */
   const f = this.initializers[idx];
   if (f) {
     f();

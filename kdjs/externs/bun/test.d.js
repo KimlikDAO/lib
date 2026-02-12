@@ -9,27 +9,27 @@ const TestOptions = {};
 
 /**
  * @param {string} description
- * @param {function():(!Promise<*>|void)} run
+ * @param {function():(Promise<*>|void)} run
  */
 const describe = function (description, run) { };
 
 /**
  * @param {string} invariant
- * @param {function():void|function():!Promise<void>} run
+ * @param {function():void|function():Promise<void>} run
  * @param {TestOptions=} testOptions
  */
 const it = function (invariant, run, testOptions) { };
 
 /**
  * @param {string} invariant
- * @param {function():void|function():!Promise<void>} run
+ * @param {function():void|function():Promise<void>} run
  * @param {TestOptions=} testOptions
  */
 const test = function (invariant, run, testOptions) { };
 
 /**
  * @param {boolean} condition
- * @return {function(string,(function():void|function():!Promise<void>),TestOptions=):void}
+ * @return {function(string,(function():void|function():Promise<void>),TestOptions=):void}
  */
 test.if = function (condition) { }
 
@@ -100,7 +100,7 @@ Matcher.prototype.fail = function (message) { }
 /**
  * @template T
  * @constructor
- * @param {!Promise<T>} actual
+ * @param {Promise<T>} actual
  */
 function PromiseMatcher(actual) { }
 

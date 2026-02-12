@@ -38,12 +38,12 @@ class Parser {
   }
 
   /**
-   * Skips whitespace characters
+   * Skips whitespace characters (including * for JSDoc continuation)
    */
   skipWhitespace() {
     for (; this.pos < this.input.length; ++this.pos) {
       const ch = this.input.charCodeAt(this.pos);
-      if (ch != 32 && ch != 9 && ch != 10 && ch != 13)
+      if (ch != 32 && ch != 9 && ch != 10 && ch != 13 && ch != 42)
         break;
     }
   }

@@ -62,7 +62,7 @@ const address = (addr) => {
  * @return {!OpData}
  */
 const pushAddress = (addr) => {
-  /** @const {!Uint8Array} */
+  /** @const {Uint8Array} */
   const out = new OpData(21);
   out[0] = Op.PUSH20;
   out.set(address(addr), 1);

@@ -2,7 +2,7 @@ import { Wallet } from "ethers";
 import { Signer } from "../../crosschain/signer";
 import evm from "../evm";
 
-/** @const {!TextEncoder} */
+/** @const {TextEncoder} */
 const Encoder = new TextEncoder();
 
 /**
@@ -15,7 +15,7 @@ class EthersSigner {
    * @param {bigint} privKey
    */
   constructor(privKey) {
-    /** @const {!Wallet} */
+    /** @const {Wallet} */
     this.wallet = new Wallet("0x" + evm.uint256(privKey));
   }
 
@@ -24,7 +24,7 @@ class EthersSigner {
    *
    * @param {string} message
    * @param {string} address
-   * @return {!Promise<eth.CompactSignature>}
+   * @return {Promise<eth.CompactSignature>}
    */
   signMessage(message, address) {
     if (this.wallet.address.toLowerCase() !== address.toLowerCase())
@@ -45,7 +45,7 @@ class EthersSigner {
    *
    * @param {string} message
    * @param {string} address
-   * @return {!Promise<!ArrayBuffer>}
+   * @return {Promise<ArrayBuffer>}
    */
   deriveSecret(message, address) {
     if (this.wallet.address.toLowerCase() !== address.toLowerCase())

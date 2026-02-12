@@ -1,5 +1,5 @@
 
-/** @const {!Array<string>} */
+/** @const {string[]} */
 const SeedNodes = [
   "node.kimlikdao.org",
   "kdao-node.blinkbridge.xyz",

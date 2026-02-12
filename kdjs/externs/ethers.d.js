@@ -37,7 +37,7 @@ Wallet.prototype.address;
 
 /**
  * @param {string} message
- * @return {!Promise<string>}
+ * @return {Promise<string>}
  */
 Wallet.prototype.signMessage = function (message) { }
 

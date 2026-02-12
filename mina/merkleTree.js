@@ -20,16 +20,16 @@ class MinaMerkleTree {
     this.height = height;
     /**
      * @private
-     * @const {!Object<string, Value>}
+     * @const {Record<string, Value>}
      */
     this.nodes = {};
-    /** @const {!Array<Value>} */
+    /** @const {Value[]} */
     const zeros = Array(height + 1);
-    /** @const {!Array<Value>} */
+    /** @const {Value[]} */
     zeros[height] = 0n;
     for (let i = height; i > 0; --i)
       zeros[i - 1] = poseidon([zeros[i], zeros[i]]);
-    /** @const {!Array<Value>} */
+    /** @const {Value[]} */
     this.zeros = zeros;
   }
 
@@ -68,13 +68,13 @@ class MinaMerkleTree {
    * @override
    *
    * @param {HexKey} key
-   * @return {!Array<WitnessElem>}
+   * @return {WitnessElem[]}
    */
   getWitness(key) {
     /** @const {number} */
     const h = this.height;
     key = hex.toBinary(key).padStart(h, "0").slice(0, h);
-    /** @const {!Array<WitnessElem>} */
+    /** @const {WitnessElem[]} */
     const witness = Array(this.height);
     for (let d = 0; key; ++d) {
       const isLeft = key.charCodeAt(key.length - 1) == 48;

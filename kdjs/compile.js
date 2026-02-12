@@ -12,9 +12,9 @@ const Params = {};
 
 /**
  * @param {!Params} params
- * @param {function(!Array<string>):!Promise<boolean>=} checkFreshFn
+ * @param {function(string[]):Promise<boolean>=} checkFreshFn
  * @param {function(string,string,boolean=):?string=} transpileFn
- * @return {!Promise<string|void>}
+ * @return {Promise<string|void>}
  */
 const compile = async (params, checkFreshFn, transpileFn) => {
   const {
@@ -23,19 +23,19 @@ const compile = async (params, checkFreshFn, transpileFn) => {
     /** @const {string} */ isolateDir,
     /** @const {boolean} */ ignoreUnusedLocals
   } = await preprocessAndIsolate(params, transpileFn);
-  /** @const {!Array<string>} */
+  /** @const {string[]} */
   const allFilesArray = Array.from(allFiles).sort();
   if (checkFreshFn && await checkFreshFn(allFilesArray))
     return;
 
-  /** @const {!Array<string>} */
+  /** @const {string[]} */
   const jsCompErrors = [
     "unusedLocalVariables",
     "checkTypes",
     "missingProperties",
     "strictCheckTypes",
   ];
-  /** @const {!Array<string>} */
+  /** @const {string[]} */
   const jsCompWarnings = [];
   if (params["strict"])
     jsCompWarnings.push("reportUnknownTypes");
@@ -44,7 +44,7 @@ const compile = async (params, checkFreshFn, transpileFn) => {
   if (ignoreUnusedLocals)
     jsCompErrors.shift();
 
-  /** @const {!Object<string, string|boolean|!Array<string>>} */
+  /** @const {!Object<string, string|boolean|string[]>} */
   const options = {
     "js": allFilesArray,
     "compilation_level": "ADVANCED",
@@ -63,7 +63,7 @@ const compile = async (params, checkFreshFn, transpileFn) => {
     "entry_point": /** @type {string} */(params["entry"]),
   };
   if (params["define"])
-    options["define"] = /** @type {(!Array<string>|boolean|string)} */(params["define"]);
+    options["define"] = /** @type {(string[]|boolean|string)} */(params["define"]);
 
   const closureCompiler = new ClosureCompiler(options);
   closureCompiler.spawnOptions = {

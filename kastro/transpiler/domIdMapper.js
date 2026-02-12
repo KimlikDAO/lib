@@ -33,22 +33,22 @@ const indexToMinified = (index) => {
 /**
  * @interface
  */
-const DomIdMapper = function () { }
+class DomIdMapper {
+  /**
+   * @param {string} namespace
+   * @param {string} context
+   * @param {string} domId
+   * @return {string} the mapped id
+   */
+  map(namespace, context, domId) { }
 
-/**
- * @param {string} namespace
- * @param {string} context
- * @param {string} domId
- * @return {string} the mapped id
- */
-DomIdMapper.prototype.map = function (namespace, context, domId) { }
-
-/**
- * @param {string} namespace
- * @param {string} domId
- * @return {string} the mapped id
- */
-DomIdMapper.prototype.preserve = function (namespace, domId) { }
+  /**
+   * @param {string} namespace
+   * @param {string} domId
+   * @return {string} the mapped id
+   */
+  preserve(namespace, domId) { }
+}
 
 /**
  * @param {string} key 
@@ -63,11 +63,11 @@ const hashKey = (key) => "K" +
  * @implements {DomIdMapper}
  */
 class GlobalMapper {
-  /** @const {!Map<string, number>} */
+  /** @const {Map<string, number>} */
   namespaceToNext = new Map();
-  /** @const{!Map<string, number>} */
+  /** @const {Map<string, number>} */
   keyToIndex = new Map();
-  /** @const {!Set<string>} */
+  /** @const {Set<string>} */
   minifiedIds = new Set();
 
   constructor() {
@@ -115,11 +115,11 @@ class GlobalMapper {
  * @implements {DomIdMapper}
  */
 class LocalMapper {
-  /** @const {!Map<string, number>} */
+  /** @const {Map<string, number>} */
   hashToNext = new Map();
-  /** @const {!Map<string, number>} */
+  /** @const {Map<string, number>} */
   keyToIndex = new Map();
-  /** @const {!Set<string>} */
+  /** @const {Set<string>} */
   minifiedIds = new Set();
 
   /**

@@ -17,7 +17,7 @@ const getExt = (fileName, orElse = "") => {
 
 /**
  * @param {string} fileName
- * @return {!Array<string>} [path, extension] without the dot
+ * @return {string[]} [path, extension] without the dot
  */
 const splitFullExt = (fileName) => {
   const slash = fileName.lastIndexOf("/");
@@ -32,7 +32,7 @@ const splitFullExt = (fileName) => {
  * @return {string} combined path
  */
 const combine = (basePath, subPath) => {
-  /** @const {!Array<string>} */
+  /** @const {string[]} */
   const parts = basePath.split("/").concat(subPath.split("/"));
   /** @type {number} */
   let j = 0;
@@ -45,6 +45,10 @@ const combine = (basePath, subPath) => {
   return parts.slice(0, j).join('/');
 }
 
+/**
+ * @param {string} str 
+ * @return {string}
+ */
 const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
 export {

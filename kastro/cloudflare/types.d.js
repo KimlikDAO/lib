@@ -12,7 +12,7 @@ function CfRequest() { }
 
 /**
  * @const {{
- *   clientAcceptEncoding: ?string
+ *   clientAcceptEncoding: string | null
  * }}
  */
 CfRequest.prototype.cf;
@@ -33,7 +33,7 @@ Response.json = function (jsonObj, options) { }
  * @see https://developer.mozilla.org/en-US/docs/Web/API/FormData/values
  *
  * @nosideeffects
- * @return {!Iterator<!Blob>}
+ * @return {Iterator<Blob>}
  */
 FormData.prototype.values = function () { }
 
@@ -46,41 +46,41 @@ function KeyValue() { }
  * @nosideeffects
  * @param {string} key
  * @param {string=} type
- * @return {!Promise<ArrayBuffer>}
+ * @return {Promise<ArrayBuffer>}
  */
 KeyValue.prototype.get = function (key, type) { }
 
 /**
  * @param {string} key
- * @param {string|!ArrayBuffer} value
+ * @param {string | ArrayBuffer} value
  * @param {{
- *   metadata: *
+ *   metadata: unknown
  * }=} options
- * @return {!Promise<void>}
+ * @return {Promise<void>}
  */
 KeyValue.prototype.put = function (key, value, options) { }
 
 /**
  * @param {string} key
- * @return {!Promise<void>}
+ * @return {Promise<void>}
  */
 KeyValue.prototype.delete = function (key) { }
 
 /**
  * @typedef {{
- *   keys: !Array<{
+ *   keys: {
  *     name: string,
- *     metadata: *
- *   }>,
+ *     metadata: unknown
+ *   }[],
  *   list_complete: boolean,
- *   cursor: string,
+ *   cursor: string
  * }}
  */
 const KeyValueList = {};
 
 /**
  * @nosideeffects
- * @return {!Promise<KeyValueList>}
+ * @return {Promise<KeyValueList>}
  */
 KeyValue.prototype.list = function () { }
 

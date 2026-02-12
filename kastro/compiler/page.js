@@ -9,7 +9,7 @@ import HtmlMinifierConfig from "./config/htmlMinifierConfig";
 /**
  * @param {string} targetName
  * @param {Props} props
- * @return {!Promise<string>}
+ * @return {Promise<string>}
  */
 const pageTarget = (targetName, props) => {
   /** @const {string} */

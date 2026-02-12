@@ -1,5 +1,5 @@
 
 import eth from "./eth.d";
 
-/** @typedef {!Array<string>} */
+/** @typedef {string[]} */
 eth.AccessList;

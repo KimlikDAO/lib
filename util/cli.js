@@ -7,21 +7,21 @@ const Blue = "\x1b[44m";
 /** @const {string} */
 const Clear = "\x1b[0m";
 
-/** @typedef {!Object<string, (string|boolean|!Array<string>)>} */
+/** @typedef {Record<string, (string|boolean|string[])>} */
 const CliArgs = {};
 
 /**
- * @param {!Array<string>} args
+ * @param {string[]} args
  * @param {string} defaultArgKey
- * @param {!Object<string, string>} shortArgMap
+ * @param {Record<string, string>} shortArgMap
  * @return {CliArgs}
  */
 const parseArgs = (args, defaultArgKey, shortArgMap) => {
   /** @type {string} */
   let key = defaultArgKey;
-  /** @type {!Array<string>} */
+  /** @type {string[]} */
   let values = [];
-  /** @type {!Object} */
+  /** @type {Record<string, unknown>} */
   const params = {};
 
   args.push("--");

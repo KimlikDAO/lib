@@ -15,7 +15,7 @@ args["buildConcurrency"] ||= 4;
 args["runConcurrency"] ||= 4;
 
 /**
- * @param {!Array<string>} patterns
+ * @param {string[]} patterns
  * @return {!RegExp}
  */
 const createMatcher = (patterns) => {
@@ -27,7 +27,7 @@ const createMatcher = (patterns) => {
  * @param {string} pattern
  * @param {string} command
  * @param {CliArgs} args
- * @return {!Promise<boolean>}
+ * @return {Promise<boolean>}
  */
 const compileAndRunMatching = async (pattern, command, args) => {
   const glob = new Glob(pattern);
@@ -69,7 +69,7 @@ const targetPattern = target == "bench"
     ? (target.endsWith(".js") ? target : `${target}/` + "**/*.test.js")
     : "**/*.test.js";
 
-/** @const {!Array<string>} */
+/** @const {string[]} */
 const filter = createMatcher(["build/", "node_modules/"]
   .concat(args["filter"] || []));
 

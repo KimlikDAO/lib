@@ -18,17 +18,17 @@ const PublicKey = function (x, isOdd) {
 
 /**
  * @param {string} addr
- * @return {!PublicKey}
+ * @return {PublicKey}
  */
 PublicKey.fromBase58 = (addr) => {
-  /** @const {!Uint8Array} */
+  /** @const {Uint8Array} */
   const bytes = base58.toBytes(addr);
   return new PublicKey(bigints.fromBytesLE(bytes.subarray(3, 35)), !!bytes[35]);
 }
 
 /** @return {string} */
 PublicKey.prototype.toBase58 = function () {
-  /** @const {!Uint8Array} */
+  /** @const {Uint8Array} */
   const buff = new Uint8Array(40);
   buff[0] = 203;
   buff[1] = buff[2] = 1;
@@ -41,8 +41,8 @@ PublicKey.prototype.toBase58 = function () {
 /**
  * Modifies the input bytes
  *
- * @param {!Uint8Array} bytes
- * @return {!PublicKey}
+ * @param {Uint8Array} bytes
+ * @return {PublicKey}
  */
 PublicKey.fromBytes = (bytes) => {
   const isOdd = bytes[31] >= 128;
@@ -51,7 +51,7 @@ PublicKey.fromBytes = (bytes) => {
 }
 
 /**
- * @param {!Uint8Array} buff a buffer of length at least 32
+ * @param {Uint8Array} buff a buffer of length at least 32
  */
 PublicKey.prototype.serializeInto = function (buff) {
   bigints.intoBytesLE(buff, this.x);
@@ -80,7 +80,7 @@ function Signature(r, s) {
 
 /**
  * @param {string} sig
- * @return {!Signature}
+ * @return {Signature}
  */
 Signature.fromBase58 = function (sig) {
   /** @const {!Uint8Array} */
@@ -93,7 +93,7 @@ Signature.fromBase58 = function (sig) {
 
 /** @return {string} */
 Signature.prototype.toBase58 = function () {
-  /** @const {!Uint8Array} */
+  /** @const {Uint8Array} */
   const buff = new Uint8Array(70);
   buff[0] = 154;
   buff[1] = 1;
@@ -104,15 +104,15 @@ Signature.prototype.toBase58 = function () {
 }
 
 /**
- * @param {!Uint8Array} buff bytes array of which the last 4 bytes will be
+ * @param {Uint8Array} buff bytes array of which the last 4 bytes will be
  *                           written the checksum
  */
 const addChecksum = (buff) => {
   /** @const {number} */
   const n = buff.length - 4;
-  /** @const {!Uint32Array} */
+  /** @const {Uint32Array} */
   const s = new Uint32Array(IC);
-  /** @const {!Uint32Array} */
+  /** @const {Uint32Array} */
   const t = new Uint32Array(64);
   buff[n] = 128;
   /** @type {number} */

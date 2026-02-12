@@ -9,10 +9,10 @@ test("evaluate and reconstruct", () => {
   const t = 32;
 
   for (let i = 1; i <= 2000; ++i) {
-    /** @const {!Uint32Array} */
+    /** @const {Uint32Array} */
     const g = keccak256Uint32(Uint32Array.from([0, 0, 0, 0, 0, 0, 0, i]));
     const { y, π, l } = evaluate(g, t);
-    /** @const {!Uint32Array} */
+    /** @const {Uint32Array} */
     const yy = reconstructY(logT, g, π, l);
     expect(y).toEqual(yy);
   }

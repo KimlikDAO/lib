@@ -76,7 +76,7 @@ const hashFields = (fields, X, r) =>
 const signFields = (fields, privKey, pubKey) => {
   pubKey ||= G.copy().multiply(privKey).project();
   /** @type {bigint} */
-  let k = bigints.fromBytesBE(/** @type {!Uint8Array} */(
+  let k = bigints.fromBytesBE(/** @type {Uint8Array} */(
     crypto.getRandomValues(new Uint8Array(32)))) % Q;
   /** @const {Point} */
   const K = G.copy().multiply(k).project();
@@ -146,7 +146,7 @@ const hashMessage = (message, X, r) => {
 const signMessage = (message, privKey, pubKey) => {
   pubKey ||= G.copy().multiply(privKey).project();
   /** @type {bigint} */
-  let k = bigints.fromBytesBE(/** @type {!Uint8Array} */(
+  let k = bigints.fromBytesBE(/** @type {Uint8Array} */(
     crypto.getRandomValues(new Uint8Array(32)))) % Q;
   const K = G.copy().multiply(k).project();
   if (K.y & 1n) k = Q - k;

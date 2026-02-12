@@ -54,7 +54,7 @@ describe("Combinig multiple KPass'es", () => {
     expect(combined["personInfo"].secp256k1.length).toBe(5);
     expect(combined["humanID"].commitmentR).toBe(commitmentAnonR);
     expect(combined["personInfo"].commitmentR).toBe(commitmentR);
-    /** @const {!Array<string>} */
+    /** @const {string[]} */
     const signers = [
       evmAddr(10n),
       evmAddr(11n),

@@ -3,14 +3,14 @@ import { ApiV4, Auth } from "./api";
 /**
  * @param {Auth} auth
  * @param {string} name
- * @param {string|!ArrayBuffer} code
- * @param {!Array<{
-*   name: string,
-*   namespace_id: string
-* }>=} kvBindings
-* @param {!Object<string, !ArrayBuffer>=} bundleFiles
-* @return {!Promise<cloudflare.Response>}
-*/
+ * @param {string|ArrayBuffer} code
+ * @param {{
+ *   name: string,
+ *   namespace_id: string
+ * }[]} kvBindings
+ * @param {Record<string, ArrayBuffer>=} bundleFiles
+ * @return {Promise<cloudflare.Response>}
+ */
 const upload = (auth, name, code, kvBindings, bundleFiles) => {
   /** @const {string} */
   const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
@@ -41,7 +41,7 @@ const upload = (auth, name, code, kvBindings, bundleFiles) => {
 * @param {Auth} auth
 * @param {string} name
 * @param {string} url
-* @return {!Promise<cloudflare.Response>}
+* @return {Promise<cloudflare.Response>}
 */
 const bind = (auth, name, url) => fetch(`${ApiV4}/accounts/${auth.accountId}/workers/domains`, {
   method: "PUT",
@@ -59,7 +59,7 @@ const bind = (auth, name, url) => fetch(`${ApiV4}/accounts/${auth.accountId}/wor
 /**
  * @param {Auth} auth
  * @param {string} name
- * @return {!Promise<cloudflare.Response>}
+ * @return {Promise<cloudflare.Response>}
  */
 const enableWorkersDev = (auth, name) => fetch(`${ApiV4}/accounts/${auth.accountId}/workers/services/${name}/environments/production/subdomain`, {
   method: "POST",
@@ -78,7 +78,7 @@ const workers = {
    *
    * @param {Auth} auth
    * @param {string} name 
-   * @return {!Promise<cloudflare.Response>}
+   * @return {Promise<cloudflare.Response>}
    */
   delete(auth, name) {
     return fetch(`${ApiV4}/accounts/${auth.accountId}/workers/scripts/${name}`, {

@@ -6,7 +6,7 @@ const ClosureCompiler = {};
 
 /**
  * @dict
- * @typedef {!Object<string, (string|boolean|!Array<string>)>}
+ * @typedef {!Object<string, (string|boolean|string[])>}
  */
 ClosureCompiler.Options;
 

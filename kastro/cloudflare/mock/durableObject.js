@@ -12,8 +12,8 @@ class DurableObjectState {
       /**
        * @override
        *
-       * @param {string|!Array<string>} keys
-       * @return {!Promise<?>}
+       * @param {string|string[]} keys
+       * @return {Promise<?>}
        */
       get: (keys) => {
         const mem = this.mem;
@@ -30,7 +30,7 @@ class DurableObjectState {
        *
        * @param {string|!Object<string, *>} keys
        * @param {*=} val
-       * @return {!Promise<void>}
+       * @return {Promise<void>}
        */
       put: (keys, val) => {
         if (typeof keys === "string")
@@ -44,7 +44,7 @@ class DurableObjectState {
        * @override
        *
        * @param {string} key
-       * @return {!Promise<boolean>}
+       * @return {Promise<boolean>}
        */
       delete: (key) => Promise.resolve(true)
     });
@@ -54,8 +54,8 @@ class DurableObjectState {
    * @override
    *
    * @template T
-   * @param {function():!Promise<T>} callback
-   * @return {!Promise<T>}
+   * @param {function():Promise<T>} callback
+   * @return {Promise<T>}
    */
   blockConcurrencyWhile(callback) {
     return callback();
@@ -76,7 +76,7 @@ class DurableObject {
    * @override
    *
    * @param {!Request} req
-   * @return {!Promise<!Response>}
+   * @return {Promise<!Response>}
    */
   fetch(req) { return Promise.reject(); }
 };

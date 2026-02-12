@@ -17,11 +17,11 @@ class ERC20 {
   /**
    * @param {string} owner
    * @param {string} spender
-   * @return {!Promise<string>}
+   * @return {Promise<string>}
    */
   allowance(owner, spender) {
     return jsonrpc.call(this.rpcUrl, "eth_call", [
-      /** @type {!eth.Transaction} */({
+      /** @type {eth.Transaction} */({
         to: this.contact,
         data: "0xdd62ed3e" + address(owner) + address(spender)
       }),
