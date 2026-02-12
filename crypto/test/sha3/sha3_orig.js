@@ -17,11 +17,11 @@ const FINALIZE_ERROR = 'finalize already called';
 /** @const {boolean} */
 const ARRAY_BUFFER = true;
 const HEX_CHARS = '0123456789abcdef'.split('');
-/** @const {Array<number>} */
+/** @const {number[]} */
 const KECCAK_PADDING = [1, 256, 65536, 16777216];
-/** @const {Array<number>} */
+/** @const {number[]} */
 const SHIFT = [0, 8, 16, 24];
-/** @const {Array<number>} */
+/** @const {number[]} */
 const RC = [1, 0, 32898, 0, 32906, 2147483648, 2147516416, 2147483648, 32907, 0, 2147483649,
   0, 2147516545, 2147483648, 32777, 2147483648, 138, 0, 136, 0, 2147516425, 0,
   2147483658, 0, 2147516555, 0, 139, 2147483648, 32905, 2147483648, 32771,
@@ -39,15 +39,15 @@ export const keccak256 = (veri) =>
  * @constructor
  * @struct
  * @param {number} bits
- * @param {Array<number>} padding
+ * @param {number[]} padding
  * @param {number} outputBits
  */
 function Keccak(bits, padding, outputBits) {
-  /** @type {Array<number>} */
+  /** @type {number[]} */
   this.blocks = [];
-  /** @type {Array<number>} */
+  /** @type {number[]} */
   this.s = [];
-  /** @type {Array<number>} */
+  /** @type {number[]} */
   this.padding = padding;
   /** @const {number} */
   this.outputBits = outputBits;
@@ -99,7 +99,7 @@ Keccak.prototype.güncelle = function (message) {
     }
     notString = true;
   }
-  /** @type {Array<number>} */
+  /** @type {number[]} */
   let blocks = this.blocks;
 
   /** @const {number} */
@@ -110,7 +110,7 @@ Keccak.prototype.güncelle = function (message) {
   const blockCount = this.blockCount;
   /** @type {number} */
   let index = 0;
-  /** @type {Array<number>} */
+  /** @type {number[]} */
   let s = this.s;
   /** @type {number} */
   let i;

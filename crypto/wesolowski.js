@@ -15,9 +15,9 @@ const N = 0xe0b7782dbd6c9fc269cc5259ca7be1b451c9fbbc20293434852f6f3e8603460932b6
  * Thanks to the Fiat-Shamir heuristic, the prover generates this from an
  * unpredictable function of the VDF output without any interaction.
  *
- * @param {!Uint32Array} gArr A Uint32Array of length 8 with a buffer of length
+ * @param {Uint32Array} gArr A Uint32Array of length 8 with a buffer of length
  *                            at least 40 words (160 bytes).
- * @param {!Uint32Array} yArr
+ * @param {Uint32Array} yArr
  * @return {bigint}
  */
 const generateChallenge = (gArr, yArr) => {
@@ -25,7 +25,7 @@ const generateChallenge = (gArr, yArr) => {
    * We use the fact that gArr comes with a buffer of >= 40 uint32's of which
    * only the first 8 are used.
    *
-   * @const {!Uint32Array}
+   * @const {Uint32Array}
    */
   const buff = new Uint32Array(gArr.buffer, 0, 40);
   buff.set(yArr, 8);
@@ -33,10 +33,10 @@ const generateChallenge = (gArr, yArr) => {
 }
 
 /**
- * @param {!Uint32Array} gArr
+ * @param {Uint32Array} gArr
  * @param {number} t
  * @return {{
- *   y: !Uint32Array,
+ *   y: Uint32Array,
  *   π: bigint,
  *   l: bigint
  * }}
@@ -57,7 +57,7 @@ const evaluate = (gArr, t) => {
   let y = g;
   for (let i = 0; i < t; ++i)
     y = y * y % N;
-  /** @const {!Uint32Array} */
+  /** @const {Uint32Array} */
   const yArr = new Uint32Array(32);
   hex.intoUint32ArrayBE(yArr, 32, y.toString(16));
 
@@ -88,10 +88,10 @@ const evaluate = (gArr, t) => {
  * Reconstructs y from the paramters:
  *
  * @param {number} logT the logarithm of the difficulty parameter t
- * @param {!Uint32Array} gArr the input to the VDF
+ * @param {Uint32Array} gArr the input to the VDF
  * @param {bigint} π the Wesolowski proof for the challenge l,
  * @param {bigint} l the challenge generated from a secure hash of g, y.
- * @return {!Uint32Array} y reconstructred
+ * @return {Uint32Array} y reconstructred
  */
 const reconstructY = (logT, gArr, π, l) => {
   /** @const {bigint} */
@@ -102,7 +102,7 @@ const reconstructY = (logT, gArr, π, l) => {
     r = (r * r) % l;
   /** @const {bigint} */
   const y = expTimesExp(π, l, g, r, N);
-  /** @const {!Uint32Array} */
+  /** @const {Uint32Array} */
   const yArr = new Uint32Array(32);
   hex.intoUint32ArrayBE(yArr, 32, y.toString(16));
   return yArr;

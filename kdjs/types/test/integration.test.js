@@ -25,3 +25,12 @@ describe("Functions", () => {
     expect(parseType(kdjsExpr).toClosureExpr()).toBe(closureExpr);
   });
 });
+
+describe("Constructors", () => {
+  test("Arf curve constructor", () => {
+    const kdjsExpr = "new (x: bigint, y: bigint, z?: bigint) => Point";
+    const closureExpr = "function(new:Point, bigint, bigint, bigint=)";
+
+    expect(parseType(kdjsExpr).toClosureExpr()).toBe(closureExpr);
+  });
+});

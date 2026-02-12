@@ -4,7 +4,7 @@
 
 /**
  * Initial constants
- * @const {!Array<number>}
+ * @const {number[]}
  */
 const IC = [
   0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
@@ -14,7 +14,7 @@ const IC = [
 /**
  * Round constants for each of the 64 rounds.
  *
- * @const {!Array<number>}
+ * @const {number[]}
  */
 const RC = [
   0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
@@ -31,15 +31,15 @@ const RC = [
  * Given a Uint32Array of length at most 2^32 - 1, outputs the sha256
  * as a Uint32Array of length 8.
  *
- * @param {!Uint32Array} words
- * @return {!Uint32Array} hash as Uint32Array of length 8.
+ * @param {Uint32Array} words
+ * @return {Uint32Array} hash as Uint32Array of length 8.
  */
 const sha256Uint32 = (words) => {
   /** @const {number} */
   const n = words.length;
-  /** @const {!Uint32Array} */
+  /** @const {Uint32Array} */
   const s = new Uint32Array(IC);
-  /** @const {!Uint32Array} */
+  /** @const {Uint32Array} */
   const t = new Uint32Array(64);
   /** @type {number} */
   let i = 0;
@@ -62,7 +62,7 @@ const sha256Uint32 = (words) => {
   return s;
 }
 
-/** @param {!Uint32Array} t */
+/** @param {Uint32Array} t */
 const extend = (t) => {
   for (let i = 16, t1, s0, s1; i < 64; ++i) {
     t1 = t[i - 15];
@@ -76,8 +76,8 @@ const extend = (t) => {
 /**
  * The sha256 compression function, implemented 1:1 without loop unrolling.
  *
- * @param {!Uint32Array} s The 8 word working tape, which is also the final out.
- * @param {!Uint32Array} t The 64 word working tape.
+ * @param {Uint32Array} s The 8 word working tape, which is also the final out.
+ * @param {Uint32Array} t The 64 word working tape.
  */
 const g = (s, t) => {
   extend(t);
@@ -98,8 +98,8 @@ const g = (s, t) => {
 /**
  * The sha256 compression function, with 4 rounds unrolled.
  *
- * @param {!Uint32Array} s The 8 word working tape, which is also the final out.
- * @param {!Uint32Array} t The 64 word working tape.
+ * @param {Uint32Array} s The 8 word working tape, which is also the final out.
+ * @param {Uint32Array} t The 64 word working tape.
  */
 const f = (s, t) => {
   extend(t);
@@ -150,9 +150,9 @@ const f = (s, t) => {
 /**
  * Computes HMAC-SHA256 for a key of length at most 16 words (64 bytes).
  *
- * @param {!Uint32Array} key The key for HMAC
- * @param {!Uint32Array} message The message to authenticate
- * @return {!Uint32Array} The HMAC-SHA256 output as a Uint32Array of length 8
+ * @param {Uint32Array} key The key for HMAC
+ * @param {Uint32Array} message The message to authenticate
+ * @return {Uint32Array} The HMAC-SHA256 output as a Uint32Array of length 8
  */
 const hmacUint32 = (key, message) => {
   const m = key.length;

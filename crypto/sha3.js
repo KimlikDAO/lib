@@ -7,11 +7,11 @@ import hex from '../util/hex';
 /**
  * Computes the keccak256 of an Uint32Array.
  *
- * @param {!Uint32Array} words A typed array of `uint32`s to be hashed.
- * @return {!Uint32Array} hash as a Uint32Arrray of length 8.
+ * @param {Uint32Array} words A typed array of `uint32`s to be hashed.
+ * @return {Uint32Array} hash as a Uint32Arrray of length 8.
  */
 const keccak256Uint32 = (words) => {
-  /** @const {!Uint32Array} */
+  /** @const {Uint32Array} */
   const s = new Uint32Array(50);
   /** @type {number} */
   let i = 0;
@@ -33,7 +33,7 @@ const keccak256Uint32 = (words) => {
 /**
  * Outputs the keccak256 of a Uint32Array as a hex string.
  *
- * @param {!Uint32Array} words A typed array of `u32`s to be hashed.
+ * @param {Uint32Array} words A typed array of `u32`s to be hashed.
  * @return {string} hash as a hex string.
  */
 const keccak256Uint32ToHex = (words) => hex.from(
@@ -48,13 +48,13 @@ const keccak256Uint32ToHex = (words) => hex.from(
 const keccak256 = (str) => hex.from(keccak256Uint8(new TextEncoder().encode(str)));
 
 /**
- * @param {!Uint8Array} bytes A byte array to be hashed. Could be of any length.
- * @return {!Uint8Array} hex encoded hash.
+ * @param {Uint8Array} bytes A byte array to be hashed. Could be of any length.
+ * @return {Uint8Array} hex encoded hash.
  */
 const keccak256Uint8 = (bytes) => {
-  /** @const {!Uint32Array} */
+  /** @const {Uint32Array} */
   const words = new Uint32Array(bytes.buffer, 0, bytes.length >> 2);
-  /** @const {!Uint32Array} */
+  /** @const {Uint32Array} */
   const s = new Uint32Array(50);
   /** @type {number} */
   let i = 0;
@@ -81,11 +81,7 @@ const keccak256Uint8 = (bytes) => {
 }
 
 /**
- * We avoid an `Uint8Array` here, as Google Closure Compiler cannot dead code
- * eliminate it.
- * @see https://github.com/google/closure-compiler/issues/4017
- *
- * @const {!Array<number>}
+ * @const {number[]}
  */
 const RC = [1, 0, 32898, 0, 32906, 2147483648, 2147516416, 2147483648, 32907, 0, 2147483649,
   0, 2147516545, 2147483648, 32777, 2147483648, 138, 0, 136, 0, 2147516425, 0,
@@ -94,7 +90,7 @@ const RC = [1, 0, 32898, 0, 32906, 2147483648, 2147516416, 2147483648, 32907, 0,
   2147516545, 2147483648, 32896, 2147483648, 2147483649, 0, 2147516424, 2147483648];
 
 /**
- * @param {!Uint32Array|!Array<number>} s
+ * @param {Uint32Array|number[]} s
  */
 const f = (s) => {
   let h, l, c0, c1, c2, c3, c4, c5, c6, c7, c8, c9,

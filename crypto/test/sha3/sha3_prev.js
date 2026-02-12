@@ -1,10 +1,10 @@
 import hex from '../../../util/hex';
 
-/** @const {Array<number>} */
+/** @const {number[]} */
 const KECCAK_PADDING = [1, 256, 65536, 16777216];
-/** @const {Array<number>} */
+/** @const {number[]} */
 const SHIFT = [0, 8, 16, 24];
-/** @const {Array<number>} */
+/** @const {number[]} */
 const RC = [1, 0, 32898, 0, 32906, 2147483648, 2147516416, 2147483648, 32907, 0, 2147483649,
   0, 2147516545, 2147483648, 32777, 2147483648, 138, 0, 136, 0, 2147516425, 0,
   2147483658, 0, 2147516555, 0, 139, 2147483648, 32905, 2147483648, 32771,
@@ -22,9 +22,9 @@ const BYTE_COUNT = BLOCK_COUNT << 2;
 export const keccak256 = (veri) => {
   /** @const {number} */
   const length = veri.length;
-  /** @const {Uint32Array<number>} */
+  /** @const {Uint32Array} */
   const blocks = new Uint32Array(35);
-  /** @const {Uint32Array<number>} */
+  /** @const {Uint32Array} */
   const s = new Uint32Array(50);
   /** @type {number} */
   let block = 0;

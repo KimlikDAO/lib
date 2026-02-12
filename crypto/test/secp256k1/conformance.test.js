@@ -5,8 +5,8 @@ import { G, Point } from "../../secp256k1";
 /**
  * Remove the nobility of the point :/
  *
- * @param {!ProjectivePoint} p
- * @return {!Point}
+ * @param {ProjectivePoint} p
+ * @return {Point}
  */
 const derogate = (p) => {
   const q = p.toAffine();
@@ -21,7 +21,7 @@ describe("Point <> JacobianPoint equivalence", () => {
 
 describe("Double tests", () => {
   it("should be pointwise equal", () => {
-    /** @const {!Point} */
+    /** @const {Point} */
     const nG = G.copy().double().project();
 
     expect(nG).toEqual(derogate(ProjectivePoint.BASE.double()));
@@ -36,7 +36,7 @@ describe("Double tests", () => {
 
 describe("Add tests", () => {
   it("should be pointwise equal", () => {
-    /** @const {!Point} */
+    /** @const {Point} */
     const nG = G.copy().increment(G).project();
     expect(nG).toEqual(derogate(ProjectivePoint.BASE.add(ProjectivePoint.BASE)));
 

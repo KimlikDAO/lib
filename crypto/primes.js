@@ -9,7 +9,7 @@ import { exp2 } from "./modular";
 /**
  * First 499 odd primes.
  *
- * @const {!Array<number>} */
+ * @const {number[]} */
 const OddPrimes = [
   3, 5, 7, 11, 13, 17, 19, 23, 29,
   31, 37, 41, 43, 47, 53, 59, 61, 67, 71,
@@ -64,7 +64,7 @@ const getNonsmooth = (seed) => {
    *
    * `t[i] == 1` implies that `h.2^k + 2i + 1` is composite.
    *
-   * @const {!Uint8Array}
+   * @const {Uint8Array}
    */
   const t = new Uint8Array(4096);
   for (const p of OddPrimes) {

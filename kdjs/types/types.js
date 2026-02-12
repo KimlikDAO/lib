@@ -389,8 +389,8 @@ class FunctionType extends Type {
 class ConstructorType extends FunctionType {
   /**
    * @param {!Type} instanceType
-   * @param {Type} extendsType
-   * @param {!Array<!Type>} implementsTypes
+   * @param {!Type | null} extendsType
+   * @param {!Array<!Type> | null} implementsTypes
    * @param {!Array<!Type>} params
    * @param {number=} optionalAfter
    */

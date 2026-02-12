@@ -13,18 +13,18 @@ const Q = P + 0x47afc1f319ba3400000000n;
  * @typedef {IPoint} Point */
 /**
  * @struct
- * @const {function(new:IPoint, bigint, bigint, bigint=)}
+ * @const {new (x: bigint, y: bigint, z?: bigint) => IPoint}
  */
 const Point = arfCurve(P);
 /**
- * @const {!Point}
+ * @const {Point}
  * @noinline
  */
 const G = new Point(1n, 0x1b74b5a30a12937c53dfa9f06378ee548f655bd4333d477119cf7a23caed2abbn);
 
 /**
  * @param {bigint} n
- * @return {?bigint}
+ * @return {bigint | null}
  */
 const sqrt = (n) => tonelliShanks(n, P, (P - 1n) >> 32n, 0x2bce74deac30ebda362120830561f81aea322bf2b7bb7584bdad6fabd87ea32fn, 32n);
 
@@ -34,7 +34,7 @@ const sqrt = (n) => tonelliShanks(n, P, (P - 1n) >> 32n, 0x2bce74deac30ebda36212
  *
  * @param {bigint} x
  * @param {boolean} yParity
- * @return {Point}
+ * @return {Point | null}
  */
 const pointFrom = (x, yParity) => {
   /** @const {bigint} */
@@ -49,8 +49,8 @@ const pointFrom = (x, yParity) => {
 }
 
 /**
- * @param {!Array<bigint>} fields
- * @param {!Point} X
+ * @param {bigint[]} fields
+ * @param {Point} X
  * @param {bigint} r
  * @return {bigint}
  */
@@ -65,9 +65,9 @@ const hashFields = (fields, X, r) =>
   ]);
 
 /**
- * @param {!Array<bigint>} fields
+ * @param {bigint[]} fields
  * @param {bigint} privKey
- * @param {!Point=} pubKey which may be given as a hint.
+ * @param {Point=} pubKey which may be given as a hint.
  * @return {{
  *   r: bigint,
  *   s: bigint
@@ -78,7 +78,7 @@ const signFields = (fields, privKey, pubKey) => {
   /** @type {bigint} */
   let k = bigints.fromBytesBE(/** @type {!Uint8Array} */(
     crypto.getRandomValues(new Uint8Array(32)))) % Q;
-  /** @const {!Point} */
+  /** @const {Point} */
   const K = G.copy().multiply(k).project();
   if (K.y & 1n) k = Q - k;
   /** @const {bigint} */
@@ -89,10 +89,10 @@ const signFields = (fields, privKey, pubKey) => {
 }
 
 /**
- * @param {!Array<bigint>} fields
+ * @param {bigint[]} fields
  * @param {bigint} r
  * @param {bigint} s
- * @param {!Point} pubKey which is modified during the verification
+ * @param {Point} pubKey which is modified during the verification
  */
 const verifyFields = (fields, r, s, pubKey) => {
   /**
@@ -110,12 +110,12 @@ const verifyFields = (fields, r, s, pubKey) => {
 
 /**
  * @param {string} message
- * @param {!Point} X
+ * @param {Point} X
  * @param {bigint} r
  * @return {bigint}
  */
 const hashMessage = (message, X, r) => {
-  /** @const {!Array<bigint>} */
+  /** @const {bigint[]} */
   const fields = [
     0x74656e6e69614d65727574616e676953616e694dn,
     0n,
@@ -137,7 +137,7 @@ const hashMessage = (message, X, r) => {
 /**
  * @param {string} message
  * @param {bigint} privKey
- * @param {!Point=} pubKey which may be given as a hint.
+ * @param {Point=} pubKey which may be given as a hint.
  * @return {{
  *   r: bigint,
  *   s: bigint
@@ -163,7 +163,7 @@ const signMessage = (message, privKey, pubKey) => {
  * @param {string} message
  * @param {bigint} r
  * @param {bigint} s
- * @param {!Point} pubKey which is modified during verification
+ * @param {Point} pubKey which is modified during verification
  */
 const verifyMessage = (message, r, s, pubKey) => {
   /**

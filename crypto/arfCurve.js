@@ -76,7 +76,7 @@ class Point {
  * @nosideeffects
  * @pureOrBreakMyCode
  * @param {bigint} P
- * @return {function(new:Point, bigint, bigint, bigint=)}
+ * @return {new (x: bigint, y: bigint, z?: bigint) => Point}
  */
 const arfCurve = (P) => {
   /**
@@ -110,12 +110,12 @@ const arfCurve = (P) => {
       this.z = z ?? 1n;
     }
 
-    /** @return {!Point} */
+    /** @return {Point} */
     copy() {
       return new CurvePoint(this.x, this.y, this.z);
     }
 
-    /** @return {!Point} */
+    /** @return {Point} */
     project() {
       if (this.z != 0n) {
         /** @const {bigint} */
@@ -131,7 +131,7 @@ const arfCurve = (P) => {
       return this;
     }
 
-    /** @return {!Point} */
+    /** @return {Point} */
     negate() {
       this.y = P - this.y;
       return this;
@@ -140,7 +140,7 @@ const arfCurve = (P) => {
     /**
      * Multiplies the point by 2, in-place.
      *
-     * @return {!Point}
+     * @return {Point}
      */
     double() {
       const { x, y } = this;
@@ -159,8 +159,8 @@ const arfCurve = (P) => {
     /**
      * Increments the point by `other`.
      *
-     * @param {!Point} other
-     * @return {!Point}
+     * @param {Point} other
+     * @return {Point}
      */
     increment(other) {
       const { x: x1, y: y1, z: z1 } = this;
@@ -199,7 +199,7 @@ const arfCurve = (P) => {
      * TODO(KimlikDAO-bot) consider method copying from the interface for `multiply`
      *
      * @param {bigint} n
-     * @return {!Point}
+     * @return {Point}
      */
     multiply(n) {
       if (!n) {
@@ -207,7 +207,7 @@ const arfCurve = (P) => {
       } else {
         /** @const {string} */
         const nNibs = n.toString(4);
-        /** @const {!Array<!Point>} */
+        /** @const {Point[]} */
         const d = [
           O, this.copy(),
           this.copy().double(), this.copy().double().increment(this)
@@ -223,18 +223,18 @@ const arfCurve = (P) => {
   }
 }
 
-/** @const {!Point} */
-const O = /** @type {!Point} */({ x: 0n, y: 0n, z: 0n });
+/** @const {Point} */
+const O = /** @type {Point} */({ x: 0n, y: 0n, z: 0n });
 
 /**
  * Computes aX + bY at the cost of a single scalar x point multiplication.
  *
  * @pureOrBreakMyCode
  * @param {bigint} a
- * @param {!Point} X
+ * @param {Point} X
  * @param {bigint} b
- * @param {!Point} Y
- * @return {!Point} aX + bY
+ * @param {Point} Y
+ * @return {Point} aX + bY
  */
 const aX_bY = (a, X, b, Y) => {
   /** @type {string} */
@@ -245,9 +245,9 @@ const aX_bY = (a, X, b, Y) => {
     bBits = bBits.padStart(aBits.length, "0");
   else if (bBits.length > aBits.length)
     aBits = aBits.padStart(bBits.length, "0");
-  /** @const {!Array<!Point>} */
+  /** @const {Point[]} */
   const d = [O, X, Y, X.copy().increment(Y)];
-  /** @type {!Point} */
+  /** @type {Point} */
   let R = d[(aBits.charCodeAt(0) - 48) + 2 * (bBits.charCodeAt(0) - 48)].copy();
   for (let i = 1; i < aBits.length; ++i) {
     R.double();

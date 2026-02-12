@@ -3,8 +3,8 @@ import { sha256 } from "js-sha256";
 import { sha256Uint32 } from "../../sha2";
 
 /**
- * @param {!Uint32Array} uint32Arr
- * @return {!Uint8Array}
+ * @param {Uint32Array} uint32Arr
+ * @return {Uint8Array}
  */
 const toUint8Arr = (uint32Arr) => {
   const uint8Arr = new Uint8Array(uint32Arr.buffer, 0, 32);
@@ -18,8 +18,8 @@ const toUint8Arr = (uint32Arr) => {
 }
 
 /**
- * @param {!Iterable|string} itr1
- * @param {!Iterable|string} itr2
+ * @param {Iterable|string} itr1
+ * @param {Iterable|string} itr2
  */
 const check = (itr1, itr2) =>
   expect(toUint8Arr(sha256Uint32(Uint32Array.from(itr1))))

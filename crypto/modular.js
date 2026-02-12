@@ -112,7 +112,7 @@ const expTimesExp = (a, x, b, y, M) => {
     yBits = yBits.padStart(xBits.length, "0");
   else if (yBits.length > xBits.length)
     xBits = xBits.padStart(yBits.length, "0");
-  /** @const {!Array<bigint>} */
+  /** @const {bigint[]} */
   const d = [1n, a, b, a * b % M];
   /** @type {bigint} */
   let r = d[(xBits.charCodeAt(0) - 48) + 2 * (yBits.charCodeAt(0) - 48)];
@@ -132,7 +132,7 @@ const expTimesExp = (a, x, b, y, M) => {
  * @param {bigint} Q the odd factor of P-1 satisfying Q.2^M = P-1
  * @param {bigint} c z^Q where z is a quadratic non-residue
  * @param {bigint} M so that Q.2^M == P-1.
- * @return {?bigint} returns sqrt(n) if n is a quadratic residue,
+ * @return {bigint | null} returns sqrt(n) if n is a quadratic residue,
  *                   returns null otherwise.
  */
 const tonelliShanks = (n, P, Q, c, M) => {
@@ -161,7 +161,7 @@ const tonelliShanks = (n, P, Q, c, M) => {
  *
  * @param {bigint} n
  * @param {bigint} P an odd prime
- * @return {?bigint}
+ * @return {bigint | null}
  */
 const sqrt = (n, P) => {
   /** @type {bigint} */

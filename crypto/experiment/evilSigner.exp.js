@@ -3,10 +3,10 @@ import { sha256Uint32 } from "../sha2";
 import { sign } from "./evilSigner";
 
 /**
- * @param {!Array<{
+ * @param {{
  *   r: bigint,
- *   digest: !Uint8Array
- * }>} signatures
+ *   digest: Uint8Array
+ * }[]} signatures
  * @return {bigint}
  */
 const recoverPrivateKey = (signatures) => {

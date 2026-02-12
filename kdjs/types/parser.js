@@ -85,6 +85,15 @@ class Parser {
     this.pos += value.length;
   }
 
+  test(value) {
+    this.skipWhitespace();
+    if (this.input.slice(this.pos, this.pos + value.length) == value) {
+      this.pos += value.length;
+      return true;
+    }
+    return false;
+  }
+
   /**
    * Skips whitespace and consumes a character if present
    * @param {number} ch The character code to consume
@@ -143,38 +152,10 @@ class Parser {
    * @throws {Error} If parsing fails
    */
   parseConstructorType() {
-    if (!this.test("new ")) return null;
-
-    /** @const {!Array<!Type>} */
-    const params = [];
-    let optionalAfter = 1e9;
-
-    this.expectChar("(".charCodeAt(0));
-    if (!this.testChar(")".charCodeAt(0)))
-      for (; ;) {
-        const paramName = this.readIdentifier();
-        let isOptional = this.testChar("?".charCodeAt(0));
-        this.expectChar(":".charCodeAt(0));
-        const paramType = this.parseType();
-        isOptional |= this.testChar("=".charCodeAt(0));
-
-        if (isOptional) {
-          paramType.modifiers |= Modifier.Optional;
-          if (params.length < optionalAfter)
-            optionalAfter = params.length;
-        }
-
-        params.push(paramType);
-        if (this.expectEitherChar(",".charCodeAt(0), ")".charCodeAt(0)))
-          break;
-      }
-
-    this.expect("=>");
-    const instanceType = this.parseType();
-    if (optionalAfter == 1e9)
-      optionalAfter = params.length;
-
-    return new ConstructorType(instanceType, null, [], params, optionalAfter);
+    if (!this.test("new")) return null;
+    const type = this.parseFunctionType();
+    return new ConstructorType(
+      type.returnType, null, null, type.params, type.optionalAfter);
   }
 
   /**

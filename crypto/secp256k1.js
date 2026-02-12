@@ -27,7 +27,7 @@ const Q = P - 0x14551231950b75fc4402da1722fc9baeen;
 /**
  * @typedef {IPoint} Point */
 /**
- * @type {function(new:IPoint, bigint, bigint, bigint=)}
+ * @type {new (x: bigint, y: bigint, z?: bigint) => IPoint}
  */
 const Point = arfCurve(P);
 
@@ -69,7 +69,7 @@ const sqrt = (n) => {
  *
  * @param {bigint} x coordinate of the curve point.
  * @param {boolean} yParity whether the y coordinate is odd.
- * @return {Point}
+ * @return {Point | null}
  */
 const pointFrom = (x, yParity) => {
   /** @const {bigint} */
@@ -84,7 +84,7 @@ const pointFrom = (x, yParity) => {
 }
 
 /**
- * @const {!Point}
+ * @const {Point}
  * @noinline
  */
 const G = new Point(
@@ -99,13 +99,13 @@ const G = new Point(
  *
  * but has not projection onto the z = 1 plane, as expected.
  *
- * @const {!Point}
+ * @const {Point}
  */
 const O = new Point(0n, 0n, 0n);
 
 /**
- * @param {!Point} p
- * @param {!Point} q
+ * @param {Point} p
+ * @param {Point} q
  * @return {boolean}
  */
 const equal = (p, q) => {
@@ -129,7 +129,7 @@ const sign = (digest, privKey) => {
     const k = bigints.fromBytesBE(/** @type {!Uint8Array} */(
       crypto.getRandomValues(new Uint8Array(32))));
     if (k <= 0 || Q <= k) continue; // probability ~2^{-128}, i.e., a near impossibility.
-    /** @const {!Point} */
+    /** @const {Point} */
     const K = G.copy().multiply(k).project();
     /** @const {bigint} */
     const r = K.x;
@@ -151,7 +151,7 @@ const sign = (digest, privKey) => {
  * @param {bigint} digest
  * @param {bigint} r
  * @param {bigint} s
- * @param {!Point} pubKey
+ * @param {Point} pubKey
  * @return {boolean}
  */
 const verify = (digest, r, s, pubKey) => {
@@ -170,21 +170,21 @@ const verify = (digest, r, s, pubKey) => {
 }
 
 /**
- * Recovers the signer public key (a `!Point`) for a given signed digest
+ * Recovers the signer public key (a `Point`) for a given signed digest
  * if the signature is valid; otherwise returns `O`, the point at infinity.
  *
  * @param {bigint} digest
  * @param {bigint} r
  * @param {bigint} s
  * @param {boolean} yParity
- * @return {!Point} the signer public key or O.
+ * @return {Point} the signer public key or O.
  */
 const recoverSigner = (digest, r, s, yParity) => {
   if (r <= 0n || Q <= r) return O;
   if (s <= 0n || Q <= s) return O;
   /** @const {bigint} */
   const ir = inverse(r, Q);
-  /** @const {Point} */
+  /** @const {Point | null} */
   const K = pointFrom(r, yParity);
   if (!K) return O;
   return aX_bY(Q - (digest * ir % Q), G.copy(), s * ir % Q, K).project();

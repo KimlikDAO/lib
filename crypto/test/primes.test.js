@@ -16,7 +16,7 @@ test("`getNonsmooth()` smoke tests", () => {
 });
 
 test("test sieve never removes primes", () => {
-  /** @const {!Uint8Array} */
+  /** @const {Uint8Array} */
   const t = new Uint8Array(4096);
   for (const p of OddPrimes) {
     /** @type {number} */

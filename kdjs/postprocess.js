@@ -31,18 +31,6 @@ const postprocess = (content, missingImports) => {
   let exportCode = "";
 
   simple(ast, /** @type {!acorn.SimpleVisitor} */({
-    Literal(node) {
-      if (typeof node.value === 'bigint') {
-        const decimal = node.value.toString();
-        const hexadecimal = '0x' + node.value.toString(16);
-        if (hexadecimal.length < decimal.length)
-          updates.push({
-            beg: node.start,
-            end: node.end,
-            put: hexadecimal + "n"
-          })
-      }
-    },
     AssignmentExpression(node) {
       if (node.left.type === 'MemberExpression' &&
         node.left.object.name === 'globalThis' &&

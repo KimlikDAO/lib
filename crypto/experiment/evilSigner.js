@@ -4,9 +4,9 @@ import { G, Point, Q } from "../secp256k1";
 import { sha256Uint32 } from "../sha2";
 
 /**
- * @param {!Uint8Array} key
- * @param {!Uint8Array} message
- * @return {!Promise<!Uint8Array>}
+ * @param {Uint8Array} key
+ * @param {Uint8Array} message
+ * @return {Promise<Uint8Array>}
  */
 const hmac = (key, message) => crypto.subtle
   .importKey(
@@ -18,7 +18,7 @@ const hmac = (key, message) => crypto.subtle
   .then((key) => crypto.subtle.sign("HMAC", key, message))
   .then((signature) => new Uint8Array(signature));
 
-/** @const {!Uint8Array} */
+/** @const {Uint8Array} */
 const SaltedBuff = new Uint8Array(64);
 new TextEncoder().encodeInto("Secret salt 1234abcd", SaltedBuff);
 
@@ -28,9 +28,9 @@ new TextEncoder().encodeInto("Secret salt 1234abcd", SaltedBuff);
  * leak the private key to the bearer of "Secret salt" entirely over sustained
  * use.
  *
- * @param {!Uint8Array} digest
+ * @param {Uint8Array} digest
  * @param {bigint} privKey
- * @return {!Promise<{
+ * @return {Promise<{
  *   r: bigint,
  *   s: bigint,
  *   yParity: boolean
@@ -69,7 +69,7 @@ const sign = async (digest, privKey) => {
     /** @const {bigint} */
     const k = bigints.fromBytesBE(vv);
     if (k == 0n || k >= Q) continue;
-    /** @type {!Point} */
+    /** @type {Point} */
     const K = G.copy().multiply(k).project();
     /** @const {bigint} */
     const r = K.x;

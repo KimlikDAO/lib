@@ -7,17 +7,17 @@ import { pow7 } from "./modular";
 const P = (1n << 254n) + 0x224698fc094cf91b992d30ed00000001n;
 
 /**
- * @param {!Array<bigint>} vals
+ * @param {bigint[]} vals
  * @return {bigint}
  */
 const poseidon = (vals) => {
-  const /** number */ n = vals.length;
-  let /** bigint */ s0 = 0n;
-  let /** bigint */ s1 = 0n;
-  let /** bigint */ s2 = 0n;
-  let /** bigint */ t0;
-  let /** bigint */ t1;
-  let /** bigint */ t2;
+  const n = vals.length;
+  let s0 = 0n;
+  let s1 = 0n;
+  let s2 = 0n;
+  let t0;
+  let t1;
+  let t2;
   if (n & 1) vals.push(0n);
   for (let /** number */ i = 0; i < n; i += 2) {
     s0 += vals[i]; s0 %= P;
@@ -58,7 +58,7 @@ const md22 = 0x3cf1fbef75d4ab63b7a812f80b7b0373b2dc21d269ba7c4c4d6581d50aae114cn
 
 /**
  * @noinline
- * @const {!Array<bigint>}
+ * @const {bigint[]}
  */
 const rc0 = [
   0x2ec559cd1a1f2f6889fc8ae5f07757f202b364429677c8ff6603fd6d93659b47n,
@@ -120,7 +120,7 @@ const rc0 = [
 
 /**
  * @noinline
- * @const {!Array<bigint>}
+ * @const {bigint[]}
  */
 const rc1 = [
   0x2553b08c788551bfe064d91c17eb1edb8662283229757711b2b30895f0aa3badn,
@@ -182,7 +182,7 @@ const rc1 = [
 
 /**
  * @noinline
- * @const {!Array<bigint>}
+ * @const {bigint[]}
  */
 const rc2 = [
   0x25a706fb0f35b260b6f28d61e082d36a8f161be1f4d9416371a7b65f2bfafe4en,

@@ -1,6 +1,7 @@
 import { describe, expect, it, test } from "bun:test";
 import { parseType, parseTypePrefix } from "../parser";
 import {
+  ConstructorType,
   FunctionType,
   GenericType,
   InstanceType,
@@ -386,5 +387,28 @@ describe("Functions", () => {
     expect(complexFn.optionalAfter).toBe(1); // Second parameter is optional
     expect(complexFn.returnType).toBeInstanceOf(GenericType);
     expect(complexFn.returnType.name).toBe("Promise");
+  });
+});
+
+describe("Constructors", () => {
+  it("parses new () => User", () => {
+    const constructor = parseType("new () => User");
+    expect(constructor).toBeInstanceOf(ConstructorType);
+    expect(constructor.params.length).toBe(0);
+    expect(constructor.thisType).toBeInstanceOf(InstanceType);
+    expect(constructor.thisType.name).toBe("User");
+  });
+
+  it("parses new (name?:string) => User", () => {
+    const constructorWithParams = parseType("new (name?: string) => User");
+    expect(constructorWithParams).toBeInstanceOf(ConstructorType);
+    expect(constructorWithParams.params.length).toBe(1);
+    expect(constructorWithParams.params[0]).toBeInstanceOf(PrimitiveType);
+    expect(constructorWithParams.params[0].name).toBe("string");
+    expect(constructorWithParams.optionalAfter).toBe(0);
+    expect(constructorWithParams.params[0].isOptional()).toBeTrue();
+
+    expect(constructorWithParams.thisType).toBeInstanceOf(InstanceType);
+    expect(constructorWithParams.thisType.name).toBe("User");
   });
 });
