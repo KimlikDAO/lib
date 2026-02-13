@@ -34,8 +34,8 @@ const exportStmtToExportMap = (exportStmt) => {
  * @param {string} file name of the file
  * @param {string} content contents of the file
  * @param {string[]} files the stack of files, which will be pushed new files
- * @param {!Object<string, *>} globals
- * @param {!Map<string, ImportStatement>} unlinkedImports
+ * @param {Record<string, unknown>} globals
+ * @param {Map<string, ImportStatement>} unlinkedImports
  * @return {string} the content after preprocessing
  */
 const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
@@ -47,9 +47,9 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
     sourceType: "module",
     onComment: comments
   });
-  /**
+  /**`
    * @const
-   * @type {!Array<Update>}
+   * @type {Update[]}
    */
   const updates = [];
   /**
@@ -72,7 +72,7 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
   const processComment = (comment) => {
     const defineIdx = comment.value.indexOf("@define");
     if (defineIdx == -1) {
-      const ups = transpileJsDoc(comment);
+      const ups = transpileJsDoc(comment, file);
       updates.push(...ups);
       return;
     };
@@ -226,7 +226,7 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
       }
       if (!isEntry) return;
       if (node.declaration) {
-        /** @const {!acorn.Declaration} */
+        /** @const {acorn.Declaration} */
         const decl = node.declaration;
         switch (decl.type) {
           case "FunctionDeclaration":

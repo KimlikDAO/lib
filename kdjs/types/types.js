@@ -238,8 +238,7 @@ class InstanceType extends Type {
   toClosureExpr({ toParam, bare, wrap } = {}) {
     const modifiers = bare ? 0 : this.modifiers;
     let expr = this.name;
-    if (!(modifiers & Modifier.Nullable))
-      expr = "!" + expr;
+    expr = (modifiers & Modifier.Nullable ? "?" : "!") + expr;
     if (modifiers & Modifier.Optional) {
       expr += toParam ? "=" : "|undefined";
       if (!toParam && wrap)

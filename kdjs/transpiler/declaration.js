@@ -177,7 +177,7 @@ const getExtendedInterfaceName = (extendedInterface, imports) => {
  * Gets the full name of a qualified name node.
  *
  * @param {!acorn.TSQualifiedName} qualifiedName The qualified name node
- * @param {!Map<string, string>} imports Map of imported names to namespaces
+ * @param {Map<string, string>} imports Map of imported names to namespaces
  * @return {string} The full qualified name
  */
 const getQualifiedName = (qualifiedName, imports) => {
@@ -195,7 +195,7 @@ const getQualifiedName = (qualifiedName, imports) => {
  * Resolves a type name to its fully qualified name.
  *
  * @param {string} typeName The type name to resolve
- * @param {!Map<string, string>} imports Map of imported names to namespaces
+ * @param {Map<string, string>} imports Map of imported names to namespaces
  * @return {string} The fully qualified type name
  */
 const resolveTypeName = (typeName, imports) => {
@@ -219,7 +219,7 @@ const resolveTypeName = (typeName, imports) => {
  * @param {!acorn.TSPropertySignature} node The property signature node
  * @param {string} interfaceName The full interface name
  * @param {string} indent The current indentation
- * @param {!Map<string, string>} imports Map of imported names to namespaces
+ * @param {Map<string, string>} imports Map of imported names to namespaces
  * @return {string} The transpiled property content
  */
 const processProperty = (node, interfaceName, indent, imports) => {
@@ -467,7 +467,7 @@ const getTypeText = (typeNode, imports, topLevel = true) => {
  * @param {string} content
  * @return {string}
  */
-const generatePlacehodler = (content) => {
+const generatePlaceholder = (content) => {
   const ast = TsParser.parse(content, {
     sourceType: "module",
     ecmaVersion: "latest",
@@ -534,7 +534,7 @@ const generatePlacehodler = (content) => {
 }
 
 export {
-  generatePlacehodler,
+  generatePlaceholder,
   pathToNamespace,
   transpile
 };

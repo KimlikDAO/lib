@@ -1,7 +1,7 @@
 import jsonrpc from "../api/jsonrpc";
 import { ChainId } from "../crosschain/chains";
 import { address, callMethod, isNonzero } from "./provider";
-import "./transaction.d";
+import { Transaction } from "./transaction.d";
 
 /** @const {string[]} */
 const KPASS_ADDRS = [
@@ -49,7 +49,7 @@ const hasKPasses = (providerURLs, addresses) => {
   const tableByChainPromise = Promise.all(chains.map((chainId) => jsonrpc.callMulti(
     "https://" + providerURLs[chainId], "eth_call",
     addresses.map((addr) => [
-      /** @type {eth.Transaction} */({
+      /** @type {Transaction} */({
         to: getAddress(chainId),
         data: "0xc50a1514" + address(addr)
       }), "latest"

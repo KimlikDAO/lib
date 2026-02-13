@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { generatePlacehodler } from "../declaration";
+import { generatePlaceholder } from "../declaration";
 
 describe("generatePlaceholder", () => {
   it("should handle named exports", () => {
@@ -12,7 +12,7 @@ describe("generatePlaceholder", () => {
       export { User };
     `;
 
-    const result = generatePlacehodler(input);
+    const result = generatePlaceholder(input);
     expect(result).toContain("export const User = {};");
   });
 
@@ -29,7 +29,7 @@ describe("generatePlaceholder", () => {
       export default { Request, Response };
     `;
 
-    const result = generatePlacehodler(input);
+    const result = generatePlaceholder(input);
     expect(result).toContain("export const Request = {};");
     expect(result).toContain("export const Response = {};");
     expect(result).toContain("export default { Request, Response };");
@@ -43,7 +43,7 @@ describe("generatePlaceholder", () => {
       }
     `;
 
-    const result = generatePlacehodler(input);
+    const result = generatePlaceholder(input);
     expect(result).toContain("export const Config = {};");
   });
 
@@ -53,7 +53,7 @@ describe("generatePlaceholder", () => {
       type UserRole = 'admin' | 'user' | 'guest';
     `;
 
-    const result = generatePlacehodler(input);
+    const result = generatePlaceholder(input);
     expect(result).toContain("export const ID = {};");
     expect(result).toContain("export const UserRole = {};");
   });
@@ -67,7 +67,7 @@ describe("generatePlaceholder", () => {
       export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
     `;
 
-    const result = generatePlacehodler(input);
+    const result = generatePlaceholder(input);
     expect(result).toContain("export const ApiOptions = {};");
     expect(result).toContain("export const Method = {};");
   });
@@ -91,7 +91,7 @@ describe("generatePlaceholder", () => {
       export default { BaseConfig, AdvancedConfig, ConfigType };
     `;
 
-    const result = generatePlacehodler(input);
+    const result = generatePlaceholder(input);
     expect(result).toContain("export const BaseConfig = {};");
     expect(result).toContain("export const AdvancedConfig = {};");
     expect(result).toContain("export const ConfigType = {};");
@@ -103,7 +103,7 @@ describe("generatePlaceholder", () => {
       // Empty declaration file
     `;
 
-    const result = generatePlacehodler(input);
+    const result = generatePlaceholder(input);
     expect(result).toBe("");
   });
 });

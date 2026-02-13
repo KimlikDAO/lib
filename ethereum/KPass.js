@@ -6,7 +6,7 @@ import KPass from "./KPassLite";
 import evm from './evm';
 import "./logs.d";
 import { callMethod } from "./provider";
-import "./transaction.d";
+import { Transaction } from "./transaction.d";
 
 /**
  * @const {string}
@@ -173,8 +173,8 @@ const addToWallet = (chainId, tokenId) => Provider.request(/** @type {eth.Reques
  * @return {Promise<string>} transaction hash
  */
 const sendTransactionTo = (from, to, value, gas, calldata) => {
-  /** @type {eth.Transaction} */
-  let tx = /** @type {eth.Transaction} */({
+  /** @type {Transaction} */
+  let tx = /** @type {Transaction} */({
     from,
     to,
     value: "0x" + value,

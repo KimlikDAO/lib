@@ -1,13 +1,13 @@
 import { Point, recoverSigner, sign } from "../crypto/secp256k1";
 import { keccak256Uint32 } from "../crypto/sha3";
-import hex from "../util/hex";
 import bigints from "../util/bigints";
-import eth from "./eth.d";
+import hex from "../util/hex";
+import { Address, CompactSignature } from "./ethereum.d";
 import evm from "./evm";
 
 /**
  * @param {Point} Q
- * @return {string} address
+ * @return {Address} address
  */
 const pointToAddress = (Q) => {
   /** @const {Uint8Array} */
@@ -25,8 +25,8 @@ const pointToAddress = (Q) => {
  * is valid; outputs an arbitrary value otherwise.
  *
  * @param {string} digest as a length 64 hex string
- * @param {eth.CompactSignature} signature as a length 128 compact signature
- * @return {string} 42 characters long EVM address
+ * @param {CompactSignature} signature as a length 128 compact signature
+ * @return {Address} 42 characters long EVM address
  */
 const signerAddress = (digest, signature) => {
   /** @const {number} */
@@ -47,7 +47,7 @@ const signerAddress = (digest, signature) => {
 /**
  * @param {string} digest
  * @param {bigint} privateKey
- * @return {eth.CompactSignature}
+ * @return {CompactSignature}
  */
 const signCompact = (digest, privateKey) => {
   const { r, s, yParity } = sign(BigInt("0x" + digest), privateKey);

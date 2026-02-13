@@ -1,6 +1,6 @@
 import jsonrpc from "../api/jsonrpc";
 import { address } from "./provider";
-import "./transaction.d";
+import { Transaction } from "./transaction.d";
 
 class ERC20 {
   /**
@@ -21,7 +21,7 @@ class ERC20 {
    */
   allowance(owner, spender) {
     return jsonrpc.call(this.rpcUrl, "eth_call", [
-      /** @type {eth.Transaction} */({
+      /** @type {Transaction} */({
         to: this.contact,
         data: "0xdd62ed3e" + address(owner) + address(spender)
       }),

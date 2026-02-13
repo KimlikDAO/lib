@@ -3,13 +3,13 @@ import process from "node:process";
 /**
  * @param {string} code
  * @param {string=} path
- * @return {!Object}
+ * @return {Object}
  */
 const importCode = (code, path) => import(
   URL.createObjectURL(new File([code], path, { type: "application/javascript+module" })));
 
 /**
- * @param {!Error} error
+ * @param {Error} error
  * @param {number=} depth
  * @return {string}
  */

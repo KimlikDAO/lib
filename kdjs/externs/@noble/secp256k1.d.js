@@ -8,17 +8,17 @@
  */
 function ProjectivePoint() { }
 
-/** @const {!ProjectivePoint} */
+/** @const {ProjectivePoint} */
 ProjectivePoint.BASE;
 
 /**
- * @return {!ProjectivePoint}
+ * @return {ProjectivePoint}
  */
 ProjectivePoint.prototype.double = function () { }
 
 /**
- * @param {!ProjectivePoint} other
- * @return {!ProjectivePoint}
+ * @param {ProjectivePoint} other
+ * @return {ProjectivePoint}
  */
 ProjectivePoint.prototype.add = function (other) { }
 
@@ -34,10 +34,10 @@ ProjectivePoint.prototype.toAffine = function () { }
  * @param {Uint8Array} digest
  * @param {Uint8Array} privKey
  * @param {{
- *   prehash: (boolean|undefined),
- *   lowS: (boolean|undefined),
- *   extraEntropy: (Uint8Array|boolean|undefined),
- *   format: (string|undefined)
+ *   prehash?: boolean,
+ *   lowS?: boolean,
+ *   extraEntropy?: Uint8Array | boolean,
+ *   format?: string
  * }} options
  * @return {Promise<Uint8Array>}
  */

@@ -9,43 +9,43 @@ import "../error.d";
 /**
  * @param {number} code
  * @param {string[]=} messages
- * @return {Promise<*>}
+ * @return {Promise<unknown>}
  */
 const reject = (code, messages) =>
-  Promise.reject(/** @type {!protocol.ErrorMessage} */({ code, messages }));
+  Promise.reject(/** @type {protocol.ErrorMessage} */({ code, messages }));
 
-/** @const {!Object<string, string>} */
+/** @const {Record<string, string>} */
 const HEADERS = {
-  'content-type': 'application/json;charset=utf-8',
-  'access-control-allow-origin': "*",
-  'cache-control': 'private,no-cache',
+  "content-type": "application/json;charset=utf-8",
+  "access-control-allow-origin": "*",
+  "cache-control": "private,no-cache",
 };
 
 /**
  * @param {number} httpStatus
- * @param {!ErrorCode} errorCode
- * @return {!Response}
+ * @param {ErrorCode} errorCode
+ * @return {Response}
  */
 const err = (httpStatus, errorCode) => errorResponse(
   httpStatus,
-  /** @type {!protocol.ErrorMessage} */({ code: errorCode })
+  /** @type {protocol.ErrorMessage} */({ code: errorCode })
 );
 
 /**
  * @param {number} httpStatus
- * @param {!ErrorCode} errorCode
+ * @param {ErrorCode} errorCode
  * @param {string[]} messages
- * @return {!Response}
+ * @return {Response}
  */
 const errWithMessage = (httpStatus, errorCode, messages) => errorResponse(
   httpStatus,
-  /** @type {!protocol.ErrorMessage} */({ code: errorCode, messages })
+  /** @type {protocol.ErrorMessage} */({ code: errorCode, messages })
 );
 
 /**
  * @param {number} httpStatus
- * @param {!protocol.ErroMessage} errorMessage
- * @return {!Response}
+ * @param {protocol.ErrorMessage} errorMessage
+ * @return {Response}
  */
 const errorResponse = (httpStatus, errorMessage) => new Response(
   JSON.stringify(errorMessage),

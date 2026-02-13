@@ -102,7 +102,7 @@ const verifyFields = (fields, r, s, pubKey) => {
   const ne = Q - hashFields(fields, pubKey, r);
   /**
    * s.G = K + pubKey.e
-   * @const {!Point}
+   * @const {Point}
    */
   const K = G.copy().multiply(s).increment(pubKey.multiply(ne)).project();
   return (K.y & 1n) == 0n && K.x == r;
@@ -173,7 +173,7 @@ const verifyMessage = (message, r, s, pubKey) => {
   const ne = Q - hashMessage(message, pubKey, r);
   /**
    * s.G = K + pubKey.e
-   * @const {!Point}
+   * @const {Point}
    */
   const K = G.copy().multiply(s).increment(pubKey.multiply(ne)).project();
   return (K.y & 1n) == 0n && K.x == r;

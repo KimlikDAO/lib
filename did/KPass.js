@@ -26,11 +26,11 @@ const selectEncryptedSections = (encryptedSectionsKeys, sectionKeys) => {
   const sks = new Set(sectionKeys);
 
   /**
-   * @const {Array<{
+   * @const {{
    *   key: string,
-   *   inc: !Set<string>,
-   *   exc: !Set<string>,
-   * }>}
+   *   inc: Set<string>,
+   *   exc: Set<string>,
+   * }[]}
    */
   const arr = [];
   {
@@ -41,9 +41,9 @@ const selectEncryptedSections = (encryptedSectionsKeys, sectionKeys) => {
     for (const key of encryptedSectionsKeys) {
       /** @const {string[]} */
       const sections = key.split(",");
-      /** @const {!Set<string>} */
+      /** @const {Set<string>} */
       const inc = new Set(sections.filter((e) => sks.has(e)));
-      /** @const {!Set<string>} */
+      /** @const {Set<string>} */
       const exc = new Set(sections.filter((e) => !sks.has(e)));
       if (inc.size == sks.size && exc.size < bestExc) {
         bestI = arr.length;
@@ -59,8 +59,8 @@ const selectEncryptedSections = (encryptedSectionsKeys, sectionKeys) => {
   /**
    * Calculates 100 * |A \cup B| + |A| + |B|.
    *
-   * @param {!Set<string>} A
-   * @param {!Set<string>} B
+   * @param {Set<string>} A
+   * @param {Set<string>} B
    * @return {number}
    */
   const score = (A, B) => {
@@ -111,9 +111,9 @@ const selectEncryptedSections = (encryptedSectionsKeys, sectionKeys) => {
 }
 
 /**
- * @param {!eth.ERC721Unlockable} nft
+ * @param {eth.ERC721Unlockable} nft
  * @param {string[]} sectionNames
- * @param {!Signer} signer
+ * @param {Signer} signer
  * @param {string} address
  * @return {Promise<did.DecryptedSections>}
  */
@@ -130,16 +130,16 @@ const fromUnlockableNFT = async (nft, sectionNames, signer, address) => {
   for (let i = 0; i < encryptedSectionsKeys.length; ++i) {
     if (i > 0)
       await wait(100);
-    /** @type {!crosschain.Unlockable} */
-    const encryptedSections = /** @type {!crosschain.Unlockable} */(
+    /** @type {crosschain.Unlockable} */
+    const encryptedSections = /** @type {crosschain.Unlockable} */(
       nft.unlockables[encryptedSectionsKeys[i]]);
-    /** @const {?string} */
+    /** @const {string | null} */
     const decryptedText = await decrypt(encryptedSections, signer, address);
     if (decryptedText)
       Object.assign(decryptedSections,
           /** @type {did.DecryptedSections} */(JSON.parse(decryptedText)));
   }
-  /** @const {!Set<string>} */
+  /** @const {Set<string>} */
   const sectionNamesSet = new Set(sectionNames);
   for (const section in decryptedSections)
     if (!sectionNamesSet.has(section)) delete decryptedSections[section];
@@ -151,12 +151,12 @@ const fromUnlockableNFT = async (nft, sectionNames, signer, address) => {
  * Further, strips the proofs from those that were succesfully verified.
  *
  * @param {did.DecryptedSections} decryptedSections
- * @param {!Object<string, string>} verifyKeys
+ * @param {Record<string, string>} verifyKeys
  * @return {Promise<did.DecryptedSections>}
  */
 const checkVerifiableIDs = (decryptedSections, verifyKeys) => {
   /** @const {string} */
-  const localIdNumber = /** @type {!did.PersonInfo} */(
+  const localIdNumber = /** @type {did.PersonInfo} */(
     decryptedSections["personInfo"]).localIdNumber;
 
   /**
@@ -191,15 +191,15 @@ const checkVerifiableIDs = (decryptedSections, verifyKeys) => {
 const SectionGroup = {};
 
 /**
- * @param {!eth.ERC721Metadata} metadata
+ * @param {eth.ERC721Metadata} metadata
  * @param {did.DecryptedSections} decryptedSections
- * @param {!Array<SectionGroup>} sectionGroups
- * @param {!Signer} signer
+ * @param {SectionGroup[]} sectionGroups
+ * @param {Signer} signer
  * @param {string} address
- * @return {Promise<!eth.ERC721Unlockable>}
+ * @return {Promise<eth.ERC721Unlockable>}
  */
 const toUnlockableNFT = async (metadata, decryptedSections, sectionGroups, signer, address) => {
-  /** @const {!Object<string, !crosschain.Unlockable>} */
+  /** @const {Record<string, crosschain.Unlockable>} */
   const unlockables = {};
   for (let i = 0; i < sectionGroups.length; ++i) {
     /** @const {Promise<void>} */
@@ -226,7 +226,7 @@ const toUnlockableNFT = async (metadata, decryptedSections, sectionGroups, signe
 }
 
 /**
- * @param {!Array<did.DecryptedSections>} decryptedSectionsList
+ * @param {did.DecryptedSections[]} decryptedSectionsList
  * @param {string} commitmentR
  * @param {string} commitmentAnonR
  * @param {number} signerCountNeeded
@@ -251,7 +251,7 @@ const combineMultiple = (
       sectionNames.add(key);
 
   for (const key of sectionNames) {
-    /** @const {!Object<string, !Array<!did.Section>>} */
+    /** @const {Record<string, did.Section[]>} */
     const hashToSections = {};
     for (const decryptedSections of decryptedSectionsList)
       if (key in decryptedSections
@@ -263,7 +263,7 @@ const combineMultiple = (
     /**
      * Find the most frequent hash group.
      *
-     * @type {!Array<!did.Section>}
+     * @type {did.Section[]}
      */
     let mostFreq = []
     for (const h in hashToSections)

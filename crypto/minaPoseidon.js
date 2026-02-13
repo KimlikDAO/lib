@@ -15,8 +15,11 @@ const poseidon = (vals) => {
   let s0 = 0n;
   let s1 = 0n;
   let s2 = 0n;
+  /** @type {bigint} */
   let t0;
+  /** @type {bigint} */
   let t1;
+  /** @type {bigint} */
   let t2;
   if (n & 1) vals.push(0n);
   for (let /** number */ i = 0; i < n; i += 2) {
@@ -37,23 +40,14 @@ const poseidon = (vals) => {
   return s0;
 };
 
-/** @const {bigint} */
 const md00 = 0x1a9bd250757e29ef4959b9bef59b4e60e20a56307d6491e7b7ea1fac679c7903n;
-/** @const {bigint} */
 const md01 = 0x384aa09faf3a48737e2d64f6a030aa242e6d5d455ae4a13696b48a7320c506cdn;
-/** @const {bigint} */
 const md02 = 0x3d2b7b0209bc3080064d5ce4a7a03653f8346506bfa6d076061217be9e6cfed5n;
-/** @const {bigint} */
 const md10 = 0x9ee57c70bc351220b107983afcfabbea79868a4a8a5913e24b7aaf3b4bf3a42n;
-/** @const {bigint} */
 const md11 = 0x20989996bc29a96d17684d3ad4c859813115267f35225d7e1e9a5b5436a2458fn;
-/** @const {bigint} */
 const md12 = 0x14e39adb2e171ae232116419ee7f26d9191edde8a5632298347cdb74c3b2e69dn;
-/** @const {bigint} */
 const md20 = 0x174544357b687f65a9590c1df621818b5452d5d441597a94357f112316ef67cbn;
-/** @const {bigint} */
 const md21 = 0x3ca9263dc1a19d17cfbf15b0166bb25f95dffc53212db207fcee35f02c2c4137n;
-/** @const {bigint} */
 const md22 = 0x3cf1fbef75d4ab63b7a812f80b7b0373b2dc21d269ba7c4c4d6581d50aae114cn;
 
 /**

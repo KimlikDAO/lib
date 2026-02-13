@@ -204,9 +204,9 @@ describe("InstanceType", () => {
     const user = new InstanceType("User");
     user.modifiers = Modifier.Nullable;
     expect(user.toClosureExpr())
-      .toBe("User");
+      .toBe("?User");
     expect(user.toClosureExpr({ toParam: true, wrap: true }))
-      .toBe("User");
+      .toBe("?User");
     expect(user.toClosureExpr({ bare: true }))
       .toBe("!User");
   });
@@ -228,9 +228,9 @@ describe("InstanceType", () => {
     const nullableOptUser = new InstanceType("User");
     nullableOptUser.modifiers = Modifier.Nullable | Modifier.Optional;
     expect(nullableOptUser.toClosureExpr())
-      .toBe("User|undefined");
+      .toBe("?User|undefined");
     expect(nullableOptUser.toClosureExpr({ toParam: true, wrap: true }))
-      .toBe("User=");
+      .toBe("?User=");
     expect(nullableOptUser.toClosureExpr({ bare: true }))
       .toBe("!User");
   });

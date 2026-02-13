@@ -12,7 +12,7 @@ import { Signature, Signer } from "../signer";
 class MockSigner {
   /** @param {bigint} privKey */
   constructor(privKey) {
-    /** @const {!EvmSigner} */
+    /** @const {EvmSigner} */
     this.evmSigner = new EvmSigner(privKey);
   }
 
@@ -28,7 +28,7 @@ class MockSigner {
       return this.evmSigner.deriveSecret(message, address);
 
     return this.signMessage(message, address)
-      .then((/** Signature */ sig) => crypto.subtle.digest("SHA-256",
+      .then((/** @type {Signature} */ sig) => crypto.subtle.digest("SHA-256",
         base58.toBytes(/** @type {mina.SignerSignature} */(sig).signature)
       ))
   }

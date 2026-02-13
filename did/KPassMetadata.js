@@ -26,8 +26,8 @@ const userPrompt = (sections) => {
   /** @const {string} */
   const sectionText = sections.join(",\n  ");
   /**
- * @const
- * @type {I18nString} */
+   * @const
+   * @type {I18nString} */
   const prompt = {
     tr: `KPass Erişim İsteği:
 -------------------------------------------------
@@ -50,9 +50,9 @@ section${sections.length == 1 ? "" : "s"} of your KPass. Only sign this message 
 /**
  * @param {string[]} sections
  * @param {ChainId} chainId
- * @return {!SectionGroup}
+ * @return {SectionGroup}
  */
-const sectionGroup = (sections, chainId) => /** @type {!SectionGroup} */({
+const sectionGroup = (sections, chainId) => /** @type {SectionGroup} */({
   sectionNames: sections,
   userPrompt: userPrompt(sections)
     + "Nonce: " + hex.from(/** @type {Uint8Array} */(crypto.getRandomValues(new Uint8Array(8))))
@@ -63,12 +63,12 @@ const sectionGroup = (sections, chainId) => /** @type {!SectionGroup} */({
 /**
  * @param {ChainId} chainId
  * @return {{
- *   metadata: !eth.ERC721Metadata,
- *   sections: !Array<SectionGroup>
+ *   metadata: eth.ERC721Metadata,
+ *   sections: SectionGroup[]
  * }}
  */
 const metadataAndSections = (chainId) => ({
-  metadata: /** @type {!eth.ERC721Metadata} */({
+  metadata: /** @type {eth.ERC721Metadata} */({
     name: "KPass",
     description: "KPass",
     image: KIMLIKDAO_URL + "/KPASS.svg",
@@ -82,7 +82,7 @@ const metadataAndSections = (chainId) => ({
   ]
 });
 
-/** @const {!Object<string, string>} */
+/** @const {Record<string, string>} */
 const VerificationKeys = {
   "exposureReport":
     "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAx6RG1FTAvyuNi4Hd5+o6muaVPgF12CN97J50" +

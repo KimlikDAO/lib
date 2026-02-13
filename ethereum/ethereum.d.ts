@@ -1,26 +1,17 @@
-/** @const */
-const eth = {};
-
 /**
  * A string of length 42, starting with 0x.
- *
- * @typedef {string}
  */
-eth.Address;
+type Address = string;
 
 /**
  * A length 40 hex string denoting and address without the leading 0x.
- *
- * @typedef {string}
  */
-eth.PackedAddress;
+type PackedAddress = string;
 
 /**
  * A string of length 132, starting with 0x.
- *
- * @typedef {string}
  */
-eth.WideSignature;
+type WideSignature = string;
 
 /**
  * A string of length 128 denoting a compact signature where s and yParity are
@@ -28,9 +19,12 @@ eth.WideSignature;
  * @see {@link evm.signCompact}
  * @see {@link evm.compactSignature}
  * @see https://eips.ethereum.org/EIPS/eip-2098
- *
- * @typedef {string}
  */
-eth.CompactSignature;
+type CompactSignature = string;
 
-export default eth;
+export {
+  Address,
+  PackedAddress,
+  WideSignature,
+  CompactSignature
+};

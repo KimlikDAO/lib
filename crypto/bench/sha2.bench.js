@@ -60,12 +60,13 @@ compareImpls([
   () => {
     const ss = new Uint32Array(s);
     const tt = new Uint32Array(t);
-    f(ss, tt);
+    g(ss, tt);
   },
   () => {
     const ss = new Uint32Array(s);
     const tt = new Uint32Array(t);
-    g(ss, tt);
-  }],
+    f(ss, tt);
+  },
+],
   1000, [], null
 );

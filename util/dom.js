@@ -9,7 +9,7 @@ const Lang = LangCode.EN;
 /**
  * @nosideeffects
  * @template T
- * @param {!Object<LangCode, T>} i18ned
+ * @param {Record<LangCode, T>} i18ned
  * @return {T}
  */
 const i18n = (i18ned) => i18ned[Lang];
@@ -18,9 +18,9 @@ const i18n = (i18ned) => i18ned[Lang];
  * @noinline
  * @nosideeffects
  * @param {string} ad DOM biriminin adı.
- * @return {!Element}
+ * @return {Element}
  */
-const byId = (ad) => /** @type {!Element} */(document.getElementById(ad));
+const byId = (ad) => /** @type {Element} */(document.getElementById(ad));
 
 /**
  * @noinline
@@ -50,20 +50,20 @@ const showById = (id, isVisible) => show(byId(id), isVisible);
 /** @const */
 const text = {
   /**
-   * @param {!Element} element
+   * @param {Element} element
    * @param {string} text
    * @return {string}
    */
   update: (element, text) => /** @type {!Text} */(element.firstChild).data = text,
 
   /**
-   * @param {!Element} element
+   * @param {Element} element
    * @param {string=} text
    */
   setPreserve: (element, text) => {
-    /** @const {!Text} */
-    const textNode = /** @type {!Text} */(element.firstChild);
-    /** @const {string|undefined} */
+    /** @const {Text} */
+    const textNode = /** @type {Text} */(element.firstChild);
+    /** @const {string | undefined} */
     const preserved = element["o"];
     if (!preserved) {
       if (!text) return;
@@ -73,13 +73,13 @@ const text = {
   },
 
   /**
-   * @param {!Element} element
+   * @param {Element} element
    * @param {string} text
    */
   appendPreserve: (element, text) => {
-    /** @const {!Text} */
-    const textNode = /** @type {!Text} */(element.firstChild);
-    /** @type {string|undefined} */
+    /** @const {Text} */
+    const textNode = /** @type {Text} */(element.firstChild);
+    /** @type {string | undefined} */
     let preserved = element["o"];
     if (!preserved)
       element["o"] = preserved = textNode.data;
@@ -88,8 +88,8 @@ const text = {
 }
 
 /**
- * @param {!Element} düğme
- * @param {!Element} menü
+ * @param {Element} düğme
+ * @param {Element} menü
  */
 const bindDropdown = (düğme, menü) => {
   menü.classList.add("nsh");
@@ -112,7 +112,7 @@ const bindDropdown = (düğme, menü) => {
 }
 
 /**
- * @param {!Element} pane
+ * @param {Element} pane
  * @param {number} index
  */
 const slideCard = (pane, index) => {
@@ -166,82 +166,82 @@ const create = (id, name) => {
 
 /**
  * @param {string} ad
- * @return {!HTMLAnchorElement}
+ * @return {HTMLAnchorElement}
  */
-const a = (ad) => /** @type {!HTMLAnchorElement} */((GEN && globalThis["GEN"])
+const a = (ad) => /** @type {HTMLAnchorElement} */((GEN && globalThis["GEN"])
   ? create(ad, "a")
   : byId(ad));
 
 /**
  * @param {string} ad
- * @return {!HTMLButtonElement}
+ * @return {HTMLButtonElement}
  */
-const button = (ad) => /** @type {!HTMLButtonElement} */((GEN && globalThis["GEN"])
+const button = (ad) => /** @type {HTMLButtonElement} */((GEN && globalThis["GEN"])
   ? create(ad, "button")
   : byId(ad));
 
 /**
  * @param {string} ad
- * @return {!HTMLFormElement}
+ * @return {HTMLFormElement}
  */
-const form = (ad) => /** @type {!HTMLFormElement} */((GEN && globalThis["GEN"])
+const form = (ad) => /** @type {HTMLFormElement} */((GEN && globalThis["GEN"])
   ? create(ad, "form")
   : byId(ad));
 
 /**
  * @param {string} ad
- * @return {!HTMLSpanElement}
+ * @return {HTMLSpanElement}
  */
-const span = (ad) => /** @type {!HTMLSpanElement} */((GEN && globalThis["GEN"])
+const span = (ad) => /** @type {HTMLSpanElement} */((GEN && globalThis["GEN"])
   ? create(ad, "span")
   : byId(ad));
 
 /**
  * @nosideeffects
  * @param {string} ad
- * @return {!HTMLDivElement}
+ * @return {HTMLDivElement}
  */
-const div = (ad) => /** @type {!HTMLDivElement} */((GEN && globalThis["GEN"])
+const div = (ad) => /** @type {HTMLDivElement} */((GEN && globalThis["GEN"])
   ? create(ad, "div")
   : byId(ad));
 
 /**
  * @param {string} ad
- * @return {!HTMLImageElement}
+ * @return {HTMLImageElement}
  */
-const img = (ad) => /** @type {!HTMLImageElement} */((GEN && globalThis["GEN"])
+const img = (ad) => /** @type {HTMLImageElement} */((GEN && globalThis["GEN"])
   ? create(ad, "img")
   : byId(ad));
 
 /**
  * @param {string} ad
- * @return {!HTMLUListElement}
+ * @return {HTMLUListElement}
  */
-const ul = (ad) => /** @type {!HTMLUListElement} */((GEN && globalThis["GEN"])
+const ul = (ad) => /** @type {HTMLUListElement} */((GEN && globalThis["GEN"])
   ? create(ad, "ul")
   : byId(ad));
 
 /**
  * @param {string} domId
- * @return {!HTMLLIElement}
+ * @return {HTMLLIElement}
  */
-const li = (domId) => /** @type {!HTMLLIElement} */((GEN && globalThis["GEN"])
+const li = (domId) => /** @type {HTMLLIElement} */((GEN && globalThis["GEN"])
   ? create(domId, "li")
   : byId(domId));
 
 /**
  * @param {string} domId
- * @return {!HTMLTableCellElement}
+ * @return {HTMLTableCellElement}
  */
-const td = (domId) => /** @type {!HTMLTableCellElement} */((GEN && globalThis["GEN"])
+const td = (domId) => /** @type {HTMLTableCellElement} */((GEN && globalThis["GEN"])
   ? create(domId, "td")
   : byId(domId));
 
 /**
  * @param {string} ad
- * @return {!HTMLInputElement}
+ * @return {HTMLInputElement}
  */
-const input = (ad) => /** @type {!HTMLInputElement} */((GEN && globalThis["GEN"])
+const input = (ad) => /** @type {HTMLInputElement} */((GEN && globalThis["GEN"])
   ? create(ad, "input")
   : byId(ad));
 

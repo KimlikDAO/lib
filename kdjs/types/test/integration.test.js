@@ -4,7 +4,7 @@ import { parseType } from "../parser";
 describe("Basics", () => {
   test("Type | null", () => {
     const kdjsExpr = "Type | null";
-    const closureExpr = "Type";
+    const closureExpr = "?Type";
     expect(parseType(kdjsExpr).toClosureExpr()).toBe(closureExpr);
   });
 

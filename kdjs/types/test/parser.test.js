@@ -458,3 +458,50 @@ describe("Constructors", () => {
     expect(constructorWithParams.thisType.name).toBe("User");
   });
 });
+
+describe("Precedence and associativity", () => {
+  test("() => number | bigint", () => {
+    const fn = parseType("() => number | bigint");
+    expect(fn).toBeInstanceOf(FunctionType);
+    expect(fn.returnType).toBeInstanceOf(UnionType);
+    expect(fn.returnType.types.length).toBe(2);
+    expect(fn.returnType.types[0]).toBeInstanceOf(PrimitiveType);
+    expect(fn.returnType.types[0].name).toBe("number");
+    expect(fn.returnType.types[1]).toBeInstanceOf(PrimitiveType);
+    expect(fn.returnType.types[1].name).toBe("bigint");
+  });
+
+  test("(()=>void) | ()=>Promise<void>", () => {
+    const union = parseType("(() => void) | (() => Promise<void>)");
+    expect(union).toBeInstanceOf(UnionType);
+    expect(union.types.length).toBe(2);
+    expect(union.types[0]).toBeInstanceOf(FunctionType);
+    expect(union.types[1]).toBeInstanceOf(FunctionType);
+  });
+
+  test("string | number[] - array suffix binds tighter than union", () => {
+    const type = parseType("string | number[]");
+    expect(type).toBeInstanceOf(UnionType);
+    expect(type.types.length).toBe(2);
+    expect(type.types[0]).toBeInstanceOf(PrimitiveType);
+    expect(type.types[0].name).toBe("string");
+    expect(type.types[1]).toBeInstanceOf(GenericType);
+    expect(type.types[1].name).toBe("Array");
+    const arrayParam = /** @type {PrimitiveType} */(type.types[1].params[0]);
+    expect(arrayParam.name).toBe("number");
+  });
+
+  test("() => () => number | string", () => {
+    const type = parseType("() => () => number | string");
+    expect(type).toBeInstanceOf(FunctionType);
+    expect(type.params.length).toBe(0);
+    expect(type.returnType).toBeInstanceOf(FunctionType);
+    const innerFn = /** @type {FunctionType} */(type.returnType);
+    expect(innerFn.params.length).toBe(0);
+    expect(innerFn.returnType).toBeInstanceOf(UnionType);
+    const returnUnion = /** @type {UnionType} */(innerFn.returnType);
+    expect(returnUnion.types.length).toBe(2);
+    expect(returnUnion.types[0].name).toBe("number");
+    expect(returnUnion.types[1].name).toBe("string");
+  });
+});

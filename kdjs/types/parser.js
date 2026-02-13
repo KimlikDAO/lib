@@ -119,6 +119,7 @@ class Parser {
       const ch = this.input.charCodeAt(i);
       // a-z: 97-122, A-Z: 65-90, 0-9: 48-57, _: 95, $: 36, .: 46
       if (!((ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122) ||
+            (ch > 127) ||
             (ch >= 48 && ch <= 57) || ch == 95 || ch == 36 || ch == 46))
         break;
     }
@@ -164,7 +165,7 @@ class Parser {
    * @throws {Error} If parsing fails
    */
   parseFunctionType() {
-    /** @const {!Array<!Type>} */
+    /** @const {Type[]} */
     const params = [];
     let optionalAfter = 1e9;
     /** @type {Type} */

@@ -83,7 +83,7 @@ function Signature(r, s) {
  * @return {Signature}
  */
 Signature.fromBase58 = function (sig) {
-  /** @const {!Uint8Array} */
+  /** @const {Uint8Array} */
   const bytes = base58.toBytes(sig);
   return new Signature(
     bigints.fromBytesLE(bytes.subarray(2, 34)),

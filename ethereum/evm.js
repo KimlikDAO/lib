@@ -5,7 +5,12 @@
  */
 import { keccak256, keccak256Uint8 } from '../crypto/sha3';
 import hex from "../util/hex";
-import eth from "./eth.d";
+import {
+  Address,
+  CompactSignature,
+  PackedAddress,
+  WideSignature
+} from "./ethereum.d";
 
 /**
  * Implements EIP-55 address checksum encoding, for UI validation.
@@ -13,8 +18,8 @@ import eth from "./eth.d";
  * For mixed-case inputs, returns null if the address is invalid, returns
  * the original address if valid.
  *
- * @param {string} address The Ethereum address (with 0x prefix)
- * @return {string | null} Checksummed address or null if invalid
+ * @param {Address} address The Ethereum address (with 0x prefix)
+ * @return {Address | null} Checksummed address or null if invalid
  */
 const correctAddress = (address) => {
   if (address.length != 42 || !address.startsWith("0x")) return null;
@@ -53,7 +58,7 @@ const correctAddress = (address) => {
 /**
  * Tests if a given string is a valid EVM address with correct checksum.
  *
- * @param {string} address
+ * @param {Address} address
  * @return {boolean} whether the address is valid
  */
 const isAddressValid = (address) => {
@@ -78,8 +83,8 @@ const isAddressValid = (address) => {
 /**
  * @see https://eips.ethereum.org/EIPS/eip-2098
  *
- * @param {eth.WideSignature} signature of length 2 + 64 + 64 + 2 = 132
- * @return {eth.CompactSignature} compactSignature as a string of length 128 (64 bytes).
+ * @param {WideSignature} signature of length 2 + 64 + 64 + 2 = 132
+ * @return {CompactSignature} compactSignature as a string of length 128 (64 bytes).
  */
 const compactSignature = (signature) => {
   /** @const {boolean} */
@@ -113,13 +118,13 @@ const personalDigest = (msg) => {
 }
 
 /**
- * @param {string} addr EVM adresi; 0x ile başlamalı.
- * @return {eth.PackedAddress} 80 uzunluğunde hex kodlanmış adres
+ * @param {Address} addr EVM adresi; 0x ile başlamalı.
+ * @return {PackedAddress} 40 uzunluğunde hex kodlanmış adres
  */
 const packedAddress = (addr) => addr.slice(2).toLowerCase();
 
 /**
- * @param {string} addr EVM adresi; 0x ile başlamalı.
+ * @param {Address} addr EVM adresi; 0x ile başlamalı.
  * @return {string} calldata için hazırlanmış adres.
  */
 const address = (addr) => "0".repeat(24) + packedAddress(addr)

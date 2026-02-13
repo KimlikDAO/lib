@@ -2,7 +2,7 @@ import { Update } from "../textual";
 import { parseTypePrefix } from "../types/parser";
 
 /**
- * @const {!Set<string>}
+ * @const {Set<string>}
  */
 const TAGS_WITH_TYPES = new Set([
   "@type", "@const", "@typedef", "@private", "@param", "@return"
@@ -16,12 +16,13 @@ const TAGS_WITH_TYPES = new Set([
  *   start: number,
  *   end: number
  * }} comment
- * @return {!Array<Update>}
+ * @param {string} fileName
+ * @return {Update[]}
  */
-const transpile = (comment) => {
+const transpile = (comment, fileName) => {
   if (comment.type != "Block") return [];
 
-  /** @const {!Array<Update>} */
+  /** @const {Update[]} */
   const updates = [];
   const value = comment.value;
 
@@ -64,6 +65,8 @@ const transpile = (comment) => {
       });
       i = endPos; // Continue search after this type expression
     } catch (e) {
+      console.warn("Cannot parse " + value.slice(typeStart, typeStart + 20)
+        + "... in file " + fileName + ": " + e);
       continue;
     }
   }

@@ -9,7 +9,7 @@ const Update = {};
 
 /**
  * @param {string} orig
- * @param {!Array<Update>} updates
+ * @param {Update[]} updates
  * @return {string}
  */
 const update = (orig, updates) => {

@@ -18,7 +18,7 @@ const inverse = (b, P) => {
   let t;
   /** @type {bigint} */
   let q;
-  while (b !== 0n) {
+  while (b != 0n) {
     q = a / b;
     t = y; y = x - q * y; x = t;
     t = b; b = a - q * b; a = t;

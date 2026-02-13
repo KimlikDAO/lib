@@ -1,5 +1,6 @@
 import { keccak256Uint8 } from "../crypto/sha3";
 import hex from "../util/hex";
+import { Address } from "./ethereum.d";
 
 /** @const {Uint8Array} */
 const CreatePrefix = keccak256Uint8(new TextEncoder().encode("zksyncCreate"));
@@ -8,9 +9,9 @@ const CreatePrefix = keccak256Uint8(new TextEncoder().encode("zksyncCreate"));
  * Computes the contract address deployed on EraVM with a
  * deployment nonce <= 255.
  *
- * @param {string} deployer
+ * @param {Address} deployer
  * @param {number} nonce
- * @return {string}
+ * @return {Address}
  */
 const getCreateAddress = (deployer, nonce) => {
   /** @const {Uint8Array} */

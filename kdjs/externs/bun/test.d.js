@@ -1,28 +1,28 @@
 /**
  * @typedef {{
- *   timeout: (number|undefined),
- *   retry: (number|undefined),
- *   repeats: (number|undefined)
+ *   timeout?: number,
+ *   retry?: number,
+ *   repeats?: number
  * }}
  */
 const TestOptions = {};
 
 /**
  * @param {string} description
- * @param {function():(Promise<*>|void)} run
+ * @param {() => void | Promise<unknown>} run
  */
 const describe = function (description, run) { };
 
 /**
  * @param {string} invariant
- * @param {function():void|function():Promise<void>} run
+ * @param {() => void | Promise<void>} run
  * @param {TestOptions=} testOptions
  */
 const it = function (invariant, run, testOptions) { };
 
 /**
  * @param {string} invariant
- * @param {function():void|function():Promise<void>} run
+ * @param {() => void | Promise<void>} run
  * @param {TestOptions=} testOptions
  */
 const test = function (invariant, run, testOptions) { };
@@ -45,7 +45,7 @@ test.if = function (condition) { }
 const expect = function (actual) { }
 
 /**
- * @param {function(?):void} callback
+ * @param {() => void} callback
  */
 const afterAll = function (callback) { }
 
@@ -56,7 +56,7 @@ const afterAll = function (callback) { }
  */
 function Matcher(actual) { }
 
-/** @const {!Matcher<T>} */
+/** @const {Matcher<T>} */
 Matcher.prototype.not;
 
 /**
@@ -91,7 +91,7 @@ Matcher.prototype.toBeTruthy = function () { }
 
 Matcher.prototype.toThrow = function () { }
 
-/** @param {*} type */
+/** @param {unknown} type */
 Matcher.prototype.toBeInstanceOf = function (type) { }
 
 /** @param {string=} message */
@@ -104,8 +104,8 @@ Matcher.prototype.fail = function (message) { }
  */
 function PromiseMatcher(actual) { }
 
-/** @const {!Matcher<T>} */
+/** @const {Matcher<T>} */
 PromiseMatcher.prototype.resolves;
 
-/** @const {!Matcher<*>} */
+/** @const {Matcher<unknown>} */
 PromiseMatcher.prototype.rejects;

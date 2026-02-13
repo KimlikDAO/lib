@@ -46,7 +46,7 @@ const sign = (digest, privKey) => {
     /** @const {bigint} */
     const k = BigInt("0x" + keccak256Uint32ToHex(buff));
     if (k <= 0 || Q <= k) continue; // probability ~2^{-128}, i.e., a near impossibility.
-    /** @type {!Point} */
+    /** @type {Point} */
     const K = G.copy().multiply(k).project();
     /** @const {bigint} */
     const r = K.x;

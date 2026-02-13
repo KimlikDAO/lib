@@ -159,7 +159,7 @@ const verify = (digest, r, s, pubKey) => {
   if (s <= 0n || Q <= s) return false;
   /** @const {bigint} */
   const is = inverse(s, Q);
-  /** @const {!Point} */
+  /** @const {Point} */
   const U = aX_bY(digest * is % Q, G.copy(), r * is % Q, pubKey.copy());
   /** @const {bigint} */
   const z2 = (U.z * U.z) % P;

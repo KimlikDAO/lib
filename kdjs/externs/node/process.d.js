@@ -12,13 +12,13 @@ process.exit = (exitCode) => { }
 process.cwd = () => { };
 
 /**
- * @param {string} event
- * @param {function(*)} handler
+ * @param {string} eventType
+ * @param {(event: unknown) => void} handler
  */
-process.on = (event, handler) => { }
+process.on = (eventType, handler) => { }
 
 /** @const {string[]} */
 process.argv;
 
-/** @const {!Object<string, string>} */
+/** @const {Record<string, string>} */
 process.env;

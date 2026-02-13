@@ -6,7 +6,7 @@ const ClosureCompiler = {};
 
 /**
  * @dict
- * @typedef {!Object<string, (string|boolean|string[])>}
+ * @typedef {Record<string, string | boolean | string[]>}
  */
 ClosureCompiler.Options;
 
@@ -17,11 +17,11 @@ ClosureCompiler.Options;
 ClosureCompiler.compiler = (options) => { }
 
 /**
- * @param {function(number,string,string):void} callback
+ * @param {(arg: number, arg1: string, arg2: string) => void} callback
  */
 ClosureCompiler.compiler.prototype.run = function (callback) { }
 
-/** @type {!Object<string, string>} */
+/** @type {Record<string, string>} */
 ClosureCompiler.compiler.prototype.spawnOptions;
 
 export default ClosureCompiler;

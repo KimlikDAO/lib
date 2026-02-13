@@ -14,7 +14,7 @@ const generateImports = (imports) => {
 
 /**
  * @param {string} content
- * @param {!Map<string, ImportStatement>} missingImports
+ * @param {Map<string, ImportStatement>} missingImports
  */
 const postprocess = (content, missingImports) => {
   /** @const {!acorn.Program} */
@@ -24,13 +24,13 @@ const postprocess = (content, missingImports) => {
   });
   /**
    * @const
-   * @type {!Array<Update>}
+   * @type {Update[]}
    */
   const updates = [];
   let assignmentCode = "";
   let exportCode = "";
 
-  simple(ast, /** @type {!acorn.SimpleVisitor} */({
+  simple(ast, /** @type {acorn.SimpleVisitor} */({
     AssignmentExpression(node) {
       if (node.left.type === 'MemberExpression' &&
         node.left.object.name === 'globalThis' &&
