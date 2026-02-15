@@ -3,7 +3,7 @@ import process from "node:process";
 /**
  * @param {string} code
  * @param {string=} path
- * @return {Object}
+ * @return {Promise<unknown>}
  */
 const importCode = (code, path) => import(
   URL.createObjectURL(new File([code], path, { type: "application/javascript+module" })));

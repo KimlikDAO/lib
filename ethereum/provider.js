@@ -1,36 +1,29 @@
-import "./provider.d";
+import { RequestArguments } from "./provider.d";
+import { Transaction } from "./transaction.d";
 
-/**
- * @param {eth.Provider} provider
- * @param {string} contract Contract adddress given with the 0x prefix
- * @param {string} calldata Calldata transmitted to the contract verbatim.
- * @param {string=} from
- * @return {Promise<string>}
- */
-const callMethod = (provider, contract, calldata, from) =>
-  provider.request(/** @type {eth.Request} */({
-    method: "eth_call",
-    params: [/** @type {eth.Transaction} */({
-      to: contract,
-      data: calldata,
-      from
-    }), "latest"]
-  }));
+class Provider {
+  /**
+   * @param {(params: RequestArguments) => Promise<unknown>} request
+   */
+  constructor(request) {
+    /** @const {(params: RequestArguments) => Promise<unknown>} */
+    this.request = request;
+  }
 
-/**
- * @param {string} address starting with 0x
- * @return {string} length 64 string, padded for calldata
- */
-const address = (address) => "0".repeat(24) + address.slice(2);
-
-/**
- * @param {string} value
- * @return {boolean}
- */
-const isNonzero = (value) => value.replaceAll("0", "") != 'x';
+  /**
+   * @param {Transaction} tx
+   * @return {Promise<string>}
+   */
+  read(tx) {
+    return /** @type {Promise<string>} */(this.request(
+      /** @type {RequestArguments} */({
+        method: "eth_call",
+        params: [tx, "latest"]
+      })
+    ));
+  }
+}
 
 export {
-  address,
-  callMethod,
-  isNonzero,
+  Provider
 };

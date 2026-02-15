@@ -2,13 +2,13 @@ import {
   G,
   Point,
   pointFrom,
-  signFields as signFieldsBigInt,
-  signMessage as signMessageBigInt,
-  verifyFields as verifyFieldsBigInt,
-  verifyMessage as verifyMessageBigInt
+  signFields as signFieldsUnpacked,
+  signMessage as signMessageUnpacked,
+  verifyFields as verifyFieldsUnpacked,
+  verifyMessage as verifyMessageUnpacked
 } from "../crypto/minaSchnorr";
 import { PublicKey, Signature } from "./mina";
-import mina from "./mina.d";
+import { SignerSignature } from "./signature.d";
 
 /**
  * @param {Point} X
@@ -25,13 +25,13 @@ PublicKey.prototype.toPoint = function () {
 /**
  * @param {bigint[]} fields
  * @param {bigint} privKey
- * @return {mina.SignerSignature}
+ * @return {SignerSignature}
  */
 const signFields = (fields, privKey) => {
   /** @const {Point} */
   const X = G.copy().multiply(privKey).project();
-  const { r, s } = signFieldsBigInt(fields, privKey, X);
-  return /** @type {mina.SignerSignature} */({
+  const { r, s } = signFieldsUnpacked(fields, privKey, X);
+  return /** @type {SignerSignature} */({
     signer: PublicKey.fromPoint(X).toBase58(),
     signature: new Signature(r, s).toBase58()
   });
@@ -39,26 +39,26 @@ const signFields = (fields, privKey) => {
 
 /**
  * @param {bigint[]} fields
- * @param {mina.SignerSignature} sig
+ * @param {SignerSignature} sig
  * @return {boolean}
  */
 const verifyFields = (fields, sig) => {
   const { r, s } = Signature.fromBase58(sig.signature);
   /** @const {Point} */
   const X = PublicKey.fromBase58(sig.signer).toPoint();
-  return verifyFieldsBigInt(fields, r, s, X);
+  return verifyFieldsUnpacked(fields, r, s, X);
 }
 
 /**
  * @param {string} message
  * @param {bigint} privKey
- * @return {mina.SignerSignature}
+ * @return {SignerSignature}
  */
 const signMessage = (message, privKey) => {
   /** @const {Point} */
   const X = G.copy().multiply(privKey).project();
-  const { r, s } = signMessageBigInt(message, privKey, X);
-  return /** @type {mina.SignerSignature} */({
+  const { r, s } = signMessageUnpacked(message, privKey, X);
+  return /** @type {SignerSignature} */({
     signer: PublicKey.fromPoint(X).toBase58(),
     signature: new Signature(r, s).toBase58()
   });
@@ -66,14 +66,14 @@ const signMessage = (message, privKey) => {
 
 /**
  * @param {string} message
- * @param {mina.SignerSignature} sig
+ * @param {SignerSignature} sig
  * @return {boolean}
  */
 const verifyMessage = (message, sig) => {
   const { r, s } = Signature.fromBase58(sig.signature);
   /** @const {Point} */
   const X = PublicKey.fromBase58(sig.signer).toPoint();
-  return verifyMessageBigInt(message, r, s, X);
+  return verifyMessageUnpacked(message, r, s, X);
 }
 
 export {

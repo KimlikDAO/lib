@@ -66,8 +66,11 @@ const commitDouble = (chainGroup, ownerAddress, random) => {
     case ChainGroup.MINA:
       /** @const {Uint8Array} */
       const commitment = new Uint8Array(64);
-      const { /** bigint */ x, isOdd } = PublicKey.fromBase58(ownerAddress);
-      const /** bigint */ h = isOdd ? x + 1n : x;
+      const {
+        /** @type {bigint} */ x,
+        /** @type {boolean} */ isOdd 
+      } = PublicKey.fromBase58(ownerAddress);
+      const /** @type {bigint} */ h = isOdd ? x + 1n : x;
       bigints.intoBytesLE(
         commitment,
         poseidon([bigints.fromBytesLE(random.subarray(0, 32)), h]));

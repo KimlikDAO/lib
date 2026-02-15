@@ -1,11 +1,7 @@
 /**
- * @fileoverview Ethereum transaction definitions.
- *
- * @author KimlikDAO
- */
-
-/**
- * Represents an ethereum transaction, to be sent to a provider.
+ * Represents an ethereum transaction (outgoing or as returned by the node).
+ * Outgoing: wallet often infers chainId. Completed: node may omit chainId
+ * (it is encoded in v for EIP-155 txs).
  */
 interface Transaction {
   readonly to: string;

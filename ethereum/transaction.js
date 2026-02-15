@@ -1,5 +1,7 @@
+import { Request } from "./provider.d";
+
 /**
- * @param {eth.Provider} provider
+ * @param {Provider} provider
  * @param {string} txHash
  * @param {() => void} then
  */

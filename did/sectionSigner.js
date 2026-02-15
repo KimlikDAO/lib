@@ -1,9 +1,10 @@
 import { ChainGroup } from "../crosschain/chains";
-import { signCompact, signerAddress } from "../ethereum/signer";
+import { sign, signerAddress } from "../ethereum/signer";
 import { signFields, verifyFields } from "../mina/signer";
 import base64 from "../util/base64";
 import { commit } from "./commitment";
 import { hash } from "./section";
+import { DecryptedSections, HumanID, Section } from "./section.d";
 
 /**
  * @typedef {{
@@ -17,7 +18,7 @@ import { hash } from "./section";
 const SignParams = {};
 
 /**
- * @param {!did.HumanID} humanID
+ * @param {HumanID} humanID
  */
 const signHumanID = (humanID, privateKey) => {
   humanID.minaSchnorr = [signFields([
@@ -28,7 +29,7 @@ const signHumanID = (humanID, privateKey) => {
 }
 
 /**
- * @param {!did.HumanID} humanID
+ * @param {HumanID} humanID
  * @return {string[]}
  */
 const recoverHumanIDSigners = (humanID, ownerAddress) => {
@@ -50,7 +51,7 @@ const recoverHumanIDSigners = (humanID, ownerAddress) => {
 
 /**
  * @param {string} sectionName
- * @param {!did.Section} section
+ * @param {Section} section
  * @param {SignParams} signParams
  */
 const signSection = (sectionName, section, signParams) => {
@@ -59,20 +60,20 @@ const signSection = (sectionName, section, signParams) => {
     : signParams.commitment;
   section.signatureTs = signParams.signatureTs;
   section.secp256k1 = [
-    signCompact(hash(sectionName, section), signParams.privateKey)
+    sign(hash(sectionName, section), signParams.privateKey)
   ];
   if (sectionName == "humanID")
-    signHumanID(/** @type {!did.HumanID} */(section), signParams.privateKeyPallas);
+    signHumanID(/** @type {HumanID} */(section), signParams.privateKeyPallas);
 }
 
 /**
- * Returns the list of unique signers of an `did.Section`.
+ * Returns the list of unique signers of an `Section`.
  *
  * Note these signers still need to be validated against the `KimlikDAOPassSigners`
  * contract.
  *
  * @param {string} sectionName
- * @param {!did.Section} section
+ * @param {Section} section
  * @param {ChainGroup} chainGroup
  * @param {string} ownerAddress
  * @return {string[]}
@@ -89,11 +90,11 @@ const recoverSectionSigners = (sectionName, section, chainGroup, ownerAddress) =
 }
 
 /**
- * Signs a given `did.DecryptedSections` in-place.
+ * Signs a given `DecryptedSections` in-place.
  *
- * @param {did.DecryptedSections} decryptedSections
+ * @param {DecryptedSections} decryptedSections
  * @param {SignParams} signParams
- * @return {did.DecryptedSections}
+ * @return {DecryptedSections}
  */
 const signDecryptedSections = (decryptedSections, signParams) => {
   for (const key in decryptedSections)

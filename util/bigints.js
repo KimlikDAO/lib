@@ -1,9 +1,9 @@
 import hex from "./hex";
 
 /**
- * @param {Uint8Array|number[]} bytes
+ * @param {Uint8Array | number[]} bytes
  * @param {number} idx
- * @param {bigint|number} n
+ * @param {bigint | number} n
  * @return {number}
  */
 const intoBytesBE = (bytes, idx, n) => {
@@ -16,8 +16,8 @@ const intoBytesBE = (bytes, idx, n) => {
 }
 
 /**
- * @param {Uint8Array|number[]} bytes
- * @param {bigint|number} n
+ * @param {Uint8Array | number[]} bytes
+ * @param {bigint | number} n
  */
 const intoBytesLE = (bytes, n) => {
   /** @const {string} */
@@ -28,14 +28,14 @@ const intoBytesLE = (bytes, n) => {
 
 /**
  * @nosideeffects
- * @param {Uint8Array|number[]} bytes
+ * @param {Uint8Array | number[]} bytes
  * @return {bigint}
  */
 const fromBytesBE = (bytes) => BigInt("0x" + hex.from(bytes));
 
 /**
  * @nosideeffects
- * @param {Uint8Array|number[]} bytes
+ * @param {Uint8Array | number[]} bytes
  * @return {bigint}
  */
 const fromBytesLE = (bytes) => BigInt("0x" + hex.fromBytesLE(bytes));

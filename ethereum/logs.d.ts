@@ -1,10 +1,4 @@
 /**
- * @fileoverview Etherem logs definitions.
- *
- * @author KimlikDAO
- */
-
-/**
  * Represents a `eth_getLogs` request parameters.
  */
 interface GetLogs {

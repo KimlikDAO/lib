@@ -1,5 +1,6 @@
-import { test, expect } from "bun:test";
-import { f, g } from "../../sha2";
+import { expect, test } from "bun:test";
+import { g } from "../../sha2";
+import { f } from "./compression";
 
 test("f(s,t) == g(s,t)", () => {
   const s1 = Uint32Array.from("01234567");
@@ -15,3 +16,5 @@ test("f(s,t) == g(s,t)", () => {
   expect(s1).toEqual(s2);
   expect(t1).toEqual(t2);
 });
+
+export { f };

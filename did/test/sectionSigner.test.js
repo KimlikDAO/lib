@@ -5,6 +5,7 @@ import { PublicKey } from "../../mina/mina";
 import { addr as minaAddr } from "../../mina/mock/signer";
 import base64 from "../../util/base64";
 import { commit } from "../commitment";
+import { HumanID } from "../section.d";
 import {
   recoverHumanIDSigners,
   recoverSectionSigners,
@@ -12,12 +13,12 @@ import {
 } from "../sectionSigner";
 
 test("sign section", () => {
-  /** @const {!did.HumanID} */
-  const humanID1 = /** @type {!did.HumanID} */({
+  /** @const {HumanID} */
+  const humanID1 = /** @type {HumanID} */({
     id: "1234A234"
   })
-  /** @const {!did.HumanID} */
-  const humanID2 = /** @type {!did.HumanID} */({
+  /** @const {HumanID} */
+  const humanID2 = /** @type {HumanID} */({
     id: "1234A234",
     bls12_381: "asdfadsf",
     secp256k1: ["incorrect_sign"]
@@ -70,12 +71,12 @@ test("sign section", () => {
 });
 
 test("humanID minaSchnorr signature", () => {
-  /** @const {!did.HumanID} */
-  const humanID1 = /** @type {!did.HumanID} */({
+  /** @const {HumanID} */
+  const humanID1 = /** @type {HumanID} */({
     id: "1234A234"
   })
-  /** @const {!did.HumanID} */
-  const humanID2 = /** @type {!did.HumanID} */({
+  /** @const {HumanID} */
+  const humanID2 = /** @type {HumanID} */({
     id: "1234A234",
     bls12_381: "asdfadsf",
     secp256k1: ["incorrect_sign"]

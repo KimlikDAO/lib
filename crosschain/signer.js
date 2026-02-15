@@ -1,7 +1,7 @@
-import eth from "../ethereum/eth.d";
-import mina from "../mina/mina.d";
+import { Signature as EthereumSignature } from "../ethereum/signature.d";
+import { SignerSignature as MinaSignature } from "../mina/signature.d";
 
-/** @typedef {mina.SignerSignature|eth.CompactSignature} */
+/** @typedef {MinaSignature | EthereumSignature} */
 const Signature = {};
 
 /**

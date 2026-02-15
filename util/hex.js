@@ -7,26 +7,28 @@ const FromUint4 = "0123456789abcdef";
 /**
  * @const {string[]}
  */
-const FromUint8 = (/** @return {string[]} */ () => {
-  /** @const {string[]} */
-  const arr = Array(256);
-  for (let i = 0; i < 256; ++i)
-    arr[i] = /** @type {string} */(FromUint4[i >> 4]) + FromUint4[i & 15];
-  return arr;
-})();
+const FromUint8 = /** @pureOrBreakMyCode */((
+  /** @return {string[]} */ () => {
+    /** @const {string[]} */
+    const arr = Array(256);
+    for (let i = 0; i < 256; ++i)
+      arr[i] = /** @type {string} */(FromUint4[i >> 4]) + FromUint4[i & 15];
+    return arr;
+  })());
 
 /** @const {Record<string, string>} */
-const ToBinary = (/** @return {Record<string, string>} */ () => {
-  /** @const {Record<string, string>} */
-  const toBinary = {};
-  for (let i = 0; i < 16; ++i) {
-    /** @const {string} */
-    const h = FromUint4[i];
-    toBinary[h.toUpperCase()] = toBinary[h]
-      = i.toString(2).padStart(4, "0");
-  }
-  return toBinary;
-})();
+const ToBinary = /** @pureOrBreakMyCode */((
+  /** @return {Record<string, string>} */ () => {
+    /** @const {Record<string, string>} */
+    const toBinary = {};
+    for (let i = 0; i < 16; ++i) {
+      /** @const {string} */
+      const h = FromUint4[i];
+      toBinary[h.toUpperCase()] = toBinary[h]
+        = i.toString(2).padStart(4, "0");
+    }
+    return toBinary;
+  })());
 
 /**
  * @nosideeffects
@@ -40,7 +42,7 @@ const toBinary = (hexStr) =>
  * TODO(KimlikDAO-bot): Switch to Uint8Array.toHex() once GCC supports it.
  * @nosideeffects
  * @noinline
- * @param {Uint8Array|number[]} bytes
+ * @param {Uint8Array | number[]} bytes
  * @return {string}
  */
 const from = (bytes) => {
@@ -53,7 +55,7 @@ const from = (bytes) => {
 
 /**
  * @nosideeffects
- * @param {Uint8Array|number[]} bytes 
+ * @param {Uint8Array | number[]} bytes
  * @return {string}
  */
 const fromBytesLE = (bytes) => {
@@ -97,7 +99,7 @@ const toUint8Array = (str) => {
 }
 
 /**
- * @param {Uint8Array|number[]} bytes
+ * @param {Uint8Array | number[]} bytes
  * @param {string} str
  */
 const intoBytes = (bytes, str) => {
@@ -107,7 +109,7 @@ const intoBytes = (bytes, str) => {
 }
 
 /**
- * @param {Uint32Array|number[]} words
+ * @param {Uint32Array | number[]} words
  * @param {number} length of the Uint32Array segment to fill
  * @param {string} str
  */

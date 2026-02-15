@@ -1,11 +1,12 @@
 import { expect, test } from "bun:test";
 import hex from "../../util/hex";
 import { hash } from "../section";
+import { ExposureReport } from "../section.d";
 
 test("hash ExposureReport", () => {
   const buff = new Uint8Array(32);
   buff[31] = buff[30] = buff[29] = 123;
-  expect(hash("exposureReport", /** @const {!did.ExposureReport} */({
+  expect(hash("exposureReport", /** @type {ExposureReport} */({
     id: hex.from(buff),
     signatureTs: 123
   })))
@@ -15,7 +16,7 @@ test("hash ExposureReport", () => {
 test("hash ExposureReport", () => {
   const buff = new Uint8Array(32);
   buff[31] = buff[30] = buff[29] = buff[28] = 170;
-  expect(hash("exposureReport", /** @const {!did.ExposureReport} */({
+  expect(hash("exposureReport", /** @const {ExposureReport} */({
     id: hex.from(buff),
     signatureTs: 123
   })))
@@ -25,7 +26,7 @@ test("hash ExposureReport", () => {
 test("hash ExposureReport", () => {
   const buff = new Uint8Array(32);
   buff[31] = buff[30] = buff[29] = buff[28] = 170;
-  expect(hash("exposureReport", /** @const {!did.ExposureReport} */({
+  expect(hash("exposureReport", /** @const {ExposureReport} */({
     id: hex.from(buff),
     signatureTs: 123123123123
   })))

@@ -4,7 +4,10 @@ import { G, Point, Q } from "../../crypto/secp256k1";
 import { keccak256Uint32, keccak256Uint32ToHex } from "../../crypto/sha3";
 import bigints from "../../util/bigints";
 import hex from "../../util/hex";
-import evm from "../evm";
+import abi from "../abi";
+import signature from "../signature";
+import { Signature, WideSignature } from "../signature.d";
+import { personalDigest } from "../signer";
 
 /**
  * @param {bigint} privKey
@@ -13,7 +16,7 @@ import evm from "../evm";
 const addr = (privKey) => {
   const { x, y } = G.copy().multiply(privKey).project();
   /** @const {Uint8Array} */
-  const buff = hex.toUint8Array(evm.uint256(x) + evm.uint256(y));
+  const buff = hex.toUint8Array(abi.uint256(x) + abi.uint256(y));
   return "0x" + hex.from(new Uint8Array(
     keccak256Uint32(new Uint32Array(buff.buffer)).buffer, 12, 20));
 }
@@ -34,7 +37,7 @@ const addr = (privKey) => {
 *   yParity: boolean
 * }}
 */
-const sign = (digest, privKey) => {
+const signUnpacked = (digest, privKey) => {
   /** @type {Uint8Array} */
   const bytes = new Uint8Array(64);
   bigints.intoBytesBE(bytes, 32, digest);
@@ -65,40 +68,18 @@ const sign = (digest, privKey) => {
 }
 
 /**
- * @param {{
- *   r: bigint,
- *   s: bigint,
- *   yParity: boolean
- * }} sig
- * @return {eth.WideSignature}
+ * @param {bigint} digest as bigint
+ * @param {bigint} privKey as bigint
+ * @return {WideSignature}
  */
-const toWideSignature = (sig) =>
-  evm.uint256(sig.r) + evm.uint256(sig.s) + (27 + +sig.yParity).toString(16);
-
-/**
-* @param {{
-*   r: bigint,
-*   s: bigint,
-*   yParity: boolean
-* }} sig
-* @return {eth.CompactSignature}
-*/
-const toCompactSignature = (sig) => evm.uint256(sig.r) +
-  evm.uint256(sig.yParity ? sig.s + (1n << 255n) : sig.s);
+const signWide = (digest, privKey) => signature.toWideFromUnpacked(signUnpacked(digest, privKey));
 
 /**
  * @param {bigint} digest as bigint
  * @param {bigint} privKey as bigint
- * @return {eth.WideSignature}
+ * @return {Signature}
  */
-const signWide = (digest, privKey) => toWideSignature(sign(digest, privKey));
-
-/**
- * @param {bigint} digest as bigint
- * @param {bigint} privKey as bigint
- * @return {eth.CompactSignature}
- */
-const signCompact = (digest, privKey) => toCompactSignature(sign(digest, privKey));
+const sign = (digest, privKey) => signature.fromUnpacked(signUnpacked(digest, privKey));
 
 /**
  * @implements {Signer}
@@ -119,14 +100,14 @@ class MockSigner {
    *
    * @param {string} message
    * @param {string} address
-   * @return {Promise<eth.CompactSignature>}
+   * @return {Promise<Signature>}
    */
   signMessage(message, address) {
     if (address.toLowerCase() != addr(this.privKey))
       return Promise.reject();
     /** @const {bigint} */
-    const digest = BigInt("0x" + evm.personalDigest(message));
-    return Promise.resolve("0x" + signCompact(digest, this.privKey));
+    const digest = BigInt("0x" + personalDigest(message));
+    return Promise.resolve("0x" + sign(digest, this.privKey));
   }
 
   /** @return {string} */
@@ -143,8 +124,9 @@ class MockSigner {
     if (address.toLowerCase() != addr(this.privKey))
       return Promise.reject();
     /** @const {bigint} */
-    const digest = BigInt("0x" + evm.personalDigest(message));
-    return crypto.subtle.digest("SHA-256", hex.toUint8Array(signWide(digest, this.privKey)));
+    const digest = BigInt("0x" + personalDigest(message));
+    return crypto.subtle.digest("SHA-256",
+      hex.toUint8Array(signWide(digest, this.privKey).slice(2)));
   }
 }
 
@@ -152,8 +134,6 @@ export {
   addr,
   MockSigner,
   sign,
-  signCompact,
-  signWide,
-  toCompactSignature,
-  toWideSignature
+  signUnpacked,
+  signWide
 };

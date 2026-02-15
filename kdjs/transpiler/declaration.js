@@ -26,9 +26,9 @@ const pathToNamespace = (filePath) => {
 /**
  * Collects type information from the AST, including imports and local definitions.
  *
- * @param {!acorn.Program} ast The AST to process
+ * @param {acorn.Program} ast The AST to process
  * @param {string} importer The path of the importing file
- * @return {!Map<string, string>} Updated map of type names to fully qualified names
+ * @return {Map<string, string>} Updated map of type names to fully qualified names
  */
 const collectTypes = (ast, importer) => {
   const typeMap = new Map();
@@ -115,10 +115,10 @@ const transpile = (content, sourcePath) => {
 /**
  * Processes an interface declaration.
  *
- * @param {!acorn.TSInterfaceDeclaration} node The interface declaration node
+ * @param {acorn.TSInterfaceDeclaration} node The interface declaration node
  * @param {string} namespace The namespace name
  * @param {string} indent The current indentation
- * @param {!Map<string, string>} imports Map of imported names to namespaces
+ * @param {Map<string, string>} imports Map of imported names to namespaces
  * @return {string} The transpiled interface content
  */
 const processInterface = (node, namespace, indent, imports) => {
@@ -160,8 +160,8 @@ const processInterface = (node, namespace, indent, imports) => {
 /**
  * Gets the full name of an extended interface.
  *
- * @param {!acorn.TSExpressionWithTypeArguments} extendedInterface The extended interface node
- * @param {!Map<string, string>} imports Map of imported names to namespaces
+ * @param {acorn.TSExpressionWithTypeArguments} extendedInterface The extended interface node
+ * @param {Map<string, string>} imports Map of imported names to namespaces
  * @return {string} The full name of the extended interface
  */
 const getExtendedInterfaceName = (extendedInterface, imports) => {
@@ -176,7 +176,7 @@ const getExtendedInterfaceName = (extendedInterface, imports) => {
 /**
  * Gets the full name of a qualified name node.
  *
- * @param {!acorn.TSQualifiedName} qualifiedName The qualified name node
+ * @param {acorn.TSQualifiedName} qualifiedName The qualified name node
  * @param {Map<string, string>} imports Map of imported names to namespaces
  * @return {string} The full qualified name
  */
@@ -216,7 +216,7 @@ const resolveTypeName = (typeName, imports) => {
 /**
  * Processes a property signature.
  *
- * @param {!acorn.TSPropertySignature} node The property signature node
+ * @param {acorn.TSPropertySignature} node The property signature node
  * @param {string} interfaceName The full interface name
  * @param {string} indent The current indentation
  * @param {Map<string, string>} imports Map of imported names to namespaces
@@ -245,10 +245,10 @@ const processProperty = (node, interfaceName, indent, imports) => {
 /**
  * Processes a method signature.
  *
- * @param {!acorn.TSMethodSignature} node The method signature node
+ * @param {acorn.TSMethodSignature} node The method signature node
  * @param {string} interfaceName The full interface name
  * @param {string} indent The current indentation
- * @param {!Map<string, string>} imports Map of imported names to namespaces
+ * @param {Map<string, string>} imports Map of imported names to namespaces
  * @return {string} The transpiled method content
  */
 const processMethod = (node, interfaceName, indent, imports) => {
@@ -296,8 +296,8 @@ const processMethod = (node, interfaceName, indent, imports) => {
 /**
  * Processes a parameter node.
  *
- * @param {!acorn.TSParameterDeclaration} param The parameter node
- * @param {!Map<string, string>} imports Map of imported names to namespaces
+ * @param {acorn.TSParameterDeclaration} param The parameter node
+ * @param {Map<string, string>} imports Map of imported names to namespaces
  * @return {{name: string, type: string}} The parameter name and type
  */
 const processParameter = (param, imports) => {
@@ -315,10 +315,10 @@ const processParameter = (param, imports) => {
 /**
  * Processes a type alias declaration.
  *
- * @param {!acorn.TSTypeAliasDeclaration} node The type alias declaration node
+ * @param {acorn.TSTypeAliasDeclaration} node The type alias declaration node
  * @param {string} namespace The namespace name
  * @param {string} indent The current indentation
- * @param {!Map<string, string>} imports Map of imported names to namespaces
+ * @param {Map<string, string>} imports Map of imported names to namespaces
  * @return {string} The transpiled type alias content
  */
 const processTypeAlias = (node, namespace, indent, imports) => {
@@ -336,7 +336,7 @@ const processTypeAlias = (node, namespace, indent, imports) => {
 /**
  * Processes an enum declaration.
  *
- * @param {!acorn.TSEnumDeclaration} node The enum declaration node
+ * @param {acorn.TSEnumDeclaration} node The enum declaration node
  * @param {string} namespace The namespace name
  * @param {string} indent The current indentation
  * @return {string} The transpiled enum content
@@ -374,8 +374,8 @@ const processEnum = (node, namespace, indent) => {
 /**
  * Gets the text representation of a type node.
  *
- * @param {!acorn.TSType} typeNode The type node
- * @param {!Map<string, string>} imports Map of imported names to namespaces
+ * @param {acorn.TSType} typeNode The type node
+ * @param {Map<string, string>} imports Map of imported names to namespaces
  * @param {boolean=} topLevel Whether this is a top-level type
  * @return {string} The text representation of the type
  */
@@ -411,6 +411,10 @@ const getTypeText = (typeNode, imports, topLevel = true) => {
       } else {
         baseType = resolveTypeName(typeNode.typeName.name, imports);
       }
+
+      // Closure has no Record<K,V>; use Object
+      if (baseType === "Record")
+        return "!Object";
 
       // Handle type parameters (generics)
       if (typeNode.typeParameters && typeNode.typeParameters.params.length > 0) {

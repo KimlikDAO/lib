@@ -1,5 +1,23 @@
 import { compareImpls } from "../../testing/bench";
-import { f, g } from "../sha2";
+import { g as unroll1 } from "../sha2";
+import { f as unroll4 } from "../test/sha2/compression";
+
+const s = Uint32Array.from("01234567");
+const t = new Uint32Array(64);
+
+const unroll4Test = () => {
+  const ss = new Uint32Array(s);
+  const tt = new Uint32Array(t);
+  unroll4(ss, tt);
+}
+
+const unroll1Test = () => {
+  const ss = new Uint32Array(s);
+  const tt = new Uint32Array(t);  
+  unroll1(ss, tt);
+}
+
+compareImpls([unroll4Test, unroll1Test], 1000, [], null);
 
 const f1 = () => {
   const a = new Uint32Array(8);
@@ -52,21 +70,3 @@ const g2 = () => {
 g1();
 
 compareImpls([g1, g2], 100, [], 9);
-
-const s = Uint32Array.from("01234567");
-const t = new Uint32Array(64);
-
-compareImpls([
-  () => {
-    const ss = new Uint32Array(s);
-    const tt = new Uint32Array(t);
-    g(ss, tt);
-  },
-  () => {
-    const ss = new Uint32Array(s);
-    const tt = new Uint32Array(t);
-    f(ss, tt);
-  },
-],
-  1000, [], null
-);

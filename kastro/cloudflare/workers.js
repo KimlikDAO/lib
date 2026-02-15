@@ -24,7 +24,7 @@ const upload = (auth, name, code, kvBindings, bundleFiles) => {
       kv["type"] = "kv_namespace";
     metadata["bindings"] = kvBindings;
   }
-  /** @const {!FormData} */
+  /** @const {FormData} */
   const form = new FormData();
   form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
   form.append("a.js", new File([code], "a.js", { type: "application/javascript+module;charset=utf-8" }));

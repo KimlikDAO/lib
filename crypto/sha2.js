@@ -45,20 +45,20 @@ const sha256Uint32 = (words) => {
   let i = 0;
   for (const end = n - 15; i < end; i += 16) {
     t.set(words.subarray(i, i + 16))
-    f(s, t);
+    g(s, t);
   }
   t.set(words.subarray(i));
   i = n - i;
   t[i] = 1 << 31;
   if (i > 13) {
     if (i == 14) t[15] = 0;
-    f(s, t);
+    g(s, t);
     t.fill(0, 0, 14);
   } else
     t.fill(0, i + 1, 14);
   t[14] = n >>> 27;
   t[15] = n << 5;
-  f(s, t);
+  g(s, t);
   return s;
 }
 
@@ -96,58 +96,6 @@ const g = (s, t) => {
 }
 
 /**
- * The sha256 compression function, with 4 rounds unrolled.
- *
- * @param {Uint32Array} s The 8 word working tape, which is also the final out.
- * @param {Uint32Array} t The 64 word working tape.
- */
-const f = (s, t) => {
-  extend(t);
-  let [a, b, c, d, e, f, g, h] = s;
-  for (let i = 0, s0, s1, maj, t1, t2, ch, ab, da, cd, bc = b & c; i < 64; i += 4) {
-    s0 = ((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10));
-    s1 = ((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^ ((e >>> 25) | (e << 7));
-    ab = a & b;
-    maj = ab ^ (a & c) ^ bc;
-    ch = (e & f) ^ (~e & g);
-    t1 = h + s1 + ch + RC[i] + t[i];
-    t2 = s0 + maj;
-    h = d + t1 << 0;
-    d = t1 + t2 << 0;
-    s0 = ((d >>> 2) | (d << 30)) ^ ((d >>> 13) | (d << 19)) ^ ((d >>> 22) | (d << 10));
-    s1 = ((h >>> 6) | (h << 26)) ^ ((h >>> 11) | (h << 21)) ^ ((h >>> 25) | (h << 7));
-    da = d & a;
-    maj = da ^ (d & b) ^ ab;
-    ch = (h & e) ^ (~h & f);
-    t1 = g + s1 + ch + RC[i + 1] + t[i + 1];
-    t2 = s0 + maj;
-    g = c + t1 << 0;
-    c = t1 + t2 << 0;
-    s0 = ((c >>> 2) | (c << 30)) ^ ((c >>> 13) | (c << 19)) ^ ((c >>> 22) | (c << 10));
-    s1 = ((g >>> 6) | (g << 26)) ^ ((g >>> 11) | (g << 21)) ^ ((g >>> 25) | (g << 7));
-    cd = c & d;
-    maj = cd ^ (c & a) ^ da;
-    ch = (g & h) ^ (~g & e);
-    t1 = f + s1 + ch + RC[i + 2] + t[i + 2];
-    t2 = s0 + maj;
-    f = b + t1 << 0;
-    b = t1 + t2 << 0;
-    s0 = ((b >>> 2) | (b << 30)) ^ ((b >>> 13) | (b << 19)) ^ ((b >>> 22) | (b << 10));
-    s1 = ((f >>> 6) | (f << 26)) ^ ((f >>> 11) | (f << 21)) ^ ((f >>> 25) | (f << 7));
-    bc = b & c;
-    maj = bc ^ (b & d) ^ cd;
-    ch = (f & g) ^ (~f & h);
-    t1 = e + s1 + ch + RC[i + 3] + t[i + 3];
-    t2 = s0 + maj;
-    e = a + t1 << 0;
-    a = t1 + t2 << 0;
-  }
-
-  s[0] += a; s[1] += b; s[2] += c; s[3] += d;
-  s[4] += e; s[5] += f; s[6] += g; s[7] += h;
-}
-
-/**
  * Computes HMAC-SHA256 for a key of length at most 16 words (64 bytes).
  *
  * @param {Uint32Array} key The key for HMAC
@@ -173,7 +121,6 @@ const hmacUint32 = (key, message) => {
 export {
   IC,
   RC,
-  f,
   g,
   hmacUint32,
   sha256Uint32

@@ -7,7 +7,7 @@ const Blue = "\x1b[44m";
 /** @const {string} */
 const Clear = "\x1b[0m";
 
-/** @typedef {Record<string, (string|boolean|string[])>} */
+/** @typedef {Record<string, string | boolean | string[]>} */
 const CliArgs = {};
 
 /**

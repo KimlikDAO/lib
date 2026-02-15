@@ -1,6 +1,6 @@
 
 /**
- * @param {!acorn.ObjectExpression} objExpr
+ * @param {acorn.ObjectExpression} objExpr
  * @return {string}
  */
 const serializeWithStringKeys = (objExpr, sourceCode) => {

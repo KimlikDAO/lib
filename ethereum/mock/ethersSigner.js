@@ -1,6 +1,9 @@
 import { Wallet } from "ethers";
 import { Signer } from "../../crosschain/signer";
-import evm from "../evm";
+import abi from "../abi";
+import { Address } from "../address.d";
+import signature from "../signature";
+import { Signature } from "../signature.d";
 
 /** @const {TextEncoder} */
 const Encoder = new TextEncoder();
@@ -16,7 +19,7 @@ class EthersSigner {
    */
   constructor(privKey) {
     /** @const {Wallet} */
-    this.wallet = new Wallet("0x" + evm.uint256(privKey));
+    this.wallet = new Wallet("0x" + abi.uint256(privKey));
   }
 
   /**
@@ -24,17 +27,17 @@ class EthersSigner {
    *
    * @param {string} message
    * @param {string} address
-   * @return {Promise<eth.CompactSignature>}
+   * @return {Promise<Signature>}
    */
   signMessage(message, address) {
-    if (this.wallet.address.toLowerCase() !== address.toLowerCase())
+    if (this.wallet.address.toLowerCase() != address.toLowerCase())
       return Promise.reject();
     return this.wallet.signMessage(message)
-      .then((sig) => evm.compactSignature(sig));
+      .then((sig) => signature.fromWide(sig));
   }
 
   /**
-   * @return {eth.Address}
+   * @return {Address}
    */
   getAddress() {
     return this.wallet.address;
@@ -48,10 +51,10 @@ class EthersSigner {
    * @return {Promise<ArrayBuffer>}
    */
   deriveSecret(message, address) {
-    if (this.wallet.address.toLowerCase() !== address.toLowerCase())
+    if (this.wallet.address.toLowerCase() != address.toLowerCase())
       return Promise.reject();
     return this.wallet.signMessage(message)
-      .then((sig) => crypto.subtle.digest('SHA-256', Encoder.encode(sig.slice(2))));
+      .then((sig) => crypto.subtle.digest("SHA-256", Encoder.encode(sig.slice(2))));
   }
 }
 

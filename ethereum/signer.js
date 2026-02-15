@@ -1,9 +1,10 @@
-import { Point, recoverSigner, sign } from "../crypto/secp256k1";
-import { keccak256Uint32 } from "../crypto/sha3";
+import { Point, recoverSigner, sign as signUnpacked } from "../crypto/secp256k1";
+import { keccak256Uint32, keccak256Uint8 } from "../crypto/sha3";
 import bigints from "../util/bigints";
 import hex from "../util/hex";
-import { Address, CompactSignature } from "./ethereum.d";
-import evm from "./evm";
+import abi from "./abi";
+import { Address } from "./address.d";
+import { Signature } from "./signature.d";
 
 /**
  * @param {Point} Q
@@ -25,7 +26,7 @@ const pointToAddress = (Q) => {
  * is valid; outputs an arbitrary value otherwise.
  *
  * @param {string} digest as a length 64 hex string
- * @param {CompactSignature} signature as a length 128 compact signature
+ * @param {Signature} signature as a length 128 compact signature
  * @return {Address} 42 characters long EVM address
  */
 const signerAddress = (digest, signature) => {
@@ -47,15 +48,35 @@ const signerAddress = (digest, signature) => {
 /**
  * @param {string} digest
  * @param {bigint} privateKey
- * @return {CompactSignature}
+ * @return {Signature}
  */
-const signCompact = (digest, privateKey) => {
-  const { r, s, yParity } = sign(BigInt("0x" + digest), privateKey);
-  return evm.uint256(r) + evm.uint256(yParity ? s + (1n << 255n) : s);
+const sign = (digest, privateKey) => {
+  const { r, s, yParity } = signUnpacked(BigInt("0x" + digest), privateKey);
+  return abi.uint256(r) + abi.uint256(yParity ? s + (1n << 255n) : s);
+}
+
+/**
+ * @param {string} msg
+ * @return {string} hex encoded hash
+ */
+const personalDigest = (msg) => {
+  /** @const {TextEncoder} */
+  const encoder = new TextEncoder();
+  /** @const {Uint8Array} */
+  const msgEncoded = encoder.encode(msg);
+  /** @const {Uint8Array} */
+  const lenEncoded = encoder.encode("" + msgEncoded.length);
+  /** @const {Uint8Array} */
+  const encoded = new Uint8Array(26 + lenEncoded.length + msgEncoded.length);
+  encoder.encodeInto("\x19Ethereum Signed Message:\n", encoded);
+  encoded.set(lenEncoded, 26);
+  encoded.set(msgEncoded, 26 + lenEncoded.length);
+  return hex.from(keccak256Uint8(encoded));
 }
 
 export {
+  personalDigest,
   pointToAddress,
-  signCompact,
+  sign,
   signerAddress
 };

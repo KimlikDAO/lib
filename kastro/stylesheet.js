@@ -5,7 +5,7 @@ import compiler from "./compiler/compiler";
 import hash from "./compiler/hash";
 import { minifyCss } from "./transpiler/transpiler";
 
-/** @const {!TextEncoder} */
+/** @const {TextEncoder} */
 const Encoder = new TextEncoder();
 
 class StyleSheetCollection {

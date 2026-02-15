@@ -13,10 +13,10 @@ import {
   UnionType
 } from "./types";
 
-/** @type {!Set<string>} */
+/** @type {Set<string>} */
 const PrimitiveNames = new Set(Object.values(PrimitiveTypeName));
 
-/** @type {!Map<string, string>} */
+/** @type {Map<string, string>} */
 const TopTypeNames = new Map([
   ["any", TopTypeName.Any],
   ["unknown", TopTypeName.Unknown]
@@ -117,7 +117,6 @@ class Parser {
     let i = this.pos;
     for (; i < this.input.length; ++i) {
       const ch = this.input.charCodeAt(i);
-      // a-z: 97-122, A-Z: 65-90, 0-9: 48-57, _: 95, $: 36, .: 46
       if (!((ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122) ||
             (ch > 127) ||
             (ch >= 48 && ch <= 57) || ch == 95 || ch == 36 || ch == 46))
@@ -161,25 +160,24 @@ class Parser {
 
   /**
    * Parses a function type expression
-   * @return {!FunctionType} The parsed function type
+   * @return {FunctionType} The parsed function type
    * @throws {Error} If parsing fails
    */
   parseFunctionType() {
     /** @const {Type[]} */
     const params = [];
     let optionalAfter = 1e9;
-    /** @type {Type} */
-    let thisType = null;
+    /** @type {Type | undefined} */
+    let thisType = undefined;
 
     this.expectChar("(".charCodeAt(0));
     if (!this.testChar(")".charCodeAt(0)))
       for (; ;) {
         const paramName = this.readIdentifier();
-
         let isOptional = this.testChar("?".charCodeAt(0));
         this.expectChar(":".charCodeAt(0));
         const paramType = this.parseType();
-        isOptional |= this.testChar("=".charCodeAt(0));
+        isOptional ||= this.testChar("=".charCodeAt(0));
 
         if (isOptional) {
           paramType.modifiers |= Modifier.Optional;
@@ -207,7 +205,7 @@ class Parser {
 
   /**
    * Parses a struct/object type
-   * @return {!StructType} The parsed struct type
+   * @return {StructType} The parsed struct type
    * @throws {Error} If parsing fails
    */
   parseStructType() {
@@ -216,10 +214,10 @@ class Parser {
     if (!this.testChar("}".charCodeAt(0)))
       for (; ;) {
         const propName = this.readIdentifier();
-        let isOptional = propName.endsWith("$") | this.testChar("?".charCodeAt(0));
+        let isOptional = propName.endsWith("$") || this.testChar("?".charCodeAt(0));
         this.expectChar(":".charCodeAt(0));
         const propType = this.parseType();
-        isOptional |= this.testChar("=".charCodeAt(0));
+        isOptional ||= this.testChar("=".charCodeAt(0));
 
         if (isOptional)
           propType.modifiers |= Modifier.Optional;
@@ -232,18 +230,18 @@ class Parser {
   }
 
   /**
-   * @return {!Type}
+   * @return {Type}
    * @throws {Error}
    */
   parseNamedType() {
     const name = this.readIdentifier();
     const topTypeName = TopTypeNames.get(name);
     if (topTypeName)
-      return new TopType(topTypeName);
+      return new TopType(/** @type {TopTypeName} */(topTypeName));
 
     const primitiveName = name == "void" ? "undefined" : name;
     if (PrimitiveNames.has(primitiveName))
-      return new PrimitiveType(primitiveName);
+      return new PrimitiveType(/** @type {PrimitiveTypeName} */(primitiveName));
 
     const params = this.parseTypeParams();
     if (params)
@@ -253,7 +251,7 @@ class Parser {
 
   /**
    * Parses a type expression
-   * @return {!Type} The parsed type
+   * @return {Type} The parsed type
    * @throws {Error} If parsing fails
    */
   parseType() {
@@ -293,7 +291,7 @@ class Parser {
         type = arrayType;
       }
 
-      isNullable |= this.testChar("?".charCodeAt(0));
+      isNullable ||= this.testChar("?".charCodeAt(0));
       if (isNullable)
         type.modifiers |= Modifier.Nullable;
 
@@ -315,7 +313,7 @@ class Parser {
 
   /**
    * Parses type parameters
-   * @return {Array<!Type>} The parsed type parameters
+   * @return {Type[] | null} The parsed type parameters
    * @throws {Error} If parsing fails
    */
   parseTypeParams() {
@@ -344,7 +342,7 @@ class Parser {
  * @param {string} input The input string to parse
  * @param {number=} startPos Optional starting position (defaults to 0)
  * @return {{
- *   type: !Type,
+ *   type: Type,
  *   endPos: number,
  *   paramOpt: boolean
  * }} The parsed type and the position where parsing ended
@@ -364,7 +362,7 @@ const parseTypePrefix = (input, startPos = 0) => {
 /**
  * Parses a type expression and returns only the parsed type
  * @param {string} input The input string to parse
- * @return {!Type} The parsed type
+ * @return {Type} The parsed type
  * @throws {Error} If parsing fails
  */
 const parseType = (input) => new Parser(input).parseType();

@@ -65,7 +65,6 @@ jobs:
   kdjs_unit_tests_did:
     name: kdjs unit tests, did
     runs-on: ubuntu-latest
-    if: false  # Temporarily disabled
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2

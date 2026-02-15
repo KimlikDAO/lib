@@ -22,21 +22,27 @@ function MerkleTree() { }
 
 /**
  * @param {HexKey} key
- * @return {!Array<WitnessElem>|Promise<!Array<WitnessElem>>}
+ * @return {WitnessElem[] | Promise<WitnessElem[]>}
  */
 MerkleTree.prototype.getWitness = function (key) { };
 
 /**
  * @param {HexKey} key
  * @param {Value} value
- * @return {Value|Promise<Value>}
+ * @return {Value | Promise<Value>}
  */
 MerkleTree.prototype.setLeaf = function (key, value) { };
 
 /**
  * @param {BinaryKey} key
- * @return {Value|Promise<Value>}
+ * @return {Value | Promise<Value>}
  */
 MerkleTree.prototype.getNode = function (key) { };
 
-export { BinaryKey, HexKey, MerkleTree, Value, WitnessElem };
+export {
+  BinaryKey,
+  HexKey,
+  MerkleTree,
+  Value,
+  WitnessElem,
+};

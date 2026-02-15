@@ -7,7 +7,7 @@ import { SZABO, batchSendWithKPassNoPush0 } from "../builder";
  * @see https://twitter.com/szaglam/status/1747956442248671703
  *
  * @const
- * @type {!Array<!AddressWithKPass>}
+ * @type {AddressWithKPass[]}
  */
 const Addys = [
   { addr: "0xFAE7b13B8D653E2D603Bf63950F37E1b23eCf148", kpass: true },
@@ -32,7 +32,7 @@ const Addys = [
 ];
 
 /**
- * @return {Promise<!TransactionResponse>}
+ * @return {Promise<TransactionResponse>}
  */
 const send = () => {
   const { code, valueSzabos } = batchSendWithKPassNoPush0(
@@ -40,7 +40,7 @@ const send = () => {
 
   /**
    * @const
-   * @type {!JsonRpcProvider}
+   * @type {JsonRpcProvider}
    */
   const provider = new JsonRpcProvider("https://rpc.ftm.tools");
   /** @const {!Wallet} */

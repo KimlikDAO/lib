@@ -2,10 +2,10 @@
  * local: imported
  * 
  * @typedef {{
- *   unnamed: (string|undefined),
- *   isNamespace: (boolean|undefined),
- *   named: !Object<string, string>,
- *   source: (string|undefined)
+ *   unnamed?: string,
+ *   isNamespace?: boolean,
+ *   named: Record<string, string>,
+ *   source?: string
  * }}
  */
 const ImportStatement = {};
@@ -14,8 +14,8 @@ const ImportStatement = {};
  * exported: local
  *
  * @typedef {{
- *   unnamed: (string|undefined),
- *   named: !Object<string, string>
+ *   unnamed?: string,
+ *   named: Record<string, string>
  * }}
  */
 const ExportStatement = {};

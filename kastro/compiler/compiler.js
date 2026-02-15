@@ -29,16 +29,16 @@ const BuildMode = {
   Release: 2
 };
 
-/** @const {!TextEncoder} */
+/** @const {TextEncoder} */
 const Encoder = new TextEncoder();
 
-/** @const {!Object<string, (CacheEntry|undefined)>} */
+/** @const {Record<string, CacheEntry | undefined>} */
 const CACHE = {};
 
-/** @const {!Object<string, AssetHash>} */
+/** @const {Record<string, AssetHash>} */
 const NAMED_ASSETS = {};
 
-/** @const {!Object<string, AssetHash>} */
+/** @const {Record<string, AssetHash>} */
 const PIGGYBACK_ASSETS = {};
 
 /**
@@ -228,7 +228,7 @@ const bundleTarget = (targetName, props) => props.BuildMode == BuildMode.Dev
   });
 
 /**
- * @return {!Object<string, string>}
+ * @return {Record<string, string>}
  */
 const getNamedAssets = () => NAMED_ASSETS;
 

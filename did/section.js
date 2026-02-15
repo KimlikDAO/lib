@@ -2,13 +2,13 @@ import { keccak256, keccak256Uint32ToHex } from "../crypto/sha3";
 import base64 from "../util/base64";
 import bigints from "../util/bigints";
 import hex from "../util/hex";
-import "./section.d";
+import { ExposureReport, HumanID, Section } from "./section.d";
 
 /** @const {string} */
 const KIMLIKDAO_HASH_PREFIX = "\x19KimlikDAO hash\n";
 
 /**
- * @param {!did.ExposureReport} exposureReport
+ * @param {ExposureReport} exposureReport
  * @return {string}
  */
 const hashExposureReport = (exposureReport) => {
@@ -27,7 +27,7 @@ const hashExposureReport = (exposureReport) => {
 };
 
 /**
- * @param {!did.HumanID} humanID
+ * @param {HumanID} humanID
  */
 const hashHumanID = (humanID) => {
   /**
@@ -46,7 +46,7 @@ const hashHumanID = (humanID) => {
   return keccak256Uint32ToHex(new Uint32Array(buff.buffer));
 };
 
-/** @const {!Set<string>} */
+/** @const {Set<string>} */
 const NOT_HASHED = new Set([
   "secp256k1",
   "minaSchnorr",
@@ -56,14 +56,14 @@ const NOT_HASHED = new Set([
 
 /**
  * @param {string} sectionName
- * @param {!did.Section} section
+ * @param {Section} section
  * @return {string}
  */
 const hash = (sectionName, section) =>
   sectionName == "exposureReport"
-    ? hashExposureReport(/** @type {!did.ExposureReport} */(section))
+    ? hashExposureReport(/** @type {ExposureReport} */(section))
     : sectionName == "humanID"
-      ? hashHumanID(/** @type {!did.HumanID} */(section))
+      ? hashHumanID(/** @type {HumanID} */(section))
       : keccak256(KIMLIKDAO_HASH_PREFIX + JSON.stringify(
         section,
         Object.keys(section)

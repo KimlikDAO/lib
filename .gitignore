@@ -5,7 +5,7 @@
 *.out.js
 *.out.jsx
 build
-bun.lockb
+bun.lock*
 node_modules*
 prompts.txt
 yarn.lock

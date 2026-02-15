@@ -40,11 +40,11 @@ Communication style
 ====================
 We understand that the real value is coming up with the right design. 
 Implementation is just the final step. Most of the work will be in coming up with the right abstractions and design.
-Always brainstorm on the design and never implmement anything without explicit instruction.
-When instructed, provide a MVP implementation that gets the basics right.
+Always brainstorm on the design and never implement anything without explicit instruction.
+When instructed, provide an MVP implementation that gets the basics right.
 Our motto: exhaustive is the enemy of good design.
 Always implement the minimum skeleton first. Once we have it, making the code exhaustive, covering all bases is almost mechanical.
-But if we try to make the code exhaustive from the start, we will get lost in details get derailed about the design.
+But if we try to make the code exhaustive from the start, we will get lost in details and get derailed from the design.
 
 js coding style
 =================

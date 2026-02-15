@@ -3,17 +3,8 @@ import { ChainId } from "../crosschain/chains";
 import { address, callMethod, isNonzero } from "./provider";
 import { Transaction } from "./transaction.d";
 
-/** @const {string[]} */
-const KPASS_ADDRS = [
-  "0xcCc0a9b023177549fcf26c947edb5bfD9B230cCc", // All EVM chains except zkSync Era.
-  "0xcCc053d81e3B85Eac133a5333be4D7cBDd120cCc", // zkSync Era
-];
-
-/**
- * @param {ChainId} chainId
- * @return {string} KPass contract address
- */
-const getAddress = (chainId) => KPASS_ADDRS[+(chainId == ChainId.x144)];
+/** @const {string} */
+const Address = "0xcCc0a9b023177549fcf26c947edb5bfD9B230cCc";
 
 /**
  * @param {eth.Provider} provider
@@ -68,8 +59,7 @@ const hasKPasses = (providerURLs, addresses) => {
 }
 
 export default {
-  KPASS_ADDRS,
-  getAddress,
+  Address,
   handleOf,
   hasKPass,
   hasKPasses,

@@ -1,52 +1,37 @@
-/**
- * @fileoverview Externs for an ethereum provider.
- *
- * @author KimlikDAO
- */
 
 /**
+ * @see https://eips.ethereum.org/EIPS/eip-1193
+ * @see https://nodejs.org/api/events.html for the EventEmitter interface
+ * 
  * Ethereum provider interface.
  */
-interface Provider {
-  request(params: Request): Promise<string> | Promise<string[]>;
+interface EIP1193Provider {
+  request(params: RequestArguments): Promise<unknown>;
+  on(eventName: string, handler: (event: any) => void): EIP1193Provider;
+  removeListener(eventName: string, handler: (event: any) => void): EIP1193Provider;
+  removeAllListeners(): EIP1193Provider;
 }
 
-/**
- * UI provider interface with event handling capabilities.
- */
-interface UiProvider extends Provider {
-  isConnected(): boolean;
-  on(eventName: string, handler: (event: any) => void): void;
-  removeAllListeners(): UiProvider;
+interface RequestArguments {
+  readonly method: string;
+  readonly params?: unknown[]; // original definition is readonly unknown[]
 }
 
-/**
- * Provider error structure.
- */
-interface ProviderError {
+interface ProviderRpcError {
   readonly message: string;
   readonly code: number;
   readonly data: unknown;
 }
 
-/**
- * The container object that is passed to the provider.
- */
-interface Request {
-  readonly method: string;
-  readonly params: Array<any>;
+interface ProviderMessage {
+  readonly type: string;
+  readonly data: unknown;
 }
 
-/**
- * Parameters for switching chains.
- */
 interface SwitchChainParam {
   readonly chainId: string;
 }
 
-/**
- * Parameters for adding a new chain.
- */
 interface AddChainParam {
   readonly chainId: string;
   readonly chainName: string;
@@ -59,17 +44,6 @@ interface AddChainParam {
   readonly blockExplorerUrls: string[];
 }
 
-/**
- * The struct that is passed to the wallet to add an asset.
- * Currently most wallets support only ERC20 assets.
- */
-interface WatchAssetParam {
-  readonly type: string;
-}
-
-/**
- * Options for watching an asset.
- */
 interface WatchAssetParamOptions {
   readonly address: string;
   readonly symbol: string;
@@ -78,43 +52,32 @@ interface WatchAssetParamOptions {
   readonly tokenId: string;
 }
 
-/**
- * Provider RPC error structure.
- */
-interface ProviderRpcError {
-  readonly message: string;
-  readonly code: number;
-  readonly data: unknown;
+interface WatchAssetParam {
+  readonly type: string;
+  readonly options: WatchAssetParamOptions;
 }
 
-/**
- * Provider information.
- */
-interface ProviderInfo {
+interface EIP6963ProviderInfo {
   readonly uuid: string;
   readonly name: string;
   readonly icon: string;
   readonly rdns: string;
 }
 
-/**
- * Provider detail containing provider instance and info.
- */
-interface ProviderDetail {
-  readonly provider: UiProvider;
-  readonly info: ProviderInfo;
+interface EIP6963ProviderDetail {
+  readonly provider: EIP1193Provider;
+  readonly info: EIP6963ProviderInfo;
 }
 
 export {
-  Provider,
-  UiProvider,
-  ProviderError,
-  Request,
-  SwitchChainParam,
   AddChainParam,
+  EIP1193Provider,
+  EIP6963ProviderDetail,
+  EIP6963ProviderInfo,
+  ProviderMessage,
+  ProviderRpcError,
+  RequestArguments,
+  SwitchChainParam,
   WatchAssetParam,
   WatchAssetParamOptions,
-  ProviderRpcError,
-  ProviderInfo,
-  ProviderDetail
 };

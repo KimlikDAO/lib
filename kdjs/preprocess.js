@@ -39,9 +39,9 @@ const exportStmtToExportMap = (exportStmt) => {
  * @return {string} the content after preprocessing
  */
 const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
-  /** @const {!Array<!acorn.Comment>} */
+  /** @const {acorn.Comment[]} */
   const comments = [];
-  /** @const {!acorn.Program} */
+  /** @const {acorn.Program} */
   const ast = parse(content, {
     ecmaVersion: "latest",
     sourceType: "module",
@@ -67,7 +67,7 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
   const typeAliases = [];
 
   /**
-   * @param {!acorn.Comment} comment
+   * @param {acorn.Comment} comment
    */
   const processComment = (comment) => {
     const defineIdx = comment.value.indexOf("@define");
@@ -157,6 +157,9 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
               typeAliases.push(
                 `/** @const */\nconst ${specifier.local.name} = ${namespace}.${specifier.imported.name};`
               );
+            } else if (specifier.type === "ImportNamespaceSpecifier") {
+              // Namespace import: import * as ns from "./path"
+              typeAliases.push(`/** @const */\nconst ${specifier.local.name} = ${namespace};`);
             }
           }
         }
@@ -263,11 +266,11 @@ const processJs = (isEntry, file, content, files, globals, unlinkedImports) => {
 }
 
 /**
- * @param {!Object<string, *>} params
- * @param {function(string, string, boolean=):?string=} transpileFn
+ * @param {Record<string, unknown>} params
+ * @param {(content: string, file: string, isEntry: boolean=) => string | null =} transpileFn
  * @return {Promise<{
- *   unlinkedImports: !Map<string, ImportStatement>,
- *   allFiles: !Set<string>,
+ *   unlinkedImports: Map<string, ImportStatement>,
+ *   allFiles: Set<string>,
  *   isolateDir: string,
  *   ignoreUnusedLocals: boolean
  * }>}

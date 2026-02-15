@@ -19,9 +19,9 @@ const stripModifiers = (typeStr) =>
 
 /**
  * @typedef {{
- *   toParam: (boolean|undefined),
- *   wrap: (boolean|undefined),
- *   bare: (boolean|undefined)
+ *   toParam?: boolean,
+ *   wrap?: boolean,
+ *   bare?: boolean
  * }} Context
  */
 const Context = {};
@@ -54,7 +54,7 @@ class Type {
   }
 
   /**
-   * @param {!UnionType} union
+   * @param {UnionType} union
    */
   addToUnion(union) {
     union.addSingle(this);
@@ -63,11 +63,11 @@ class Type {
 
 class UnionType extends Type {
   /**
-   * @param {!Array<!Type>=} types
+   * @param {Type[]=} types
    */
   constructor(types) {
     super();
-    /** @type {!Map<string, !Type>} */
+    /** @type {Map<string, Type>} */
     this.typeMap = new Map();
 
     if (types)
@@ -79,14 +79,14 @@ class UnionType extends Type {
     this.typeMap.clear();
   }
 
-  /** @return {!Array<!Type>} */
+  /** @return {Type[]} */
   get types() {
     return Array.from(this.typeMap.values());
   }
 
   /**
    * @override
-   * @param {!UnionType} union 
+   * @param {UnionType} union 
    */
   addToUnion(union) {
     union.modifiers |= this.modifiers;
@@ -95,7 +95,7 @@ class UnionType extends Type {
   }
 
   /**
-   * @param {!Type} type
+   * @param {Type} type
    */
   addSingle(type) {
     this.modifiers |= type.modifiers;
@@ -164,6 +164,7 @@ class PrimitiveType extends Type {
       ? Modifier.Nullable : (name == PrimitiveTypeName.Undefined) 
         ? Modifier.Optional : 0;
     super(modifiers);
+    /** @const {PrimitiveTypeName} */
     this.name = name;
   }
 
@@ -201,11 +202,12 @@ class TopType extends Type {
    */
   constructor(name) {
     super(Modifier.Nullable | Modifier.Optional);
+    /** @const {TopTypeName} */
     this.name = name;
   }
 
   /**
-   * @param {!UnionType} union 
+   * @param {UnionType} union 
    */
   addToUnion(union) {
     union.clear();
@@ -255,7 +257,7 @@ class InstanceType extends Type {
 class GenericType extends Type {
   /**
    * @param {string} name
-   * @param {!Array<!Type>} params
+   * @param {Type[]} params
    */
   constructor(name, params) {
     super();
@@ -287,11 +289,11 @@ class GenericType extends Type {
 
 class StructType extends Type {
   /**
-   * @param {!Object<string, !Type>} members
+   * @param {Record<string, Type>} members
    */
   constructor(members) {
     super();
-    /** @const {!Object<string, !Type>} */
+    /** @const {Record<string, Type>} */
     this.members = members;
   }
 
@@ -323,12 +325,12 @@ class StructType extends Type {
 
 class FunctionType extends Type {
   /**
-   * @param {!Array<!Type>} params
-   * @param {!Type} returnType
+   * @param {Type[]} params
+   * @param {Type} returnType
    * @param {number=} optionalAfter
    * @param {Type=} thisType - The type of 'this' for methods
    */
-  constructor(params, returnType, optionalAfter, thisType = null) {
+  constructor(params, returnType, optionalAfter, thisType) {
     super();
     this.params = params;
     this.returnType = returnType;
@@ -387,10 +389,10 @@ class FunctionType extends Type {
 
 class ConstructorType extends FunctionType {
   /**
-   * @param {!Type} instanceType
-   * @param {!Type | null} extendsType
-   * @param {!Array<!Type> | null} implementsTypes
-   * @param {!Array<!Type>} params
+   * @param {Type} instanceType
+   * @param {Type | null} extendsType
+   * @param {Type[] | null} implementsTypes
+   * @param {Type[]} params
    * @param {number=} optionalAfter
    */
   constructor(instanceType, extendsType, implementsTypes, params, optionalAfter) {

@@ -4,7 +4,6 @@
  * @author KimlikDAO
  */
 
-
 interface AccessToken {
   readonly access_token: string;
   readonly token_type: string;

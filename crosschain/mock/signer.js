@@ -5,6 +5,7 @@ import { assertEq } from "../../testing/assert";
 import base58 from "../../util/base58";
 import { ChainGroup } from "../chains";
 import { Signature, Signer } from "../signer";
+import { SignerSignature as MinaSignature } from "../../mina/signature.d";
 
 /**
  * @implements {Signer}
@@ -29,7 +30,7 @@ class MockSigner {
 
     return this.signMessage(message, address)
       .then((/** @type {Signature} */ sig) => crypto.subtle.digest("SHA-256",
-        base58.toBytes(/** @type {mina.SignerSignature} */(sig).signature)
+        base58.toBytes(/** @type {MinaSignature} */(sig).signature)
       ))
   }
 

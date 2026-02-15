@@ -1,11 +1,5 @@
-/**
- * TODO(KimlikDAO-bot): Move prompts to a component library and out of kimlikdao-js
- *
- * @author KimlikDAO
- */
-
 import { ChainId } from "../crosschain/chains";
-import "../ethereum/ERC721Unlockable.d";
+import { ERC721MetaData } from "../ethereum/ERC721.d";
 import KPass from "../ethereum/KPassLite";
 import dom from "../util/dom";
 import hex from "../util/hex";
@@ -63,12 +57,12 @@ const sectionGroup = (sections, chainId) => /** @type {SectionGroup} */({
 /**
  * @param {ChainId} chainId
  * @return {{
- *   metadata: eth.ERC721Metadata,
+ *   metadata: ERC721MetaData,
  *   sections: SectionGroup[]
  * }}
  */
 const metadataAndSections = (chainId) => ({
-  metadata: /** @type {eth.ERC721Metadata} */({
+  metadata: /** @type {ERC721MetaData} */({
     name: "KPass",
     description: "KPass",
     image: KIMLIKDAO_URL + "/KPASS.svg",

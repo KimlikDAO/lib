@@ -1,10 +1,10 @@
 import hex from "../../util/hex";
-import evm from "../evm";
 import "../provider.d";
+import { personalDigest } from "../signer";
 import { addr, signWide } from "./signer";
 
 /**
- * @implements {eth.Provider}
+ * @implements {Provider}
  */
 class MockProvider {
   /**
@@ -18,8 +18,8 @@ class MockProvider {
   /**
    * @override
    *
-   * @param {eth.Request} req
-   * @return {Promise<string>|Promise<string[]>}
+   * @param {Request} req
+   * @return {Promise<string> | Promise<string[]>}
    */
   request(req) {
     switch (req.method) {
@@ -34,7 +34,7 @@ class MockProvider {
         /** @const {string} */
         const message = decoder.decode(hex.toUint8Array(/** @type {string} */(req.params[0]).slice(2)));
         /** @const {bigint} */
-        const digest = BigInt("0x" + evm.personalDigest(message));
+        const digest = BigInt("0x" + personalDigest(message));
         return Promise.resolve("0x" + signWide(digest, this.privKey));
     }
     return Promise.reject();

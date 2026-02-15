@@ -4,9 +4,9 @@
 import { ChainId } from "../crosschain/chains";
 import KPass from "./KPassLite";
 import evm from './evm';
-import "./logs.d";
-import { callMethod } from "./provider";
 import { Transaction } from "./transaction.d";
+import { Provider } from "./provider";
+import { RequestArguments } from "./provider.d";
 
 /**
  * @const {string}
@@ -19,128 +19,11 @@ const MILLION = 1_000_000;
 /** @const {bigint} */
 const TRILLION = 10n ** 12n;
 
-/**
- * Information pertaining to a token which we take as payment.
- *
- * @interface
- * @struct
- */
-const TokenInfo = function () { };
-
-/** @const {string} */
-TokenInfo.prototype.adres;
-
-/** @const {string} */
-TokenInfo.prototype.uzunAd;
-
-/** @const {number} */
-TokenInfo.prototype.basamak;
-
-/** @const {number} */
-TokenInfo.prototype.sürüm;
-
-/** @const {Record<ChainId, TokenInfo[]>} */
-const TokenData = {
-  [ChainId.x1]: [
-    null, /** @type {TokenInfo} */({
-      adres: "dAC17F958D2ee523a2206206994597C13D831ec7".toLowerCase(),
-      uzunAd: "Tether USD",
-      basamak: 6,
-      sürüm: 0
-    }), /** @type {TokenInfo} */({
-      adres: "A0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48".toLowerCase(),
-      uzunAd: "USD Coin",
-      basamak: 6,
-      sürüm: 2
-    }), /** @type {TokenInfo} */({
-      adres: "2C537E5624e4af88A7ae4060C022609376C8D0EB".toLowerCase(),
-      uzunAd: "BiLira",
-      basamak: 6,
-      sürüm: 0
-    })
-  ],
-  [ChainId.xa86a]: [
-    null, /** @type {TokenInfo} */({
-      adres: "9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7".toLowerCase(),
-      uzunAd: "TetherToken",
-      basamak: 6,
-      sürüm: 1
-    }), /** @type {TokenInfo} */({
-      adres: "B97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E".toLowerCase(),
-      uzunAd: "USD Coin",
-      basamak: 6,
-      sürüm: 2
-    }), /** @type {TokenInfo} */({
-      adres: "564A341Df6C126f90cf3ECB92120FD7190ACb401".toLowerCase(),
-      uzunAd: "BiLira",
-      basamak: 6,
-      sürüm: 2
-    })
-  ],
-  // TODO(KimlikDAO-bot): Polygon default bridge contract computes domain
-  // separator in the wrong order.
-  // See https://eips.ethereum.org/EIPS/eip-712
-  // "The EIP712Domain fields should be the order as above, skipping any absent
-  // fields. Future field additions must be in alphabetical order and come
-  // after the above fields. User-agents should accept fields in any order as
-  // specified by the EIPT712Domain type."
-  [ChainId.x89]: [
-    null, /** @type {TokenInfo} */({
-      adres: "c2132D05D31c914a87C6611C10748AEb04B58e8F".toLowerCase(),
-      uzunAd: "(PoS) Tether USD",
-      basamak: 6,
-      sürüm: 0
-    }), /** @type {TokenInfo} */({
-      adres: "2791Bca1f2de4661ED88A30C99A7a9449Aa84174".toLowerCase(),
-      uzunAd: "USD Coin (PoS)",
-      basamak: 6,
-      sürüm: 0
-    }), /** @type {TokenInfo} */({
-      adres: "4Fb71290Ac171E1d144F7221D882BECAc7196EB5".toLowerCase(),
-      uzunAd: "BiLira",
-      basamak: 6,
-      sürüm: 0
-    })
-  ],
-  [ChainId.xa4b1]: [
-    null, /** @type {TokenInfo} */({
-      adres: "Fd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9".toLowerCase(),
-      uzunAd: "Tether USD",
-      basamak: 6,
-      sürüm: 1
-    }), /** @type {TokenInfo} */({
-      adres: "FF970A61A04b1cA14834A43f5dE4533eBDDB5CC8".toLowerCase(),
-      uzunAd: "USD Coin (Arb1)",
-      basamak: 6,
-      sürüm: 1
-    }), null
-  ],
-  [ChainId.x38]: [
-    null, null, /** @type {TokenInfo} */({
-      adres: "8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d".toLowerCase(),
-      uzunAd: "USD Coin",
-      basamak: 18,
-      sürüm: 0
-    }), /** @type {TokenInfo} */({
-      adres: "C1fdbed7Dac39caE2CcC0748f7a80dC446F6a594".toLowerCase(),
-      uzunAd: "BiLira",
-      basamak: 6,
-      sürüm: 0
-    })
-  ],
-  [ChainId.MinaMainnet]: [null, null, null, null]
-};
-
-/** @type {eth.Provider} */
-let Provider = /** @type {eth.Provider} */({
-  request: (req) => {
-    console.log(req)
-    return Promise.resolve("");
-  }
-});
+/** @type {Provider} */
+let Provider = new Provider(() => Promise.resolve(""));
 
 /**
- * @param {eth.Provider} provider
+ * @param {Provider} provider
  */
 const setProvider = (provider) => Provider = provider;
 
@@ -152,16 +35,16 @@ const setProvider = (provider) => Provider = provider;
  * @param {ChainId} chainId
  * @param {string} tokenId
  */
-const addToWallet = (chainId, tokenId) => Provider.request(/** @type {eth.Request} */({
-  method: 'wallet_watchAsset',
-  params: /** @type {eth.WatchAssetParam} */({
-    type: 'ERC721',
+const addToWallet = (chainId, tokenId) => Provider.request(/** @type {RequestArguments} */({
+  method: "wallet_watchAsset",
+  params: [{
+    type: "ERC721",
     options: {
-      address: KPass.getAddress(chainId),
+      address: KPass.Address,
       symbol: "KPASS",
       tokenId,
     }
-  }),
+  }]
 }));
 
 /**

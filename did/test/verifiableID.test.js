@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
 import { generate, prepareGenerateKey, verify } from "../verifiableID";
+import { VerifiableID } from "../verifiableID.d";
 
 test("generate and verify", () => {
   /** @const {string} */
@@ -14,9 +15,9 @@ test("generate and verify", () => {
     + "YScBeaWRaWUfatSFCuldmuk56c+MHoikIfF1mmmY3BQYEECAwEAAQ==";
 
   return prepareGenerateKey(secretKey)
-    .then((/** @type {!webCrypto.CryptoKey} */ generateKey) =>
+    .then((/** @type {webCrypto.CryptoKey} */ generateKey) =>
       generate("TR22345678902", generateKey))
-    .then((/** @type {!did.VerifiableID} */ verifiableID) =>
+    .then((/** @type {VerifiableID} */ verifiableID) =>
       verify(verifiableID, "TR22345678902", publicKey))
     .then((result) => expect(result).toBeTrue());
 }, {
@@ -36,9 +37,9 @@ test("generate and verify", () => {
     + "e9sdUsStZHe8rWPLOy9i5HzxWMQmhz8lQ6oYGCPel93MecCAwEAAQ==";
 
   return prepareGenerateKey(secretKey)
-    .then((/** @type {!webCrypto.CryptoKey} */ generateKey) =>
+    .then((/** @type {webCrypto.CryptoKey} */ generateKey) =>
       generate("PERSONID", generateKey))
-    .then((/** @type {!did.VerifiableID} */ verifiableID) =>
+    .then((/** @type {VerifiableID} */ verifiableID) =>
       verify(verifiableID, "PERSONID", publicKey))
     .then((result) => expect(result).toBeTrue());
 }, {

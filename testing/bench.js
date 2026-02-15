@@ -1,9 +1,9 @@
 import { assertEq, assertArrayEq } from "./assert";
 
 /**
- * @param {!Array<function(?):T>} fs
+ * @param {((args: unknown[]) => T)[]} fs
  * @param {number} repeat
- * @param {!Array} args
+ * @param {unknown[]} args
  * @param {T} expected
  * @template T
  */
@@ -16,9 +16,9 @@ const compareImpls = (fs, repeat, args, expected) => {
 }
 
 /**
- * @param {!Array<function(?):T>} fs
+ * @param {((args: unknown[]) => T)[]} fs
  * @param {number} repeat
- * @param {!Array} args
+ * @param {unknown[]} args
  * @param {T} expected
  * @template T
  */

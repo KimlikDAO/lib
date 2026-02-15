@@ -2,7 +2,7 @@ import hex from "./hex";
 
 /**
  * @nosideeffects
- * @param {Uint8Array|number[]} bytes
+ * @param {Uint8Array | number[]} bytes
  * @return {string}
  */
 const from = (bytes) => {
@@ -47,7 +47,7 @@ const toBytes = (base64) => {
 }
 
 /**
- * @param {Uint8Array|number[]} bytes
+ * @param {Uint8Array | number[]} bytes
  * @param {string} base64
  */
 const intoBytes = (bytes, base64) => {

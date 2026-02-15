@@ -3,7 +3,6 @@ import { Signer } from "./signer";
 
 /**
  * @interface
- * @extends {Signer}
  */
 class Provider extends Signer {
 	/**
@@ -26,7 +25,7 @@ class Provider extends Signer {
 	 * @param {(chainId: ChainId) => void} chainChanged
 	 * @param {(addresses: string[]) => void} addressChanged
 	 * @param {boolean=} onlyIfApproved
-	 * @return {Promise<void>|void}
+	 * @return {Promise<void> | void}
 	 */
 	connect(chain, chainChanged, addressChanged, onlyIfApproved) { }
 
@@ -37,7 +36,7 @@ class Provider extends Signer {
 
 	/**
 	 * @param {string} chain
-	 * @return {Promise<void>|void}
+	 * @return {Promise<void> | void}
 	 */
 	switchChain(chain) { }
 

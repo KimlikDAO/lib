@@ -139,24 +139,24 @@ const pencere = (url, en, boy) => {
 
 /**
  * @nosideeffects
- * @param {number} para
+ * @param {number} amount
  * @return {string} metin olarak yazılmış para miktarı
  */
-const renderCurrency = (para) => (para / 1_000_000).toLocaleString(Lang);
+const renderCurrency = (amount) => (amount / 1_000_000).toLocaleString(Lang);
 
 /**
  * @nosideeffects
- * @param {string} telefon
+ * @param {string} phone
  * @return {string} formatlanmış telefon numarası
  */
-const renderPhone = (telefon) =>
-  telefon.slice(0, 3) + " (" + telefon.slice(3, 6) + ") " + telefon.slice(6, 9) + " " +
-  telefon.slice(9, 11) + " " + telefon.slice(11);
+const renderPhone = (phone) =>
+  phone.slice(0, 3) + " (" + phone.slice(3, 6) + ") " + phone.slice(6, 9) + " " +
+  phone.slice(9, 11) + " " + phone.slice(11);
 
 /**
  * @param {string} id domId
  * @param {string} name
- * @return {!Element}
+ * @return {Element}
  */
 const create = (id, name) => {
   const el = document.createElement(name);
@@ -246,13 +246,13 @@ const input = (ad) => /** @type {HTMLInputElement} */((GEN && globalThis["GEN"])
   : byId(ad));
 
 /**
- * @param {function()} f
+ * @param {() => void} f
  * @param {number} ms
  */
 const schedule = (f, ms) => (GEN && globalThis["GEN"]) ? {} : setTimeout(f, ms);
 
 /**
- * @param {function()} f
+ * @param {() => void} f
  */
 const run = (f) => (GEN && globalThis["GEN"]) ? {} : f();
 

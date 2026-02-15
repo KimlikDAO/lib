@@ -7,11 +7,11 @@ import { tweakPasses } from "./passes";
 import { postprocess } from "./postprocess";
 import { preprocessAndIsolate } from "./preprocess";
 
-/** @typedef {!Object<string, *>} */
+/** @typedef {Record<string, unknown>} */
 const Params = {};
 
 /**
- * @param {!Params} params
+ * @param {Params} params
  * @param {function(string[]):Promise<boolean>=} checkFreshFn
  * @param {function(string,string,boolean=):?string=} transpileFn
  * @return {Promise<string|void>}

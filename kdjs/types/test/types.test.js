@@ -14,7 +14,7 @@ import {
 
 describe("PrimitiveType", () => {
   test("the null type", () => {
-    const nullType = new PrimitiveType("null");
+    const nullType = new PrimitiveType(PrimitiveTypeName.Null);
     expect(nullType.isNullable()).toBeTrue();
     expect(nullType.isOptional()).toBeFalse();
     expect(nullType.toClosureExpr()).toBe("null");
@@ -23,7 +23,7 @@ describe("PrimitiveType", () => {
   });
 
   test("the optional type", () => {
-    const undefinedType = new PrimitiveType("undefined");
+    const undefinedType = new PrimitiveType(PrimitiveTypeName.Undefined);
     expect(undefinedType.isNullable()).toBeFalse();
     expect(undefinedType.isOptional()).toBeTrue();
     expect(undefinedType.toClosureExpr()).toBe("undefined");
@@ -32,7 +32,7 @@ describe("PrimitiveType", () => {
   });
 
   test("optional null", () => {
-    const optNull = new PrimitiveType("null");
+    const optNull = new PrimitiveType(PrimitiveTypeName.Null);
     optNull.modifiers |= Modifier.Optional;
     expect(optNull.isOptional()).toBeTrue();
     expect(optNull.isNullable()).toBeTrue();
@@ -45,7 +45,7 @@ describe("PrimitiveType", () => {
   });
 
   test("optional string", () => {
-    const optString = new PrimitiveType("string");
+    const optString = new PrimitiveType(PrimitiveTypeName.String);
     optString.modifiers = Modifier.Optional;
     expect(optString.isOptional()).toBeTrue();
     expect(optString.toClosureExpr())
@@ -57,7 +57,7 @@ describe("PrimitiveType", () => {
   });
 
   test("nullable optionals", () => {
-    const nullableOptString = new PrimitiveType("string");
+    const nullableOptString = new PrimitiveType(PrimitiveTypeName.String);
     nullableOptString.modifiers = Modifier.Nullable | Modifier.Optional;
     expect(nullableOptString.toClosureExpr())
       .toBe("?string|undefined");
@@ -68,7 +68,7 @@ describe("PrimitiveType", () => {
   });
 
   test("bigint", () => {
-    const bigintType = new PrimitiveType("bigint");
+    const bigintType = new PrimitiveType(PrimitiveTypeName.BigInt);
     expect(bigintType.isNullable()).toBeFalse();
     expect(bigintType.isOptional()).toBeFalse();
   });
@@ -77,18 +77,18 @@ describe("PrimitiveType", () => {
 describe("UnionType", () => {
   test("basics", () => {
     const numeric = new UnionType([
-      new PrimitiveType("number"),
-      new PrimitiveType("bigint"),
+      new PrimitiveType(PrimitiveTypeName.Number),
+      new PrimitiveType(PrimitiveTypeName.BigInt),
     ]);
     expect(numeric.toClosureExpr()).toBe("number|bigint");
     expect(numeric.toClosureExpr({ bare: true })).toBe("number|bigint");
   });
 
   test("similar type twice", () => {
-    const maybeString = new PrimitiveType("string");
+    const maybeString = new PrimitiveType(PrimitiveTypeName.String);
     maybeString.modifiers = Modifier.Optional;
     const stringOrString = new UnionType([
-      new PrimitiveType("string"),
+      new PrimitiveType(PrimitiveTypeName.String),
       maybeString
     ]);
     expect(stringOrString.typeMap.size)
@@ -105,7 +105,7 @@ describe("UnionType", () => {
 
   test("union with any", () => {
     const stringOrAny = new UnionType([
-      new PrimitiveType("string"),
+      new PrimitiveType(PrimitiveTypeName.String),
       new TopType(TopTypeName.Any),
     ]);
     expect(stringOrAny.toClosureExpr()).toBe("?");
@@ -115,7 +115,7 @@ describe("UnionType", () => {
 
   test("union with unknown", () => {
     const bigintOrUnknown = new UnionType([
-      new PrimitiveType("bigint"),
+      new PrimitiveType(PrimitiveTypeName.BigInt),
       new TopType(TopTypeName.Unknown),
     ]);
     expect(bigintOrUnknown.toClosureExpr()).toBe("*");
@@ -125,10 +125,10 @@ describe("UnionType", () => {
 
   test("wrap and toParam", () => {
     const union = new UnionType([
-      new PrimitiveType("string"),
-      new PrimitiveType("number"),
-      new PrimitiveType("null"),
-      new PrimitiveType("undefined")
+      new PrimitiveType(PrimitiveTypeName.String),
+      new PrimitiveType(PrimitiveTypeName.Number),
+      new PrimitiveType(PrimitiveTypeName.Null),
+      new PrimitiveType(PrimitiveTypeName.Undefined)
     ]);
     expect(union.isNullable()).toBeTrue();
     expect(union.isOptional()).toBeTrue();
@@ -143,8 +143,8 @@ describe("UnionType", () => {
 
   test("optional string", () => {
     const optString = new UnionType([
-      new PrimitiveType("string"),
-      new PrimitiveType("undefined")
+      new PrimitiveType(PrimitiveTypeName.String),
+      new PrimitiveType(PrimitiveTypeName.Undefined)
     ]);
     expect(optString.toClosureExpr({ wrap: true }))
       .toBe("(string|undefined)");
@@ -155,14 +155,14 @@ describe("UnionType", () => {
   });
 
   test("nested unions", () => {
-    const optNumber = new PrimitiveType("number");
+    const optNumber = new PrimitiveType(PrimitiveTypeName.Number);
     optNumber.modifiers = Modifier.Optional;
     const union = new UnionType([
       optNumber,
-      new PrimitiveType("boolean"),
+      new PrimitiveType(PrimitiveTypeName.Boolean),
       new UnionType([
-        new PrimitiveType("undefined"),
-        new PrimitiveType("string")
+        new PrimitiveType(PrimitiveTypeName.Undefined),
+        new PrimitiveType(PrimitiveTypeName.String)
       ])
     ]);
     expect(union.toClosureExpr())
@@ -238,8 +238,8 @@ describe("InstanceType", () => {
   test("nullable optional user via union", () => {
     const nullableOptUser = new UnionType([
       new InstanceType("User"),
-      new PrimitiveType("null"),
-      new PrimitiveType("undefined")
+      new PrimitiveType(PrimitiveTypeName.Null),
+      new PrimitiveType(PrimitiveTypeName.Undefined)
     ]);
     expect(nullableOptUser.toClosureExpr())
       .toBe("!User|null|undefined");
@@ -253,7 +253,7 @@ describe("InstanceType", () => {
 describe("GenericType", () => {
   test("union array", () => {
     const generic = new GenericType("Array", [
-      new UnionType([new PrimitiveType("string"), new PrimitiveType("number")]),
+      new UnionType([new PrimitiveType(PrimitiveTypeName.String), new PrimitiveType(PrimitiveTypeName.Number)]),
     ]);
     generic.modifiers = Modifier.Optional;
     expect(generic.toClosureExpr()).toBe("!Array<string|number>|undefined");
@@ -268,7 +268,7 @@ describe("GenericType", () => {
 
   test("record type", () => {
     const record = new GenericType("Record", [
-      new PrimitiveType("string"),
+      new PrimitiveType(PrimitiveTypeName.String),
       new InstanceType("User")
     ]);
     expect(record.toClosureExpr()).toBe("!Object<string,!User>");
@@ -278,16 +278,16 @@ describe("GenericType", () => {
 describe("StructType", () => {
   test("basics", () => {
     const struct = new StructType({
-      "a": new PrimitiveType("string"),
-      "b": new PrimitiveType("number")
+      "a": new PrimitiveType(PrimitiveTypeName.String),
+      "b": new PrimitiveType(PrimitiveTypeName.Number)
     });
     expect(struct.toClosureExpr()).toBe("{ a: string, b: number }");
   });
 
   test("wrap and toParam on a optional struct", () => {
     const struct = new StructType({
-      "a": new PrimitiveType("string"),
-      "b": new PrimitiveType("number")
+      "a": new PrimitiveType(PrimitiveTypeName.String),
+      "b": new PrimitiveType(PrimitiveTypeName.Number)
     });
     struct.modifiers = Modifier.Optional;
     expect(struct.toClosureExpr())
@@ -302,8 +302,8 @@ describe("StructType", () => {
 
   test("wrap and toParam on a nullable struct", () => {
     const struct = new StructType({
-      "a": new PrimitiveType("string"),
-      "b": new PrimitiveType("number")
+      "a": new PrimitiveType(PrimitiveTypeName.String),
+      "b": new PrimitiveType(PrimitiveTypeName.Number)
     });
     struct.modifiers = Modifier.Nullable;
     expect(struct.toClosureExpr())
@@ -318,7 +318,7 @@ describe("StructType", () => {
 
   test("wrap and toParam on a nullable optional struct", () => {
     const struct = new StructType({
-      "a": new PrimitiveType("string"),
+      "a": new PrimitiveType(PrimitiveTypeName.String),
     });
     struct.modifiers = Modifier.Nullable | Modifier.Optional;
     expect(struct.toClosureExpr())
@@ -333,8 +333,8 @@ describe("StructType", () => {
 
   test("with optional fields", () => {
     const struct = new StructType({
-      "a": new PrimitiveType("string"),
-      "b": new PrimitiveType("number")
+      "a": new PrimitiveType(PrimitiveTypeName.String),
+      "b": new PrimitiveType(PrimitiveTypeName.Number)
     });
     struct.members["b"].modifiers = Modifier.Optional;
     expect(struct.toClosureExpr())
@@ -345,8 +345,8 @@ describe("StructType", () => {
 
   test("nullable and optional", () => {
     const struct = new StructType({
-      "a": new PrimitiveType("string"),
-      "b": new PrimitiveType("number")
+      "a": new PrimitiveType(PrimitiveTypeName.String),
+      "b": new PrimitiveType(PrimitiveTypeName.Number)
     });
     expect(struct.toClosureExpr()).toBe("{ a: string, b: number }");
     expect(struct.toClosureExpr({ toParam: true })).toBe("{ a: string, b: number }");
@@ -365,8 +365,8 @@ describe("StructType", () => {
 
     struct.modifiers = 0;
     struct.members["a"] = new UnionType([
-      new PrimitiveType("string"),
-      new PrimitiveType("number")
+      new PrimitiveType(PrimitiveTypeName.String),
+      new PrimitiveType(PrimitiveTypeName.Number)
     ]);
     expect(struct.toClosureExpr()).toBe("{ a: (string|number), b: number }");
     expect(struct.toClosureExpr({ toParam: true })).toBe("{ a: (string|number), b: number }");
@@ -386,8 +386,8 @@ describe("FunctionType", () => {
   test("function with parameters and return type", () => {
     // Function with parameters and return type
     const basicFn = new FunctionType(
-      [new PrimitiveType("string"), new PrimitiveType("number")],
-      new PrimitiveType("boolean")
+      [new PrimitiveType(PrimitiveTypeName.String), new PrimitiveType(PrimitiveTypeName.Number)],
+      new PrimitiveType(PrimitiveTypeName.Boolean)
     );
     expect(basicFn.toClosureExpr()).toBe("function(string, number): boolean");
   });
@@ -395,8 +395,8 @@ describe("FunctionType", () => {
   test("function with union types and optional parameters", () => {
     // Function with optional parameters
     const optParamFn = new FunctionType(
-      [new PrimitiveType("string"), new PrimitiveType("number")],
-      new PrimitiveType("boolean"),
+      [new PrimitiveType(PrimitiveTypeName.String), new PrimitiveType(PrimitiveTypeName.Number)],
+      new PrimitiveType(PrimitiveTypeName.Boolean),
       1 // optionalAfter = 1 means params[1] and beyond are optional
     );
     optParamFn.params[1].modifiers = Modifier.Optional;
@@ -406,8 +406,8 @@ describe("FunctionType", () => {
   test("optional function(string)->number", () => {
     // Optional function
     const optFn = new FunctionType(
-      [new PrimitiveType("string")],
-      new PrimitiveType("number")
+      [new PrimitiveType(PrimitiveTypeName.String)],
+      new PrimitiveType(PrimitiveTypeName.Number)
     );
     optFn.modifiers = Modifier.Optional;
     expect(optFn.toClosureExpr())
@@ -418,8 +418,8 @@ describe("FunctionType", () => {
 
   test("MyClass method mapping string->number", () => {
     const method = new FunctionType(
-      [new PrimitiveType("string")],
-      new PrimitiveType("number"),
+      [new PrimitiveType(PrimitiveTypeName.String)],
+      new PrimitiveType(PrimitiveTypeName.Number),
       1,
       new InstanceType("MyClass")
     );
@@ -428,13 +428,13 @@ describe("FunctionType", () => {
 
   test("function with complex parameters", () => {
     const complexFn = new FunctionType([
-      new UnionType([new PrimitiveType("string"), new PrimitiveType("number")]),
+      new UnionType([new PrimitiveType(PrimitiveTypeName.String), new PrimitiveType(PrimitiveTypeName.Number)]),
       new StructType({
-        id: new PrimitiveType("string"),
-        count: new PrimitiveType("number")
+        id: new PrimitiveType(PrimitiveTypeName.String),
+        count: new PrimitiveType(PrimitiveTypeName.Number)
       })
     ],
-      new GenericType("Array", [new PrimitiveType("string")]),
+      new GenericType("Array", [new PrimitiveType(PrimitiveTypeName.String)]),
       1
     );
     complexFn.params[1].modifiers = Modifier.Optional;
