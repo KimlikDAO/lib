@@ -20,10 +20,10 @@ cloudflare.DurableObjectState = function () { }
  */
 cloudflare.DurableObjectState.prototype.blockConcurrencyWhile = function (callback) { }
 
-/** @const {!cloudflare.DurableObjectStorage} */
+/** @const {cloudflare.DurableObjectStorage} */
 cloudflare.DurableObjectState.prototype.storage;
 
-/** @const {!cloudflare.DurableObjectId} */
+/** @const {cloudflare.DurableObjectId} */
 cloudflare.DurableObjectState.prototype.id;
 
 /**

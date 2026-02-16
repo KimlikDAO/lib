@@ -28,6 +28,8 @@ const uint64 = (num) => num.toString(16).padStart(16, "0");
  */
 const isZero = (value) => value == "0x" || value.replaceAll("0", "") == 'x';
 
+const isNonzero = (value) => !isZero(value);
+
 /**
  * We need the pureOrBreakMyCode annotation since repeat is not inferred
  * to be pure due to polyfills.
@@ -39,6 +41,7 @@ const Uint256Max = /** @pureOrBreakMyCode */("f".repeat(64));
 export default {
   address,
   isZero,
+  isNonzero,
   uint160,
   uint256,
   uint64,

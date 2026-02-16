@@ -17,7 +17,7 @@ const Target = {};
  */
 const TargetFunction = {};
 
-/** @const {!Object<string, TargetFunction>} */
+/** @const {Object<string, TargetFunction>} */
 const TARGET_FUNCTIONS = {};
 
 /**

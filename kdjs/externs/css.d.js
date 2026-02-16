@@ -64,7 +64,7 @@ css.Stylesheet.prototype.stylesheet;
  */
 css.Media = function () { }
 
-/** @const {!Array<!css.Rule|!css.Comment|!css.Media>} */
+/** @const {Array<!css.Rule|!css.Comment|!css.Media>} */
 css.Media.prototype.rules;
 
 /**

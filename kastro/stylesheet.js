@@ -16,7 +16,7 @@ class StyleSheetCollection {
   add({ targetName, content: contentString }) {
     /** @const {Uint8Array} */
     const content = Encoder.encode(contentString);
-    /** @const {!ContentHash} */
+    /** @const {ContentHash} */
     const contentHash = keccak256Uint8(content);
     /** @const {string} */
     const key = targetName.endsWith(".jsx")
@@ -44,9 +44,9 @@ class StyleSheetCollection {
   clear() { this.targets.clear(); }
 }
 
-/** @type {!StyleSheetCollection} */
+/** @type {StyleSheetCollection} */
 let SharedCss = new StyleSheetCollection();
-/** @type {!StyleSheetCollection} */
+/** @type {StyleSheetCollection} */
 let PageCss = new StyleSheetCollection();
 
 const makeStyleSheets = () => {

@@ -43,7 +43,7 @@ const send = () => {
    * @type {JsonRpcProvider}
    */
   const provider = new JsonRpcProvider("https://rpc.ftm.tools");
-  /** @const {!Wallet} */
+  /** @const {Wallet} */
   const wallet = new Wallet(process.argv[2], provider);
 
   return wallet.sendTransaction({

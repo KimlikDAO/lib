@@ -13,7 +13,7 @@ const SZABO = 10n ** 12n;
  * @return {evm.bytes}
  */
 const batchSendFixedAmount = (recipients, amountSzabos) => {
-  /** @const {!Array<Op|OpData>} */
+  /** @const {Array<Op|OpData>} */
   const ops = pushNumber(BigInt(amountSzabos) * SZABO);
   // val | 0 0 0 0 
   for (const recipient of recipients)
@@ -31,7 +31,7 @@ const batchSendFixedAmount = (recipients, amountSzabos) => {
  * @return {evm.bytes}
  */
 const batchSendFixedAmountNoPush0 = (recipients, amountSzabos) => {
-  /** @const {!Array<Op|OpData>} */
+  /** @const {Array<Op|OpData>} */
   const ops = [
     ...pushNumber(BigInt(amountSzabos) * SZABO),
     ...pushNumber(0n)
@@ -53,7 +53,7 @@ const batchSendFixedAmountNoPush0 = (recipients, amountSzabos) => {
  * @return {{ code: evm.bytes, valueSzabos: number}}
  */
 const batchSendWithKPassNoPush0 = (recipients, withKPassSzabos, withoutKPasstSzabos) => {
-  /** @const {!Array<Op|OpData>} */
+  /** @const {Array<Op|OpData>} */
   const ops = [
     ...pushNumber(BigInt(withKPassSzabos) * SZABO),
     ...pushNumber(BigInt(withoutKPasstSzabos) * SZABO),

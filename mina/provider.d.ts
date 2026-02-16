@@ -67,21 +67,22 @@ interface Provider {
   signJsonMessage(jsonMessage: SignJsonMessageArgs): Promise<SignedData>;
   sendTransaction(sendTransactionArgs: SendTransactionArgs): Promise<SendZkTransactionResult>;
   on(eventName: string, handler: (data?: unknown) => void): void;
+  isAuro?: boolean;
 }
 
 export {
-  SwitchChainArgs,
   ChainInfoArgs,
-  SignMessageArgs,
-  Signature,
-  SignedData,
-  ProviderError,
-  JsonMessageData,
-  SignJsonMessageArgs,
   FeePayer,
+  JsonMessageData,
+  Provider,
+  ProviderError,
   SendTransactionArgs,
   SendTransactionHash,
-  SignedZkappCommand,
   SendZkTransactionResult,
-  Provider
+  Signature,
+  SignedData,
+  SignedZkappCommand,
+  SignJsonMessageArgs,
+  SignMessageArgs,
+  SwitchChainArgs
 };

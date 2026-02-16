@@ -36,9 +36,9 @@ import Css from "./Button.css";
  * @param {{ Lang: LangCode }} props
  */
 const Button = ({ Lang }) => {
-  /** @const {!HTMLButtonElement} */
+  /** @const {HTMLButtonElement} */
   const Root = dom.button(Css.Root);
-  /** @const {!HTMLSpanElement} */
+  /** @const {HTMLSpanElement} */
   const Text = dom.span(Css.Text);
 
   return (
@@ -127,9 +127,9 @@ import Css from "./LandingPage.css";
  * @param {{ Lang: LangCode }} props
  */
 const LandingPage = ({ Lang }) => {
-  /** @const {!HTMLButtonElement} */
+  /** @const {HTMLButtonElement} */
   const Button = dom.button(Css.Button);
-  /** @const {!HTMLSpanElement} */
+  /** @const {HTMLSpanElement} */
   const Text = dom.span(Css.Text);
 
   return (
@@ -236,7 +236,7 @@ invocations from the initialization code of the parent component.
 ```jsx
 /** @param {{ id: string }} props */
 const StatelessComp = ({ id }) => {
-  /** @type {!HTMLDivElement} */
+  /** @type {HTMLDivElement} */
   const Root = dom.div(id);
   return (
     <Root onClick={() => dom.text.update(Root, Root.innerText == "On" ? "Off" : "On")}>
@@ -255,7 +255,7 @@ When transpiled by Kastro (but before compilation by kdjs), the above jsx file w
 ```javascript
 /** @param {{ id: string }} props */
 const StatelessComp = ({ id }) => {
-  /** @type {!HTMLDivElement} */
+  /** @type {HTMLDivElement} */
   const Root = dom.div(id);
   Root.onclick = () => Root.firstChild.data = Root.firstChild.data == "On" ? "Off" : "On";
 }
@@ -277,7 +277,7 @@ passed to the component itself.
 ```jsx
 /** @param {{ id: string }} props */
 const CheckBox = function ({ id }) {
-  /** @type {!HTMLDivElement} */
+  /** @type {HTMLDivElement} */
   this.root = dom.div(id);
   /** @type {boolean} */
   this.on = true;
@@ -301,7 +301,7 @@ it will become
 ```javascript
 /** @param {{ id: string }} props */
 const CheckBox = ({ id }) => {
-  /** @type {!HTMLDivElement} */
+  /** @type {HTMLDivElement} */
   this.root = dom.div(id);
   /** @type {boolean} */
   this.on = true;
@@ -334,7 +334,7 @@ properties, or specify `controls[Role]={PseudoComponent}` directives such as
 ```javascript
 /** @enum {string} */
 const Css = css` /** @export */ #Root {}`;
-/** @const {!HTMLDivElement} */
+/** @const {HTMLDivElement} */
 const Root = dom.div(Css.Root);
 
 const Page = () => (

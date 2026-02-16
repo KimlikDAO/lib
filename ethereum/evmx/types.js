@@ -29,21 +29,21 @@ const byteLength = (ops) => {
  * @return {!OpData}
  */
 const toOpData = (ops) => {
-  /** @const {!evm.bytes} */
+  /** @const {evm.bytes} */
   const out = new evm.bytes(byteLength(ops));
   let /** number */ i = 0, /** number */ j = 0;
 
   for (let k = 0; k < ops.length; ++k) {
     const op = ops[k];
     if (op instanceof Uint8Array) {
-      out.set(new evm.bytes(/** @type {!Array<Op>} */(ops.slice(i, k))), j);
+      out.set(new evm.bytes(/** @type {Array<Op>} */(ops.slice(i, k))), j);
       out.set(op, j + k - i);
       j += k - i + op.length
       i = k + 1;
     }
   }
 
-  if (i < ops.length) out.set(new evm.bytes(/** @type {!Array<Op>} */(ops.slice(i))), j);
+  if (i < ops.length) out.set(new evm.bytes(/** @type {Array<Op>} */(ops.slice(i))), j);
   return out;
 }
 
@@ -93,7 +93,7 @@ const pushNumber = (n) => {
 const pushBytes = (bytes) => {
   if (bytes.length == 0 || bytes.length == 1 && bytes[0] == 0)
     return new Uint8Array([Op.PUSH0]);
-  /** @const {!OpData} */
+  /** @const {OpData} */
   const out = new OpData(bytes.length + 1);
   out[0] = pushN(bytes.length);
   out.set(bytes, 1);

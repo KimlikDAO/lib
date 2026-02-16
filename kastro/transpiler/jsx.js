@@ -2,13 +2,13 @@ import { Parser } from "acorn";
 import acornJsx from "acorn-jsx";
 import {
   ImportStatement, writeImportStatement
-} from "../../kdjs/modules";
-import { Update, update } from "../../kdjs/textual";
+} from "../../kdjs/util/modules";
+import { Update, update } from "../../kdjs/util/textual";
 import { getExt, getDir, combine } from "../../util/paths";
 import css from "./css";
 import { DomIdMapper } from "./domIdMapper";
 
-/** @const {!Parser} */
+/** @const {Parser} */
 const JsxParser = Parser.extend(acornJsx());
 
 /**
@@ -43,23 +43,23 @@ const resolveModulePath = (importer, source) => source.startsWith('.')
  * @return {string} The transpiled js file
  */
 const transpile = (isEntry, file, content, domIdMapper, globals) => {
-  /** @const {!Array<!acorn.Comment>} */
+  /** @const {Array<!acorn.Comment>} */
   const comments = [];
-  /** @const {!Array<Update>} */
+  /** @const {Array<Update>} */
   const updates = [];
-  /** @const {!Array<!acorn.ImportDeclaration>} */
+  /** @const {Array<!acorn.ImportDeclaration>} */
   const importStatements = [];
   /** @typedef {{ node: !acorn.ImportDeclaration, state: SpecifierState }} */
   const SpecifierInfo = {};
-  /** @const {!Object<string, SpecifierInfo>} */
+  /** @const {Object<string, SpecifierInfo>} */
   const specifierInfo = {};
-  /** @const {!Set} */
+  /** @const {Set} */
   const assetComponents = new Set();
-  /** @const {!Set} */
+  /** @const {Set} */
   const localComponents = new Set();
-  /** @const {!Set} */
+  /** @const {Set} */
   const styleSheetComponents = new Set();
-  /** @const {!Map<string, string>} */
+  /** @const {Map<string, string>} */
   const workerComponents = new Map();
 
   /**
@@ -141,7 +141,7 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
   const getJsxTagName = (node) => {
     /** @type {string[]} */
     const parts = [];
-    /** @type {!acorn.Node} */
+    /** @type {acorn.Node} */
     let current = node.openingElement.name;
 
     while (current.type === "JSXMemberExpression") {
@@ -161,7 +161,7 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
    */
   const processJsxElement = (node, parent, childIndex, statements) => {
     if (node.type == "JSXElement") {
-      const elem = /** @type {!acorn.JSXElement} */(node);
+      const elem = /** @type {acorn.JSXElement} */(node);
       if (elem.openingElement) {
         /** @const {string} */
         const tagName = getJsxTagName(elem);
@@ -199,7 +199,7 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
           }
           const maybeWorkerBundleName = workerComponents.get(tagName);
           if (maybeWorkerBundleName) {
-            statements.push(`/** @const {!Worker} */\n  ${instance} = new Worker("${maybeWorkerBundleName}", { type: "module" });`);
+            statements.push(`/** @const {Worker} */\n  ${instance} = new Worker("${maybeWorkerBundleName}", { type: "module" });`);
           } else if ((tagName in specifierInfo || localComponents.has(tagName)) && !styleSheetComponents.has(tagName)) {
             keepImport = true;
 
@@ -218,7 +218,7 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
               ? `{\n    ${Object.entries(props).map(([k, v]) => `${k}: ${serialize(v)}`).join(",\n    ")}\n  }`
               : "";
             const call = `${tagName}(${callParams})`;
-            statements.push(instance ? `/** @const {!${tagName}} */\n  ${instance} = new ${call}` : call);
+            statements.push(instance ? `/** @const {${tagName}} */\n  ${instance} = new ${call}` : call);
           }
           if (keepImport && info)
             info.state = SpecifierState.Keep;
@@ -503,7 +503,7 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
     });
   };
 
-  /** @const {!acorn.Program} */
+  /** @const {acorn.Program} */
   const ast = JsxParser.parse(content, {
     sourceType: "module",
     ecmaVersion: "latest",

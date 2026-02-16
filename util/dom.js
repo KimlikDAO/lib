@@ -54,7 +54,7 @@ const text = {
    * @param {string} text
    * @return {string}
    */
-  update: (element, text) => /** @type {!Text} */(element.firstChild).data = text,
+  update: (element, text) => /** @type {Text} */(element.firstChild).data = text,
 
   /**
    * @param {Element} element
@@ -129,7 +129,7 @@ const slideCard = (pane, index) => {
 const pencere = (url, en, boy) => {
   /** @const {number} */
   const sol = window.screenX + window.outerWidth - en;
-  /** @const {Window} */
+  /** @const {Window | null} */
   const p = window.open(url, "_blank",
     `menubar=no,toolbar=no,status=no,width=${en},height=${boy},` +
     `left=${sol},top=${window.screenY}`

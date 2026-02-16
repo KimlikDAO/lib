@@ -48,7 +48,7 @@ loadCrate("./crate").then((files) => serve({
     /** @const {Uint8Array|undefined} */
     const file = files[resolvedPath + ext.slice(0, 3)];
     if (!file) return Response.redirect("/");
-    /** @const {!Object<string, string>} */
+    /** @const {Object<string, string>} */
     const headers = {
       "cache-control": dot == -1 ? PAGE_CACHE_CONTROL : STATIC_CACHE_CONTROL,
       "cdn-cache-control": STATIC_CACHE_CONTROL,

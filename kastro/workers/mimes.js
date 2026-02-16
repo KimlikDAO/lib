@@ -2,7 +2,7 @@
  * These MIME types have an internal compression mechanism and
  * do not benefit from a secondary compression.
  *
- * @const {!Object<string, boolean>}
+ * @const {Object<string, boolean>}
  */
 const CompressedMimes = {
   "woff2": true,
@@ -10,7 +10,7 @@ const CompressedMimes = {
   "webp": true,
 };
 
-/** @const {!Object<string, string>} */
+/** @const {Object<string, string>} */
 const Mimes = {
   "css": "text/css",
   "js": "application/javascript;charset=utf-8",

@@ -61,13 +61,13 @@ acorn.Property = function () { }
 
 /**
  * TODO(KimlikDAO-bot): fix
- * @const {!acorn.Identifier|!acorn.Literal}
+ * @const {acorn.Identifier|!acorn.Literal}
  */
 acorn.Property.prototype.key;
 
 /**
  * TODO(KimlikDAO-bot): fix
- * @const {!acorn.Node}
+ * @const {acorn.Node}
  */
 acorn.Property.prototype.value;
 
@@ -85,13 +85,13 @@ acorn.MemberExpression = function () { }
 
 /**
  * TODO(KimlikDAO-bot): fix
- * @const {!acorn.Identifier}
+ * @const {acorn.Identifier}
  */
 acorn.MemberExpression.prototype.object;
 
 /**
  * TODO(KimlikDAO-bot): fix
- * @const {!acorn.Identifier}
+ * @const {acorn.Identifier}
  */
 acorn.MemberExpression.prototype.property;
 
@@ -102,7 +102,7 @@ acorn.MemberExpression.prototype.property;
  */
 acorn.FunctionDeclaration = function () { };
 
-/** @const {!acorn.Identifier} */
+/** @const {acorn.Identifier} */
 acorn.FunctionDeclaration.prototype.id;
 
 /**
@@ -112,7 +112,7 @@ acorn.FunctionDeclaration.prototype.id;
  */
 acorn.VariableDeclarator = function () { };
 
-/** @const {!acorn.Identifier} */
+/** @const {acorn.Identifier} */
 acorn.VariableDeclarator.prototype.id;
 
 /**
@@ -125,7 +125,7 @@ acorn.VariableDeclaration = function () { };
 /** @const {string} */
 acorn.VariableDeclaration.prototype.kind;
 
-/** @const {!Array<!acorn.VariableDeclarator>} */
+/** @const {Array<!acorn.VariableDeclarator>} */
 acorn.VariableDeclaration.prototype.declarations;
 
 /**
@@ -135,7 +135,7 @@ acorn.VariableDeclaration.prototype.declarations;
  */
 acorn.ClassDeclaration = function () { };
 
-/** @const {!acorn.Identifier} */
+/** @const {acorn.Identifier} */
 acorn.ClassDeclaration.prototype.id;
 
 /**
@@ -157,7 +157,7 @@ acorn.AssignmentExpression.prototype.left;
 
 /**
  * TODO(KimlikDAO-bot): fix
- * @const {!acorn.Node}
+ * @const {acorn.Node}
  */
 acorn.AssignmentExpression.prototype.right;
 
@@ -168,7 +168,7 @@ acorn.AssignmentExpression.prototype.right;
  */
 acorn.ObjectExpression = function () { }
 
-/** @const {!Array<acorn.Property>} */
+/** @const {Array<acorn.Property>} */
 acorn.ObjectExpression.prototype.properties;
 
 /**
@@ -178,7 +178,7 @@ acorn.ObjectExpression.prototype.properties;
  */
 acorn.ImportDefaultSpecifier = function () { }
 
-/** @const {!acorn.Identifier} */
+/** @const {acorn.Identifier} */
 acorn.ImportDefaultSpecifier.prototype.local;
 
 /**
@@ -188,13 +188,13 @@ acorn.ImportDefaultSpecifier.prototype.local;
  */
 acorn.ImportSpecifier = function () { }
 
-/** @const {!acorn.Identifier|!acorn.Literal} */
+/** @const {acorn.Identifier|!acorn.Literal} */
 acorn.ImportSpecifier.prototype.imported;
 
-/** @const {!acorn.Identifier} */
+/** @const {acorn.Identifier} */
 acorn.ImportSpecifier.prototype.local;
 
-/** @const {!acorn.Identifier} */
+/** @const {acorn.Identifier} */
 acorn.ImportDeclaration.prototype.imported;
 
 /**
@@ -206,12 +206,12 @@ acorn.ImportDeclaration = function () { }
 
 /**
  * TODO(KimlikDAO-bot): Add ImportNameSpaceSpecifier
- * @const {!Array<!acorn.ImportSpecifier|!acorn.ImportDefaultSpecifier>}
+ * @const {Array<!acorn.ImportSpecifier|!acorn.ImportDefaultSpecifier>}
  */
 acorn.ImportDeclaration.prototype.specifiers;
 
 /**
- * @const {!acorn.Literal}
+ * @const {acorn.Literal}
  */
 acorn.ImportDeclaration.prototype.source;
 
@@ -237,7 +237,7 @@ acorn.ExportDefaultDeclaration = function () { }
 
 /**
  * TODO(KimlikDAO-bot): fix
- * @const {!acorn.Identifier}
+ * @const {acorn.Identifier}
  */
 acorn.ExportDefaultDeclaration.prototype.declaration;
 
@@ -248,10 +248,10 @@ acorn.ExportDefaultDeclaration.prototype.declaration;
  */
 acorn.ExportNamedDeclaration = function () { }
 
-/** @const {!acorn.Declaration|undefined} */
+/** @const {acorn.Declaration|undefined} */
 acorn.ExportNamedDeclaration.prototype.declaration;
 
-/** @const {!Array<!acorn.ExportSpecifier>} */
+/** @const {Array<!acorn.ExportSpecifier>} */
 acorn.ExportNamedDeclaration.prototype.specifiers;
 
 /**

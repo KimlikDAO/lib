@@ -31,7 +31,7 @@ const Spaces = {
 };
 
 /**
- * @const {!Object<string, !Array<!Atom | string>>}
+ * @const {Object<string, !Array<!Atom | string>>}
  */
 const Substitute = {
   // Atom.Ord
@@ -85,7 +85,7 @@ const Substitute = {
 /**
  * TeX book p. 170
  *
- * @const {!Array<number[]>}
+ * @const {Array<number[]>}
  */
 const SpaceTable = [
   [0, 1, 2, 3, 0, 0, 0, 1],
@@ -99,19 +99,19 @@ const SpaceTable = [
 ];
 
 /**
- * @const {!RegExp}
+ * @const {RegExp}
  */
 const Alpha = /[a-zA-Z]*/;
 /**
- * @const {!RegExp}
+ * @const {RegExp}
  */
 const Digits = /[0-9]*/;
 /**
- * @const {!RegExp}
+ * @const {RegExp}
  */
 const RightAttachment = /[a-zA-Z._’\-,]*/;
 /**
- * @const {!RegExp}
+ * @const {RegExp}
  */
 const LeftAttachment = /[a-zA-Z.\-]*$/;
 
@@ -143,7 +143,7 @@ const renderInline = (texStr, leftAttach, rightAttach) => {
   const n = texStr.length;
   /** @type {string} */
   let output = "";
-  /** @type {!Atom} */
+  /** @type {Atom} */
   let lastAtom = Atom.None;
 
   for (let /** number */ i = 0; i < n;) {
@@ -222,7 +222,7 @@ const renderInline = (texStr, leftAttach, rightAttach) => {
     } else {
       let subs = Substitute[char];
       if (subs) {
-        /** @type {!Atom} */
+        /** @type {Atom} */
         let atom = subs[0];
         // In the baseMode, split across relations
         if (baseMode && atom == Atom.Rel) {

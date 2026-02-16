@@ -1,4 +1,4 @@
-/** @const {!Object<string, boolean>} */
+/** @const {Record<string, boolean>} */
 const KapalıTag = {
   animate: true,
   animateTransform: true,

@@ -13,7 +13,7 @@ const RC = [
     0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
     0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
   ];
-  
+
   /** @param {Uint32Array} t */
   const extend = (t) => {
     for (let i = 16, t1, s0, s1; i < 64; ++i) {
@@ -24,7 +24,7 @@ const RC = [
       t[i] = t[i - 16] + s0 + t[i - 7] + s1 << 0;
     }
   }
-  
+
   /**
    * The sha256 compression function, with 4 rounds unrolled.
    *
@@ -72,7 +72,7 @@ const RC = [
       e = a + t1 << 0;
       a = t1 + t2 << 0;
     }
-  
+
     s[0] += a; s[1] += b; s[2] += c; s[3] += d;
     s[4] += e; s[5] += f; s[6] += g; s[7] += h;
   }

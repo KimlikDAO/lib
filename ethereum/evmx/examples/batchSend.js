@@ -4,7 +4,7 @@ import { SZABO, batchSendFixedAmountNoPush0 } from "../builder";
 
 /**
  * @const
- * @type {!ByteCode}
+ * @type {ByteCode}
  */
 const batchSend = batchSendFixedAmountNoPush0([
   "0x1111111111111111111111111111111111111111",
@@ -25,10 +25,10 @@ const batchSend = batchSendFixedAmountNoPush0([
 const send = async (program) => {
   /**
    * @const
-   * @type {!JsonRpcProvider}
+   * @type {JsonRpcProvider}
    */
   const provider = new JsonRpcProvider("https://fantom-testnet.rpc.thirdweb.com");
-  /** @const {!Wallet} */
+  /** @const {Wallet} */
   const wallet = new Wallet(process.argv[2], provider);
 
   const res = await wallet.sendTransaction({

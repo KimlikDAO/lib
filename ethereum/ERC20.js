@@ -8,9 +8,9 @@ class ERC20 {
   /**
    * @param {ChainId} chainId
    * @param {Address} contract
-   * @param {number} decimals
+   * @param {number=} decimals
    */
-  constructor(chainId, contract, decimals) {
+  constructor(chainId, contract, decimals = 6) {
     /** @const {ChainId} */
     this.chainId = chainId;
     /** @const {Address} */
@@ -39,10 +39,10 @@ class ERC20Permit extends ERC20 {
    * @param {ChainId} chainId
    * @param {Address} contract
    * @param {string} name
-   * @param {number} decimals
    * @param {number} version
+   * @param {number=} decimals
    */
-  constructor(chainId, contract, name, decimals, version) {
+  constructor(chainId, contract, name, version, decimals) {
     super(chainId, contract, decimals);
     /** @const {string} */
     this.name = name;

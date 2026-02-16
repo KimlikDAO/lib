@@ -1,6 +1,3 @@
-/**
- * @fileoverview KPass akıllı sözleşmesinin js önyüzu.
- */
 import { ChainId } from "../crosschain/chains";
 import KPass from "./KPassLite";
 import evm from './evm';

@@ -5,17 +5,17 @@ import dom from "../util/dom";
  * @param {{
  *   id: string,
  *   initialPane: number,
- *   children: (() => void | null)[],
+ *   children: ((() => void) | null)[]
  * }} props
  */
 const Switch = function ({ id, initialPane = 0, children }) {
   /** @type {number} */
   this.selectedPane = initialPane;
-  /** @const {(() => void | null)[]} */
+  /** @const {((() => void) | null)[]} */
   this.initializers = children;
-  /** @const {!HTMLDivElement} */
+  /** @const {HTMLDivElement} */
   const Root = dom.div(id);
-  /** @const {!HTMLDivElement} */
+  /** @const {HTMLDivElement} */
   this.root = Root;
 
   return (

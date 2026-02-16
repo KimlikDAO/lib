@@ -73,7 +73,7 @@ Stateful components are function objects that take an `instance` property. For e
  * @param {{ id: string }} props
  */
 const Counter = function({ id }) {
-  /** @type {!HTMLDivElement} */
+  /** @type {HTMLDivElement} */
   this.root = dom.div(id);
   /** @type {number} */
   this.count = 0;
@@ -104,7 +104,7 @@ When transpiled for the client:
 
 ```javascript
 const Counter = function({ id }) {
-  /** @type {!HTMLDivElement} */
+  /** @type {HTMLDivElement} */
   this.root = dom.div(id);
   /** @type {number} */
   this.count = 0;
@@ -125,9 +125,9 @@ const Page = () => {
 Pseudo components bridge the gap between plain JSX elements and full components. They are created using `dom` utility methods and provide direct DOM access while supporting component-like features.
 
 ```jsx
-/** @const {!HTMLDivElement} */
+/** @const {HTMLDivElement} */
 const Root = dom.div(Css.Root);
-/** @const {!HTMLButtonElement} */
+/** @const {HTMLButtonElement} */
 const Button = dom.button(Css.Button);
 
 const Page = () => (

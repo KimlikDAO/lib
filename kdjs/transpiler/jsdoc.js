@@ -1,4 +1,4 @@
-import { Update } from "../textual";
+import { Update } from "../util/textual";
 import { parseTypePrefix } from "../types/parser";
 
 /**
@@ -19,7 +19,7 @@ const TAGS_WITH_TYPES = new Set([
  * @param {string} fileName
  * @return {Update[]}
  */
-const transpile = (comment, fileName) => {
+const transpileJsDoc = (comment, fileName) => {
   if (comment.type != "Block") return [];
 
   /** @const {Update[]} */
@@ -74,4 +74,4 @@ const transpile = (comment, fileName) => {
   return updates;
 };
 
-export { transpile };
+export { transpileJsDoc };

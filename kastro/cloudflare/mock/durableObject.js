@@ -4,11 +4,11 @@
  */
 class DurableObjectState {
   constructor() {
-    /** @const {!cloudflare.DurableObjectId} */
-    this.id = /** @type {!cloudflare.DurableObjectId} */({});
+    /** @const {cloudflare.DurableObjectId} */
+    this.id = /** @type {cloudflare.DurableObjectId} */({});
     this.mem = {};
-    /** @const {!cloudflare.DurableObjectStorage} */
-    this.storage = /** @type {!cloudflare.DurableObjectStorage} */({
+    /** @const {cloudflare.DurableObjectStorage} */
+    this.storage = /** @type {cloudflare.DurableObjectStorage} */({
       /**
        * @override
        *

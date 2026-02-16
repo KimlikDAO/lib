@@ -12,13 +12,13 @@ import dom from "../util/dom";
 const KeyedSwitch = function ({ id, initialPane, children, keyToIndex }) {
   /** @type {number} */
   this.selectedPane = dom.GEN ? 0 : initialPane ? keyToIndex[initialPane] : 0;
-  /** @const {!Array<?function():void>} */
+  /** @const {Array<?function():void>} */
   this.initializers = children;
-  /** @const {!Object<string, number>} */
+  /** @const {Object<string, number>} */
   this.keyToIndex = keyToIndex;
-  /** @const {!HTMLDivElement} */
+  /** @const {HTMLDivElement} */
   const Root = dom.div(id);
-  /** @const {!HTMLDivElement} */
+  /** @const {HTMLDivElement} */
   this.root = Root;
 
   return (

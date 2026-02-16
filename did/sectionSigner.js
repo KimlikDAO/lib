@@ -35,7 +35,7 @@ const signHumanID = (humanID, privateKey) => {
 const recoverHumanIDSigners = (humanID, ownerAddress) => {
   if (!humanID.commitment)
     humanID.commitment = commit(ChainGroup.MINA, ownerAddress, humanID.commitmentR);
-  /** @const {!Set<string>} */
+  /** @const {Set<string>} */
   const signers = new Set();
   /** @const {bigint[]} */
   const fields = [

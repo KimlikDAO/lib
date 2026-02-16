@@ -61,7 +61,7 @@ csstree.Comment.prototype.value;
  */
 csstree.StyleSheet = function () { };
 
-/** @const {!csstree.List} */
+/** @const {csstree.List} */
 csstree.StyleSheet.prototype.children;
 
 /**
@@ -70,7 +70,7 @@ csstree.StyleSheet.prototype.children;
  */
 csstree.Rule = function () { };
 
-/** @const {!csstree.SelectorList} */
+/** @const {csstree.SelectorList} */
 csstree.Rule.prototype.prelude;
 
 /**
@@ -85,7 +85,7 @@ csstree.CssNode;
  */
 csstree.SelectorList = function () { };
 
-/** @const {!csstree.List} */
+/** @const {csstree.List} */
 csstree.SelectorList.prototype.children;
 
 /**
@@ -94,7 +94,7 @@ csstree.SelectorList.prototype.children;
  */
 csstree.Selector = function () { };
 
-/** @const {!csstree.List} */
+/** @const {csstree.List} */
 csstree.Selector.prototype.children;
 
 /**
@@ -124,7 +124,7 @@ csstree.Atrule = function () { };
 /** @const {string} */
 csstree.Atrule.prototype.name;
 
-/** @const {!csstree.Block} */
+/** @const {csstree.Block} */
 csstree.Atrule.prototype.block;
 
 /**
@@ -133,7 +133,7 @@ csstree.Atrule.prototype.block;
  */
 csstree.Block = function () { };
 
-/** @const {!csstree.List} */
+/** @const {csstree.List} */
 csstree.Block.prototype.children;
 
 /**

@@ -3,5 +3,5 @@
  */
 const caches = {};
 
-/** @const {!Cache} */
+/** @const {Cache} */
 caches.default;

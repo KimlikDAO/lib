@@ -10,13 +10,13 @@ const acornJsx = function () { }
  */
 acorn.JSXElement = function () { };
 
-/** @const {!acorn.JSXOpeningElement} */
+/** @const {acorn.JSXOpeningElement} */
 acorn.JSXElement.prototype.openingElement;
 
-/** @const {!acorn.JSXClosingElement|undefined} */
+/** @const {acorn.JSXClosingElement|undefined} */
 acorn.JSXElement.prototype.closingElement;
 
-/** @const {!Array<!acorn.Node>} */
+/** @const {Array<!acorn.Node>} */
 acorn.JSXElement.prototype.children;
 
 /**
@@ -26,10 +26,10 @@ acorn.JSXElement.prototype.children;
  */
 acorn.JSXOpeningElement = function () { };
 
-/** @const {!acorn.JSXIdentifier} */
+/** @const {acorn.JSXIdentifier} */
 acorn.JSXOpeningElement.prototype.name;
 
-/** @const {!Array<!acorn.JSXAttribute>} */
+/** @const {Array<!acorn.JSXAttribute>} */
 acorn.JSXOpeningElement.prototype.attributes;
 
 /** @const {boolean} */
@@ -42,7 +42,7 @@ acorn.JSXOpeningElement.prototype.selfClosing;
  */
 acorn.JSXClosingElement = function () { };
 
-/** @const {!acorn.JSXIdentifier} */
+/** @const {acorn.JSXIdentifier} */
 acorn.JSXClosingElement.prototype.name;
 
 /**
@@ -62,10 +62,10 @@ acorn.JSXIdentifier.prototype.name;
  */
 acorn.JSXAttribute = function () { };
 
-/** @const {!acorn.JSXIdentifier} */
+/** @const {acorn.JSXIdentifier} */
 acorn.JSXAttribute.prototype.name;
 
-/** @const {!acorn.Literal|!acorn.JSXExpressionContainer|undefined} */
+/** @const {acorn.Literal|!acorn.JSXExpressionContainer|undefined} */
 acorn.JSXAttribute.prototype.value;
 
 /**
@@ -75,7 +75,7 @@ acorn.JSXAttribute.prototype.value;
  */
 acorn.JSXExpressionContainer = function () { };
 
-/** @const {!acorn.Node} */
+/** @const {acorn.Node} */
 acorn.JSXExpressionContainer.prototype.expression;
 
 /**
@@ -95,13 +95,13 @@ acorn.JSXText.prototype.value;
  */
 acorn.JSXFragment = function () { };
 
-/** @const {!acorn.JSXOpeningFragment} */
+/** @const {acorn.JSXOpeningFragment} */
 acorn.JSXFragment.prototype.openingFragment;
 
-/** @const {!acorn.JSXClosingFragment} */
+/** @const {acorn.JSXClosingFragment} */
 acorn.JSXFragment.prototype.closingFragment;
 
-/** @const {!Array<!acorn.Node>} */
+/** @const {Array<!acorn.Node>} */
 acorn.JSXFragment.prototype.children;
 
 /**

@@ -46,7 +46,7 @@ const errorMessage = (file, node, message) => `Error in ${file}:${node.loc}: ${m
 const getEnum = (file, content, domIdMapper) => {
   /** @const {string} */
   const context = `${splitFullExt(file)[0]}.jsx`;
-  /** @const {!csstree.StyleSheet} */
+  /** @const {csstree.StyleSheet} */
   const ast = csstree.parse(content.replaceAll("/**", "/*!"));
   /** @const {Record<string, string>} */
   const enumEntries = {};

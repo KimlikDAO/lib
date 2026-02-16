@@ -2,7 +2,7 @@ import * as swc from "@swc/core";
 import { compiler as ClosureCompiler } from "google-closure-compiler";
 import { writeFile } from "node:fs/promises";
 import UglifyJS from "uglify-js";
-import { ImportStatement } from "./modules";
+import { ImportStatement } from "./util/modules";
 import { tweakPasses } from "./passes";
 import { postprocess } from "./postprocess";
 import { preprocessAndIsolate } from "./preprocess";
@@ -12,14 +12,14 @@ const Params = {};
 
 /**
  * @param {Params} params
- * @param {function(string[]):Promise<boolean>=} checkFreshFn
- * @param {function(string,string,boolean=):?string=} transpileFn
- * @return {Promise<string|void>}
+ * @param {(string[]) => Promise<boolean>=} checkFreshFn
+ * @param {(content: string, file: string, isEntry: boolean=) => string | null=} transpileFn
+ * @return {Promise<string | null>}
  */
 const compile = async (params, checkFreshFn, transpileFn) => {
   const {
-    /** @const {!Map<string, ImportStatement>} */ unlinkedImports,
-    /** @const {!Set<string>} */ allFiles,
+    /** @const {Map<string, ImportStatement>} */ unlinkedImports,
+    /** @const {Set<string>} */ allFiles,
     /** @const {string} */ isolateDir,
     /** @const {boolean} */ ignoreUnusedLocals
   } = await preprocessAndIsolate(params, transpileFn);
@@ -44,7 +44,7 @@ const compile = async (params, checkFreshFn, transpileFn) => {
   if (ignoreUnusedLocals)
     jsCompErrors.shift();
 
-  /** @const {!Object<string, string|boolean|string[]>} */
+  /** @const {Object<string, string|boolean|string[]>} */
   const options = {
     "js": allFilesArray,
     "compilation_level": "ADVANCED",

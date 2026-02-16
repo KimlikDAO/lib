@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { transpile, pathToNamespace } from "../declaration";
+import { pathToNamespace, transpileDeclaration as transpile } from "../declaration";
 
 test("pathToNamespace should convert file paths to namespace names", () => {
   expect(pathToNamespace("api/jsonrpc.d.ts")).toBe("namespace$$api$jsonrpc");

@@ -154,7 +154,7 @@ const serverMpa = async (mpaConfigFile, buildMode) => {
 const serveCrate = async (crateName, buildMode) => {
   setupKastro(buildMode);
   const crate = await import(crateName);
-  /** @const {!Object<string, PageTarget>} */
+  /** @const {Record<string, PageTarget>} */
   const map = crates.getPageTargets(crate, buildMode);
 
   let currentPageProps;
@@ -245,7 +245,7 @@ const buildCrate = async (crateName, buildMode, lang) => {
   }
   // If a language is specified, build each page for that language.
   setupKastro();
-  /** @const {!Object<string, PageTarget>} */
+  /** @const {Object<string, PageTarget>} */
   const map = crates.getPageTargets(crate, buildMode, lang);
 
   for (const page of Object.values(map)) {

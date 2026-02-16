@@ -1,8 +1,8 @@
 import { parse } from "acorn";
 import { simple } from "acorn-walk";
 import { generate } from "astring";
-import { ImportStatement, writeImportStatement } from "./modules";
-import { Update, update } from "./textual";
+import { ImportStatement, writeImportStatement } from "./util/modules";
+import { Update, update } from "./util/textual";
 
 const generateImports = (imports) => {
   const entries = Array.from(imports.entries());
@@ -17,7 +17,7 @@ const generateImports = (imports) => {
  * @param {Map<string, ImportStatement>} missingImports
  */
 const postprocess = (content, missingImports) => {
-  /** @const {!acorn.Program} */
+  /** @const {acorn.Program} */
   const ast = parse(content, {
     ecmaVersion: "latest",
     sourceType: "module"

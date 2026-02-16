@@ -76,7 +76,7 @@ const collectTypes = (ast, importer) => {
  * @param {string} sourcePath The source path of the TypeScript declaration file
  * @return {string} The transpiled content
  */
-const transpile = (content, sourcePath) => {
+const transpileDeclaration = (content, sourcePath) => {
   const ast = TsParser.parse(content, {
     sourceType: "module",
     ecmaVersion: "latest",
@@ -540,5 +540,5 @@ const generatePlaceholder = (content) => {
 export {
   generatePlaceholder,
   pathToNamespace,
-  transpile
+  transpileDeclaration
 };

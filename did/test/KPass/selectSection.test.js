@@ -27,7 +27,7 @@ describe("Select encrypted section tests", () => {
   const check = (sections, expected) => {
     /** @const {string[]} */
     const selected = selectEncryptedSections(encryptedSectionsKeys, sections);
-    /** @const {!Set<string>} */
+    /** @const {Set<string>} */
     const expectSet = new Set(expected);
     /** @const {boolean} */
     const equal = selected.length == expectSet.size && selected.every((x) => expectSet.has(x));
