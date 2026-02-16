@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import { Client } from "mina-signer";
-import { parsePrivateKey, Signature } from "../../../mina/mina";
+import { parsePrivateKey } from "../../../mina/mina";
+import { Signature } from "../../../mina/signature";
 import { G, signFields, verifyFields } from "../../minaSchnorr";
 
 test("sign with mina-signer, verify with ours", () => {

@@ -65,43 +65,6 @@ PublicKey.prototype.serializeInto = function (buff) {
 const parsePrivateKey = (privateKey) =>
   bigints.fromBytesLE(base58.toBytes(privateKey).subarray(2, 34));
 
-/**
- * @constructor
- * @struct
- * @param {bigint} r
- * @param {bigint} s
- */
-function Signature(r, s) {
-  /** @const {bigint} */
-  this.r = r;
-  /** @const {bigint} */
-  this.s = s;
-}
-
-/**
- * @param {string} sig
- * @return {Signature}
- */
-Signature.fromBase58 = function (sig) {
-  /** @const {Uint8Array} */
-  const bytes = base58.toBytes(sig);
-  return new Signature(
-    bigints.fromBytesLE(bytes.subarray(2, 34)),
-    bigints.fromBytesLE(bytes.subarray(34, 66))
-  );
-}
-
-/** @return {string} */
-Signature.prototype.toBase58 = function () {
-  /** @const {Uint8Array} */
-  const buff = new Uint8Array(70);
-  buff[0] = 154;
-  buff[1] = 1;
-  bigints.intoBytesLE(buff.subarray(2), this.r);
-  bigints.intoBytesLE(buff.subarray(34), this.s);
-  addChecksum(buff);
-  return base58.from(buff);
-}
 
 /**
  * @param {Uint8Array} buff bytes array of which the last 4 bytes will be
@@ -141,7 +104,7 @@ const addChecksum = (buff) => {
 }
 
 export {
+  addChecksum,
   parsePrivateKey,
   PublicKey,
-  Signature
 };

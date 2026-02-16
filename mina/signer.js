@@ -7,7 +7,8 @@ import {
   verifyFields as verifyFieldsUnpacked,
   verifyMessage as verifyMessageUnpacked
 } from "../crypto/minaSchnorr";
-import { PublicKey, Signature } from "./mina";
+import { PublicKey } from "./mina";
+import { Signature } from "./signature";
 import { SignerSignature } from "./signature.d";
 
 /**
