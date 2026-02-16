@@ -1,19 +1,24 @@
+import { Provider as EthereumProvider } from "../ethereum/provider";
+import { Provider as MinaProvider } from "../mina/provider.d";
 import { ChainId } from "./chains";
 import { Signer } from "./signer";
+
+/** @typedef {MinaProvider | EthereumProvider} */
+const Provider = {};
 
 /**
  * @interface
  */
-class Provider extends Signer {
+class WalletConnector extends Signer {
 	/**
 	 * @return {boolean}
 	 */
 	isInitialized() { }
 
 	/**
-	 * @param {any} nativeProvider
+	 * @param {Provider} provider
 	 */
-	setNativeProvider(nativeProvider) { }
+	setProvider(provider) { }
 
 	/**
 	 * @return {string}
@@ -45,11 +50,6 @@ class Provider extends Signer {
 	 * @return {boolean}
 	 */
 	isChainSupported(chain) { }
-
-	/**
-	 * @type {any}
-	 */
-	nativeProvider;
 }
 
-export { Provider };
+export { Provider, WalletConnector };

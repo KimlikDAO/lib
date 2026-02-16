@@ -8,7 +8,7 @@ import {
   verifyMessage as verifyMessageUnpacked
 } from "../crypto/minaSchnorr";
 import { PublicKey } from "./mina";
-import { Signature } from "./signature";
+import signature from "./signature";
 import { SignerSignature } from "./signature.d";
 
 /**
@@ -34,7 +34,7 @@ const signFields = (fields, privKey) => {
   const { r, s } = signFieldsUnpacked(fields, privKey, X);
   return /** @type {SignerSignature} */({
     signer: PublicKey.fromPoint(X).toBase58(),
-    signature: new Signature(r, s).toBase58()
+    signature: signature.fromUnpacked({ r, s })
   });
 }
 
@@ -44,7 +44,7 @@ const signFields = (fields, privKey) => {
  * @return {boolean}
  */
 const verifyFields = (fields, sig) => {
-  const { r, s } = Signature.fromBase58(sig.signature);
+  const { r, s } = signature.toUnpacked(sig.signature);
   /** @const {Point} */
   const X = PublicKey.fromBase58(sig.signer).toPoint();
   return verifyFieldsUnpacked(fields, r, s, X);
@@ -61,7 +61,7 @@ const signMessage = (message, privKey) => {
   const { r, s } = signMessageUnpacked(message, privKey, X);
   return /** @type {SignerSignature} */({
     signer: PublicKey.fromPoint(X).toBase58(),
-    signature: new Signature(r, s).toBase58()
+    signature: signature.fromUnpacked({ r, s })
   });
 }
 
@@ -71,7 +71,7 @@ const signMessage = (message, privKey) => {
  * @return {boolean}
  */
 const verifyMessage = (message, sig) => {
-  const { r, s } = Signature.fromBase58(sig.signature);
+  const { r, s } = signature.toUnpacked(sig.signature);
   /** @const {Point} */
   const X = PublicKey.fromBase58(sig.signer).toPoint();
   return verifyMessageUnpacked(message, r, s, X);

@@ -1,7 +1,8 @@
+type Signature = string;
 
 interface SignerSignature {
   signer: string;
-  signature: string
+  signature: Signature
 };
 
-export { SignerSignature };
+export { Signature, SignerSignature };
