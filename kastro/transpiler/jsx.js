@@ -383,7 +383,7 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
     /** @const {RegExp} */
     const TypePattern = /{[^}]+}/g;
     /** @const {RegExp} */
-    const IdentPattern = /[^!?,|<>{}\s:()*=]+/g;
+    const IdentPattern = /[^!?,|<>{}\s:()*=\[\]]+/g;
     for (const comment of comments) {
       /** @const {string} */
       const text = comment.value;

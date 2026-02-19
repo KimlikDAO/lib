@@ -1,4 +1,4 @@
-import "../../did/section.d";
+import { DecryptedSections } from "../../did/section.d";
 import { SeedNodes } from "../network/network";
 
 /** @enum {number} */
@@ -28,7 +28,7 @@ const getPDFCommitment = (commitmentPow) => fetch(`//${SeedNodes[0]}/edevlet/nko
  * @param {FormData} pdfFormData
  * @param {number} clientTime
  * @param {number} numSigners
- * @return {Promise<did.DecryptedSections[]>}
+ * @return {Promise<DecryptedSections[]>}
  */
 const getCredentialsFromPDF = (commitmentPow, pdfFormData, clientTime, numSigners) =>
   Promise.allSettled(SeedNodes
@@ -40,7 +40,7 @@ const getCredentialsFromPDF = (commitmentPow, pdfFormData, clientTime, numSigner
       }).then((/** @type {Response} */ res) => res.json()
         .then((data) => res.ok && data ? data : Promise.reject(data))
       ))
-  ).then((/** @type {Promise.AllSettledResultElement<did.DecryptedSections>[]} */
+  ).then((/** @type {Promise.AllSettledResultElement<DecryptedSections>[]} */
     results) => results
       .filter((result) => result.status == "fulfilled")
       .map((result) => result.value)

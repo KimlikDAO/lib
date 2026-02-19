@@ -42,19 +42,18 @@ interface AddChainParam {
   };
   readonly rpcUrls: string[];
   readonly blockExplorerUrls: string[];
-}
-
-interface WatchAssetParamOptions {
-  readonly address: string;
-  readonly symbol: string;
-  readonly decimals: number;
-  readonly image: string;
-  readonly tokenId: string;
+  readonly iconUrls?: string[];
 }
 
 interface WatchAssetParam {
   readonly type: string;
-  readonly options: WatchAssetParamOptions;
+  readonly options: {
+    address: string;
+    symbol: string;
+    decimals: number;
+    image: string;
+    tokenId: string;
+  };
 }
 
 interface EIP6963ProviderInfo {
@@ -78,6 +77,5 @@ export {
   ProviderRpcError,
   RequestArguments,
   SwitchChainParam,
-  WatchAssetParam,
-  WatchAssetParamOptions,
+  WatchAssetParam
 };

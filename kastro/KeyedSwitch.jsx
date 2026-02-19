@@ -4,17 +4,17 @@ import dom from "../util/dom";
  * @constructor
  * @param {{
  *   id: string,
- *   initialPane: (string | undefined),
- *   children: !Array<?function():void>,
- *   keyToIndex: !Object<string, number>,
+ *   initialPane?: string,
+ *   children: (null | () => void)[],
+ *   keyToIndex: Record<string, number>
  * }} props
  */
 const KeyedSwitch = function ({ id, initialPane, children, keyToIndex }) {
   /** @type {number} */
   this.selectedPane = dom.GEN ? 0 : initialPane ? keyToIndex[initialPane] : 0;
-  /** @const {Array<?function():void>} */
+  /** @const {(null | () => void)[]} */
   this.initializers = children;
-  /** @const {Object<string, number>} */
+  /** @const {Record<string, number>} */
   this.keyToIndex = keyToIndex;
   /** @const {HTMLDivElement} */
   const Root = dom.div(id);
@@ -43,7 +43,7 @@ KeyedSwitch.prototype.showPane = function (key) {
   /** @const {number} */
   const old = this.selectedPane;
   if (idx == old) return;
-  /** @const {?function():void} */
+  /** @const {null | () => void} */
   const f = this.initializers[idx];
   if (f) {
     f();

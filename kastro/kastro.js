@@ -248,10 +248,11 @@ const buildCrate = async (crateName, buildMode, lang) => {
   /** @const {Object<string, PageTarget>} */
   const map = crates.getPageTargets(crate, buildMode, lang);
 
-  for (const page of Object.values(map)) {
-    console.info(`${Blue}[Building]${Clear} Page ${page.bundleName}`);
-    await compiler.bundleTarget(page.targetName, page);
-  }
+  for (const page of Object.values(map))
+    if (["en", "mint"].includes(page.bundleName)) {
+      console.info(`${Blue}[Building]${Clear} Page ${page.bundleName}`);
+      await compiler.bundleTarget(page.targetName, page);
+    }
 }
 
 /**
