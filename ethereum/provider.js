@@ -4,7 +4,38 @@ import { WideSignature } from "./signature.d";
 import { serialize, TransactionRequest } from "./transaction";
 import { TransactionHash } from "./transaction.d";
 
+/** @interface */
 class Provider {
+  /**
+   * @param {TransactionRequest} txRequest
+   * @return {Promise<string>}
+   */
+  read(txRequest) { }
+
+  /**
+   * @param {TransactionRequest} txRequest
+   * @return {Promise<TransactionHash>}
+   */
+  write(txRequest) { }
+
+  /**
+   * @param {TransactionHash} txHash
+   * @param {() => void} then
+   */
+  whenWritten(txHash, then) { }
+
+  /**
+   * @param {Address} address
+   * @param {Object} typedData EIP-712 typed data
+   * @return {Promise<WideSignature>}
+   */
+  signData(address, typedData) { }
+}
+
+/**
+ * @implements {Provider}
+ */
+class RemoteProvider {
   /**
    * @param {(params: RequestArguments) => Promise<unknown>} request
    */
@@ -75,4 +106,4 @@ class Provider {
   }
 }
 
-export { Provider };
+export { Provider, RemoteProvider };

@@ -1,6 +1,6 @@
 import { ChainId } from "../../crosschain/chains";
 import abi from "../abi";
-import { Provider as ProviderType } from "../provider";
+import { Provider as IProvider, RemoteProvider } from "../provider";
 import { Tokens } from "./tokens";
 
 /** @const {string} */
@@ -9,11 +9,11 @@ const KPASS = "0xcCc0a9b023177549fcf26c947edb5bfD9B230cCc";
 const MILLION = 1_000_000;
 /** @const {bigint} */
 const TRILLION = 10n ** 12n;
-/** @type {ProviderType} */
-let Provider = new ProviderType(() => Promise.resolve(""));
+/** @type {IProvider} */
+let Provider = new RemoteProvider(() => Promise.resolve(""));
 
 /**
- * @param {ProviderType} provider
+ * @param {IProvider} provider
  */
 const setProvider = (provider) => Provider = provider;
 
