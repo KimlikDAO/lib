@@ -1,7 +1,7 @@
 import { Signer } from "../crosschain/signer";
 import { decrypt, encrypt } from "../crosschain/unlockable";
 import { Unlockable } from "../crosschain/unlockable.d";
-import { ERC721MetaData, ERC721Unlockable } from "../ethereum/ERC721.d";
+import { ERC721MetaData, ERC721Unlockable } from "../ethereum/contract/ERC721.d";
 import { wait } from "../util/promises";
 import { hash } from "./section";
 import { DecryptedSections, PersonInfo, Section } from "./section.d";

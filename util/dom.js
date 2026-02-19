@@ -7,6 +7,11 @@ const GEN = true;
 const Lang = LangCode.EN;
 
 /**
+ * @const {boolean}
+ */
+const IsChrome = navigator.userAgent.toLowerCase().includes("chrome");
+
+/**
  * @nosideeffects
  * @template T
  * @param {Record<LangCode, T>} i18ned
@@ -259,6 +264,7 @@ const run = (f) => (GEN && globalThis["GEN"]) ? {} : f();
 export default {
   GEN,
   Lang,
+  IsChrome,
   // Elements
   a,
   button,

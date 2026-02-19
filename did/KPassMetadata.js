@@ -1,5 +1,5 @@
 import { ChainId } from "../crosschain/chains";
-import { ERC721MetaData } from "../ethereum/ERC721.d";
+import { ERC721MetaData } from "../ethereum/contract/ERC721.d";
 import KPass from "../ethereum/KPassLite";
 import dom from "../util/dom";
 import hex from "../util/hex";

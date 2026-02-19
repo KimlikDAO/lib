@@ -1,8 +1,8 @@
 import { describe, expect, it } from "bun:test";
 import { ethers } from "ethers";
-import { ChainId } from "../../crosschain/chains";
-import { Tokens, TokenCode } from "../tokens";
+import { ChainId } from "../../../crosschain/chains";
 import { ERC20Permit } from "../ERC20";
+import { TokenCode, Tokens } from "../tokens";
 
 /**
  * Compute EIP-712 domain separator for an ERC20Permit token and compare to golden.

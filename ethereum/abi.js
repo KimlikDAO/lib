@@ -1,11 +1,16 @@
-import addr from "./address";
 import { Address } from "./address.d";
 
 /**
- * @param {Address} address Ethereum address
+ * @param {Address} addr Ethereum address
  * @return {string} The address formatted for calldata.
  */
-const address = (address) => "0".repeat(24) + addr.pack(address);
+const address = (addr) => "0".repeat(24) + addr.slice(2);
+
+/**
+ * @param {Address} addr Ethereum address
+ * @return {string} The address formatted as abi.encodePacked(address).
+ */
+const packedAddress = (addr) => addr.slice(2);
 
 /**
  * @param {number | bigint} num
@@ -40,8 +45,9 @@ const Uint256Max = /** @pureOrBreakMyCode */("f".repeat(64));
 
 export default {
   address,
-  isZero,
   isNonzero,
+  isZero,
+  packedAddress,
   uint160,
   uint256,
   uint64,

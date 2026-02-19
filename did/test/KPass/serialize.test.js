@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { MockSigner } from "../../../crosschain/mock/signer";
 import { Signer } from "../../../crosschain/signer";
-import { ERC721MetaData, ERC721Unlockable } from "../../../ethereum/ERC721.d";
+import { ERC721MetaData, ERC721Unlockable } from "../../../ethereum/contract/ERC721.d";
 import { addr as evmAddr } from "../../../ethereum/mock/signer";
 import { SectionGroup, fromUnlockableNFT, toUnlockableNFT } from "../../KPass";
 import { ContactInfo, DecryptedSections, PersonInfo } from "../../section.d";

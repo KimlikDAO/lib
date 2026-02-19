@@ -69,14 +69,7 @@ const isValid = (address) => {
   return true;
 }
 
-/**
- * @param {Address} address 
- * @return {PackedAddress}
- */
-const pack = (address) => address.slice(2).toLowerCase();
-
 export default {
   validate,
   isValid,
-  pack,
 };

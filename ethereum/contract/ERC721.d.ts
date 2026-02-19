@@ -5,7 +5,7 @@
  * @author KimlikDAO
  */
 
-import { Unlockable } from "../crosschain/unlockable.d";
+import { Unlockable } from "../../crosschain/unlockable";
 
 interface ERC721MetaData {
   readonly name: string;

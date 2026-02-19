@@ -1,4 +1,4 @@
-import { Provider as EthereumProvider } from "../ethereum/provider";
+import { EIP1193Provider as EthereumProvider } from "../ethereum/provider.d";
 import { Provider as MinaProvider } from "../mina/provider.d";
 import { ChainId } from "./chains";
 import { Signer } from "./signer";

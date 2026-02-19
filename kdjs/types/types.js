@@ -273,7 +273,7 @@ class GenericType extends Type {
     const modifiers = bare ? 0 : this.modifiers;
 
     // Build base expression
-    const typeName = this.name === "Record" ? "Object" : this.name;
+    const typeName = this.name == "Record" ? "Object" : this.name;
     const typeParams = this.params.map(p => p.toClosureExpr()).join(",");
     let expr = `${typeName}<${typeParams}>`;
     if (!(modifiers & Modifier.Nullable))
