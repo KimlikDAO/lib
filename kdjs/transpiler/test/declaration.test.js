@@ -1,4 +1,4 @@
-import { expect, test } from "bun:test";
+import { describe, expect, it, test } from "bun:test";
 import { pathToNamespace, transpileDeclaration as transpile } from "../declaration";
 
 test("pathToNamespace should convert file paths to namespace names", () => {
@@ -7,13 +7,45 @@ test("pathToNamespace should convert file paths to namespace names", () => {
   expect(pathToNamespace("lib/mina/provider.d.ts")).toBe("namespace$$lib$mina$provider");
 });
 
+describe("typedefs", () => {
+  it("handles simple typedefs", () => {
+    const input = `
+type Address = string;
+export { Address };
+`
+    const expected = `/** @externs */
+/** @const */
+const namespace$$address = {};
+
+/** @typedef {string} */
+namespace$$address.Address;
+
+`;
+  const result = transpile(input, "address.d.ts");
+  expect(result).toBe(expected);
+  });
+
+  it("promotes literal types to containing type", () => {
+    const input = `
+type Color = "red" | "green" | "blue";
+export { Color };
+`
+    const expected = `/** @externs */
+/** @const */
+const namespace$$color = {};
+
+/** @typedef {string|string|string} */
+namespace$$color.Color;
+
+`;
+    const result = transpile(input, "color.d.ts");
+    expect(result).toBe(expected);
+  });
+}); 
+
 test("should transpile a simple interface", () => {
   // Input TypeScript declaration
   const input = `
-/**
- * @fileoverview Simple interface for testing.
- */
-
 interface Request {
   readonly jsonrpc: string;
   readonly method: string;
@@ -48,7 +80,7 @@ namespace$$api$jsonrpc.Request.prototype.jsonrpc;
 /** @const {string} */
 namespace$$api$jsonrpc.Request.prototype.method;
 
-/** @const {!Array<*>} */
+/** @const {unknown[]} */
 namespace$$api$jsonrpc.Request.prototype.params;
 
 /** @const {number|string} */
@@ -63,10 +95,10 @@ namespace$$api$jsonrpc.Response = function() {};
 /** @const {string} */
 namespace$$api$jsonrpc.Response.prototype.jsonrpc;
 
-/** @const {*} */
+/** @const {unknown} */
 namespace$$api$jsonrpc.Response.prototype.result;
 
-/** @const {*} */
+/** @const {unknown} */
 namespace$$api$jsonrpc.Response.prototype.error;
 
 /** @const {number|string} */
@@ -107,13 +139,13 @@ namespace$$api$client.ApiClient = function() {};
 
 /**
  * @param {string} token
- * @return {!Promise<!namespace$$auth$auth.User>}
+ * @return {Promise<namespace$$auth$auth.User>}
  */
 namespace$$api$client.ApiClient.prototype.authenticate = function(token) {};
 
 /**
- * @param {!namespace$$ethereum$provider.Transaction} tx
- * @return {!Promise<string>}
+ * @param {namespace$$ethereum$provider.Transaction} tx
+ * @return {Promise<string>}
  */
 namespace$$api$client.ApiClient.prototype.sendTransaction = function(tx) {};
 

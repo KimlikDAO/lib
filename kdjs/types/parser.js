@@ -118,8 +118,8 @@ class Parser {
     for (; i < this.input.length; ++i) {
       const ch = this.input.charCodeAt(i);
       if (!((ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122) ||
-            (ch > 127) ||
-            (ch >= 48 && ch <= 57) || ch == 95 || ch == 36 || ch == 46))
+        (ch > 127) ||
+        (ch >= 48 && ch <= 57) || ch == 95 || ch == 36 || ch == 46))
         break;
     }
     if (i == this.pos)
@@ -211,21 +211,22 @@ class Parser {
   parseStructType() {
     const members = {};
     this.expectChar("{".charCodeAt(0));
-    if (!this.testChar("}".charCodeAt(0)))
-      for (; ;) {
-        const propName = this.readIdentifier();
-        let isOptional = propName.endsWith("$") || this.testChar("?".charCodeAt(0));
-        this.expectChar(":".charCodeAt(0));
-        const propType = this.parseType();
-        isOptional ||= this.testChar("=".charCodeAt(0));
+    for (; ;) {
+      if (this.testChar("}".charCodeAt(0)))
+        break;
+      const propName = this.readIdentifier();
+      let isOptional = propName.endsWith("$") || this.testChar("?".charCodeAt(0));
+      this.expectChar(":".charCodeAt(0));
+      const propType = this.parseType();
+      isOptional ||= this.testChar("=".charCodeAt(0));
 
-        if (isOptional)
-          propType.modifiers |= Modifier.Optional;
-        members[propName] = propType;
+      if (isOptional)
+        propType.modifiers |= Modifier.Optional;
+      members[propName] = propType;
 
-        if (this.expectEitherChar(",".charCodeAt(0), "}".charCodeAt(0)))
-          break;
-      }
+      if (this.expectEitherChar(",".charCodeAt(0), "}".charCodeAt(0)))
+        break;
+    }
     return new StructType(members);
   }
 
@@ -263,7 +264,7 @@ class Parser {
       if (this.pos >= this.input.length)
         break;
 
-      switch(this.input.charCodeAt(this.pos)) {
+      switch (this.input.charCodeAt(this.pos)) {
         case "(".charCodeAt(0):
           if (this.detectFunctionType())
             type = this.parseFunctionType();
@@ -280,7 +281,7 @@ class Parser {
           type = this.parseConstructorType();
           if (type)
             break;
-          // fallthrough
+        // fallthrough
         default:
           type = this.parseNamedType();
       }

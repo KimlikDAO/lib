@@ -389,10 +389,12 @@ const getTypeText = (typeNode, imports, topLevel = true) => {
       return "number";
     case "TSBooleanKeyword":
       return "boolean";
+    case "TSBigIntKeyword":
+      return "bigint";
     case "TSAnyKeyword":
-      return "?"; // TypeScript 'any' maps to GCC '?'
+      return "any";
     case "TSUnknownKeyword":
-      return "*"; // TypeScript 'unknown' maps to GCC '*'
+      return "unknown";
     case "TSVoidKeyword":
       return "void";
     case "TSNullKeyword":
@@ -402,7 +404,7 @@ const getTypeText = (typeNode, imports, topLevel = true) => {
     case "TSObjectKeyword":
       return "Object";
     case "TSArrayType":
-      return `!Array<${getTypeText(typeNode.elementType, imports)}>`;
+      return `${getTypeText(typeNode.elementType, imports)}[]`;
     case "TSTypeReference": {
       // Handle type references (e.g., interfaces, type aliases)
       let baseType;
@@ -412,19 +414,15 @@ const getTypeText = (typeNode, imports, topLevel = true) => {
         baseType = resolveTypeName(typeNode.typeName.name, imports);
       }
 
-      // Closure has no Record<K,V>; use Object
-      if (baseType === "Record")
-        return "!Object";
-
       // Handle type parameters (generics)
       if (typeNode.typeParameters && typeNode.typeParameters.params.length > 0) {
         const typeParams = typeNode.typeParameters.params
           .map(param => getTypeText(param, imports))
           .join(", ");
-        return `!${baseType}<${typeParams}>`;
+        return `${baseType}<${typeParams}>`;
       }
 
-      return `!${baseType}`;
+      return `${baseType}`;
     }
     case "TSUnionType": {
       const types = typeNode.types.map(t =>
@@ -433,37 +431,32 @@ const getTypeText = (typeNode, imports, topLevel = true) => {
       return topLevel ? types : `(${types})`;
     }
     case "TSLiteralType":
-      if (typeNode.literal.type === "StringLiteral") {
-        return `"${typeNode.literal.value}"`;
-      } else if (typeNode.literal.type === "NumericLiteral") {
-        return typeNode.literal.value.toString();
-      } else if (typeNode.literal.type === "BooleanLiteral") {
-        return typeNode.literal.value.toString();
-      }
-      return "*";
+      return typeof typeNode.literal.value;
+    case "TSTypeLiteral": {
+      const members = typeNode.members || [];
+      const parts = members.map(member => {
+        if (member.type !== "TSPropertySignature") return "";
+        const key = member.key?.name ?? member.key?.value ?? "";
+        const type = getTypeText(member.typeAnnotation?.typeAnnotation, imports)
+        const optional = member.optional ? "?" : "";
+        return key ? `${key}${optional}: ${type}` : "";
+      }).filter(Boolean);
+      return `{ ${parts.join(", ")} }`;
+    }
     case "TSFunctionType": {
-      // Process function parameters
       const params = typeNode.parameters || [];
-      const paramTypes = params.map(param => {
-        let type = param.typeAnnotation ?
-          getTypeText(param.typeAnnotation.typeAnnotation, imports) :
-          "*";
-        if (param.optional)
-          type += "=";
-        return type;
+      const paramParts = params.map(param => {
+        const name = param.name ? (param.name.name ?? param.name) : "";
+        let type = getTypeText(param.typeAnnotation?.typeAnnotation, imports)
+        const optional = param.optional ? "?" : "";
+        return name ? `${name}${optional}: ${type}` : type + (param.optional ? "=" : "");
       });
 
-      // Process return type
-      let returnType = typeNode.typeAnnotation ?
-        getTypeText(typeNode.typeAnnotation.typeAnnotation, imports) :
-        "*";
-      returnType = returnType == "void" ? "" : ": " + returnType;
-
-      // Format as function(param1Type, param2Type): returnType
-      return `function(${paramTypes.join(", ")})${returnType}`;
+      let returnType = getTypeText(typeNode.typeAnnotation?.typeAnnotation, imports);
+      return `(${paramParts.join(", ")}) => ${returnType}`;
     }
     default:
-      return "*";
+      return "unknown";
   }
 };
 

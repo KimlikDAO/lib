@@ -28,7 +28,7 @@ interface Section {
    * This piece of data is never sent to the signer nodes so that the signers
    * can never associate a person info to a wallet address.
    */
-  readonly commitmentR: string;
+  commitmentR: string;
 
   /**
    * The aggregated bls12-381 signature from various signer nodes.

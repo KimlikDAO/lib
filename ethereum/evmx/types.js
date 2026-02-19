@@ -26,7 +26,7 @@ const byteLength = (ops) => {
  * evm.bytes (Uint8Array).
  *
  * @param {Ops} ops
- * @return {!OpData}
+ * @return {OpData}
  */
 const toOpData = (ops) => {
   /** @const {evm.bytes} */
@@ -49,7 +49,7 @@ const toOpData = (ops) => {
 
 /**
  * @param {evm.address} addr
- * @return {!OpData}
+ * @return {OpData}
  */
 const address = (addr) => {
   if (addr.startsWith("0x")) addr = addr.slice(2);
@@ -59,7 +59,7 @@ const address = (addr) => {
 
 /**
  * @param {evm.address} addr
- * @return {!OpData}
+ * @return {OpData}
  */
 const pushAddress = (addr) => {
   /** @const {Uint8Array} */
@@ -71,7 +71,7 @@ const pushAddress = (addr) => {
 
 /**
  * @param {bigint|number} n
- * @return {!OpData}
+ * @return {OpData}
  */
 const pushNumber = (n) => {
   if (n == 0) return new OpData([Op.PUSH0]);
@@ -88,7 +88,7 @@ const pushNumber = (n) => {
 
 /**
  * @param {evm.bytes} bytes
- * @return {!OpData}
+ * @return {OpData}
  */
 const pushBytes = (bytes) => {
   if (bytes.length == 0 || bytes.length == 1 && bytes[0] == 0)

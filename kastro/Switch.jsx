@@ -35,7 +35,7 @@ Switch.prototype.showPane = function (idx) {
   /** @const {number} */
   const old = this.selectedPane;
   if (idx == old) return;
-  /** @const {() => void | null} */
+  /** @const {(() => void) | null} */
   const f = this.initializers[idx];
   if (f) {
     f();

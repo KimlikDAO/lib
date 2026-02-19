@@ -347,6 +347,15 @@ describe("Structs", () => {
     expect(age.name).toBe(PrimitiveTypeName.Number);
   });
 
+  it("parses with trailing comma", () => {
+    const struct = /** @type {StructType} */(parseType("{name: string, age: number,}"));
+    expect(struct).toBeInstanceOf(StructType);
+    expect(struct.members["name"]).toBeInstanceOf(PrimitiveType);
+    expect(struct.members["name"].name).toBe(PrimitiveTypeName.String);
+    expect(struct.members["age"]).toBeInstanceOf(PrimitiveType);
+    expect(struct.members["age"].name).toBe(PrimitiveTypeName.Number);
+  });
+
   it("parses multi-line complex structs", () => {
     const complexStruct = /** @type {StructType} */(parseType(`{
      *   promise: () => Promise<unknown>,

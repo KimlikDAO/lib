@@ -1,12 +1,10 @@
 import { ChainId } from "../../crosschain/chains";
-import KPass from "../KPassLite";
 import abi from "../abi";
 import { Provider as ProviderType } from "../provider";
+import { Tokens } from "./tokens";
 
 /** @const {string} */
 const KPASS = "0xcCc0a9b023177549fcf26c947edb5bfD9B230cCc";
-/** @const {string} */
-const REVOKER_ASSIGNMENT = "0x4e686c76ade52af6305355f15cc098a1ca686d24a8c183f14896632bc8b27c5f";
 /** @const {number} */
 const MILLION = 1_000_000;
 /** @const {bigint} */
@@ -113,28 +111,6 @@ const revokeFriend = (chainId, address, friend) =>
   });
 
 /**
- * Returns the list of addresses that can be revoked by `revoker`.
- *
- * @param {ChainId} chainId
- * @param {string} revoker
- * @return {Promise<{ topics: string[] }[]>}
- */
-const getRevokeeAddresses = (chainId, revoker) =>
-  Provider.request(/** @type {eth.Request} */({
-    method: "eth_getLogs",
-    params: [/** @type {eth.GetLogs} */({
-      address: KPass.getAddress(chainId),
-      fromBlock: "0x12A3AE7",
-      toBlock: "0x12A3AE7",
-      topics: [
-        REVOKER_ASSIGNMENT,
-        [],
-        "0x000000000000000000000000c152e02e54cbeacb51785c174994c2084bd9ef51", // FIXME: revoker
-      ]
-    })]
-  }))
-
-/**
  * @param {ChainId} chainId
  * @param {string} address
  * @param {string} cid
@@ -220,7 +196,7 @@ const createWithRevokersWithTokenPermit = (chainId, address, cid, revokeThreshol
  */
 const createWithRevokersWithTokenPayment = (chainId, address, cid, revokeThreshold, revokers, token) => {
   /** @const {string} */
-  const tokenSerialized = abi.uint96(0) + TokenData[chainId][token].adres;
+  const tokenSerialized = abi.uint96(0) + abi.packedAddress(Tokens[chainId][token].contract);
   const data = revokeThreshold == 0
     ? "0xdaca45f7" + cid + tokenSerialized
     : "0x3e36b2f7" + cid + serializeRevokers(revokeThreshold, revokers) + tokenSerialized;
@@ -283,7 +259,6 @@ export default {
   createWithRevokersWithTokenPayment,
   createWithRevokersWithTokenPermit,
   estimateNetworkFee,
-  getRevokeeAddresses,
   handleOf,
   priceIn,
   reduceRevokeThreshold,

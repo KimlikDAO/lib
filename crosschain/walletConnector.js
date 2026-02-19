@@ -40,16 +40,16 @@ class WalletConnector extends Signer {
 	disconnect() { }
 
 	/**
-	 * @param {string} chain
-	 * @return {Promise<void> | void}
+	 * @param {ChainId} chainId
+	 * @return {Promise<unknown> | void}
 	 */
-	switchChain(chain) { }
+	switchChain(chainId) { }
 
 	/**
-	 * @param {ChainId} chain
+	 * @param {ChainId} chainId
 	 * @return {boolean}
 	 */
-	isChainSupported(chain) { }
+	isChainSupported(chainId) { }
 }
 
 export { Provider, WalletConnector };

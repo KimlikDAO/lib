@@ -21,9 +21,9 @@ CfRequest.prototype.cf;
  * The Cloudflare Response object contains this convenience method.
  *
  * @nosideeffects
- * @param {!Object|!Array|number} jsonObj
- * @param {!Object=} options
- * @return {!Response}
+ * @param {Object | Array | number} jsonObj
+ * @param {Object=} options
+ * @return {Response}
  */
 Response.json = function (jsonObj, options) { }
 

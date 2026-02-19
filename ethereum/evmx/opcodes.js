@@ -103,7 +103,7 @@ const Op = {
 const OpData = Uint8Array;
 
 /**
- * @typedef {!Array<Op|OpData>}
+ * @typedef {(Op | OpData)[]}
  */
 const Ops = {};
 

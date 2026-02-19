@@ -20,18 +20,18 @@ csstree.Position;
 csstree.Location;
 
 /**
- * @typedef {?{
- *   prev: ?csstree.ListItem,
- *   next: ?csstree.ListItem,
- *   data: !csstree.CssNode
- * }}
+ * @typedef {{
+ *   prev?: csstree.ListItem,
+ *   next?: csstree.ListItem,
+ *   data: csstree.CssNode
+ * } | undefined}
  */
 csstree.ListItem;
 
 /**
  * @typedef {{
- *   head: ?csstree.ListItem,
- *   tail: ?csstree.ListItem,
+ *   head?: csstree.ListItem,
+ *   tail?: csstree.ListItem
  * }}
  */
 csstree.List;
@@ -75,7 +75,7 @@ csstree.Rule.prototype.prelude;
 
 /**
  * TODO(KimlikDAO-bot): Add other types
- * @typedef {csstree.Selector|csstree.IdSelector|csstree.ClassSelector}
+ * @typedef {csstree.Selector | csstree.IdSelector | csstree.ClassSelector}
  */
 csstree.CssNode;
 
@@ -138,12 +138,12 @@ csstree.Block.prototype.children;
 
 /**
  * @param {string} text
- * @return {!csstree.StyleSheet}
+ * @return {csstree.StyleSheet}
  */
 csstree.parse = (text) => { }
 
 /** 
- * @param {!csstree.Node} ast
+ * @param {csstree.Node} ast
  * @return {string}
  */
 csstree.generate = (ast) => { }

@@ -6,7 +6,7 @@ import { Signature } from "./signature.d";
 /**
  * @param {{
  *   r: bigint,
- *   s: bigint,
+ *   s: bigint
  * }} sig
  * @return {Signature}
  */

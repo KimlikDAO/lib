@@ -6,7 +6,7 @@
  * Ethereum provider interface.
  */
 interface EIP1193Provider {
-  request(params: RequestArguments): Promise<unknown>;
+  request(params: RequestArguments): Promise<string | string[]>;
   on(eventName: string, handler: (event: any) => void): EIP1193Provider;
   removeListener(eventName: string, handler: (event: any) => void): EIP1193Provider;
   removeAllListeners(): EIP1193Provider;

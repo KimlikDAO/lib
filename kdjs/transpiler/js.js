@@ -92,8 +92,8 @@ const transpileJs = (isEntry, file, content, files, globals, unlinkedImports) =>
 
       updates.push({
         beg: comment.start + defineIdx + 2,
-        end: comment.start + defineIdx + 9,
-        put: "@const"
+        end: comment.start + defineIdx + 11,
+        put: "@const {!"
       }, {
         beg: comment.end,
         end: assignmentEnd,
