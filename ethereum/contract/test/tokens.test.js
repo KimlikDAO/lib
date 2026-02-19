@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { ethers } from "ethers";
 import { ChainId } from "../../../crosschain/chains";
-import { ERC20Permit } from "../ERC20";
+import { ERC20Permit } from "../ERC20Permit";
 import { TokenCode, Tokens } from "../tokens";
 
 /**

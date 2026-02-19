@@ -1,5 +1,6 @@
-import { ERC20, ERC20Permit } from "./ERC20";
 import { ChainId } from "../../crosschain/chains";
+import { ERC20 } from "./ERC20";
+import { ERC20Permit } from "./ERC20Permit";
 
 /** @enum {number} */
 const TokenCode = {
@@ -37,4 +38,4 @@ const Tokens = {
   ],
 };
 
-export { Tokens, TokenCode };
+export { TokenCode, Tokens };

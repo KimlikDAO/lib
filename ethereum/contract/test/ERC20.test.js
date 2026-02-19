@@ -1,6 +1,7 @@
 import { expect, it } from "bun:test";
 import { ChainId } from "../../../crosschain/chains";
-import { ERC20, ERC20Permit } from "../ERC20";
+import { ERC20 } from "../ERC20";
+import { ERC20Permit } from "../ERC20Permit";
 
 /**
  * Minimal test: construct ERC20 and ERC20Permit to verify kdjs can compile the module.
