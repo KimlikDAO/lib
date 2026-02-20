@@ -216,7 +216,7 @@ const serveCrate = async (crateName, buildMode) => {
 /**
  * @param {string} crateName
  * @param {compiler.BuildMode} buildMode
- * @param {?LangCode} lang
+ * @param {LangCode | null} lang
  */
 const buildCrate = async (crateName, buildMode, lang) => {
   const crate = await import(crateName);
@@ -245,7 +245,7 @@ const buildCrate = async (crateName, buildMode, lang) => {
   }
   // If a language is specified, build each page for that language.
   setupKastro();
-  /** @const {Object<string, PageTarget>} */
+  /** @const {Record<string, PageTarget>} */
   const map = crates.getPageTargets(crate, buildMode, lang);
 
   for (const page of Object.values(map))

@@ -93,20 +93,28 @@ const addStyleSheet = (shared, target) => (shared ? SharedCss : PageCss).add(tar
 const makeStyleSheet = (fileName, cssContent) => {
   console.log("Making stylesheet for", fileName);
   const { content, enumEntries } = minifyCss(cssContent, fileName);
+  const target = { targetName: "/" + fileName, content };
+  let addedToPage = false;
+  const ensurePageCss = () => {
+    if (!addedToPage) {
+      addStyleSheet(false, target);
+      addedToPage = true;
+    }
+  };
   const Css = new Proxy(Object.assign(
     ({ shared }) => {
-      addStyleSheet(shared, {
-        targetName: "/" + fileName,
-        content
-      });
+      addStyleSheet(shared, target);
       return null;
     },
     enumEntries
   ), {
-    get(target, prop) {
-      if (!(prop in target))
+    get(targetObj, prop) {
+      const value = targetObj[prop];
+      if (typeof value == "string")
+        ensurePageCss();
+      else if (value === undefined)
         console.warn(`StyleSheet: ${prop} is not defined in ${fileName}`);
-      return target[prop];
+      return value;
     }
   });
   return Css;

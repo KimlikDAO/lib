@@ -1,5 +1,3 @@
-
-
 /** @enum {string} */
 const LangCode = {
   EN: "en",
@@ -9,18 +7,32 @@ const LangCode = {
 };
 
 /**
+ * Since {@link dom} fixed the LangCode, {@link dom.i18n()}
+ * will resolve this to a `string`.
+ *
  * @typedef {Record<LangCode, string>}
  */
 const I18nString = {};
 
 /**
+ * Since {@link dom} fixed the LangCode, {@link dom.i18n()}
+ * will resolve this to a `string[]`.
+ *
  * @typedef {Record<LangCode, string[]>}
  */
 const I18nStrings = {};
 
 /**
+ * `Localizable` cannot be resolved at compile time and typically used
+ * only on render time code.
+ *
+ * @typedef {Record<LangCode, string> | string}
+ */
+const Localizable = {};
+
+/**
  * @param {string[]} strings
- * @param {...(I18nString|string)} values
+ * @param {...(Localizable)} values
  * @return {I18nString}
  */
 const i18n = (strings, ...values) => {
@@ -40,7 +52,7 @@ const i18n = (strings, ...values) => {
        * @return {string}
        */
       (acc, str, i) => {
-        /** @const {I18nString | string} */
+        /** @const {Localizable} */
         const value = values[i] || "";
         return acc + str + (typeof value === "object" ? value[lang] : value);
       }, "");
@@ -52,5 +64,6 @@ export {
   I18nString,
   I18nStrings,
   LangCode,
+  Localizable,
   i18n
 };
