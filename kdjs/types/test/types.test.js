@@ -397,6 +397,7 @@ describe("FunctionType", () => {
     const optParamFn = new FunctionType(
       [new PrimitiveType(PrimitiveTypeName.String), new PrimitiveType(PrimitiveTypeName.Number)],
       new PrimitiveType(PrimitiveTypeName.Boolean),
+      false,
       1 // optionalAfter = 1 means params[1] and beyond are optional
     );
     optParamFn.params[1].modifiers = Modifier.Optional;
@@ -420,6 +421,7 @@ describe("FunctionType", () => {
     const method = new FunctionType(
       [new PrimitiveType(PrimitiveTypeName.String)],
       new PrimitiveType(PrimitiveTypeName.Number),
+      false,
       1,
       new InstanceType("MyClass")
     );
@@ -435,6 +437,7 @@ describe("FunctionType", () => {
       })
     ],
       new GenericType("Array", [new PrimitiveType(PrimitiveTypeName.String)]),
+      false,
       1
     );
     complexFn.params[1].modifiers = Modifier.Optional;

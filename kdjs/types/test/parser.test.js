@@ -486,6 +486,23 @@ describe("Functions", () => {
     expect(returnType.name).toBe("Promise");
     expect(returnType.params.length).toBe(1);
   });
+
+  it("parses (...a: bigint[]) => void", () => {
+    const fn = /** @type {FunctionType} */(parseType("(...a: bigint[]) => void"));
+    expect(fn).toBeInstanceOf(FunctionType);
+    expect(fn.params.length).toBe(1);
+    const biType = /** @type {PrimitiveType} */(fn.params[0]);
+    expect(biType).toBeInstanceOf(PrimitiveType);
+    expect(biType.name).toBe(PrimitiveTypeName.BigInt);
+    expect(fn.rest).toBeTrue();
+  });
+
+  it("parses @param {...bigint}", () => {
+    const { type, paramRest } = parseTypePrefix("...bigint");
+    expect(type).toBeInstanceOf(PrimitiveType);
+    expect(type.name).toBe(PrimitiveTypeName.BigInt);
+    expect(paramRest).toBeTrue();
+  })
 });
 
 describe("Constructors", () => {

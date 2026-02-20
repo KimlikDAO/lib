@@ -101,7 +101,7 @@ const pushBytes = (bytes) => {
 }
 
 /**
- * @param {...!OpData} opdatas
+ * @param {...OpData} opdatas
  * @return {OpData}
  */
 const concat = (...opdatas) => {

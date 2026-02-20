@@ -155,7 +155,7 @@ class Parser {
     if (!this.test("new")) return null;
     const type = this.parseFunctionType();
     return new ConstructorType(
-      type.returnType, null, null, type.params, type.optionalAfter);
+      type.returnType, null, null, type.params, type.rest, type.optionalAfter);
   }
 
   /**
@@ -167,17 +167,28 @@ class Parser {
     /** @const {Type[]} */
     const params = [];
     let optionalAfter = 1e9;
+    let rest = false;
     /** @type {Type | undefined} */
     let thisType = undefined;
 
     this.expectChar("(".charCodeAt(0));
     if (!this.testChar(")".charCodeAt(0)))
       for (; ;) {
+        if (rest)
+          throw `Rest parameter must be the last parameter at position ${this.pos}`;
+
+        const isRest = this.test("...");
         const paramName = this.readIdentifier();
         let isOptional = this.testChar("?".charCodeAt(0));
         this.expectChar(":".charCodeAt(0));
-        const paramType = this.parseType();
+        let paramType = this.parseType();
         isOptional ||= this.testChar("=".charCodeAt(0));
+
+        if (isRest) {
+          rest = true;
+          if (paramType instanceof GenericType && paramType.name == "Array")
+            paramType = paramType.params[0];
+        }
 
         if (isOptional) {
           paramType.modifiers |= Modifier.Optional;
@@ -200,7 +211,7 @@ class Parser {
     if (optionalAfter == 1e9)
       optionalAfter = params.length;
 
-    return new FunctionType(params, returnType, optionalAfter, thisType);
+    return new FunctionType(params, returnType, rest, optionalAfter, thisType);
   }
 
   /**
@@ -345,19 +356,21 @@ class Parser {
  * @return {{
  *   type: Type,
  *   endPos: number,
- *   paramOpt: boolean
+ *   paramOpt: boolean,
+ *   paramRest: boolean
  * }} The parsed type and the position where parsing ended
  * @throws {Error} If parsing fails
  */
 const parseTypePrefix = (input, startPos = 0) => {
   const parser = new Parser(input, startPos);
+  const paramRest = parser.test("...");
   const type = parser.parseType();
   const paramOpt = parser.testChar("=".charCodeAt(0));
   if (paramOpt)
     type.modifiers |= Modifier.Optional;
   parser.skipWhitespace();
   const endPos = parser.getPosition();
-  return { type, endPos, paramOpt };
+  return { type, endPos, paramOpt, paramRest };
 };
 
 /**

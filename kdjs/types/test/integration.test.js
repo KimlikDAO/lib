@@ -24,6 +24,13 @@ describe("Functions", () => {
 
     expect(parseType(kdjsExpr).toClosureExpr()).toBe(closureExpr);
   });
+
+  test("(...a: bigint[]) => void", () => {
+    const kdjsExpr = "(...a: bigint[]) => void";
+    const closureExpr = "function(...bigint)";
+
+    expect(parseType(kdjsExpr).toClosureExpr()).toBe(closureExpr);
+  });
 });
 
 describe("Constructors", () => {

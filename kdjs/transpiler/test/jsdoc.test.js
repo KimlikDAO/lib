@@ -36,3 +36,10 @@ test("@const {Record<string, string>}", () => {
   const updated = update(text, transpileJsDoc(comment));
   expect(updated).toBe("/** @const {!Object<string,string>} */");
 });
+
+test("@param {...Type}", () => {
+  const text = "/** @param {...Type} x */";
+  const comment = makeComment(text);
+  const updated = update(text, transpileJsDoc(comment));
+  expect(updated).toBe("/** @param {...!Type} x */");
+});

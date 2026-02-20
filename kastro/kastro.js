@@ -2,6 +2,7 @@ import { plugin, spawn } from "bun";
 import { cp, readFile } from "node:fs/promises";
 import process from "node:process";
 import { createServer } from "vite";
+import "../kdjs/util/plugin";
 import { Blue, Clear, parseArgs } from "../util/cli";
 import { combine, getDir, getExt } from "../util/paths";
 import compiler from "./compiler/compiler";

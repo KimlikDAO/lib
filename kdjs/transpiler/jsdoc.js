@@ -54,10 +54,11 @@ const transpileJsDoc = (comment, fileName) => {
 
     const typeStart = pos + 1;
     try {
-      const { type, endPos, paramOpt } = parseTypePrefix(value, typeStart);
+      const { type, endPos, paramOpt, paramRest } = parseTypePrefix(value, typeStart);
       if (value.charCodeAt(endPos) != 125) continue; // '}'
 
-      const closureExpr = type.toClosureExpr({ toParam: tag == "@param" && paramOpt });
+      const closureExpr = (paramRest ? "..." : "") +
+        type.toClosureExpr({ toParam: tag == "@param" && paramOpt });
       updates.push({
         beg: comment.start + 2 + typeStart,
         end: comment.start + 2 + endPos,

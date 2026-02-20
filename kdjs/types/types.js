@@ -327,14 +327,21 @@ class FunctionType extends Type {
   /**
    * @param {Type[]} params
    * @param {Type} returnType
+   * @param {boolean=} rest
    * @param {number=} optionalAfter
    * @param {Type=} thisType - The type of 'this' for methods
    */
-  constructor(params, returnType, optionalAfter, thisType) {
+  constructor(params, returnType, rest = false, optionalAfter, thisType) {
     super();
+    /** @const {Type[]} */
     this.params = params;
+    /** @const {Type} */
     this.returnType = returnType;
+    /** @const {boolean} */
+    this.rest = rest;
+    /** @const {number} */
     this.optionalAfter = optionalAfter ?? params.length;
+    /** @const {Type | undefined} */
     this.thisType = thisType;
   }
 
@@ -347,7 +354,10 @@ class FunctionType extends Type {
   toClosureExpr({ toParam, wrap, bare } = {}) {
     const modifiers = bare ? 0 : this.modifiers;
 
+    const lastIdx = this.params.length - 1;
     const paramTypes = this.params.map((param, i) => {
+      if (this.rest && i == lastIdx)
+        return "..." + param.toClosureExpr({ bare: true });
       const isOptional = i >= this.optionalAfter;
       return param.toClosureExpr({ toParam: isOptional, wrap: true });
     }).join(", ");
@@ -393,10 +403,11 @@ class ConstructorType extends FunctionType {
    * @param {Type | null} extendsType
    * @param {Type[] | null} implementsTypes
    * @param {Type[]} params
+   * @param {boolean} rest
    * @param {number=} optionalAfter
    */
-  constructor(instanceType, extendsType, implementsTypes, params, optionalAfter) {
-    super(params, new PrimitiveType(PrimitiveTypeName.Undefined), optionalAfter, instanceType);
+  constructor(instanceType, extendsType, implementsTypes, params, rest, optionalAfter) {
+    super(params, new PrimitiveType(PrimitiveTypeName.Undefined), rest, optionalAfter, instanceType);
     this.extendsType = extendsType;
     this.implementsTypes = implementsTypes;
   }
