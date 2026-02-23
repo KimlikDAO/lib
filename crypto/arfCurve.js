@@ -175,8 +175,8 @@ const arfCurve = (P) => {
       const h = (u2 - u1) % P;
       const r = (s2 - s1) % P;
 
-      if (h === 0n) {
-        if (r === 0n) {
+      if (h == 0n) {
+        if (r == 0n) {
           if (z2 == 0n) { }
           else if (z1 == 0n) { this.x = x2; this.y = y2; this.z = z2; }
           else this.double();

@@ -164,9 +164,9 @@ const verify = (digest, r, s, pubKey) => {
   /** @const {bigint} */
   const z2 = (U.z * U.z) % P;
   if (!z2) return false;
-  if ((r * z2) % P === U.x) return true;
+  if ((r * z2) % P == U.x) return true;
   r += Q;
-  return (r < P) && (r * z2) % P === U.x;
+  return (r < P) && (r * z2) % P == U.x;
 }
 
 /**

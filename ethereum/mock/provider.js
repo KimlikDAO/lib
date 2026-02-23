@@ -1,6 +1,8 @@
-import hex from "../../util/hex";
-import "../provider.d";
-import { personalDigest } from "../signer";
+import { Address } from "../address.d";
+import { typedDataHash } from "../contract/EIP712";
+import { EIP712TypedData } from "../contract/EIP712.d";
+import { Provider } from "../provider";
+import { WideSignature } from "../signature.d";
 import { addr, signWide } from "./signer";
 
 /**
@@ -15,29 +17,22 @@ class MockProvider {
     this.privKey = privKey;
   }
 
+  read(_) { }
+
+  write(_) { }
+
+  whenWritten(_, _then) { }
+
   /**
-   * @override
-   *
-   * @param {Request} req
-   * @return {Promise<string> | Promise<string[]>}
+   * @param {Address} address
+   * @param {EIP712TypedData} typedData
+   * @return {Promise<WideSignature>}
    */
-  request(req) {
-    switch (req.method) {
-      case "personal_sign":
-        if (/** @type {string} */(req.params[1]).toLowerCase() != addr(this.privKey))
-          return Promise.reject(/** @type {eth.ProviderError} */({
-            code: -32602,
-            message: "from should be same as current address"
-          }));
-        /** @const {TextDecoder} */
-        const decoder = new TextDecoder();
-        /** @const {string} */
-        const message = decoder.decode(hex.toUint8Array(/** @type {string} */(req.params[0]).slice(2)));
-        /** @const {bigint} */
-        const digest = BigInt("0x" + personalDigest(message));
-        return Promise.resolve("0x" + signWide(digest, this.privKey));
-    }
-    return Promise.reject();
+  signData(address, typedData) {
+    if (address.toLowerCase() != addr(this.privKey))
+      return Promise.reject();
+    const digest = BigInt("0x" + typedDataHash(typedData));
+    return Promise.resolve(signWide(digest, this.privKey));
   }
 
   /**

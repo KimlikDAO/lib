@@ -13,10 +13,16 @@ const address = (addr) => "0".repeat(24) + addr.slice(2);
 const packedAddress = (addr) => addr.slice(2);
 
 /**
- * @param {number | bigint} num
- * @return {string}
+ * @pureOrBreakMyCode
+ * @param {number | bigint | string} value number, bigint, or string parseable
+ *                                   by BigInt (e.g. "0x1", "123")
+ * @return {string} 64 hex chars
  */
-const uint256 = (num) => num.toString(16).padStart(64, "0");
+const uint256 = (value) => {
+  if (typeof value == "string")
+    value = BigInt(value);
+  return /** @type {number | bigint} */(value).toString(16).padStart(64, "0");
+};
 
 /** @const {(num: number) => string} */
 const uint160 = (num) => num.toString(16).padStart(40, "0");

@@ -9,7 +9,7 @@ const ethers = {};
  * @typedef {{
  *   name: string,
  *   version: string,
- *   chainId: bigint | string,
+ *   chainId: number | string,
  *   verifyingContract: string
  * }}
  */
@@ -22,6 +22,15 @@ ethers.TypedDataEncoder;
  * @return {string}
  */
 ethers.TypedDataEncoder.hashDomain = function (typedDataDomain) { }
+
+/**
+ * 
+ * @param {ethers.TypedDataDomain} domain
+ * @param {any} types 
+ * @param {any} message 
+ * @return {string}
+ */
+ethers.TypedDataEncoder.hash = function (domain, types, message) { }
 
 /**
  * @constructor

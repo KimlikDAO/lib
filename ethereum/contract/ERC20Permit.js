@@ -1,16 +1,16 @@
 import { ChainId } from "../../crosschain/chains";
 import abi from "../abi";
-import { Address } from "../address.d";
+import { Address, PackedAddress } from "../address.d";
 import { Provider } from "../provider";
 import signature from "../signature";
-import { WideSignature } from "../signature.d";
+import { Signature, WideSignature } from "../signature.d";
 import { EIP712TypedData } from "./EIP712.d";
 import { ERC20 } from "./ERC20";
 
 /**
  * 3x256 bit packed permit data.
  * 96 bits: deadline
- * 160 bits: token address
+ * 160 bits: {@link PackedAddress}
  * 512 bits: {@link Signature}
  *
  * @typedef {string}
@@ -57,7 +57,7 @@ class ERC20Permit extends ERC20 {
    * @return {Promise<PermitData>}
    */
   createPermit(provider, owner, spender, value, duration) {
-    const deadline = (Date.now() / 1000 + duration).toString(16);
+    const deadline = ((Date.now() / 1000 | 0) + duration).toString(16);
 
     return provider
       .signData(owner, /** @type {EIP712TypedData} */({

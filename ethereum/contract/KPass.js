@@ -151,7 +151,7 @@ const serializeRevokers = (revokeThreshold, revokers) => {
   /** @type {number} */
   let count = 0;
   for (let address in revokers) {
-    if (address === "length") continue;
+    if (address == "length") continue;
     count += 1;
     ser += abi.uint96(revokers[address]) + address.slice(2).toLowerCase();
   }

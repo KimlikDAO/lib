@@ -166,14 +166,14 @@ const tonelliShanks = (n, P, Q, c, M) => {
 const sqrt = (n, P) => {
   /** @type {bigint} */
   let Q = P >> 1n;
-  if ((Q & 1n) === 1n)
+  if ((Q & 1n) == 1n)
     return exp(n, (Q >> 1n) + 1n, P);
   /** @type {bigint} */
   let M = 2n;
   for (Q >>= 1n; (Q & 1n) == 0n; Q >>= 1n) ++M;
   /** @type {bigint} */
   let z = 2n;
-  while (exp(z, P >> 1n, P) === 1n) ++z;
+  while (exp(z, P >> 1n, P) == 1n) ++z;
   return tonelliShanks(n, P, Q, exp(z, Q, P), M);
 }
 

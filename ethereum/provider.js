@@ -1,4 +1,5 @@
 import { Address } from "./address.d";
+import { EIP712TypedData } from "./contract/EIP712.d";
 import { RequestArguments } from "./provider.d";
 import { WideSignature } from "./signature.d";
 import { serialize, TransactionRequest } from "./transaction";
@@ -26,7 +27,7 @@ class Provider {
 
   /**
    * @param {Address} address
-   * @param {Object} typedData EIP-712 typed data
+   * @param {EIP712TypedData} typedData
    * @return {Promise<WideSignature>}
    */
   signData(address, typedData) { }
@@ -94,7 +95,7 @@ class RemoteProvider {
 
   /**
    * @param {Address} address
-   * @param {Object} typedData EIP-712 typed data
+   * @param {EIP712TypedData} typedData
    * @return {Promise<WideSignature>}
    */
   signData(address, typedData) {

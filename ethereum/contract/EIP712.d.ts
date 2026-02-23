@@ -3,28 +3,28 @@ type EIP712TypeProperty = {
   readonly type: string;
 }
 
-type EIP712Type = "EIP712Domain" | "Permit";
+type EIP712Type = "EIP712Domain" | "Permit" | "PermitBatch";
 
-type EIP712Domain = {
+type EIP712DomainData = {
   readonly name: string;
   readonly version: string;
-  readonly chainId: string;
+  readonly chainId: string | number;
   readonly verifyingContract: string;
 }
 
-type EIP712Types = Record<EIP712Type, EIP712TypeProperty[]>;
+type EIP712TypeRegistry = Record<EIP712Type, EIP712TypeProperty[]>;
 
 interface EIP712TypedData {
-  readonly types: EIP712Types;
+  readonly types: EIP712TypeRegistry;
   readonly primaryType: EIP712Type;
-  readonly domain: EIP712Domain;
+  readonly domain: EIP712DomainData;
   readonly message: Record<string, unknown>;
 }
 
 export { 
-  EIP712Domain,
+  EIP712DomainData,
   EIP712Type,
   EIP712TypedData,
   EIP712TypeProperty,
-  EIP712Types,
-}
+  EIP712TypeRegistry,
+};
