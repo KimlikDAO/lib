@@ -2,11 +2,8 @@
  * @fileoverview Minimal TS→kdjs-js transpiler: top-level const enum, variable, and export.
  * Parse with acorn-typescript, walk program body, emit const enum, VariableDeclaration, export.
  */
-import { Parser } from "acorn";
 import { generate } from "astring";
-import { tsPlugin } from "../parser/acorn-typescript";
-
-const TsParser = Parser.extend(tsPlugin());
+import { TsParser } from "../parser/tsParser";
 
 const parseOptions = {
   sourceType: "module",

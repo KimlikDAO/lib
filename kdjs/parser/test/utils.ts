@@ -1,8 +1,6 @@
 import { expect } from "bun:test";
 import * as acorn from "acorn";
-import { tsPlugin } from "../src";
-
-const Parser = acorn.Parser.extend(tsPlugin() as any);
+import { TsParser, tsPlugin } from "../tsParser";
 
 const DtsParser = acorn.Parser.extend(
 	tsPlugin({
@@ -37,7 +35,7 @@ function parseJsxSource(input: string) {
 }
 
 function parseSource(input: string) {
-	return Parser.parse(input, {
+	return TsParser.parse(input, {
 		sourceType: "module",
 		ecmaVersion: "latest",
 		locations: true
@@ -46,7 +44,7 @@ function parseSource(input: string) {
 
 function parseSourceShouldThrowError(input: string, message?: string) {
 	const parse = () =>
-		Parser.parse(input, {
+		TsParser.parse(input, {
 			sourceType: "module",
 			ecmaVersion: "latest",
 			locations: true
@@ -63,7 +61,7 @@ function generateSource(input: string[]): string {
 }
 
 export {
-	Parser,
+	TsParser,
 	DtsParser,
 	JsxParser,
 	equalNode,

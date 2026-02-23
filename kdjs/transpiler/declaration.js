@@ -4,12 +4,9 @@
  * 
  * @author KimlikDAO
  */
-import { Parser } from "acorn";
 import { combine, getDir } from "../../util/paths";
-import { tsPlugin } from "../parser/acorn-typescript";
+import { TsParser } from "../parser/tsParser";
 import { resolveExtension } from "../util/resolver";
-
-const TsParser = Parser.extend(tsPlugin());
 
 /**
  * Converts a file path to a namespace name.
@@ -153,7 +150,6 @@ const processInterface = (node, namespace, indent, imports) => {
       }
     }
   }
-
   return output;
 };
 

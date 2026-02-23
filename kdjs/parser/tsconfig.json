@@ -15,6 +15,6 @@
 		"strict": false,
 		"skipLibCheck": true
 	},
-	"include": ["./src/**/*", "./test/**/*"],
+	"include": ["./**/*"],
 	"exclude": ["./test/*/input.ts"]
 }

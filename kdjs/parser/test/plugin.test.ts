@@ -1,7 +1,7 @@
 import { describe, it, expect } from "bun:test";
 import * as acorn from "acorn";
-import { tsPlugin } from "../src";
-import type { AcornTypeScript } from "../src/types";
+import { tsPlugin } from "../tsParser";
+import type { AcornTypeScript } from "../types";
 
 function checkAcornTypeScriptUndefined(acornTypeScript?: AcornTypeScript): boolean {
 	if (!acornTypeScript) return false;

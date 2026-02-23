@@ -1,7 +1,6 @@
+import { describe, it } from "bun:test";
 import * as fs from "fs";
 import * as path from "path";
-import { describe } from "bun:test";
-import { it } from "bun:test";
 import {
 	equalNode,
 	parseDtsSource,

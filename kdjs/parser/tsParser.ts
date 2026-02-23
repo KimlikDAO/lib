@@ -30,23 +30,17 @@ declare module "acorn" {
 
 const skipWhiteSpace = /(?:\s|\/\/.*|\/\*[^]*?\*\/)*/g;
 
-function assert(x: boolean): void {
-	if (!x) {
-		throw new Error("Assert fail");
-	}
+const assert = (x: boolean): void => {
+	if (!x) throw new Error("Assert fail");
 }
 
-function tsIsClassAccessor(modifier: string): any {
-	return modifier === "accessor";
-}
+const tsIsClassAccessor = (modifier: string): any => modifier == "accessor";
 
-function tsIsVarianceAnnotations(modifier: string): any {
-	return modifier === "in" || modifier === "out";
-}
+const tsIsVarianceAnnotations = (modifier: string): any => modifier === "in" || modifier === "out";
 
-const FUNC_STATEMENT = 1,
-	FUNC_HANGING_STATEMENT = 2,
-	FUNC_NULLABLE_ID = 4;
+const FUNC_STATEMENT = 1;
+const FUNC_HANGING_STATEMENT = 2;
+const FUNC_NULLABLE_ID = 4;
 
 const acornScope = {
 	SCOPE_TOP: 1,
@@ -73,25 +67,18 @@ const acornScope = {
 	BIND_FLAGS_TS_ENUM: 0b00000100_0000_00,
 	BIND_FLAGS_TS_CONST_ENUM: 0b00001000_0000_00,
 	BIND_FLAGS_CLASS: 0b00000010_0000_00
-	// function
 };
 
-function functionFlags(async, generator) {
-	return (
-		acornScope.SCOPE_FUNCTION |
-		(async ? acornScope.SCOPE_ASYNC : 0) |
-		(generator ? acornScope.SCOPE_GENERATOR : 0)
-	);
-}
+const functionFlags = (async: boolean, generator: boolean) =>
+	acornScope.SCOPE_FUNCTION | (async ? acornScope.SCOPE_ASYNC : 0) | (generator ? acornScope.SCOPE_GENERATOR : 0);
 
-function isPossiblyLiteralEnum(expression: any): boolean {
+const isPossiblyLiteralEnum = (expression: any): boolean => {
 	if (expression.type !== 'MemberExpression') return false;
 
 	const { computed, property } = expression;
 
-	if (computed && (property.type !== 'TemplateLiteral' || property.expressions.length > 0)) {
+	if (computed && (property.type !== 'TemplateLiteral' || property.expressions.length > 0))
 		return false;
-	}
 
 	return isUncomputedMemberExpressionChain(expression.object);
 }
@@ -5318,4 +5305,9 @@ function tsPlugin(options?: {
 	};
 }
 
-export { tsPlugin };
+const TsParser = acornNamespace.Parser.extend(tsPlugin());
+
+export {
+	tsPlugin,
+	TsParser
+};

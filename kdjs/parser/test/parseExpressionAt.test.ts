@@ -1,8 +1,8 @@
 import { describe, it, expect } from "bun:test";
-import { generateSource, Parser } from "./utils";
+import { generateSource, TsParser } from "./utils";
 
 function parseExpressionAt(input: string, pos: number) {
-	return Parser.parseExpressionAt(input, pos, {
+	return TsParser.parseExpressionAt(input, pos, {
 		sourceType: "module",
 		ecmaVersion: "latest",
 		locations: true
