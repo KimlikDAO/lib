@@ -1,0 +1,328 @@
+{
+	"type": "Program",
+	"start": 0,
+	"end": 121,
+	"loc": {
+		"start": {
+			"line": 1,
+			"column": 0
+		},
+		"end": {
+			"line": 3,
+			"column": 36
+		}
+	},
+	"body": [
+		{
+			"type": "ImportDeclaration",
+			"start": 0,
+			"end": 20,
+			"loc": {
+				"start": {
+					"line": 1,
+					"column": 0
+				},
+				"end": {
+					"line": 1,
+					"column": 20
+				}
+			},
+			"importKind": "value",
+			"specifiers": [],
+			"source": {
+				"type": "Literal",
+				"start": 7,
+				"end": 20,
+				"loc": {
+					"start": {
+						"line": 1,
+						"column": 7
+					},
+					"end": {
+						"line": 1,
+						"column": 20
+					}
+				},
+				"value": "./index3.js",
+				"raw": "'./index3.js'"
+			}
+		},
+		{
+			"type": "ImportDeclaration",
+			"start": 21,
+			"end": 84,
+			"loc": {
+				"start": {
+					"line": 2,
+					"column": 0
+				},
+				"end": {
+					"line": 2,
+					"column": 63
+				}
+			},
+			"importKind": "value",
+			"specifiers": [
+				{
+					"type": "ImportDefaultSpecifier",
+					"start": 28,
+					"end": 32,
+					"loc": {
+						"start": {
+							"line": 2,
+							"column": 7
+						},
+						"end": {
+							"line": 2,
+							"column": 11
+						}
+					},
+					"local": {
+						"type": "Identifier",
+						"start": 28,
+						"end": 32,
+						"loc": {
+							"start": {
+								"line": 2,
+								"column": 7
+							},
+							"end": {
+								"line": 2,
+								"column": 11
+							}
+						},
+						"name": "test"
+					}
+				},
+				{
+					"type": "ImportSpecifier",
+					"start": 36,
+					"end": 40,
+					"loc": {
+						"start": {
+							"line": 2,
+							"column": 15
+						},
+						"end": {
+							"line": 2,
+							"column": 19
+						}
+					},
+					"imported": {
+						"type": "Identifier",
+						"start": 36,
+						"end": 40,
+						"loc": {
+							"start": {
+								"line": 2,
+								"column": 15
+							},
+							"end": {
+								"line": 2,
+								"column": 19
+							}
+						},
+						"name": "name"
+					},
+					"local": {
+						"type": "Identifier",
+						"start": 36,
+						"end": 40,
+						"loc": {
+							"start": {
+								"line": 2,
+								"column": 15
+							},
+							"end": {
+								"line": 2,
+								"column": 19
+							}
+						},
+						"name": "name"
+					},
+					"importKind": "value"
+				},
+				{
+					"type": "ImportSpecifier",
+					"start": 42,
+					"end": 45,
+					"loc": {
+						"start": {
+							"line": 2,
+							"column": 21
+						},
+						"end": {
+							"line": 2,
+							"column": 24
+						}
+					},
+					"imported": {
+						"type": "Identifier",
+						"start": 42,
+						"end": 45,
+						"loc": {
+							"start": {
+								"line": 2,
+								"column": 21
+							},
+							"end": {
+								"line": 2,
+								"column": 24
+							}
+						},
+						"name": "age"
+					},
+					"local": {
+						"type": "Identifier",
+						"start": 42,
+						"end": 45,
+						"loc": {
+							"start": {
+								"line": 2,
+								"column": 21
+							},
+							"end": {
+								"line": 2,
+								"column": 24
+							}
+						},
+						"name": "age"
+					},
+					"importKind": "value"
+				},
+				{
+					"type": "ImportSpecifier",
+					"start": 47,
+					"end": 64,
+					"loc": {
+						"start": {
+							"line": 2,
+							"column": 26
+						},
+						"end": {
+							"line": 2,
+							"column": 43
+						}
+					},
+					"imported": {
+						"type": "Identifier",
+						"start": 47,
+						"end": 53,
+						"loc": {
+							"start": {
+								"line": 2,
+								"column": 26
+							},
+							"end": {
+								"line": 2,
+								"column": 32
+							}
+						},
+						"name": "school"
+					},
+					"local": {
+						"type": "Identifier",
+						"start": 57,
+						"end": 64,
+						"loc": {
+							"start": {
+								"line": 2,
+								"column": 36
+							},
+							"end": {
+								"line": 2,
+								"column": 43
+							}
+						},
+						"name": "school1"
+					},
+					"importKind": "value"
+				}
+			],
+			"source": {
+				"type": "Literal",
+				"start": 72,
+				"end": 84,
+				"loc": {
+					"start": {
+						"line": 2,
+						"column": 51
+					},
+					"end": {
+						"line": 2,
+						"column": 63
+					}
+				},
+				"value": "./index.js",
+				"raw": "'./index.js'"
+			}
+		},
+		{
+			"type": "ImportDeclaration",
+			"start": 85,
+			"end": 121,
+			"loc": {
+				"start": {
+					"line": 3,
+					"column": 0
+				},
+				"end": {
+					"line": 3,
+					"column": 36
+				}
+			},
+			"importKind": "value",
+			"specifiers": [
+				{
+					"type": "ImportNamespaceSpecifier",
+					"start": 92,
+					"end": 102,
+					"loc": {
+						"start": {
+							"line": 3,
+							"column": 7
+						},
+						"end": {
+							"line": 3,
+							"column": 17
+						}
+					},
+					"local": {
+						"type": "Identifier",
+						"start": 97,
+						"end": 102,
+						"loc": {
+							"start": {
+								"line": 3,
+								"column": 12
+							},
+							"end": {
+								"line": 3,
+								"column": 17
+							}
+						},
+						"name": "test1"
+					}
+				}
+			],
+			"source": {
+				"type": "Literal",
+				"start": 108,
+				"end": 121,
+				"loc": {
+					"start": {
+						"line": 3,
+						"column": 23
+					},
+					"end": {
+						"line": 3,
+						"column": 36
+					}
+				},
+				"value": "./index1.js",
+				"raw": "'./index1.js'"
+			}
+		}
+	],
+	"sourceType": "module"
+}

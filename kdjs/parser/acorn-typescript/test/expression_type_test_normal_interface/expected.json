@@ -1,0 +1,252 @@
+{
+	"type": "Program",
+	"start": 0,
+	"end": 64,
+	"loc": {
+		"start": {
+			"line": 1,
+			"column": 0
+		},
+		"end": {
+			"line": 5,
+			"column": 1
+		}
+	},
+	"body": [
+		{
+			"type": "TSInterfaceDeclaration",
+			"start": 0,
+			"end": 64,
+			"loc": {
+				"start": {
+					"line": 1,
+					"column": 0
+				},
+				"end": {
+					"line": 5,
+					"column": 1
+				}
+			},
+			"id": {
+				"type": "Identifier",
+				"start": 10,
+				"end": 17,
+				"loc": {
+					"start": {
+						"line": 1,
+						"column": 10
+					},
+					"end": {
+						"line": 1,
+						"column": 17
+					}
+				},
+				"name": "Student"
+			},
+			"body": {
+				"type": "TSInterfaceBody",
+				"start": 18,
+				"end": 64,
+				"loc": {
+					"start": {
+						"line": 1,
+						"column": 18
+					},
+					"end": {
+						"line": 5,
+						"column": 1
+					}
+				},
+				"body": [
+					{
+						"type": "TSPropertySignature",
+						"start": 21,
+						"end": 33,
+						"loc": {
+							"start": {
+								"line": 2,
+								"column": 1
+							},
+							"end": {
+								"line": 2,
+								"column": 13
+							}
+						},
+						"computed": false,
+						"key": {
+							"type": "Identifier",
+							"start": 21,
+							"end": 25,
+							"loc": {
+								"start": {
+									"line": 2,
+									"column": 1
+								},
+								"end": {
+									"line": 2,
+									"column": 5
+								}
+							},
+							"name": "name"
+						},
+						"typeAnnotation": {
+							"type": "TSTypeAnnotation",
+							"start": 25,
+							"end": 33,
+							"loc": {
+								"start": {
+									"line": 2,
+									"column": 5
+								},
+								"end": {
+									"line": 2,
+									"column": 13
+								}
+							},
+							"typeAnnotation": {
+								"type": "TSStringKeyword",
+								"start": 27,
+								"end": 33,
+								"loc": {
+									"start": {
+										"line": 2,
+										"column": 7
+									},
+									"end": {
+										"line": 2,
+										"column": 13
+									}
+								}
+							}
+						}
+					},
+					{
+						"type": "TSPropertySignature",
+						"start": 35,
+						"end": 46,
+						"loc": {
+							"start": {
+								"line": 3,
+								"column": 1
+							},
+							"end": {
+								"line": 3,
+								"column": 12
+							}
+						},
+						"computed": false,
+						"key": {
+							"type": "Identifier",
+							"start": 35,
+							"end": 38,
+							"loc": {
+								"start": {
+									"line": 3,
+									"column": 1
+								},
+								"end": {
+									"line": 3,
+									"column": 4
+								}
+							},
+							"name": "age"
+						},
+						"typeAnnotation": {
+							"type": "TSTypeAnnotation",
+							"start": 38,
+							"end": 46,
+							"loc": {
+								"start": {
+									"line": 3,
+									"column": 4
+								},
+								"end": {
+									"line": 3,
+									"column": 12
+								}
+							},
+							"typeAnnotation": {
+								"type": "TSNumberKeyword",
+								"start": 40,
+								"end": 46,
+								"loc": {
+									"start": {
+										"line": 3,
+										"column": 6
+									},
+									"end": {
+										"line": 3,
+										"column": 12
+									}
+								}
+							}
+						}
+					},
+					{
+						"type": "TSPropertySignature",
+						"start": 48,
+						"end": 62,
+						"loc": {
+							"start": {
+								"line": 4,
+								"column": 1
+							},
+							"end": {
+								"line": 4,
+								"column": 15
+							}
+						},
+						"computed": false,
+						"key": {
+							"type": "Identifier",
+							"start": 48,
+							"end": 54,
+							"loc": {
+								"start": {
+									"line": 4,
+									"column": 1
+								},
+								"end": {
+									"line": 4,
+									"column": 7
+								}
+							},
+							"name": "school"
+						},
+						"typeAnnotation": {
+							"type": "TSTypeAnnotation",
+							"start": 54,
+							"end": 62,
+							"loc": {
+								"start": {
+									"line": 4,
+									"column": 7
+								},
+								"end": {
+									"line": 4,
+									"column": 15
+								}
+							},
+							"typeAnnotation": {
+								"type": "TSStringKeyword",
+								"start": 56,
+								"end": 62,
+								"loc": {
+									"start": {
+										"line": 4,
+										"column": 9
+									},
+									"end": {
+										"line": 4,
+										"column": 15
+									}
+								}
+							}
+						}
+					}
+				]
+			}
+		}
+	],
+	"sourceType": "module"
+}

@@ -20,8 +20,7 @@ const ErrorCode = {
  * @return {Promise<string>}
  */
 const getPDFCommitment = (commitmentPow) => fetch(`//${SeedNodes[0]}/edevlet/nko/commit?${commitmentPow}`)
-  .then((res) => res.text())
-  .catch(console.log);
+  .then((res) => res.text(), (e) => console.log(e));
 
 /**
  * @param {string} commitmentPow

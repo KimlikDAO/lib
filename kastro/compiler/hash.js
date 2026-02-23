@@ -14,8 +14,8 @@ const AssetHash = {};
  * @return {AssetHash}
  */
 const toStr = (bytes) => base64.from(bytes.subarray(0, 6))
-  .replaceAll("/", "+")
-  .replaceAll("=", "-");
+  .replaceAll("+", "-")
+  .replaceAll("/", "_");
 
 /**
  * @param {ContentHash} a
@@ -24,7 +24,7 @@ const toStr = (bytes) => base64.from(bytes.subarray(0, 6))
  */
 const equal = (a, b) => {
   for (let i = 0; i < 32; ++i)
-    if (a[i] !== b[i]) return false;
+    if (a[i] != b[i]) return false;
   return true;
 };
 

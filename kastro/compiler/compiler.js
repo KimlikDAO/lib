@@ -1,4 +1,6 @@
-import { access, cp, mkdir, readFile, writeFile } from "node:fs/promises";
+import {
+  access, cp, mkdir, readFile, writeFile
+} from "node:fs/promises";
 import { keccak256Uint8 } from "../../crypto/sha3";
 import { getDir, getExt } from "../../util/paths";
 import { Props } from "../props";
@@ -6,40 +8,50 @@ import { CompressedMimes } from "../workers/mimes";
 import { brotli, zopfli } from "./compression";
 import hash, { AssetHash } from "./hash";
 import marker from "./marker";
-import { getTargetFunction } from "./targetRegistry";
+import { getTargetFunction } from "./target";
+import { Target } from "./target";
 
 /**
  * Dev: Try to do as little work as possible while providing the fundamental
  *      functionality of kastro such as component rendering, i18n, and updating
  *      the js defines. The rendered page should be visually identical to the
- *      Compiled or Release version; anything else is a bug.
+ *      Compiled version; anything else is a bug.
  *
  * Compiled: Produce the most optimized version of the app while checking the
  *      freshness of each target through content hashes.
- *
- * Release: Produce the most optimized version of the app assuming the source
- *      code is frozen. In this mode we omit taking dependency hashes since
- *      we assume they are always fresh.
  *
  * @enum {number}
  */
 const BuildMode = {
   Dev: 0,
   Compiled: 1,
-  Release: 2
 };
 
 /** @const {TextEncoder} */
 const Encoder = new TextEncoder();
 
-/** @const {Record<string, CacheEntry | undefined>} */
+/** @const {Record<string, Target | undefined>} */
 const CACHE = {};
 
-/** @const {Record<string, AssetHash>} */
+/** @type {Record<string, AssetHash>} */
 const NAMED_ASSETS = {};
 
 /** @const {Record<string, AssetHash>} */
 const PIGGYBACK_ASSETS = {};
+
+/**
+ * @param {string} targetName
+ * @return {Promise<Target>}
+ */
+const fileTarget = (targetName, props) => {
+  const contentPromise = props.BuildMode == BuildMode.Dev
+    ? readFile(targetName.slice(1))
+    : (CACHE[targetName] ||= readFile(targetName.slice(1)));
+  return contentPromise.then((content) => ({
+    content,
+    contentHash: keccak256Uint8(content),
+  }));
+}
 
 /**
  * @param {Props} props
@@ -51,7 +63,7 @@ const populateChildTargets = (props) => {
   };
   if (Array.isArray(props.childTargets))
     props.childTargets = props.childTargets.map((target) => {
-      if (typeof target.then === "function") return target;
+      if (typeof target.then == "function") return target;
       if (typeof target == "object" && target.content) {
         const content = typeof target.content == "string" ? Encoder.encode(target.content) : target.content;
         return Promise.resolve({
@@ -63,8 +75,8 @@ const populateChildTargets = (props) => {
       const targetName = typeof target == "string" ? target : target.targetName;
       const props = typeof target == "string" ? childProps : target.props;
       return buildTarget(targetName, props)
-        .then((entry) => ({
-          ...entry,
+        .then((childTarget) => ({
+          ...childTarget,
           targetName
         }));
     });
@@ -72,15 +84,17 @@ const populateChildTargets = (props) => {
 
 /**
  * @param {Props} props
- * @return {Promise<string>}
+ * @return {Promise<Uint8Array>}
  */
 const computeDepHash = (props) => {
   populateChildTargets(props);
   const { childTargets = [], ...otherProps } = props;
   const acc = keccak256Uint8(Encoder.encode(JSON.stringify(otherProps)))
     .slice(0, 32); // Drop the excess buffer.
-  return Promise.all(childTargets.map((childTarget) => childTarget
-    .then(({ contentHash }) => hash.combine(acc, contentHash))))
+  return Promise.all(
+    childTargets.map((childTarget) => childTarget
+      .then(({ contentHash }) => hash.combine(acc, contentHash)))
+  )
     .then(() => acc);
 }
 
@@ -107,17 +121,15 @@ const forceBuildTarget = (targetName, props) => {
  */
 const buildTarget = (targetName, props) => {
   if (!targetName.startsWith("/build/"))
-    return CACHE[targetName] ||= readFile(targetName.slice(1)).then((content) => ({
-      content,
-      contentHash: keccak256Uint8(content),
-    }));
+    return fileTarget(targetName, props);
 
   // Explicit list of dependencies.
   if (!props.dynamicDeps)
     return CACHE[targetName] = Promise.all([CACHE[targetName], computeDepHash(props)])
-      .then(([entry, depHash]) => {
-        if (entry && hash.equal(entry.depHash, depHash))
-          return entry;
+      .then(([target, depHash]) => {
+        console.log("target", targetName);
+        if (target && hash.equal(target.depHash, depHash))
+          return target;
 
         return marker.read(targetName)
           .then((markerEntry) => hash.equal(markerEntry.depHash, depHash)
@@ -128,7 +140,7 @@ const buildTarget = (targetName, props) => {
             const fileName = targetName.slice(1);
             if (!maybeResult)
               return readFile(fileName);
-            if (typeof maybeResult === "string")
+            if (typeof maybeResult == "string")
               maybeResult = Encoder.encode(maybeResult);
             return mkdir(getDir(fileName), { recursive: true })
               .catch(() => { })
@@ -174,7 +186,7 @@ const buildTarget = (targetName, props) => {
       return forceBuildTarget(targetName, props)
         .then((maybeResult) => {
           if (!maybeResult) return fromCachePromise;
-          if (typeof maybeResult === "string")
+          if (typeof maybeResult == "string")
             maybeResult = Encoder.encode(maybeResult);
           return mkdir(getDir(targetName.slice(1)), { recursive: true })
             .catch(() => { })
@@ -195,7 +207,7 @@ const buildTarget = (targetName, props) => {
  * @const {TargetFunction} */
 const bundleTarget = (targetName, props) => props.BuildMode == BuildMode.Dev
   ? Promise.resolve(props.childTargets[0])
-    .then((target) => (typeof target == "string") ? target.slice(1) : target.targetName)
+    .then((target) => ((typeof target == "string") ? target : target.targetName).slice(1))
   : buildTarget(targetName, props).then(({ contentHash }) => {
     /** @const {string} */
     const targetFile = targetName.slice(1);
@@ -208,7 +220,7 @@ const bundleTarget = (targetName, props) => props.BuildMode == BuildMode.Dev
       NAMED_ASSETS[props.bundleName] = contentHashStr;
 
     if (props.piggyback) {
-      const piggybackUrl = `${props.piggyback}/${props.bundleName.slice(12)}`;
+      const piggybackUrl = `${props.piggyback}/${bundleName.slice(13)}`;
       PIGGYBACK_ASSETS[piggybackUrl] = contentHashStr;
       return piggybackUrl;
     }
@@ -224,7 +236,7 @@ const bundleTarget = (targetName, props) => props.BuildMode == BuildMode.Dev
             access(`${bundleName}.gz`).catch(() => zopfli(targetFile, bundleName))
           ])
       );
-    return bundle.then(() => bundleName.slice(13));
+    return bundle.then(() => bundleName.slice(13)); // Remove "/build/bundle/" prefix
   });
 
 /**

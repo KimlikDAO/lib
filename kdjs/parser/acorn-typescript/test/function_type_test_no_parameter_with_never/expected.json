@@ -1,0 +1,165 @@
+{
+	"type": "Program",
+	"start": 0,
+	"end": 51,
+	"loc": {
+		"start": {
+			"line": 1,
+			"column": 0
+		},
+		"end": {
+			"line": 3,
+			"column": 1
+		}
+	},
+	"body": [
+		{
+			"type": "FunctionDeclaration",
+			"start": 0,
+			"end": 51,
+			"loc": {
+				"start": {
+					"line": 1,
+					"column": 0
+				},
+				"end": {
+					"line": 3,
+					"column": 1
+				}
+			},
+			"id": {
+				"type": "Identifier",
+				"start": 9,
+				"end": 13,
+				"loc": {
+					"start": {
+						"line": 1,
+						"column": 9
+					},
+					"end": {
+						"line": 1,
+						"column": 13
+					}
+				},
+				"name": "test"
+			},
+			"expression": false,
+			"generator": false,
+			"async": false,
+			"params": [],
+			"returnType": {
+				"type": "TSTypeAnnotation",
+				"start": 15,
+				"end": 22,
+				"loc": {
+					"start": {
+						"line": 1,
+						"column": 15
+					},
+					"end": {
+						"line": 1,
+						"column": 22
+					}
+				},
+				"typeAnnotation": {
+					"type": "TSNeverKeyword",
+					"start": 17,
+					"end": 22,
+					"loc": {
+						"start": {
+							"line": 1,
+							"column": 17
+						},
+						"end": {
+							"line": 1,
+							"column": 22
+						}
+					}
+				}
+			},
+			"body": {
+				"type": "BlockStatement",
+				"start": 23,
+				"end": 51,
+				"loc": {
+					"start": {
+						"line": 1,
+						"column": 23
+					},
+					"end": {
+						"line": 3,
+						"column": 1
+					}
+				},
+				"body": [
+					{
+						"type": "ThrowStatement",
+						"start": 27,
+						"end": 49,
+						"loc": {
+							"start": {
+								"line": 2,
+								"column": 2
+							},
+							"end": {
+								"line": 2,
+								"column": 24
+							}
+						},
+						"argument": {
+							"type": "NewExpression",
+							"start": 33,
+							"end": 49,
+							"loc": {
+								"start": {
+									"line": 2,
+									"column": 8
+								},
+								"end": {
+									"line": 2,
+									"column": 24
+								}
+							},
+							"callee": {
+								"type": "Identifier",
+								"start": 37,
+								"end": 42,
+								"loc": {
+									"start": {
+										"line": 2,
+										"column": 12
+									},
+									"end": {
+										"line": 2,
+										"column": 17
+									}
+								},
+								"name": "Error"
+							},
+							"arguments": [
+								{
+									"type": "Literal",
+									"start": 43,
+									"end": 48,
+									"loc": {
+										"start": {
+											"line": 2,
+											"column": 18
+										},
+										"end": {
+											"line": 2,
+											"column": 23
+										}
+									},
+									"value": "123",
+									"raw": "'123'"
+								}
+							]
+						}
+					}
+				]
+			}
+		}
+	],
+	"sourceType": "module"
+}

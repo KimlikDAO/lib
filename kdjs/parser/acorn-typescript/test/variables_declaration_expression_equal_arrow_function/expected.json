@@ -1,0 +1,133 @@
+{
+	"type": "Program",
+	"start": 0,
+	"end": 25,
+	"loc": {
+		"start": {
+			"line": 1,
+			"column": 0
+		},
+		"end": {
+			"line": 1,
+			"column": 25
+		}
+	},
+	"body": [
+		{
+			"type": "VariableDeclaration",
+			"start": 0,
+			"end": 25,
+			"loc": {
+				"start": {
+					"line": 1,
+					"column": 0
+				},
+				"end": {
+					"line": 1,
+					"column": 25
+				}
+			},
+			"declarations": [
+				{
+					"type": "VariableDeclarator",
+					"start": 4,
+					"end": 25,
+					"loc": {
+						"start": {
+							"line": 1,
+							"column": 4
+						},
+						"end": {
+							"line": 1,
+							"column": 25
+						}
+					},
+					"id": {
+						"type": "Identifier",
+						"start": 4,
+						"end": 8,
+						"loc": {
+							"start": {
+								"line": 1,
+								"column": 4
+							},
+							"end": {
+								"line": 1,
+								"column": 8
+							}
+						},
+						"name": "test"
+					},
+					"init": {
+						"type": "ArrowFunctionExpression",
+						"start": 11,
+						"end": 25,
+						"loc": {
+							"start": {
+								"line": 1,
+								"column": 11
+							},
+							"end": {
+								"line": 1,
+								"column": 25
+							}
+						},
+						"returnType": {
+							"type": "TSTypeAnnotation",
+							"start": 13,
+							"end": 19,
+							"loc": {
+								"start": {
+									"line": 1,
+									"column": 13
+								},
+								"end": {
+									"line": 1,
+									"column": 19
+								}
+							},
+							"typeAnnotation": {
+								"type": "TSVoidKeyword",
+								"start": 15,
+								"end": 19,
+								"loc": {
+									"start": {
+										"line": 1,
+										"column": 15
+									},
+									"end": {
+										"line": 1,
+										"column": 19
+									}
+								}
+							}
+						},
+						"id": null,
+						"expression": false,
+						"generator": false,
+						"async": false,
+						"params": [],
+						"body": {
+							"type": "BlockStatement",
+							"start": 23,
+							"end": 25,
+							"loc": {
+								"start": {
+									"line": 1,
+									"column": 23
+								},
+								"end": {
+									"line": 1,
+									"column": 25
+								}
+							},
+							"body": []
+						}
+					}
+				}
+			],
+			"kind": "let"
+		}
+	],
+	"sourceType": "module"
+}

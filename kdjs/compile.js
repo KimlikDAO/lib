@@ -11,10 +11,14 @@ import { preprocessAndIsolate } from "./preprocess";
 const Params = {};
 
 /**
+ * Resolves to the compiled code or void if it determines that the code
+ * is up to date.
+ * On error, rejects with the error.
+ *
  * @param {Params} params
  * @param {(string[]) => Promise<boolean>=} checkFreshFn
  * @param {(content: string, file: string, isEntry: boolean=) => string | null=} transpileFn
- * @return {Promise<string | null>}
+ * @return {Promise<string | void>}
  */
 const compile = async (params, checkFreshFn, transpileFn) => {
   const {
@@ -122,7 +126,8 @@ const compile = async (params, checkFreshFn, transpileFn) => {
       ? uglifiedCode : swcOutput.code;
     if (/** @type {boolean} */(params["emit_shebang"]))
       code = "#!/usr/bin/env bun\n" + code;
-    if (params["print"]) console.log("UglifyJS\n", uglifiedCode, "\nSWC\n", swcOutput.code);
+    if (params["print"])
+      console.log("UglifyJS\n", uglifiedCode, "\nSWC\n", swcOutput.code);
     if (params["output"])
       return writeFile(/** @type {string} */(params["output"]), code)
         .then(() => code)

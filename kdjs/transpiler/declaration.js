@@ -5,8 +5,8 @@
  * @author KimlikDAO
  */
 import { Parser } from "acorn";
-import tsPlugin from "acorn-typescript";
 import { combine, getDir } from "../../util/paths";
+import { tsPlugin } from "../parser/acorn-typescript";
 import { resolveExtension } from "../util/resolver";
 
 const TsParser = Parser.extend(tsPlugin());
@@ -414,14 +414,15 @@ const getTypeText = (typeNode, imports, topLevel = true) => {
         baseType = resolveTypeName(typeNode.typeName.name, imports);
       }
 
-      // Handle type parameters (generics)
-      if (typeNode.typeParameters && typeNode.typeParameters.params.length > 0) {
-        const typeParams = typeNode.typeParameters.params
+      // Handle type parameters (generics). Svelte fork uses typeArguments for
+      // type refs (e.g. Array<string>); original acorn-typescript used typeParameters.
+      const genericParams = typeNode.typeArguments || typeNode.typeParameters;
+      if (genericParams && genericParams.params && genericParams.params.length > 0) {
+        const typeParams = genericParams.params
           .map(param => getTypeText(param, imports))
           .join(", ");
         return `${baseType}<${typeParams}>`;
       }
-
       return `${baseType}`;
     }
     case "TSUnionType": {

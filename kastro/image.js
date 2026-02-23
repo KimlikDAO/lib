@@ -2,8 +2,7 @@ import { SAXParser } from "sax";
 import { tagYaz } from "../util/html";
 import { getExt } from "../util/paths";
 import compiler from "./compiler/compiler";
-import { Props } from "./compiler/targetRegistry";
-import { removeGlobalProps } from "./props";
+import { Props, removeGlobalProps } from "./props";
 
 const makeImageElement = (bundleName, { inSvg, piggyback, childTargets, ...props }) => {
   removeGlobalProps(props);
@@ -42,7 +41,7 @@ const InlineSvgImage = ({ src, childTargets, bundleWidth, bundleHeight, ...props
     const parser = new SAXParser(true);
     let result = "";
     parser.onopentag = ({ name, attributes }) => {
-      if (name === "svg")
+      if (name == "svg")
         Object.assign(attributes, props);
       result += tagYaz(name, attributes, false);
     };

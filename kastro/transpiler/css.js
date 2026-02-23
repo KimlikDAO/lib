@@ -24,7 +24,7 @@ const DomNamespacePattern = /@domNamespace\s*{(.*)}/;
  */
 const selectorToEnumKey = (selector) => {
   const parts = selector.split(/[-_]+/);
-  return parts.length === 1
+  return parts.length == 1
     ? selector
     : parts.map(part => part.charAt(0).toUpperCase() + part.slice(1)).join("");
 };

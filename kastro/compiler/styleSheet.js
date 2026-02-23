@@ -3,7 +3,7 @@ import { minify } from "csso";
 /** @const {TextDecoder} */
 const Decoder = new TextDecoder();
 
-const styleSheetTarget = (targetName, { BuildMode, childTargets }) => Promise.all(childTargets)
+const styleSheetTarget = (_, { BuildMode, childTargets }) => Promise.all(childTargets)
   .then((targets) => {
     const allCss = targets
       .map((t) => Decoder.decode(t.content)).join("");

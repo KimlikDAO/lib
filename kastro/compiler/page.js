@@ -7,6 +7,9 @@ import { initGlobals } from "../transpiler/pageGlobals";
 import HtmlMinifierConfig from "./config/htmlMinifierConfig";
 
 /**
+ * Builds all dependencies of a page, including its js and css and returns
+ * the resulting html as a string.
+ *
  * @param {string} targetName
  * @param {Props} props
  * @return {Promise<string>}

@@ -1,0 +1,520 @@
+{
+	"type": "Program",
+	"start": 0,
+	"end": 137,
+	"loc": {
+		"start": {
+			"line": 1,
+			"column": 0
+		},
+		"end": {
+			"line": 10,
+			"column": 1
+		}
+	},
+	"body": [
+		{
+			"type": "TSInterfaceDeclaration",
+			"start": 0,
+			"end": 64,
+			"loc": {
+				"start": {
+					"line": 1,
+					"column": 0
+				},
+				"end": {
+					"line": 5,
+					"column": 1
+				}
+			},
+			"id": {
+				"type": "Identifier",
+				"start": 10,
+				"end": 17,
+				"loc": {
+					"start": {
+						"line": 1,
+						"column": 10
+					},
+					"end": {
+						"line": 1,
+						"column": 17
+					}
+				},
+				"name": "Student"
+			},
+			"body": {
+				"type": "TSInterfaceBody",
+				"start": 18,
+				"end": 64,
+				"loc": {
+					"start": {
+						"line": 1,
+						"column": 18
+					},
+					"end": {
+						"line": 5,
+						"column": 1
+					}
+				},
+				"body": [
+					{
+						"type": "TSPropertySignature",
+						"start": 21,
+						"end": 33,
+						"loc": {
+							"start": {
+								"line": 2,
+								"column": 1
+							},
+							"end": {
+								"line": 2,
+								"column": 13
+							}
+						},
+						"computed": false,
+						"key": {
+							"type": "Identifier",
+							"start": 21,
+							"end": 25,
+							"loc": {
+								"start": {
+									"line": 2,
+									"column": 1
+								},
+								"end": {
+									"line": 2,
+									"column": 5
+								}
+							},
+							"name": "name"
+						},
+						"typeAnnotation": {
+							"type": "TSTypeAnnotation",
+							"start": 25,
+							"end": 33,
+							"loc": {
+								"start": {
+									"line": 2,
+									"column": 5
+								},
+								"end": {
+									"line": 2,
+									"column": 13
+								}
+							},
+							"typeAnnotation": {
+								"type": "TSStringKeyword",
+								"start": 27,
+								"end": 33,
+								"loc": {
+									"start": {
+										"line": 2,
+										"column": 7
+									},
+									"end": {
+										"line": 2,
+										"column": 13
+									}
+								}
+							}
+						}
+					},
+					{
+						"type": "TSPropertySignature",
+						"start": 35,
+						"end": 46,
+						"loc": {
+							"start": {
+								"line": 3,
+								"column": 1
+							},
+							"end": {
+								"line": 3,
+								"column": 12
+							}
+						},
+						"computed": false,
+						"key": {
+							"type": "Identifier",
+							"start": 35,
+							"end": 38,
+							"loc": {
+								"start": {
+									"line": 3,
+									"column": 1
+								},
+								"end": {
+									"line": 3,
+									"column": 4
+								}
+							},
+							"name": "age"
+						},
+						"typeAnnotation": {
+							"type": "TSTypeAnnotation",
+							"start": 38,
+							"end": 46,
+							"loc": {
+								"start": {
+									"line": 3,
+									"column": 4
+								},
+								"end": {
+									"line": 3,
+									"column": 12
+								}
+							},
+							"typeAnnotation": {
+								"type": "TSNumberKeyword",
+								"start": 40,
+								"end": 46,
+								"loc": {
+									"start": {
+										"line": 3,
+										"column": 6
+									},
+									"end": {
+										"line": 3,
+										"column": 12
+									}
+								}
+							}
+						}
+					},
+					{
+						"type": "TSPropertySignature",
+						"start": 48,
+						"end": 62,
+						"loc": {
+							"start": {
+								"line": 4,
+								"column": 1
+							},
+							"end": {
+								"line": 4,
+								"column": 15
+							}
+						},
+						"computed": false,
+						"key": {
+							"type": "Identifier",
+							"start": 48,
+							"end": 54,
+							"loc": {
+								"start": {
+									"line": 4,
+									"column": 1
+								},
+								"end": {
+									"line": 4,
+									"column": 7
+								}
+							},
+							"name": "school"
+						},
+						"typeAnnotation": {
+							"type": "TSTypeAnnotation",
+							"start": 54,
+							"end": 62,
+							"loc": {
+								"start": {
+									"line": 4,
+									"column": 7
+								},
+								"end": {
+									"line": 4,
+									"column": 15
+								}
+							},
+							"typeAnnotation": {
+								"type": "TSStringKeyword",
+								"start": 56,
+								"end": 62,
+								"loc": {
+									"start": {
+										"line": 4,
+										"column": 9
+									},
+									"end": {
+										"line": 4,
+										"column": 15
+									}
+								}
+							}
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "VariableDeclaration",
+			"start": 65,
+			"end": 137,
+			"loc": {
+				"start": {
+					"line": 6,
+					"column": 0
+				},
+				"end": {
+					"line": 10,
+					"column": 1
+				}
+			},
+			"declarations": [
+				{
+					"type": "VariableDeclarator",
+					"start": 71,
+					"end": 137,
+					"loc": {
+						"start": {
+							"line": 6,
+							"column": 6
+						},
+						"end": {
+							"line": 10,
+							"column": 1
+						}
+					},
+					"id": {
+						"type": "Identifier",
+						"start": 71,
+						"end": 84,
+						"loc": {
+							"start": {
+								"line": 6,
+								"column": 6
+							},
+							"end": {
+								"line": 6,
+								"column": 19
+							}
+						},
+						"name": "test",
+						"typeAnnotation": {
+							"type": "TSTypeAnnotation",
+							"start": 75,
+							"end": 84,
+							"loc": {
+								"start": {
+									"line": 6,
+									"column": 10
+								},
+								"end": {
+									"line": 6,
+									"column": 19
+								}
+							},
+							"typeAnnotation": {
+								"type": "TSTypeReference",
+								"start": 77,
+								"end": 84,
+								"loc": {
+									"start": {
+										"line": 6,
+										"column": 12
+									},
+									"end": {
+										"line": 6,
+										"column": 19
+									}
+								},
+								"typeName": {
+									"type": "Identifier",
+									"start": 77,
+									"end": 84,
+									"loc": {
+										"start": {
+											"line": 6,
+											"column": 12
+										},
+										"end": {
+											"line": 6,
+											"column": 19
+										}
+									},
+									"name": "Student"
+								}
+							}
+						}
+					},
+					"init": {
+						"type": "ObjectExpression",
+						"start": 87,
+						"end": 137,
+						"loc": {
+							"start": {
+								"line": 6,
+								"column": 22
+							},
+							"end": {
+								"line": 10,
+								"column": 1
+							}
+						},
+						"properties": [
+							{
+								"type": "Property",
+								"start": 91,
+								"end": 105,
+								"loc": {
+									"start": {
+										"line": 7,
+										"column": 2
+									},
+									"end": {
+										"line": 7,
+										"column": 16
+									}
+								},
+								"method": false,
+								"shorthand": false,
+								"computed": false,
+								"key": {
+									"type": "Identifier",
+									"start": 91,
+									"end": 95,
+									"loc": {
+										"start": {
+											"line": 7,
+											"column": 2
+										},
+										"end": {
+											"line": 7,
+											"column": 6
+										}
+									},
+									"name": "name"
+								},
+								"value": {
+									"type": "Literal",
+									"start": 97,
+									"end": 105,
+									"loc": {
+										"start": {
+											"line": 7,
+											"column": 8
+										},
+										"end": {
+											"line": 7,
+											"column": 16
+										}
+									},
+									"value": "tyreal",
+									"raw": "'tyreal'"
+								},
+								"kind": "init"
+							},
+							{
+								"type": "Property",
+								"start": 109,
+								"end": 116,
+								"loc": {
+									"start": {
+										"line": 8,
+										"column": 2
+									},
+									"end": {
+										"line": 8,
+										"column": 9
+									}
+								},
+								"method": false,
+								"shorthand": false,
+								"computed": false,
+								"key": {
+									"type": "Identifier",
+									"start": 109,
+									"end": 112,
+									"loc": {
+										"start": {
+											"line": 8,
+											"column": 2
+										},
+										"end": {
+											"line": 8,
+											"column": 5
+										}
+									},
+									"name": "age"
+								},
+								"value": {
+									"type": "Literal",
+									"start": 114,
+									"end": 116,
+									"loc": {
+										"start": {
+											"line": 8,
+											"column": 7
+										},
+										"end": {
+											"line": 8,
+											"column": 9
+										}
+									},
+									"value": 22,
+									"raw": "22"
+								},
+								"kind": "init"
+							},
+							{
+								"type": "Property",
+								"start": 120,
+								"end": 134,
+								"loc": {
+									"start": {
+										"line": 9,
+										"column": 2
+									},
+									"end": {
+										"line": 9,
+										"column": 16
+									}
+								},
+								"method": false,
+								"shorthand": false,
+								"computed": false,
+								"key": {
+									"type": "Identifier",
+									"start": 120,
+									"end": 126,
+									"loc": {
+										"start": {
+											"line": 9,
+											"column": 2
+										},
+										"end": {
+											"line": 9,
+											"column": 8
+										}
+									},
+									"name": "school"
+								},
+								"value": {
+									"type": "Literal",
+									"start": 128,
+									"end": 134,
+									"loc": {
+										"start": {
+											"line": 9,
+											"column": 10
+										},
+										"end": {
+											"line": 9,
+											"column": 16
+										}
+									},
+									"value": "gdut",
+									"raw": "'gdut'"
+								},
+								"kind": "init"
+							}
+						]
+					}
+				}
+			],
+			"kind": "const"
+		}
+	],
+	"sourceType": "module"
+}

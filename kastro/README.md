@@ -1,6 +1,6 @@
 # Kastro: React-like components at zero runtime cost
 
-Kastro is a revolutionary web framework that achieves extreme performance by moving computation to compile time while maintaining a familiar React-like developer experience.
+Kastro is a new web framework that achieves extreme performance by moving computation to compile time while maintaining a familiar React-like developer experience.
 
 ## Key Features
 
@@ -36,9 +36,7 @@ import Css from "./Button.css";
  * @param {{ Lang: LangCode }} props
  */
 const Button = ({ Lang }) => {
-  /** @const {HTMLButtonElement} */
   const Root = dom.button(Css.Root);
-  /** @const {HTMLSpanElement} */
   const Text = dom.span(Css.Text);
 
   return (
@@ -54,9 +52,9 @@ export default Button;
 When compiled, this generates minimal client JavaScript:
 
 ```javascript
-const get = (a) => document.getElementById(a);
-const b = get("B");
-get("A").onclick = () => b.firstChild.data = "Clicked!";
+const g = (a) => document.getElementById(a);
+const b = g("B");
+g("A").onclick = () => b.firstChild.data = "Clicked!";
 ```
 
 ## Core Concepts
@@ -127,9 +125,7 @@ import Css from "./LandingPage.css";
  * @param {{ Lang: LangCode }} props
  */
 const LandingPage = ({ Lang }) => {
-  /** @const {HTMLButtonElement} */
   const Button = dom.button(Css.Button);
-  /** @const {HTMLSpanElement} */
   const Text = dom.span(Css.Text);
 
   return (

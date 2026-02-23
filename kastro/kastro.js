@@ -1,8 +1,6 @@
 import { plugin, spawn } from "bun";
-import { cp, readFile } from "node:fs/promises";
+import { cp } from "node:fs/promises";
 import process from "node:process";
-import { createServer } from "vite";
-import "../kdjs/util/plugin";
 import { Blue, Clear, parseArgs } from "../util/cli";
 import { combine, getDir, getExt } from "../util/paths";
 import compiler from "./compiler/compiler";
@@ -18,9 +16,7 @@ import {
 import { pageTarget } from "./compiler/page";
 import { scriptTarget } from "./compiler/script";
 import { styleSheetTarget } from "./compiler/styleSheet";
-import { registerTargetFunction } from "./compiler/targetRegistry";
-import { getGlobals } from "./transpiler/pageGlobals";
-import { transpileCss, transpileJsx } from "./transpiler/transpiler";
+import { registerTargetFunction } from "./compiler/target";
 import { CompressedMimes } from "./workers/mimes";
 
 const setupKastro = () => {
@@ -142,76 +138,12 @@ const setupKastro = () => {
   };
 }
 
-/**
- *
- * @param {string} mpaConfig
- * @param {compiler.BuildMode} buildMode
- */
-const serverMpa = async (mpaConfigFile, buildMode) => {
-  const mpaConfig = await import(mpaConfigFile);
-
-}
-
 const serveCrate = async (crateName, buildMode) => {
   setupKastro(buildMode);
   const crate = await import(crateName);
   /** @const {Record<string, PageTarget>} */
   const map = crates.getPageTargets(crate, buildMode);
-
-  let currentPageProps;
-  let currentPageGlobalsPattern;
-
-  createServer({
-    appType: "mpa",
-    publicDir: buildMode == compiler.BuildMode.Dev ? "" : "build/bundle",
-    plugins: [{
-      name: "kastro-js",
-      enforce: "pre",
-
-      configureServer(server) {
-        server.middlewares.use(async (req, res, next) => {
-          if (req.originalUrl in map) {
-            res.setHeader("content-type", "text/html;charset=utf-8");
-            server.moduleGraph.invalidateAll();
-            currentPageProps = map[req.originalUrl];
-            compiler.forceBuildTarget(currentPageProps.targetName, currentPageProps)
-              .then((content) => {
-                const globals = getGlobals();
-                globals.GEN = false;
-                currentPageGlobalsPattern = new RegExp(Object.keys(globals)
-                  .map((key) => `/\\*\\* @define \\{[^}]*\\} \\*/\\s*const ${key} =.*?;`)
-                  .join("|"), "g");
-                res.end(content)
-              });
-          } else next();
-        })
-      },
-
-      resolveId(source, importer) {
-        if (source.endsWith(".css"))
-          return importer.slice(0, importer.lastIndexOf("/") + 1) + source + ".js";
-      },
-
-      load(id) {
-        if (id.endsWith(".css.js"))
-          return readFile(id.slice(0, -3), "utf8")
-            .then((css) => transpileCss(css, id.slice(0, -3)));
-      },
-
-      transform(code, id) {
-        if (id.endsWith(".jsx"))
-          code = transpileJsx(code, id);
-
-        const globals = getGlobals();
-        return code.replace(currentPageGlobalsPattern, (match) => {
-          const constIdx = match.indexOf("const");
-          const varName = match.slice(match.indexOf("\nconst") + 6, match.indexOf("=", constIdx)).trim();
-          return `\nconst ${varName} = ${JSON.stringify(globals[varName])};`
-        });
-      }
-    }]
-  }).then((vite) => vite.listen(8787))
-    .then(console.log("Dev server running at http://localhost:8787"));
+  console.log(map);
 }
 
 /**
@@ -250,7 +182,7 @@ const buildCrate = async (crateName, buildMode, lang) => {
   const map = crates.getPageTargets(crate, buildMode, lang);
 
   for (const page of Object.values(map))
-    if (["en", "mint"].includes(page.bundleName)) {
+    if (["mint", "en"].includes(page.bundleName)) {
       console.info(`${Blue}[Building]${Clear} Page ${page.bundleName}`);
       await compiler.bundleTarget(page.targetName, page);
     }
@@ -274,6 +206,7 @@ const crateName = (Array.isArray(args["command"]) ? args["command"][1] : "") + "
 if (args["command"] == "serve")
   serveCrate(crateName, args["compiled"] ? compiler.BuildMode.Compiled : compiler.BuildMode.Dev);
 else if (args["command"] == "build")
-  buildCrate(crateName, compiler.BuildMode.Release, args["lang"]);
+  buildCrate(crateName, compiler.BuildMode.Compiled, args["lang"]);
 else if (args["command"] == "deploy")
   deployCrate(crateName, args["target"] || "cloudflare");
+

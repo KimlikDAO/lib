@@ -1,0 +1,245 @@
+{
+	"type": "Program",
+	"start": 0,
+	"end": 57,
+	"loc": {
+		"start": {
+			"line": 1,
+			"column": 0
+		},
+		"end": {
+			"line": 3,
+			"column": 1
+		}
+	},
+	"body": [
+		{
+			"type": "FunctionDeclaration",
+			"start": 0,
+			"end": 57,
+			"loc": {
+				"start": {
+					"line": 1,
+					"column": 0
+				},
+				"end": {
+					"line": 3,
+					"column": 1
+				}
+			},
+			"id": {
+				"type": "Identifier",
+				"start": 9,
+				"end": 13,
+				"loc": {
+					"start": {
+						"line": 1,
+						"column": 9
+					},
+					"end": {
+						"line": 1,
+						"column": 13
+					}
+				},
+				"name": "test"
+			},
+			"expression": false,
+			"generator": false,
+			"async": false,
+			"params": [
+				{
+					"type": "Identifier",
+					"start": 14,
+					"end": 26,
+					"loc": {
+						"start": {
+							"line": 1,
+							"column": 14
+						},
+						"end": {
+							"line": 1,
+							"column": 26
+						}
+					},
+					"name": "name",
+					"typeAnnotation": {
+						"type": "TSTypeAnnotation",
+						"start": 18,
+						"end": 26,
+						"loc": {
+							"start": {
+								"line": 1,
+								"column": 18
+							},
+							"end": {
+								"line": 1,
+								"column": 26
+							}
+						},
+						"typeAnnotation": {
+							"type": "TSStringKeyword",
+							"start": 20,
+							"end": 26,
+							"loc": {
+								"start": {
+									"line": 1,
+									"column": 20
+								},
+								"end": {
+									"line": 1,
+									"column": 26
+								}
+							}
+						}
+					}
+				}
+			],
+			"returnType": {
+				"type": "TSTypeAnnotation",
+				"start": 27,
+				"end": 33,
+				"loc": {
+					"start": {
+						"line": 1,
+						"column": 27
+					},
+					"end": {
+						"line": 1,
+						"column": 33
+					}
+				},
+				"typeAnnotation": {
+					"type": "TSVoidKeyword",
+					"start": 29,
+					"end": 33,
+					"loc": {
+						"start": {
+							"line": 1,
+							"column": 29
+						},
+						"end": {
+							"line": 1,
+							"column": 33
+						}
+					}
+				}
+			},
+			"body": {
+				"type": "BlockStatement",
+				"start": 34,
+				"end": 57,
+				"loc": {
+					"start": {
+						"line": 1,
+						"column": 34
+					},
+					"end": {
+						"line": 3,
+						"column": 1
+					}
+				},
+				"body": [
+					{
+						"type": "ExpressionStatement",
+						"start": 38,
+						"end": 55,
+						"loc": {
+							"start": {
+								"line": 2,
+								"column": 2
+							},
+							"end": {
+								"line": 2,
+								"column": 19
+							}
+						},
+						"expression": {
+							"type": "CallExpression",
+							"start": 38,
+							"end": 55,
+							"loc": {
+								"start": {
+									"line": 2,
+									"column": 2
+								},
+								"end": {
+									"line": 2,
+									"column": 19
+								}
+							},
+							"callee": {
+								"type": "MemberExpression",
+								"start": 38,
+								"end": 49,
+								"loc": {
+									"start": {
+										"line": 2,
+										"column": 2
+									},
+									"end": {
+										"line": 2,
+										"column": 13
+									}
+								},
+								"object": {
+									"type": "Identifier",
+									"start": 38,
+									"end": 45,
+									"loc": {
+										"start": {
+											"line": 2,
+											"column": 2
+										},
+										"end": {
+											"line": 2,
+											"column": 9
+										}
+									},
+									"name": "console"
+								},
+								"property": {
+									"type": "Identifier",
+									"start": 46,
+									"end": 49,
+									"loc": {
+										"start": {
+											"line": 2,
+											"column": 10
+										},
+										"end": {
+											"line": 2,
+											"column": 13
+										}
+									},
+									"name": "log"
+								},
+								"computed": false,
+								"optional": false
+							},
+							"arguments": [
+								{
+									"type": "Identifier",
+									"start": 50,
+									"end": 54,
+									"loc": {
+										"start": {
+											"line": 2,
+											"column": 14
+										},
+										"end": {
+											"line": 2,
+											"column": 18
+										}
+									},
+									"name": "name"
+								}
+							],
+							"optional": false
+						}
+					}
+				]
+			}
+		}
+	],
+	"sourceType": "module"
+}

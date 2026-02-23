@@ -40,7 +40,15 @@ Point.prototype.s = function () {
   return this.sc("");
 }
 
-const sayıDoğrusu = (en, boy, renk) =>
+/**
+ * Draws a number line of a given length and color.
+ *
+ * @param {number} en
+ * @param {number} boy
+ * @param {string} renk
+ * @return {string}
+ */
+const numberLine = (en, boy, renk) =>
   `<path d="M0 ${boy / 2}h${en}M${en / 2} 0v${boy}" stroke="${renk}"/>`;
 
 /**
@@ -111,5 +119,5 @@ const gerçelEliptikEğri = (a, b, en, boy, renk) => {
 export {
   Point,
   gerçelEliptikEğri,
-  sayıDoğrusu
+  numberLine
 };

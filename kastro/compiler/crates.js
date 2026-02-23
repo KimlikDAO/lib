@@ -1,8 +1,9 @@
 import { LangCode } from "../../util/i18n";
 
 /**
- * @param {!Object} crate
- * @return {!Array<LangCode>}
+ * Infers `LangCode`s used in a crate.
+ * @param {Object} crate
+ * @return {LangCode[]}
  */
 const getLanguages = (crate) => crate.Languages || Object.keys(Object.values(crate.Page)[0]);
 
@@ -23,6 +24,7 @@ const addPageTargets = (map, { Page, CodebaseLang, Entry }, buildMode, lang) => 
       Route: { ...Page[name] },
       bundleName: Page[name][lang],
       targetName: `/build/${dirName}/page-${lang}.html`,
+      alwaysBuild: true,
     };
     delete pageProps.Route[lang];
     map[`/${pageProps.bundleName}`] = pageProps;
@@ -33,7 +35,7 @@ const addPageTargets = (map, { Page, CodebaseLang, Entry }, buildMode, lang) => 
  * @param {!Object} crate 
  * @param {compiler.BuildMode} buildMode
  * @param {LangCode=} lang
- * @return {!Object<string, PageTarget>}
+ * @return {Record<string, PageTarget>}
  */
 const getPageTargets = (crate, buildMode, lang) => {
   const map = {};
