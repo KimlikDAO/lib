@@ -2,10 +2,11 @@
 const Modifier = {
   Nullable: 1,
   Optional: 2,
-  Readonly: 4,
 
+  AlwaysInline: 16,
+  NoInline: 32,
   NoSideEffects: 64,
-  PureOrBreakMyCode: 128,
+  Pure: 128 + 64, // Pure means both NoSideEffects and determined through provided params
 };
 
 /**
@@ -50,7 +51,15 @@ class Type {
    * @return {string}
    */
   toClosureExpr(context) {
-    throw new Error("Abstract method" + context);
+    throw "Abstract method" + context;
+  }
+
+  /**
+   * @param {Context=} context
+   * @return {string}
+   */
+  toTsExpr(context) {
+    throw "Abstract method";
   }
 
   /**
@@ -91,7 +100,7 @@ class UnionType extends Type {
   addToUnion(union) {
     union.modifiers |= this.modifiers;
     for (const type of this.typeMap.values())
-      type.addToUnion(union);    
+      type.addToUnion(union);
   }
 
   /**
@@ -112,7 +121,7 @@ class UnionType extends Type {
     if (this.typeMap.size == 1) {
       const type = this.typeMap.values().next().value;
       if (type instanceof TopType)
-        return type.toClosureExpr({ toParam }); 
+        return type.toClosureExpr({ toParam });
     }
 
     let expr = "";
@@ -127,9 +136,41 @@ class UnionType extends Type {
       expr += "|undefined";
     if (wrap && ( // Count whether we've added >1 types into the closure expression.
       this.typeMap.size > 1
-      || modifiers & Modifier.Nullable 
+      || modifiers & Modifier.Nullable
       || modifiers & Modifier.Optional && !toParam
     ))
+      expr = `(${expr})`;
+    if ((modifiers & Modifier.Optional) && toParam)
+      expr += "=";
+
+    return expr;
+  }
+
+  /**
+   * @param {Context=} context
+   * @return {string}
+   */
+  toTsExpr({ toParam, wrap, bare } = {}) {
+    const modifiers = bare ? 0 : this.modifiers;
+
+    if (this.typeMap.size == 1) {
+      const type = this.typeMap.values().next().value;
+      if (type instanceof TopType)
+        return type.toTsExpr({ toParam });
+    }
+
+    let expr = "";
+    let separator = "";
+    for (const type of this.typeMap.values()) {
+      expr += separator + type.toTsExpr({ bare: true });
+      separator = " | ";
+    }
+    if (modifiers & Modifier.Nullable)
+      expr += " | null";
+    if ((modifiers & Modifier.Optional) && !toParam)
+      expr += " | undefined";
+    if (wrap && (this.typeMap.size > 1 || modifiers & Modifier.Nullable ||
+      (modifiers & Modifier.Optional && !toParam)))
       expr = `(${expr})`;
     if ((modifiers & Modifier.Optional) && toParam)
       expr += "=";
@@ -161,7 +202,7 @@ class PrimitiveType extends Type {
    */
   constructor(name) {
     const modifiers = (name == PrimitiveTypeName.Null)
-      ? Modifier.Nullable : (name == PrimitiveTypeName.Undefined) 
+      ? Modifier.Nullable : (name == PrimitiveTypeName.Undefined)
         ? Modifier.Optional : 0;
     super(modifiers);
     /** @const {PrimitiveTypeName} */
@@ -180,8 +221,22 @@ class PrimitiveType extends Type {
       expr = "?" + expr;
     if (modifiers & Modifier.Optional) {
       const addingUndefined = !toParam && this.name != PrimitiveTypeName.Undefined;
-      expr += addingUndefined ? "|undefined" 
+      expr += addingUndefined ? "|undefined"
         : toParam ? "=" : "";
+      if (wrap && addingUndefined)
+        expr = `(${expr})`;
+    }
+    return expr;
+  }
+
+  toTsExpr({ toParam, bare, wrap } = {}) {
+    const modifiers = bare ? 0 : this.modifiers;
+    let expr = this.name;
+    if (modifiers & Modifier.Nullable && this.name != PrimitiveTypeName.Null)
+      expr += " | null";
+    if (modifiers & Modifier.Optional) {
+      const addingUndefined = !toParam && this.name != PrimitiveTypeName.Undefined;
+      expr += addingUndefined ? " | undefined" : toParam ? "=" : "";
       if (wrap && addingUndefined)
         expr = `(${expr})`;
     }
@@ -222,6 +277,11 @@ class TopType extends Type {
   toClosureExpr({ toParam } = {}) {
     return this.name + (toParam ? "=" : "");
   }
+
+  toTsExpr({ toParam } = {}) {
+    const name = this.name == TopTypeName.Any ? "any" : "unknown";
+    return name + (toParam ? "=" : "");
+  }
 }
 
 class InstanceType extends Type {
@@ -243,6 +303,19 @@ class InstanceType extends Type {
     expr = (modifiers & Modifier.Nullable ? "?" : "!") + expr;
     if (modifiers & Modifier.Optional) {
       expr += toParam ? "=" : "|undefined";
+      if (!toParam && wrap)
+        expr = `(${expr})`;
+    }
+    return expr;
+  }
+
+  toTsExpr({ toParam, bare, wrap } = {}) {
+    const modifiers = bare ? 0 : this.modifiers;
+    let expr = this.name;
+    if (modifiers & Modifier.Nullable)
+      expr += " | null";
+    if (modifiers & Modifier.Optional) {
+      expr += toParam ? "=" : " | undefined";
       if (!toParam && wrap)
         expr = `(${expr})`;
     }
@@ -285,6 +358,26 @@ class GenericType extends Type {
     }
     return expr;
   }
+
+  toTsExpr({ toParam, bare, wrap } = {}) {
+    const modifiers = bare ? 0 : this.modifiers;
+    let inner;
+    if (this.name == "Array")
+      inner = this.params[0].toTsExpr({ wrap: true }) + "[]";
+    else if (this.name == "ReadonlyArray")
+      inner = "readonly " + this.params[0].toTsExpr({ wrap: true }) + "[]";
+    else
+      inner = this.name + "<" + this.params.map(p => p.toTsExpr()).join(", ") + ">";
+    let expr = inner;
+    if (modifiers & Modifier.Nullable)
+      expr += " | null";
+    if (modifiers & Modifier.Optional) {
+      expr += toParam ? "=" : " | undefined";
+      if (!toParam && wrap)
+        expr = `(${expr})`;
+    }
+    return expr;
+  }
 }
 
 class StructType extends Type {
@@ -316,6 +409,26 @@ class StructType extends Type {
       expr = "?" + expr;
     if (modifiers & Modifier.Optional) {
       expr += toParam ? "=" : "|undefined";
+      if (!toParam && wrap)
+        expr = `(${expr})`;
+    }
+    return expr;
+  }
+
+  toTsExpr({ toParam, wrap, bare } = {}) {
+    const modifiers = bare ? 0 : this.modifiers;
+    const members = this.members;
+    let expr = "";
+    let sep = "";
+    for (const key in members) {
+      expr += `${sep}${key}: ${members[key].toTsExpr({ wrap: true })}`;
+      sep = ", ";
+    }
+    expr = `{ ${expr} }`;
+    if (modifiers & Modifier.Nullable)
+      expr += " | null";
+    if (modifiers & Modifier.Optional) {
+      expr += toParam ? "=" : " | undefined";
       if (!toParam && wrap)
         expr = `(${expr})`;
     }
@@ -364,10 +477,7 @@ class FunctionType extends Type {
 
     const returnTypeStr = this.returnType.toClosureExpr({ wrap: true });
 
-    // Build function type
     let functionType = "";
-
-    // Add this type for methods
     if (this.thisType) {
       const thisTypeStr = stripModifiers(this.thisType.toClosureExpr());
       functionType = `function(this:${thisTypeStr}${paramTypes ? ", " + paramTypes : ""})`;
@@ -375,7 +485,6 @@ class FunctionType extends Type {
       functionType = `function(${paramTypes})`;
     }
 
-    // Add return type if not void
     if (!(this.returnType instanceof PrimitiveType &&
       this.returnType.name == PrimitiveTypeName.Undefined)) {
       functionType += `: ${returnTypeStr}`;
@@ -387,6 +496,71 @@ class FunctionType extends Type {
       functionType += toParam ? "=" : "|undefined";
       if (!toParam && wrap)
         functionType = `(${functionType})`;
+    }
+    return functionType;
+  }
+
+  /**
+   * @return {string} JSDoc block for this function type (@param and @return lines).
+   */
+  toTsDoc() {
+    const lastIdx = this.params.length - 1;
+    const lines = [];
+    if (this.modifiers & Modifier.NoInline)
+      lines.push(" * @noinline");
+    if (this.modifiers & Modifier.NoSideEffects)
+      lines.push(" * @nosideeffects");
+    if (this.modifiers & Modifier.Pure)
+      lines.push(" * @pureOrBreakMyCode");
+    for (let i = 0; i < this.params.length; i++) {
+      const param = this.params[i];
+      const label = "arg" + i;
+      const isOptional = i >= this.optionalAfter;
+      if (this.rest && i == lastIdx) {
+        const restType = param.toTsExpr({ bare: true });
+        lines.push(` * @param {...${restType}} ${label}`);
+      } else {
+        const typeStr = param.toTsExpr({ toParam: isOptional });
+        lines.push(` * @param {${typeStr}} ${label}`);
+      }
+    }
+    const returnTypeStr = this.returnType.toTsExpr();
+    lines.push(` * @return {${returnTypeStr}}`);
+    return "/**\n" + lines.join("\n") + "\n */";
+  }
+
+  toTsExpr({ toParam, wrap, bare } = {}) {
+    const modifiers = bare ? 0 : this.modifiers;
+    const lastIdx = this.params.length - 1;
+    const paramParts = this.params.map((param, i) => {
+      const label = "arg" + i;
+      if (this.rest && i == lastIdx)
+        return "..." + label + ": " + param.toTsExpr({ bare: true });
+      const isOptional = i >= this.optionalAfter;
+      return label + ": " + param.toTsExpr({ toParam: isOptional, wrap: true });
+    });
+    const paramTypes = paramParts.join(", ");
+    const returnTypeStr = this.returnType.toTsExpr({ wrap: true });
+    let functionType = "";
+    if (this.thisType) {
+      const thisStr = this.thisType.toTsExpr({ bare: true });
+      functionType = `(this: ${thisStr}${paramTypes ? ", " + paramTypes : ""})`;
+    } else
+      functionType = `(${paramTypes})`;
+    if (!(this.returnType instanceof PrimitiveType &&
+      this.returnType.name == PrimitiveTypeName.Undefined))
+      functionType += ` => ${returnTypeStr}`;
+    else
+      functionType += " => void";
+    if (modifiers & Modifier.Nullable || (modifiers & Modifier.Optional && !toParam)) {
+      functionType = "(" + functionType + ")";
+    }
+    if (modifiers & Modifier.Nullable)
+      functionType += " | null";
+    if (modifiers & Modifier.Optional) {
+      functionType += toParam ? "=" : " | undefined";
+      if (!toParam && wrap)
+        functionType = "(" + functionType + ")";
     }
     return functionType;
   }
@@ -414,6 +588,10 @@ class ConstructorType extends FunctionType {
 
   toClosureExpr(context) {
     return super.toClosureExpr(context).replace("this:", "new:");
+  }
+
+  toTsExpr(context) {
+    return super.toTsExpr(context).replace("this:", "new:");
   }
 }
 

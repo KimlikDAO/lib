@@ -446,3 +446,133 @@ describe("FunctionType", () => {
     );
   });
 });
+
+describe("toTsExpr (TS/JSDoc inside {})", () => {
+  test("InstanceType: no !, optional toParam =", () => {
+    const user = new InstanceType("User");
+    expect(user.toTsExpr()).toBe("User");
+    user.modifiers = Modifier.Optional;
+    expect(user.toTsExpr()).toBe("User | undefined");
+    expect(user.toTsExpr({ toParam: true })).toBe("User=");
+  });
+
+  test("Array as T[]", () => {
+    const arr = new GenericType("Array", [new InstanceType("User")]);
+    expect(arr.toTsExpr()).toBe("User[]");
+  });
+
+  test("ReadonlyArray as readonly T[]", () => {
+    const arr = new GenericType("ReadonlyArray", [new InstanceType("User")]);
+    expect(arr.toTsExpr()).toBe("readonly User[]");
+  });
+
+  test("optional array toParam: User[]=", () => {
+    const arr = new GenericType("Array", [new InstanceType("User")]);
+    arr.modifiers = Modifier.Optional;
+    expect(arr.toTsExpr()).toBe("User[] | undefined");
+    expect(arr.toTsExpr({ toParam: true })).toBe("User[]=");
+  });
+
+  test("nullable and undefined explicit", () => {
+    const u = new InstanceType("User");
+    u.modifiers = Modifier.Nullable | Modifier.Optional;
+    expect(u.toTsExpr()).toBe("User | null | undefined");
+    expect(u.toTsExpr({ toParam: true })).toBe("User | null=");
+  });
+
+  test("any and unknown", () => {
+    const any = new TopType(TopTypeName.Any);
+    expect(any.toTsExpr()).toBe("any");
+    expect(any.toTsExpr({ toParam: true })).toBe("any=");
+    const unknown = new TopType(TopTypeName.Unknown);
+    expect(unknown.toTsExpr()).toBe("unknown");
+  });
+
+  test("function type", () => {
+    const fn = new FunctionType(
+      [new PrimitiveType(PrimitiveTypeName.String)],
+      new PrimitiveType(PrimitiveTypeName.Number)
+    );
+    expect(fn.toTsExpr()).toBe("(arg0: string) => number");
+  });
+
+  test("optional function: bare × toParam (4 combos)", () => {
+    const fn = new FunctionType(
+      [new PrimitiveType(PrimitiveTypeName.String)],
+      new PrimitiveType(PrimitiveTypeName.Number)
+    );
+    fn.modifiers = Modifier.Optional;
+    expect(fn.toTsExpr({ bare: false, toParam: false }))
+      .toBe("((arg0: string) => number) | undefined");
+    expect(fn.toTsExpr({ bare: false, toParam: true }))
+      .toBe("(arg0: string) => number=");
+    expect(fn.toTsExpr({ bare: true, toParam: false }))
+      .toBe("(arg0: string) => number");
+    expect(fn.toTsExpr({ bare: true, toParam: true }))
+      .toBe("(arg0: string) => number");
+  });
+
+  test("toTsDoc", () => {
+    const fn = new FunctionType(
+      [new PrimitiveType(PrimitiveTypeName.String), new PrimitiveType(PrimitiveTypeName.Number)],
+      new PrimitiveType(PrimitiveTypeName.Boolean)
+    );
+    expect(fn.toTsDoc()).toBe(
+      "/**\n" +
+      " * @param {string} arg0\n" +
+      " * @param {number} arg1\n" +
+      " * @return {boolean}\n" +
+      " */"
+    );
+  });
+
+  test("toTsDoc optional param", () => {
+    const fn = new FunctionType(
+      [new PrimitiveType(PrimitiveTypeName.String), new PrimitiveType(PrimitiveTypeName.Number)],
+      new PrimitiveType(PrimitiveTypeName.Boolean),
+      false,
+      1
+    );
+    fn.params[1].modifiers = Modifier.Optional;
+    expect(fn.toTsDoc()).toBe(
+      "/**\n" +
+      " * @param {string} arg0\n" +
+      " * @param {number=} arg1\n" +
+      " * @return {boolean}\n" +
+      " */"
+    );
+  });
+
+  test("toTsDoc rest param", () => {
+    const fn = new FunctionType(
+      [new PrimitiveType(PrimitiveTypeName.String), new GenericType("Array", [new PrimitiveType(PrimitiveTypeName.Number)])],
+      new PrimitiveType(PrimitiveTypeName.Undefined),
+      true,
+      2
+    );
+    expect(fn.toTsDoc()).toBe(
+      "/**\n" +
+      " * @param {string} arg0\n" +
+      " * @param {...number[]} arg1\n" +
+      " * @return {undefined}\n" +
+      " */"
+    );
+  });
+
+  test("toTsDoc NoInline NoSideEffects Pure", () => {
+    const fn = new FunctionType(
+      [new PrimitiveType(PrimitiveTypeName.Number)],
+      new PrimitiveType(PrimitiveTypeName.Number)
+    );
+    fn.modifiers = Modifier.NoInline | Modifier.NoSideEffects | Modifier.Pure;
+    expect(fn.toTsDoc()).toBe(
+      "/**\n" +
+      " * @noinline\n" +
+      " * @nosideeffects\n" +
+      " * @pureOrBreakMyCode\n" +
+      " * @param {number} arg0\n" +
+      " * @return {number}\n" +
+      " */"
+    );
+  });
+});
