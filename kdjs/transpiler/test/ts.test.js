@@ -51,7 +51,7 @@ const ChainGroup = {
 };
 /** @const {readonly ChainGroup[]} */
 const ChainGroups = [ChainGroup.EVM, ChainGroup.MINA];
-const chainIdToGroup = (id) => /** @type {ChainGroup} */(unknown);
+const chainIdToGroup = (id) => /** @type {ChainGroup} */(id.slice(0, 2));
 
 export {
   ChainId,

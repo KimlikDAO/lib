@@ -1,5 +1,41 @@
 import { generate as generateAstring } from "astring";
 
+/** 
+ * @typedef {{
+ *   typeMap?: Map<string, string>
+ * }}
+ */
+const GenCtx = {};
+
+/** Expression generators: only node types that can appear as an expression. */
+const expressionGenerators = {
+  ArrowFunctionExpression(node, ctx) {
+    console.log(node.params[0].typeAnnotation);
+    const params = (node.params || []).map((p) => (p.type === "Identifier" ? p.name : "")).filter(Boolean);
+    const body = (node.body.type === "TSAsExpression" || node.body.type === "TSTypeAssertion")
+      ? generateExpression(node.body, ctx)
+      : generateAstring(node.body);
+    return "(" + params.join(", ") + ") => " + body;
+  },
+  TSAsExpression(node, ctx) {
+    return `/** @type {${generateTypeExpr(node.typeAnnotation, ctx?.typeMap)}} */(${generateExpression(node.expression, ctx)})`;
+  },
+  TSTypeAssertion(node, ctx) {
+    return `/** @type {${generateTypeExpr(node.typeAnnotation, ctx?.typeMap)}} */(${generateExpression(node.expression, ctx)})`;
+  },
+};
+
+/**
+ * @param {acorn.Expression} node
+ * @param {GenCtx=} ctx
+ * @return {string}
+ */
+const generateExpression = (node, ctx = {}) => {
+  const f = expressionGenerators[node.type];
+  if (f) return f(node, ctx);
+  return generateAstring(node);
+};
+
 /** @param {acorn.ExportNamedDeclaration} node */
 const generateExport = (node) => {
   if (!node.specifiers || node.specifiers.length == 0) return "";
@@ -7,18 +43,8 @@ const generateExport = (node) => {
   return "export {\n" + entries + "\n};\n";
 };
 
-const generate = (node) =>
-  node.type === "ArrowFunctionExpression" ? generateArrowFunction(node) : generateAstring(node);
-
-/**
- * Arrow function with single expression body only (no block {}).
- * @param {acorn.ArrowFunctionExpression} node
- * @return {string}
- */
-const generateArrowFunction = (node) => {
-  const params = (node.params || []).map((p) => (p.type === "Identifier" ? p.name : "")).filter(Boolean);
-  return "(" + params.join(", ") + ") => " + generateAsExpression(node.body);
-};
+/** Top-level: delegate to expression for init RHS, or use for future statement table. */
+const generate = (node, ctx) => generateExpression(node, ctx);
 
 /**
  * Enum value type (number vs string) is not on the AST; we infer it from member initializers.
@@ -66,9 +92,6 @@ const generateTypedef = (node, namespace, typeMap) => {
   output += `${fullName};\n\n`;
   return output;
 };
-
-const generateAsExpression = (node) =>
-  `/** @type {${generateTypeExpr(node.typeAnnotation)}} */(${generateTypeExpr(node.expression)})`;
 
 /**
  * @param {acorn.TSType} typeNode
@@ -152,7 +175,7 @@ const generateTypeExpr = (typeNode, typeMap) => {
 
 export {
   generate,
-  generateArrowFunction,
+  generateExpression,
   generateEnum,
   generateExport,
   generateTypedef,

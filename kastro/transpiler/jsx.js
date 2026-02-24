@@ -25,8 +25,8 @@ const resolveModulePath = (importer, source) => source.startsWith('.')
   : source.slice(1);
 
 /**
- * Applies the kastro/kdjs transpilation rules to a jsx file obtaining a pure
- * js file. The rules are as follows:
+ * Applies the kastro transpilation rules to a jsx file obtaining a pure js
+ * file. The rules are as follows:
  *
  *  - Replace every jsx expression with a Promise.reject(), but emit a list of
  *    initialization statements obtained from the jsx expression.
@@ -43,21 +43,21 @@ const resolveModulePath = (importer, source) => source.startsWith('.')
  * @return {string} The transpiled js file
  */
 const transpile = (isEntry, file, content, domIdMapper, globals) => {
-  /** @const {Array<!acorn.Comment>} */
+  /** @type {acorn.Comment[]} */
   const comments = [];
-  /** @const {Array<Update>} */
+  /** @type {Update[]} */
   const updates = [];
-  /** @const {Array<!acorn.ImportDeclaration>} */
+  /** @type {acorn.ImportDeclaration[]} */
   const importStatements = [];
   /** @typedef {{ node: !acorn.ImportDeclaration, state: SpecifierState }} */
   const SpecifierInfo = {};
-  /** @const {Object<string, SpecifierInfo>} */
+  /** @type {Record<string, SpecifierInfo>} */
   const specifierInfo = {};
-  /** @const {Set} */
+  /** @const {Set<string>} */
   const assetComponents = new Set();
-  /** @const {Set} */
+  /** @const {Set<string>} */
   const localComponents = new Set();
-  /** @const {Set} */
+  /** @const {Set<string>} */
   const styleSheetComponents = new Set();
   /** @const {Map<string, string>} */
   const workerComponents = new Map();
@@ -403,7 +403,7 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
 
   const pruneImports = () => {
     for (const importStatement of importStatements) {
-      /** @const {ImportStatement} */
+      /** @type {ImportStatement} */
       const newImportStmt = { source: importStatement.source.value, named: {}, unnamed: "" };
       /** @type {boolean} */
       let keepBare = !importStatement.specifiers.length;
@@ -449,13 +449,12 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
         end: exportNode.end,
         put: ""
       });
-    } else {
+    } else
       updates.push({
         beg: exportNode.start,
         end: exportNode.declaration.start,
         put: `const ${rootComponentName} = `
       });
-    }
 
     if (defaultExport.type === "Identifier") {
       const name = defaultExport.name;

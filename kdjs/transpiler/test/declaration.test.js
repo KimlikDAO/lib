@@ -197,7 +197,6 @@ namespace$$test$provider.ExtendedProvider.prototype.additionalProperty;
 
 test("type alias (readonly T[])[] emits parenthesized readonly in typedef", () => {
   const result = transpile("type A = (readonly bigint[])[];", "test/types.d.ts");
-  console.log(result);
   expect(result).toContain("@typedef {(readonly bigint[])[]}");
   expect(result).toContain("namespace$$test$types.A");
 });
