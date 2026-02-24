@@ -163,6 +163,35 @@ describe("Arrays", () => {
     expect(type.isOptional()).toBeTrue();
     expect(paramOpt).toBeTrue();
   });
+
+  it("parses readonly Type[] as ReadonlyArray", () => {
+    const ro = /** @type {GenericType} */(parseType("readonly number[]"));
+    expect(ro).toBeInstanceOf(GenericType);
+    expect(ro.name).toBe("ReadonlyArray");
+    expect(ro.params.length).toBe(1);
+    expect(/** @type {PrimitiveType} */(ro.params[0]).name).toBe(PrimitiveTypeName.Number);
+  });
+
+  it("parses readonly (readonly T[])[] as nested ReadonlyArray", () => {
+    const ro = /** @type {GenericType} */(parseType("readonly (readonly bigint[])[]"));
+    expect(ro).toBeInstanceOf(GenericType);
+    expect(ro.name).toBe("ReadonlyArray");
+    expect(ro.params.length).toBe(1);
+    const inner = /** @type {GenericType} */(ro.params[0]);
+    expect(inner.name).toBe("ReadonlyArray");
+    expect(/** @type {PrimitiveType} */(inner.params[0]).name).toBe(PrimitiveTypeName.BigInt);
+  });
+
+  it("parses readonly bigint[][]", () => {
+    const ro = /** @type {GenericType} */(parseType("readonly bigint[][]"));
+    expect(ro).toBeInstanceOf(GenericType);
+    expect(ro.name).toBe("Array");
+    expect(ro.params.length).toBe(1);
+    const inner = /** @type {GenericType} */(ro.params[0]);
+    expect(inner.name).toBe("ReadonlyArray");
+    expect(/** @type {PrimitiveType} */(inner.params[0]).name)
+      .toBe(PrimitiveTypeName.BigInt);
+  });
 })
 
 describe("Unions and generics", () => {
@@ -350,10 +379,12 @@ describe("Structs", () => {
   it("parses with trailing comma", () => {
     const struct = /** @type {StructType} */(parseType("{name: string, age: number,}"));
     expect(struct).toBeInstanceOf(StructType);
-    expect(struct.members["name"]).toBeInstanceOf(PrimitiveType);
-    expect(struct.members["name"].name).toBe(PrimitiveTypeName.String);
-    expect(struct.members["age"]).toBeInstanceOf(PrimitiveType);
-    expect(struct.members["age"].name).toBe(PrimitiveTypeName.Number);
+    const name = /** @type {PrimitiveType} */(struct.members["name"]);
+    expect(name).toBeInstanceOf(PrimitiveType);
+    expect(name.name).toBe(PrimitiveTypeName.String);
+    const age = /** @type {PrimitiveType} */(struct.members["age"]);
+    expect(age).toBeInstanceOf(PrimitiveType);
+    expect(age.name).toBe(PrimitiveTypeName.Number);
   });
 
   it("parses multi-line complex structs", () => {
@@ -499,8 +530,9 @@ describe("Functions", () => {
 
   it("parses @param {...bigint}", () => {
     const { type, paramRest } = parseTypePrefix("...bigint");
-    expect(type).toBeInstanceOf(PrimitiveType);
-    expect(type.name).toBe(PrimitiveTypeName.BigInt);
+    const primitive = /** @type {PrimitiveType} */(type);
+    expect(primitive).toBeInstanceOf(PrimitiveType);
+    expect(primitive.name).toBe(PrimitiveTypeName.BigInt);
     expect(paramRest).toBeTrue();
   })
 });

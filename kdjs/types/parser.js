@@ -269,8 +269,11 @@ class Parser {
   parseType() {
     const union = new UnionType();
     for (; ;) {
-      let isNullable = this.testChar("?".charCodeAt(0));
       let type;
+      const isNullable = this.testChar("?".charCodeAt(0));
+      let isNextArrayReadonly = this.test("readonly");
+      if (isNextArrayReadonly)
+        this.skipWhitespace();
 
       if (this.pos >= this.input.length)
         break;
@@ -299,12 +302,11 @@ class Parser {
 
       while (this.testChar("[".charCodeAt(0))) {
         this.expectChar("]".charCodeAt(0));
-        const arrayType = new GenericType("Array", [type]);
-        type = arrayType;
+        type = new GenericType(isNextArrayReadonly ? "ReadonlyArray" : "Array", [type]);
+        isNextArrayReadonly = false;
       }
 
-      isNullable ||= this.testChar("?".charCodeAt(0));
-      if (isNullable)
+      if (isNullable || this.testChar("?".charCodeAt(0)))
         type.modifiers |= Modifier.Nullable;
 
       type.addToUnion(union);
