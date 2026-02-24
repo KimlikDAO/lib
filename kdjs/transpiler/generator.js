@@ -17,7 +17,7 @@ const generate = (node) =>
  */
 const generateArrowFunction = (node) => {
   const params = (node.params || []).map((p) => (p.type === "Identifier" ? p.name : "")).filter(Boolean);
-  return "(" + params.join(", ") + ") => " + "{}";
+  return "(" + params.join(", ") + ") => " + generateAsExpression(node.body);
 };
 
 /**
@@ -66,6 +66,9 @@ const generateTypedef = (node, namespace, typeMap) => {
   output += `${fullName};\n\n`;
   return output;
 };
+
+const generateAsExpression = (node) =>
+  `/** @type {${generateTypeExpr(node.typeAnnotation)}} */(${generateTypeExpr(node.expression)})`;
 
 /**
  * @param {acorn.TSType} typeNode

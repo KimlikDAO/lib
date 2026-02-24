@@ -29,6 +29,6 @@ Parameters:
 }
 
 params["output"] ||= /** @type {string} */(params["entry"])
-  .replace(/\.js$/, ".out.js");
+  .replace(/\.(js|ts)$/, ".out.js");
 
 compile(params);
