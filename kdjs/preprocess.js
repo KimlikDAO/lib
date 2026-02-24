@@ -1,8 +1,9 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { combine, getDir } from "../util/paths";
-import { ImportStatement } from "./util/modules";
 import { transpileDeclaration } from "./transpiler/declaration";
 import { transpileJs } from "./transpiler/js";
+import { transpileTs } from "./transpiler/ts";
+import { ImportStatement } from "./util/modules";
 
 /**
  * @param {Record<string, unknown>} params
@@ -42,9 +43,11 @@ const preprocessAndIsolate = async (params, transpileFn) => {
     allFiles.add(file);
     /** @type {string} */
     let content = await readFile(file, "utf8");
-    if (file.endsWith(".d.ts")) {
+    if (file.endsWith(".d.ts"))
       content = transpileDeclaration(content, file);
-    } else if (!file.endsWith(".js")) {
+    else if (file.endsWith(".ts"))
+      content = transpileTs(content);
+    else if (!file.endsWith(".js")) {
       if (!transpileFn) throw "For non-js files please provide a transpile function: " + file;
       /** @const {string | null} */
       const transpiled = transpileFn(content, file, file == entry);

@@ -54,9 +54,8 @@ class Parser {
    */
   expectChar(ch) {
     this.skipWhitespace();
-    if (this.pos >= this.input.length || this.input.charCodeAt(this.pos) !== ch) {
+    if (this.input.charCodeAt(this.pos) != ch)
       throw `Expected '${String.fromCharCode(ch)}' at position ${this.pos}`;
-    }
     this.pos++; // skip expected character
   }
 
@@ -68,9 +67,8 @@ class Parser {
    */
   expectEitherChar(ch1, ch2) {
     this.skipWhitespace();
-    if (this.pos >= this.input.length || (this.input.charCodeAt(this.pos) != ch1 && this.input.charCodeAt(this.pos) != ch2)) {
+    if (this.input.charCodeAt(this.pos) != ch1 && this.input.charCodeAt(this.pos) != ch2)
       throw `Expected '${String.fromCharCode(ch1)}' or '${String.fromCharCode(ch2)}' at position ${this.pos}`;
-    }
     return this.input.charCodeAt(this.pos++) == ch2;
   }
 
@@ -112,7 +110,7 @@ class Parser {
    * Reads an identifier
    * @return {string} The identifier
    */
-  readIdentifier() {
+  parseIdentifier() {
     this.skipWhitespace();
     let i = this.pos;
     for (; i < this.input.length; ++i) {
@@ -178,7 +176,7 @@ class Parser {
           throw `Rest parameter must be the last parameter at position ${this.pos}`;
 
         const isRest = this.test("...");
-        const paramName = this.readIdentifier();
+        const paramName = this.parseIdentifier();
         let isOptional = this.testChar("?".charCodeAt(0));
         this.expectChar(":".charCodeAt(0));
         let paramType = this.parseType();
@@ -225,7 +223,7 @@ class Parser {
     for (; ;) {
       if (this.testChar("}".charCodeAt(0)))
         break;
-      const propName = this.readIdentifier();
+      const propName = this.parseIdentifier();
       let isOptional = propName.endsWith("$") || this.testChar("?".charCodeAt(0));
       this.expectChar(":".charCodeAt(0));
       const propType = this.parseType();
@@ -246,7 +244,7 @@ class Parser {
    * @throws {Error}
    */
   parseNamedType() {
-    const name = this.readIdentifier();
+    const name = this.parseIdentifier();
     const topTypeName = TopTypeNames.get(name);
     if (topTypeName)
       return new TopType(/** @type {TopTypeName} */(topTypeName));
@@ -352,7 +350,9 @@ class Parser {
 }
 
 /**
- * Parses a type expression and returns both the parsed type and the position where parsing ended
+ * Parses a type expression and returns both the parsed type and the position
+ * where parsing ended
+ *
  * @param {string} input The input string to parse
  * @param {number=} startPos Optional starting position (defaults to 0)
  * @return {{
@@ -377,6 +377,7 @@ const parseTypePrefix = (input, startPos = 0) => {
 
 /**
  * Parses a type expression and returns only the parsed type
+ *
  * @param {string} input The input string to parse
  * @return {Type} The parsed type
  * @throws {Error} If parsing fails

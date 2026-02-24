@@ -72,7 +72,7 @@ const namespace$$api$jsonrpc = {};
  * @struct
  * @interface
  */
-namespace$$api$jsonrpc.Request = function() {};
+namespace$$api$jsonrpc.Request = function () {};
 
 /** @const {string} */
 namespace$$api$jsonrpc.Request.prototype.jsonrpc;
@@ -90,7 +90,7 @@ namespace$$api$jsonrpc.Request.prototype.id;
  * @struct
  * @interface
  */
-namespace$$api$jsonrpc.Response = function() {};
+namespace$$api$jsonrpc.Response = function () {};
 
 /** @const {string} */
 namespace$$api$jsonrpc.Response.prototype.jsonrpc;
@@ -135,19 +135,19 @@ const namespace$$api$client = {};
  * @struct
  * @interface
  */
-namespace$$api$client.ApiClient = function() {};
+namespace$$api$client.ApiClient = function () {};
 
 /**
  * @param {string} token
  * @return {Promise<namespace$$auth$auth.User>}
  */
-namespace$$api$client.ApiClient.prototype.authenticate = function(token) {};
+namespace$$api$client.ApiClient.prototype.authenticate = function (token) {};
 
 /**
  * @param {namespace$$ethereum$provider.Transaction} tx
  * @return {Promise<string>}
  */
-namespace$$api$client.ApiClient.prototype.sendTransaction = function(tx) {};
+namespace$$api$client.ApiClient.prototype.sendTransaction = function (tx) {};
 
 `;
 
@@ -179,12 +179,12 @@ const namespace$$test$provider = {};
  * @interface
  * @extends {namespace$$api$provider.BaseProvider}
  */
-namespace$$test$provider.ExtendedProvider = function() {};
+namespace$$test$provider.ExtendedProvider = function () {};
 
 /**
  * @return {void}
  */
-namespace$$test$provider.ExtendedProvider.prototype.additionalMethod = function() {};
+namespace$$test$provider.ExtendedProvider.prototype.additionalMethod = function () {};
 
 /** @type {string} */
 namespace$$test$provider.ExtendedProvider.prototype.additionalProperty;
@@ -193,4 +193,11 @@ namespace$$test$provider.ExtendedProvider.prototype.additionalProperty;
 
   const result = transpile(input, "test/provider.d.ts");
   expect(result).toBe(expected);
+});
+
+test("type alias (readonly T[])[] emits parenthesized readonly in typedef", () => {
+  const result = transpile("type A = (readonly bigint[])[];", "test/types.d.ts");
+  console.log(result);
+  expect(result).toContain("@typedef {(readonly bigint[])[]}");
+  expect(result).toContain("namespace$$test$types.A");
 });

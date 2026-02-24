@@ -22,9 +22,11 @@ const enum ChainGroup {
   MINA = "mi",
 }
 
-const ChainGroups: ChainGroup[] = [ChainGroup.EVM, ChainGroup.MINA];
+const ChainGroups: readonly ChainGroup[] = [ChainGroup.EVM, ChainGroup.MINA];
 
-export { ChainId, ChainGroup, ChainGroups };
+const chainIdToGroup = (id: ChainId): ChainGroup => (id.slice(0, 2) as ChainGroup);
+
+export { ChainId, ChainGroup, ChainGroups, chainIdToGroup };
 `;
   const result = transpileTs(input);
   expect(result).toBe(
@@ -42,20 +44,20 @@ const ChainId = {
   MinaMainnet: "mina:mainnet",
   MinaTestnet: "mina:testnet"
 };
-
 /** @enum {string} */
 const ChainGroup = {
   EVM: "0x",
   MINA: "mi"
 };
-
-/** @const {ChainGroup[]} */
+/** @const {readonly ChainGroup[]} */
 const ChainGroups = [ChainGroup.EVM, ChainGroup.MINA];
+const chainIdToGroup = (id) => {};
 
 export {
   ChainId,
   ChainGroup,
-  ChainGroups
+  ChainGroups,
+  chainIdToGroup
 };
 `);
 });
