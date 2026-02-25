@@ -153,7 +153,7 @@ class Parser {
     if (!this.test("new")) return null;
     const type = this.parseFunctionType();
     return new ConstructorType(
-      type.returnType, null, null, type.params, type.rest, type.optionalAfter);
+      type.returnType, null, null, type.params, type.paramNames, type.rest, type.optionalAfter);
   }
 
   /**
@@ -164,6 +164,8 @@ class Parser {
   parseFunctionType() {
     /** @const {Type[]} */
     const params = [];
+    /** @const {string[]} */
+    const paramNames = [];
     let optionalAfter = 1e9;
     let rest = false;
     /** @type {Type | undefined} */
@@ -198,8 +200,10 @@ class Parser {
           thisType = paramType;
           if (params.length != 0)
             throw `'this' parameter must be the first parameter at position ${this.pos}`;
-        } else
+        } else {
           params.push(paramType);
+          paramNames.push(paramName);
+        }
         if (this.expectEitherChar(",".charCodeAt(0), ")".charCodeAt(0)))
           break;
       }
@@ -209,7 +213,7 @@ class Parser {
     if (optionalAfter == 1e9)
       optionalAfter = params.length;
 
-    return new FunctionType(params, returnType, rest, optionalAfter, thisType);
+    return new FunctionType(params, paramNames, returnType, rest, optionalAfter, thisType);
   }
 
   /**

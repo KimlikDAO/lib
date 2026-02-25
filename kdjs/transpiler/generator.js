@@ -10,7 +10,6 @@ const GenCtx = {};
 /** Expression generators: only node types that can appear as an expression. */
 const expressionGenerators = {
   ArrowFunctionExpression(node, ctx) {
-    console.log(node.params[0].typeAnnotation);
     const params = (node.params || []).map((p) => (p.type === "Identifier" ? p.name : "")).filter(Boolean);
     const body = (node.body.type === "TSAsExpression" || node.body.type === "TSTypeAssertion")
       ? generateExpression(node.body, ctx)

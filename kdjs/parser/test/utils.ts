@@ -14,13 +14,13 @@ const JsxParser = acorn.Parser.extend(
 	}) as any
 );
 
-/** Replacer for JSON.stringify that drops typeAnnotation2 keys. */
-function omitTypeAnnotation2Replacer(key: string, value: any): any {
-	return key === "typeAnnotation2" ? undefined : value;
+/** Replacer for JSON.stringify that drops typeExpression keys. */
+function omitTypeExpressionReplacer(key: string, value: any): any {
+	return key === "typeExpression" ? undefined : value;
 }
 
 function equalNode(node: any, snapshot: any) {
-	expect(JSON.parse(JSON.stringify(node, omitTypeAnnotation2Replacer))).toEqual(snapshot);
+	expect(JSON.parse(JSON.stringify(node, omitTypeExpressionReplacer))).toEqual(snapshot);
 }
 
 function parseDtsSource(input: string) {
@@ -75,5 +75,5 @@ export {
 	parseSource,
 	parseSourceShouldThrowError,
 	generateSource,
-	omitTypeAnnotation2Replacer
+	omitTypeExpressionReplacer
 };

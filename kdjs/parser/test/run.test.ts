@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import {
   equalNode,
-  omitTypeAnnotation2Replacer,
+  omitTypeExpressionReplacer,
   parseDtsSource,
   parseJsxSource,
   parseSource,
@@ -37,13 +37,13 @@ describe("tests", () => {
               : parseSource(input_code);
 
           if (!expected_result) {
-            fs.writeFileSync(expected_path, JSON.stringify(parsed_result, omitTypeAnnotation2Replacer, 2));
+            fs.writeFileSync(expected_path, JSON.stringify(parsed_result, omitTypeExpressionReplacer, 2));
           } else {
             try {
               equalNode(parsed_result, JSON.parse(expected_result));
             } catch (e) {
               if (process.env.UPDATE_SNAPSHOT) {
-                fs.writeFileSync(expected_path, JSON.stringify(parsed_result, omitTypeAnnotation2Replacer, 2));
+                fs.writeFileSync(expected_path, JSON.stringify(parsed_result, omitTypeExpressionReplacer, 2));
               } else {
                 throw e;
               }

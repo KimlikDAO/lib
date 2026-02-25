@@ -172,7 +172,13 @@ const transpileJs = (isEntry, file, content, files, globals, unlinkedImports) =>
           beg: node.source.start,
           end: node.source.end,
           put: `"${sourceName}.jsx"`
-        })
+        });
+        else if (nextFile.endsWith(".ts") && !sourceName.endsWith(".ts"))
+          updates.push({
+            beg: node.source.start,
+            end: node.source.end,
+            put: `"${sourceName}.ts"`
+          });
       else if (nextFile.endsWith(".css") && file.endsWith(".js"))
         throw `css files cannot be imported in js files (${file}->${nextFile})`;
 

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { fromAcornType } from "../converter";
+import { propagateType } from "../converter";
 import {
   GenericType,
   InstanceType,
@@ -11,107 +11,109 @@ import {
 } from "../types";
 
 /**
- * Minimal acorn-like nodes (plain data) for converter tests
- *
+ * Creates a typed acorn-like node (for use as a child in composite nodes).
  * @param {string} type
  * @param {Object} props
  * @return {acorn.Node}
  */
-const node = (type, props = {}) => ({ type, ...props });
+const node = (type, props = {}) => {
+  const n = { type, ...props };
+  propagateType(n);
+  return n;
+};
 
-describe("fromAcornType primitives", () => {
+/**
+ * Creates a typed acorn-like node and returns its typeExpression for assertions.
+ * @param {string} type
+ * @param {Object} props
+ * @return {Type}
+ */
+const nodeType = (type, props = {}) => {
+  const n = { type, ...props };
+  propagateType(n);
+  return n.typeExpression;
+};
+
+describe("propagateType primitives", () => {
   test("number", () => {
-    const t = /** @type {PrimitiveType} */(fromAcornType(node("TSNumberKeyword")));
+    const t = /** @type {PrimitiveType} */(nodeType("TSNumberKeyword"));
     expect(t).toBeInstanceOf(PrimitiveType);
     expect(t.name).toBe(PrimitiveTypeName.Number);
   });
 
   test("string", () => {
-    const t = /** @type {PrimitiveType} */(fromAcornType(node("TSStringKeyword")));
+    const t = /** @type {PrimitiveType} */(nodeType("TSStringKeyword"));
     expect(t).toBeInstanceOf(PrimitiveType);
     expect(t.name).toBe(PrimitiveTypeName.String);
   });
 
   test("boolean", () => {
-    const t = /** @type {PrimitiveType} */(fromAcornType(node("TSBooleanKeyword")));
+    const t = /** @type {PrimitiveType} */(nodeType("TSBooleanKeyword"));
     expect(t).toBeInstanceOf(PrimitiveType);
     expect(t.name).toBe(PrimitiveTypeName.Boolean);
   });
 
   test("bigint", () => {
-    const t = /** @type {PrimitiveType} */(fromAcornType(node("TSBigIntKeyword")));
+    const t = /** @type {PrimitiveType} */(nodeType("TSBigIntKeyword"));
     expect(t).toBeInstanceOf(PrimitiveType);
     expect(t.name).toBe(PrimitiveTypeName.BigInt);
   });
 
   test("void → Undefined", () => {
-    const t = /** @type {PrimitiveType} */(fromAcornType(node("TSVoidKeyword")));
+    const t = /** @type {PrimitiveType} */(nodeType("TSVoidKeyword"));
     expect(t).toBeInstanceOf(PrimitiveType);
     expect(t.name).toBe(PrimitiveTypeName.Undefined);
   });
 
   test("void toClosureExpr", () => {
-    const t = /** @type {PrimitiveType} */(fromAcornType(node("TSVoidKeyword")));
-    expect(t.toClosureExpr()).toBe("undefined");
+    expect(nodeType("TSVoidKeyword").toClosureExpr()).toBe("undefined");
   });
 
   test("null", () => {
-    const t = /** @type {PrimitiveType} */(fromAcornType(node("TSNullKeyword")));
+    const t = /** @type {PrimitiveType} */(nodeType("TSNullKeyword"));
     expect(t).toBeInstanceOf(PrimitiveType);
     expect(t.name).toBe(PrimitiveTypeName.Null);
   });
 
   test("null toClosureExpr", () => {
-    const t = /** @type {PrimitiveType} */(fromAcornType(node("TSNullKeyword")));
-    expect(t.toClosureExpr()).toBe("null");
+    expect(nodeType("TSNullKeyword").toClosureExpr()).toBe("null");
   });
 
   test("undefined", () => {
-    const t = /** @type {PrimitiveType} */(fromAcornType(node("TSUndefinedKeyword")));
+    const t = /** @type {PrimitiveType} */(nodeType("TSUndefinedKeyword"));
     expect(t).toBeInstanceOf(PrimitiveType);
     expect(t.name).toBe(PrimitiveTypeName.Undefined);
   });
 });
 
-describe("fromAcornType top types", () => {
+describe("propagateType top types", () => {
   test("any", () => {
-    const t = /** @type {TopType} */(fromAcornType(node("TSAnyKeyword")));
+    const t = /** @type {TopType} */(nodeType("TSAnyKeyword"));
     expect(t).toBeInstanceOf(TopType);
     expect(t.name).toBe(TopTypeName.Any);
   });
 
   test("unknown", () => {
-    const t = /** @type {TopType} */(fromAcornType(node("TSUnknownKeyword")));
+    const t = /** @type {TopType} */(nodeType("TSUnknownKeyword"));
     expect(t).toBeInstanceOf(TopType);
     expect(t.name).toBe(TopTypeName.Unknown);
   });
 });
 
-describe("fromAcornType union", () => {
+describe("propagateType union", () => {
   test("string | number", () => {
-    const u = /** @type {UnionType} */(
-      fromAcornType(
-        node("TSUnionType", {
-          types: [node("TSStringKeyword"), node("TSNumberKeyword")],
-        })
-      )
-    );
+    const str = node("TSStringKeyword");
+    const num = node("TSNumberKeyword");
+    const u = /** @type {UnionType} */(nodeType("TSUnionType", { types: [str, num] }));
     expect(u).toBeInstanceOf(UnionType);
     expect(u.toClosureExpr()).toBe("string|number");
   });
 
   test("union with null and undefined as modifiers", () => {
-    const u = /** @type {UnionType} */(
-      fromAcornType(
-        node("TSUnionType", {
-          types: [
-            node("TSStringKeyword"),
-            node("TSNullKeyword"),
-            node("TSUndefinedKeyword"),
-          ],
-        })
-      )
-    );
+    const str = node("TSStringKeyword");
+    const n = node("TSNullKeyword");
+    const undef = node("TSUndefinedKeyword");
+    const u = /** @type {UnionType} */(nodeType("TSUnionType", { types: [str, n, undef] }));
     expect(u).toBeInstanceOf(UnionType);
     expect(u.isNullable()).toBeTrue();
     expect(u.isOptional()).toBeTrue();
@@ -119,15 +121,10 @@ describe("fromAcornType union", () => {
   });
 });
 
-describe("fromAcornType array", () => {
+describe("propagateType array", () => {
   test("number[]", () => {
-    const arr = /** @type {GenericType} */(
-      fromAcornType(
-        node("TSArrayType", {
-          elementType: node("TSNumberKeyword"),
-        })
-      )
-    );
+    const el = node("TSNumberKeyword");
+    const arr = /** @type {GenericType} */(nodeType("TSArrayType", { elementType: el }));
     expect(arr).toBeInstanceOf(GenericType);
     expect(arr.name).toBe("Array");
     expect(arr.params).toHaveLength(1);
@@ -136,68 +133,58 @@ describe("fromAcornType array", () => {
   });
 });
 
-describe("fromAcornType TSTypeAnnotation", () => {
+describe("propagateType TSTypeAnnotation", () => {
   test("unwraps to inner type", () => {
-    const wrapped = node("TSTypeAnnotation", {
-      typeAnnotation: node("TSStringKeyword"),
-    });
-    const t = /** @type {PrimitiveType} */(fromAcornType(wrapped));
+    const inner = node("TSStringKeyword");
+    const t = /** @type {PrimitiveType} */(nodeType("TSTypeAnnotation", { typeAnnotation: inner }));
     expect(t).toBeInstanceOf(PrimitiveType);
     expect(t.name).toBe(PrimitiveTypeName.String);
   });
 });
 
-describe("fromAcornType TSTypeReference", () => {
+describe("propagateType TSTypeReference", () => {
   test("without params → InstanceType", () => {
-    const ref = node("TSTypeReference", {
+    const t = /** @type {InstanceType} */(nodeType("TSTypeReference", {
       typeName: node("Identifier", { name: "ChainId" }),
-    });
-    const t = /** @type {InstanceType} */(fromAcornType(ref));
+    }));
     expect(t).toBeInstanceOf(InstanceType);
     expect(t.name).toBe("ChainId");
   });
 
   test("with params → GenericType", () => {
-    const ref = node("TSTypeReference", {
+    const param = node("TSNumberKeyword");
+    const t = /** @type {GenericType} */(nodeType("TSTypeReference", {
       typeName: node("Identifier", { name: "Array" }),
-      typeArguments: node("TSTypeParameterInstantiation", {
-        params: [node("TSNumberKeyword")],
-      }),
-    });
-    const t = /** @type {GenericType} */(fromAcornType(ref));
+      typeArguments: node("TSTypeParameterInstantiation", { params: [param] }),
+    }));
     expect(t).toBeInstanceOf(GenericType);
     expect(t.name).toBe("Array");
     expect(t.params[0].name).toBe(PrimitiveTypeName.Number);
   });
 });
 
-describe("fromAcornType TSTypeOperator", () => {
+describe("propagateType TSTypeOperator", () => {
   test("readonly array → ReadonlyArray", () => {
-    const op = node("TSTypeOperator", {
-      operator: "readonly",
-      typeAnnotation: node("TSArrayType", {
-        elementType: node("TSStringKeyword"),
-      }),
-    });
-    const t = /** @type {GenericType} */(fromAcornType(op));
+    const el = node("TSStringKeyword");
+    const arr = node("TSArrayType", { elementType: el });
+    const t = /** @type {GenericType} */(nodeType("TSTypeOperator", { operator: "readonly", typeAnnotation: arr }));
     expect(t).toBeInstanceOf(GenericType);
     expect(t.name).toBe("ReadonlyArray");
     expect(t.params[0].name).toBe(PrimitiveTypeName.String);
   });
 });
 
-describe("fromAcornType TSIntersectionType", () => {
+describe("propagateType TSIntersectionType", () => {
   test("→ unknown", () => {
-    const inter = node("TSIntersectionType", { types: [] });
-    const t = /** @type {TopType} */(fromAcornType(inter));
+    const t = /** @type {TopType} */(nodeType("TSIntersectionType", { types: [] }));
     expect(t).toBeInstanceOf(TopType);
     expect(t.name).toBe(TopTypeName.Unknown);
   });
 });
 
-describe("fromAcornType unknown node type", () => {
+describe("propagateType unknown node type", () => {
   test("→ unknown", () => {
-    const t = /** @type {TopType} */(fromAcornType(node("TSMappedType")));
+    const t = /** @type {TopType} */(nodeType("TSMappedType"));
     expect(t).toBeInstanceOf(TopType);
     expect(t.name).toBe(TopTypeName.Unknown);
   });

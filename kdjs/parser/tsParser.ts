@@ -1,4 +1,13 @@
 import * as acornNamespace from "acorn";
+import { Node, Options, Position, TokenType } from "acorn";
+import { propagateType } from "../types/converter";
+import { DecoratorsError, TypeScriptError } from "./error";
+import generateParseDecorators from "./extentions/decorators";
+import generateParseImportAssertions from "./extentions/import-assertions";
+import generateJsxParser from "./extentions/jsx";
+import { AcornParseClass } from "./middleware";
+import { checkKeyName, DestructuringErrors, isPrivateNameConflicted } from "./parseutil";
+import { TS_SCOPE_OTHER, TS_SCOPE_TS_MODULE } from "./scopeflags";
 import { generateAcornTypeScript } from "./tokenType";
 import {
   Accessibility,
@@ -8,16 +17,7 @@ import {
   TryParse,
   TsModifier
 } from "./types";
-import { TS_SCOPE_OTHER, TS_SCOPE_TS_MODULE } from "./scopeflags";
 import { skipWhiteSpaceToLineBreak } from "./whitespace";
-import { checkKeyName, DestructuringErrors, isPrivateNameConflicted } from "./parseutil";
-import { DecoratorsError, TypeScriptError } from "./error";
-import { AcornParseClass } from "./middleware";
-import { Node, TokenType, Position, Options } from "acorn";
-import generateParseDecorators from "./extentions/decorators";
-import generateJsxParser from "./extentions/jsx";
-import generateParseImportAssertions from "./extentions/import-assertions";
-import { fromAcornType } from "../types/converter";
 
 declare module "acorn" {
   export const isIdentifierChar: any;
@@ -298,8 +298,9 @@ function tsPlugin(options?: {
         if (node.type !== '' && node.end !== 0) {
           return node;
         }
-
-        return super.finishNode(node, type);
+        const result = super.finishNode(node, type);
+        if (type.startsWith("TS") || type === "ArrowFunctionExpression") propagateType(result);
+        return result;
       }
 
       // tryParse will clone parser state.
@@ -1329,7 +1330,6 @@ function tsPlugin(options?: {
         this.tsInType(() => {
           if (eatColon) this.expect(tt.colon);
           t.typeAnnotation = this.tsParseType();
-          t.typeAnnotation2 = fromAcornType(t.typeAnnotation);
         });
         return this.finishNode(t, 'TSTypeAnnotation');
       }
@@ -1339,7 +1339,6 @@ function tsPlugin(options?: {
         const node = this.startNodeAtNode(lhs);
         node.parameterName = lhs;
         node.typeAnnotation = this.tsParseTypeAnnotation(/* eatColon */ false);
-        node.typeAnnotation2 = fromAcornType(node.typeAnnotation);
         node.asserts = false;
         return this.finishNode(node, 'TSTypePredicate');
       }
@@ -1379,7 +1378,6 @@ function tsPlugin(options?: {
               node.parameterName = thisTypePredicate;
               node.asserts = true;
               node.typeAnnotation = null;
-              node.typeAnnotation2 = null;
               thisTypePredicate = this.finishNode(node, 'TSTypePredicate');
             } else {
               this.resetStartLocationFromNode(thisTypePredicate, node);
@@ -1387,7 +1385,6 @@ function tsPlugin(options?: {
               thisTypePredicate.asserts = true;
             }
             t.typeAnnotation = thisTypePredicate;
-            t.typeAnnotation2 = fromAcornType(t.typeAnnotation);
             return this.finishNode(t, 'TSTypeAnnotation');
           }
 
@@ -1405,7 +1402,6 @@ function tsPlugin(options?: {
             node.asserts = asserts;
             node.typeAnnotation = null;
             t.typeAnnotation = this.finishNode(node, 'TSTypePredicate');
-            t.typeAnnotation2 = fromAcornType(t.typeAnnotation);
             return this.finishNode(t, 'TSTypeAnnotation');
           }
 
@@ -1413,10 +1409,8 @@ function tsPlugin(options?: {
           const type = this.tsParseTypeAnnotation(/* eatColon */ false);
           node.parameterName = typePredicateVariable;
           node.typeAnnotation = type;
-          node.typeAnnotation2 = fromAcornType(type);
           node.asserts = asserts;
           t.typeAnnotation = this.finishNode(node, 'TSTypePredicate');
-          t.typeAnnotation2 = fromAcornType(t.typeAnnotation);
           return this.finishNode(t, 'TSTypeAnnotation');
         });
       }
@@ -1510,7 +1504,6 @@ function tsPlugin(options?: {
         this.next(); // eat operator
         node.operator = operator;
         node.typeAnnotation = this.tsParseTypeOperatorOrHigher();
-        node.typeAnnotation2 = fromAcornType(node.typeAnnotation);
 
         if (operator === 'readonly') {
           this.tsCheckTypeAnnotationForReadOnly(node);
@@ -1626,7 +1619,6 @@ function tsPlugin(options?: {
         }
 
         node.typeAnnotation = this.tsTryParseType();
-        node.typeAnnotation2 = fromAcornType(node.typeAnnotation);
         this.semicolon();
         this.expect(tt.braceR);
 
@@ -1671,14 +1663,12 @@ function tsPlugin(options?: {
           const optionalTypeNode = this.startNodeAtNode(type);
 
           optionalTypeNode.typeAnnotation = type;
-          optionalTypeNode.typeAnnotation2 = fromAcornType(type);
           type = this.finishNode(optionalTypeNode, 'TSOptionalType');
         }
 
         if (rest) {
           const restNode = this.startNodeAt(startPos, startLoc);
           restNode.typeAnnotation = type;
-          restNode.typeAnnotation2 = fromAcornType(type);
           type = this.finishNode(restNode, 'TSRestType');
         }
 
@@ -1748,7 +1738,6 @@ function tsPlugin(options?: {
         const node = this.startNode();
         this.expect(tt.parenL);
         node.typeAnnotation = this.tsParseType();
-        node.typeAnnotation2 = fromAcornType(node.typeAnnotation);
         this.expect(tt.parenR);
         return this.finishNode(node, 'TSParenthesizedType');
       }
@@ -1946,7 +1935,6 @@ function tsPlugin(options?: {
         this.expect(tt.bracketL);
         const id = this.parseIdent();
         id.typeAnnotation = this.tsParseTypeAnnotation();
-        id.typeAnnotation2 = fromAcornType(id.typeAnnotation);
         this.resetEndLocation(id); // set end position to end of type
         this.expect(tt.bracketR);
         node.parameters = [id];
@@ -1954,7 +1942,6 @@ function tsPlugin(options?: {
         const type = this.tsTryParseTypeAnnotation();
         if (type) {
           node.typeAnnotation = type;
-          node.typeAnnotation2 = fromAcornType(type);
         }
         this.tsParseTypeMemberSemicolon();
         return this.finishNode(node, 'TSIndexSignature');
@@ -2244,7 +2231,6 @@ function tsPlugin(options?: {
           const node = this.startNode();
           const _const = this.tsTryNextParseConstantContext();
           node.typeAnnotation = _const || this.tsNextThenParseType();
-          node.typeAnnotation2 = fromAcornType(node.typeAnnotation);
           this.expect(tt.relational);
           node.expression = this.parseMaybeUnary();
           return this.finishNode(node, 'TSTypeAssertion');
@@ -2379,7 +2365,6 @@ function tsPlugin(options?: {
           const type = this.tsTryParseTypeAnnotation();
           if (type) {
             property.typeAnnotation = type;
-            property.typeAnnotation2 = fromAcornType(type);
           }
           this.tsParseTypeMemberSemicolon();
           return this.finishNode(property, 'TSPropertySignature');
@@ -2651,7 +2636,6 @@ function tsPlugin(options?: {
 
           return this.tsParseType();
         });
-        node.typeAnnotation2 = fromAcornType(node.typeAnnotation);
         this.semicolon();
         return this.finishNode(node, 'TSTypeAliasDeclaration');
       }
@@ -2944,7 +2928,6 @@ function tsPlugin(options?: {
             } else {
               node.typeAnnotation = this.tsNextThenParseType();
             }
-            node.typeAnnotation2 = fromAcornType(node.typeAnnotation);
             this.finishNode(node, nodeType);
             // rescan `<`, `>` because they were scanned when this.state.inType was true
             this.reScan_lt_gt();
@@ -3242,7 +3225,7 @@ function tsPlugin(options?: {
 
       typeCastToParameter(node: any): any {
         node.expression.typeAnnotation = node.typeAnnotation;
-        node.expression.typeAnnotation2 = node.typeAnnotation2 ?? fromAcornType(node.typeAnnotation);
+        node.expression.typeExpression = node.typeAnnotation?.typeExpression;
         this.resetEndLocation(
           node.expression,
           node.typeAnnotation.end,
@@ -3557,7 +3540,6 @@ function tsPlugin(options?: {
           const typeCastNode = this.startNodeAt(startPos, startLoc);
           typeCastNode.expression = node;
           typeCastNode.typeAnnotation = this.tsParseTypeAnnotation();
-          typeCastNode.typeAnnotation2 = fromAcornType(typeCastNode.typeAnnotation);
 
           return this.finishNode(typeCastNode, 'TSTypeCastExpression');
         }
@@ -3628,7 +3610,6 @@ function tsPlugin(options?: {
         const type = this.tsTryParseTypeAnnotation();
         if (type) {
           node.typeAnnotation = type;
-          node.typeAnnotation2 = fromAcornType(type);
         }
       }
 
@@ -3934,7 +3915,6 @@ function tsPlugin(options?: {
         const type = this.tsTryParseTypeAnnotation();
         if (type) {
           decl.id.typeAnnotation = type;
-          decl.id.typeAnnotation2 = fromAcornType(type);
           this.resetEndLocation(decl.id); // set end position to end of type
         }
       }
@@ -4216,7 +4196,6 @@ function tsPlugin(options?: {
         }
         return elt;
       } // AssignmentPattern
-
       checkLValInnerPattern(expr, bindingType = acornScope.BIND_NONE, checkClashes) {
         switch (expr.type) {
           case 'TSParameterProperty':
@@ -4228,7 +4207,6 @@ function tsPlugin(options?: {
           }
         }
       }
-
       // Allow type annotations inside of a parameter list.
       parseBindingListItem(param: any) {
         if (this.eat(tt.question)) {
@@ -4240,12 +4218,11 @@ function tsPlugin(options?: {
         const type = this.tsTryParseTypeAnnotation();
         if (type) {
           param.typeAnnotation = type;
-          param.typeAnnotation2 = fromAcornType(type);
+          param.typeExpression = (type as any).typeExpression;
         }
         this.resetEndLocation(param);
         return param;
       }
-
       isAssignable(node: any, isBinding?: boolean): boolean {
         switch (node.type) {
           case 'TSTypeCastExpression':
@@ -4549,7 +4526,6 @@ function tsPlugin(options?: {
             elt = this.parseSpread(refDestructuringErrors);
             if (this.maybeInArrowParameters && this.match(tt.colon)) {
               elt.typeAnnotation = this.tsParseTypeAnnotation();
-              elt.typeAnnotation2 = fromAcornType(elt.typeAnnotation);
             }
             if (
               refDestructuringErrors &&
@@ -4878,7 +4854,6 @@ function tsPlugin(options?: {
         const type = this.tsTryParseTypeAnnotation();
         if (type) {
           param.typeAnnotation = type;
-          param.typeAnnotation2 = fromAcornType(type);
           this.resetEndLocation(param);
         }
 
@@ -5342,6 +5317,6 @@ function tsPlugin(options?: {
 const TsParser = acornNamespace.Parser.extend(tsPlugin());
 
 export {
-  tsPlugin,
-  TsParser
+  TsParser,
+  tsPlugin
 };

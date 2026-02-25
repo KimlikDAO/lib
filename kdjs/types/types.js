@@ -439,15 +439,18 @@ class StructType extends Type {
 class FunctionType extends Type {
   /**
    * @param {Type[]} params
+   * @param {string[] | undefined} paramNames Param names are not a part of the type, needed for transpiling
    * @param {Type} returnType
    * @param {boolean=} rest
    * @param {number=} optionalAfter
    * @param {Type=} thisType - The type of 'this' for methods
    */
-  constructor(params, returnType, rest = false, optionalAfter, thisType) {
+  constructor(params, paramNames, returnType, rest = false, optionalAfter, thisType) {
     super();
     /** @const {Type[]} */
     this.params = params;
+    /** @const {string[] | undefined} */
+    this.paramNames = paramNames;
     /** @const {Type} */
     this.returnType = returnType;
     /** @const {boolean} */
@@ -514,7 +517,7 @@ class FunctionType extends Type {
       lines.push(" * @pureOrBreakMyCode");
     for (let i = 0; i < this.params.length; i++) {
       const param = this.params[i];
-      const label = "arg" + i;
+      const label = this.paramNames?.[i] ?? "arg" + i;
       const isOptional = i >= this.optionalAfter;
       if (this.rest && i == lastIdx) {
         const restType = param.toTsExpr({ bare: true });
@@ -533,7 +536,7 @@ class FunctionType extends Type {
     const modifiers = bare ? 0 : this.modifiers;
     const lastIdx = this.params.length - 1;
     const paramParts = this.params.map((param, i) => {
-      const label = "arg" + i;
+      const label = this.paramNames?.[i] ?? "arg" + i;
       if (this.rest && i == lastIdx)
         return "..." + label + ": " + param.toTsExpr({ bare: true });
       const isOptional = i >= this.optionalAfter;
@@ -577,11 +580,18 @@ class ConstructorType extends FunctionType {
    * @param {Type | null} extendsType
    * @param {Type[] | null} implementsTypes
    * @param {Type[]} params
-   * @param {boolean} rest
+   * @param {string[]=} paramNames Param names are not a part of the type, needed for transpiling
+   * @param {boolean=} rest
    * @param {number=} optionalAfter
    */
-  constructor(instanceType, extendsType, implementsTypes, params, rest, optionalAfter) {
-    super(params, new PrimitiveType(PrimitiveTypeName.Undefined), rest, optionalAfter, instanceType);
+  constructor(instanceType, extendsType, implementsTypes, params, paramNames, rest, optionalAfter) {
+    super(
+      params,
+      paramNames,
+      new PrimitiveType(PrimitiveTypeName.Undefined),
+      rest,
+      optionalAfter,
+      instanceType);
     this.extendsType = extendsType;
     this.implementsTypes = implementsTypes;
   }
@@ -595,17 +605,37 @@ class ConstructorType extends FunctionType {
   }
 }
 
+const BigIntType = new PrimitiveType(PrimitiveTypeName.BigInt);
+const BooleanType = new PrimitiveType(PrimitiveTypeName.Boolean);
+const NullType = new PrimitiveType(PrimitiveTypeName.Null);
+const NumberType = new PrimitiveType(PrimitiveTypeName.Number);
+const StringType = new PrimitiveType(PrimitiveTypeName.String);
+const SymbolType = new PrimitiveType(PrimitiveTypeName.Symbol);
+const UndefinedType = new PrimitiveType(PrimitiveTypeName.Undefined);
+
+const AnyType = new TopType(TopTypeName.Any);
+const UnknownType = new TopType(TopTypeName.Unknown);
+
 export {
+  AnyType,
+  BigIntType,
+  BooleanType,
   ConstructorType,
   FunctionType,
   GenericType,
   InstanceType,
   Modifier,
+  NullType,
+  NumberType,
   PrimitiveType,
   PrimitiveTypeName,
+  StringType,
   StructType,
+  SymbolType,
   TopType,
   TopTypeName,
   Type,
-  UnionType
+  UndefinedType,
+  UnionType,
+  UnknownType,
 };

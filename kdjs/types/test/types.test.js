@@ -378,6 +378,7 @@ describe("FunctionType", () => {
     // Basic function with no parameters
     const voidFn = new FunctionType(
         [],
+        undefined,
         new PrimitiveType(PrimitiveTypeName.Undefined)
       );
     expect(voidFn.toClosureExpr()).toBe("function()");
@@ -387,6 +388,7 @@ describe("FunctionType", () => {
     // Function with parameters and return type
     const basicFn = new FunctionType(
       [new PrimitiveType(PrimitiveTypeName.String), new PrimitiveType(PrimitiveTypeName.Number)],
+      undefined,
       new PrimitiveType(PrimitiveTypeName.Boolean)
     );
     expect(basicFn.toClosureExpr()).toBe("function(string, number): boolean");
@@ -396,6 +398,7 @@ describe("FunctionType", () => {
     // Function with optional parameters
     const optParamFn = new FunctionType(
       [new PrimitiveType(PrimitiveTypeName.String), new PrimitiveType(PrimitiveTypeName.Number)],
+      undefined,
       new PrimitiveType(PrimitiveTypeName.Boolean),
       false,
       1 // optionalAfter = 1 means params[1] and beyond are optional
@@ -408,6 +411,7 @@ describe("FunctionType", () => {
     // Optional function
     const optFn = new FunctionType(
       [new PrimitiveType(PrimitiveTypeName.String)],
+      undefined,
       new PrimitiveType(PrimitiveTypeName.Number)
     );
     optFn.modifiers = Modifier.Optional;
@@ -420,6 +424,7 @@ describe("FunctionType", () => {
   test("MyClass method mapping string->number", () => {
     const method = new FunctionType(
       [new PrimitiveType(PrimitiveTypeName.String)],
+      undefined,
       new PrimitiveType(PrimitiveTypeName.Number),
       false,
       1,
@@ -436,6 +441,7 @@ describe("FunctionType", () => {
         count: new PrimitiveType(PrimitiveTypeName.Number)
       })
     ],
+      undefined,
       new GenericType("Array", [new PrimitiveType(PrimitiveTypeName.String)]),
       false,
       1
@@ -491,6 +497,7 @@ describe("toTsExpr (TS/JSDoc inside {})", () => {
   test("function type", () => {
     const fn = new FunctionType(
       [new PrimitiveType(PrimitiveTypeName.String)],
+      undefined,
       new PrimitiveType(PrimitiveTypeName.Number)
     );
     expect(fn.toTsExpr()).toBe("(arg0: string) => number");
@@ -499,6 +506,7 @@ describe("toTsExpr (TS/JSDoc inside {})", () => {
   test("optional function: bare × toParam (4 combos)", () => {
     const fn = new FunctionType(
       [new PrimitiveType(PrimitiveTypeName.String)],
+      undefined,
       new PrimitiveType(PrimitiveTypeName.Number)
     );
     fn.modifiers = Modifier.Optional;
@@ -515,6 +523,7 @@ describe("toTsExpr (TS/JSDoc inside {})", () => {
   test("toTsDoc", () => {
     const fn = new FunctionType(
       [new PrimitiveType(PrimitiveTypeName.String), new PrimitiveType(PrimitiveTypeName.Number)],
+      undefined,
       new PrimitiveType(PrimitiveTypeName.Boolean)
     );
     expect(fn.toTsDoc()).toBe(
@@ -529,6 +538,7 @@ describe("toTsExpr (TS/JSDoc inside {})", () => {
   test("toTsDoc optional param", () => {
     const fn = new FunctionType(
       [new PrimitiveType(PrimitiveTypeName.String), new PrimitiveType(PrimitiveTypeName.Number)],
+      undefined,
       new PrimitiveType(PrimitiveTypeName.Boolean),
       false,
       1
@@ -546,6 +556,7 @@ describe("toTsExpr (TS/JSDoc inside {})", () => {
   test("toTsDoc rest param", () => {
     const fn = new FunctionType(
       [new PrimitiveType(PrimitiveTypeName.String), new GenericType("Array", [new PrimitiveType(PrimitiveTypeName.Number)])],
+      undefined,
       new PrimitiveType(PrimitiveTypeName.Undefined),
       true,
       2
@@ -562,6 +573,7 @@ describe("toTsExpr (TS/JSDoc inside {})", () => {
   test("toTsDoc NoInline NoSideEffects Pure", () => {
     const fn = new FunctionType(
       [new PrimitiveType(PrimitiveTypeName.Number)],
+      undefined,
       new PrimitiveType(PrimitiveTypeName.Number)
     );
     fn.modifiers = Modifier.NoInline | Modifier.NoSideEffects | Modifier.Pure;

@@ -1,11 +1,17 @@
 import {
+  AnyType,
+  BigIntType,
+  BooleanType,
+  FunctionType,
   GenericType,
   InstanceType,
-  PrimitiveType,
-  PrimitiveTypeName,
-  TopType,
-  TopTypeName,
+  NullType,
+  NumberType,
+  StringType,
+  SymbolType,
+  UndefinedType,
   UnionType,
+  UnknownType,
 } from "./types";
 
 /**
@@ -13,7 +19,7 @@ import {
  * @return {string}
  */
 const typeNameToString = (typeName) => {
-  if (!typeName) return UnknownType;
+  if (!typeName) return "";
   let suffix = "";
   while (typeName.type == "TSQualifiedName") {
     suffix = `${typeName.right.name}.${suffix}`;
@@ -22,118 +28,107 @@ const typeNameToString = (typeName) => {
   return typeName.name + suffix;
 };
 
-const UnknownType = new TopType(TopTypeName.Unknown);
-
 /**
- * @param {acorn.Node} node
- * @return {Type}
+ * Each handler sets node.typeExpression from the node's immediate children' typeExpressions.
+ * Contract: children already have typeExpression (caller visits in post-order).
  */
 const AcornTypeToType = {
-  convert(type) {
-    if (!type) return UnknownType;
-    const handler = this[type.type];
-    if (handler) return handler.call(this, type);
-    return UnknownType;
-  },
-
   TSTypeAnnotation(node) {
-    return this.convert(node.typeAnnotation);
+    const child = node.typeAnnotation;
+    node.typeExpression = child?.typeExpression ?? UnknownType;
   },
 
-  TSStringKeyword(node) {
-    return new PrimitiveType(PrimitiveTypeName.String);
-  },
-  TSNumberKeyword(node) {
-    return new PrimitiveType(PrimitiveTypeName.Number);
-  },
-  TSBooleanKeyword(node) {
-    return new PrimitiveType(PrimitiveTypeName.Boolean);
-  },
-  TSBigIntKeyword(node) {
-    return new PrimitiveType(PrimitiveTypeName.BigInt);
-  },
-  TSSymbolKeyword(node) {
-    return new PrimitiveType(PrimitiveTypeName.Symbol);
-  },
-  TSVoidKeyword(node) {
-    return new PrimitiveType(PrimitiveTypeName.Undefined);
-  },
-  TSNullKeyword(node) {
-    return new PrimitiveType(PrimitiveTypeName.Null);
-  },
-  TSUndefinedKeyword(node) {
-    return new PrimitiveType(PrimitiveTypeName.Undefined);
-  },
-
-  TSAnyKeyword(node) {
-    return new TopType(TopTypeName.Any);
-  },
-  TSUnknownKeyword(node) {
-    return new TopType(TopTypeName.Unknown);
-  },
+  TSStringKeyword(node) { node.typeExpression = StringType; },
+  TSNumberKeyword(node) { node.typeExpression = NumberType; },
+  TSBooleanKeyword(node) { node.typeExpression = BooleanType; },
+  TSBigIntKeyword(node) { node.typeExpression = BigIntType; },
+  TSSymbolKeyword(node) { node.typeExpression = SymbolType; },
+  TSVoidKeyword(node) { node.typeExpression = UndefinedType; },
+  TSNullKeyword(node) { node.typeExpression = NullType; },
+  TSUndefinedKeyword(node) { node.typeExpression = UndefinedType; },
+  TSAnyKeyword(node) { node.typeExpression = AnyType; },
+  TSUnknownKeyword(node) { node.typeExpression = UnknownType; },
 
   TSUnionType(node) {
-    const types = (node.types || []).map((t) => this.convert(t));
-    return new UnionType(types);
+    const types = (node.types || []).map((c) => c.typeExpression).filter((t) => t != null);
+    node.typeExpression = new UnionType(types);
   },
 
   TSArrayType(node) {
-    const elementType = this.convert(node.elementType);
-    return new GenericType("Array", [elementType]);
+    const elementType = node.elementType?.typeExpression ?? UnknownType;
+    node.typeExpression = new GenericType("Array", [elementType]);
   },
 
   TSTypeOperator(node) {
-    if (node.operator == "readonly") {
-      const inner = this.convert(node.typeAnnotation);
-      if (inner instanceof GenericType && inner.name == "Array")
-        return new GenericType("ReadonlyArray", inner.params);
-      return new GenericType("ReadonlyArray", [inner]);
-    }
-    return new TopType(TopTypeName.Unknown);
+    const inner = node.typeAnnotation?.typeExpression;
+    if (inner == null) { node.typeExpression = UnknownType; return; }
+    node.typeExpression = inner instanceof GenericType && inner.name == "Array"
+      ? new GenericType("ReadonlyArray", inner.params)
+      : new GenericType("ReadonlyArray", [inner]);
   },
 
   TSParenthesizedType(node) {
-    return this.convert(node.typeAnnotation);
+    node.typeExpression = node.typeAnnotation?.typeExpression ?? UnknownType;
   },
 
   TSTypeReference(node) {
     const name = typeNameToString(node.typeName);
     const args = node.typeArguments || node.typeParameters;
-    const params =
-      args && args.params
-        ? args.params.map((p) => this.convert(p))
-        : null;
-    if (params && params.length > 0)
-      return new GenericType(name, params);
-    return new InstanceType(name);
+    const params = args?.params?.map((p) => p.typeExpression ?? UnknownType) ?? null;
+    node.typeExpression = params && params.length > 0
+      ? new GenericType(name, params)
+      : new InstanceType(name);
   },
 
   Identifier(node) {
-    return new InstanceType(node.name || "");
+    node.typeExpression = new InstanceType(node.name || "");
   },
 
   TSLiteralType(node) {
     const lit = node.literal;
-    if (!lit) return new TopType(TopTypeName.Unknown);
-    if (lit.type == "Literal") {
+    if (lit?.type == "Literal") {
       const t = typeof lit.value;
-      if (t == "string") return new PrimitiveType(PrimitiveTypeName.String);
-      if (t == "number") return new PrimitiveType(PrimitiveTypeName.Number);
-      if (t == "boolean") return new PrimitiveType(PrimitiveTypeName.Boolean);
-      if (lit.value == null) return new PrimitiveType(PrimitiveTypeName.Null);
+      if (t == "string") { node.typeExpression = StringType; return; }
+      if (t == "number") { node.typeExpression = NumberType; return; }
+      if (t == "boolean") { node.typeExpression = BooleanType; return; }
+      if (lit.value == null) { node.typeExpression = NullType; return; }
     }
-    return new TopType(TopTypeName.Unknown);
   },
 
+  TSFunctionType(node) {
+    const params = node.parameters || node.params || [];
+    const paramTypes = params.map((p) => p.typeExpression ?? UnknownType);
+    const paramNames = params.map((p) => {
+      if (p.type === "Identifier") return p.name;
+      if (p.type === "AssignmentPattern" && p.left?.type === "Identifier") return p.left.name;
+      if (p.type === "RestElement" && p.argument?.type === "Identifier") return p.argument.name;
+      return undefined;
+    });
+    const returnType = (node.typeAnnotation ?? node.returnType)?.typeExpression ?? UndefinedType;
+    const rest = params.length > 0 && params[params.length - 1].type === "RestElement";
+    let optionalAfter = params.findIndex((p) => p.optional === true);
+    if (optionalAfter < 0) optionalAfter = params.length;
+    node.typeExpression = new FunctionType(paramTypes, paramNames, returnType, rest, optionalAfter);
+  },
+  ArrowFunctionExpression(node) { this.TSFunctionType(node); },
+  TSConstructorType(node) { this.TSFunctionType(node); },
+
   TSIntersectionType(node) {
-    return new TopType(TopTypeName.Unknown);
+    node.typeExpression = UnknownType;
+  },
+
+  propagate(node) {
+    const handler = this[node.type];
+    if (handler) handler.call(this, node);
+    else node.typeExpression = UnknownType;
   },
 };
 
 /**
- * @param {acorn.Node | null | undefined} type
- * @return {Type}
+ * Sets node.typeExpression from its immediate children' typeExpressions; returns it.
+ * Call in post-order so children already have typeExpression.
+ * @param {acorn.Node | null | undefined} node
  */
-const fromAcornType = (type) => AcornTypeToType.convert(type);
+const propagateType = (node) => { if (node) AcornTypeToType.propagate(node); };
 
-export { fromAcornType };
+export { propagateType };

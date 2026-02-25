@@ -3,6 +3,7 @@
  * Parse with acorn-typescript, walk program body, emit const enum, VariableDeclaration, export.
  */
 import { TsParser } from "../parser/tsParser";
+import { FunctionType } from "../types/types";
 import {
   generate,
   generateEnum,
@@ -12,17 +13,32 @@ import {
 
 /** @param {acorn.VariableDeclaration} node */
 const generateVariableDeclaration = (node) => {
-  if (node.kind != "const") return [];
   const out = [];
+  const kind = node.kind;
+  const tag = kind == "const" ? "const" : "type";
   for (const decl of node.declarations) {
     const name = decl.id.type == "Identifier" ? decl.id.name : null;
     if (name == null || decl.init == null) continue;
-    const typeNode = decl.id.typeAnnotation?.typeAnnotation;
-    const typeStr = typeNode ? generateTypeExpr(typeNode) : "";
-    const line = "const " + name + " = " + generate(decl.init) + ";";
-    out.push(typeStr ? "/** @const {" + typeStr + "} */\n" + line : line);
+    const init = decl.init;
+    const isFunctionInit = init.type == "ArrowFunctionExpression" || init.type == "FunctionExpression";
+    const typeExpression = isFunctionInit && init.typeExpression
+      ? init.typeExpression
+      : decl.id.typeExpression;
+    let block = "";
+    if (isFunctionInit && typeExpression instanceof FunctionType && typeExpression.toTsDoc) {
+      block = typeExpression.toTsDoc();
+    } else if (typeExpression && typeExpression.toTsExpr) {
+      const typeStr = typeExpression.toTsExpr();
+      block = "/** @" + tag + " {" + typeStr + "} */";
+    } else {
+      const typeNode = decl.id.typeAnnotation?.typeAnnotation;
+      const typeStr = typeNode ? generateTypeExpr(typeNode) : "";
+      block = typeStr ? "/** @" + tag + " {" + typeStr + "} */" : "";
+    }
+    const line = kind + " " + name + " = " + generate(init) + ";";
+    out.push(block ? block + "\n" + line : line);
   }
-  return out + "\n";
+  return out.join("\n") + "\n";
 };
 
 /**

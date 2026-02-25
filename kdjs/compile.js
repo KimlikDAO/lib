@@ -73,7 +73,7 @@ const compile = async (params, checkFreshFn, transpileFn) => {
   closureCompiler.spawnOptions = {
     "cwd": isolateDir
   };
-
+  console.info("kdjs isolate:", isolateDir);
   return new Promise((resolve, reject) => {
     closureCompiler.run((exitCode, output, errors) => {
       if (exitCode || errors) {
