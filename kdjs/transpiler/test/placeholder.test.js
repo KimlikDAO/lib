@@ -98,6 +98,25 @@ describe("generatePlaceholder", () => {
     expect(result).toContain("export default { BaseConfig, AdvancedConfig, ConfigType };");
   });
 
+  it("crosschain signer.ts", () => {
+    const input =
+`import { Signature as EthereumSignature } from "../ethereum/signature.d";
+import { SignerSignature as MinaSignature } from "../mina/signature.d";
+
+type Signature = MinaSignature | EthereumSignature;
+
+interface Signer {
+  deriveSecret(message: string, address: string): Promise<ArrayBuffer>;
+  signMessage(message: string, address: string): Promise<Signature>;
+}
+
+export { Signature, Signer };
+`;
+    expect(generatePlaceholder(input)).toBe(
+`export const Signature = {};
+export const Signer = {};`);
+  });
+
   it("should handle empty files", () => {
     const input = `
       // Empty declaration file
@@ -107,3 +126,4 @@ describe("generatePlaceholder", () => {
     expect(result).toBe("");
   });
 });
+

@@ -2,14 +2,30 @@
  * @fileoverview Minimal TS→kdjs-js transpiler: top-level const enum, variable, and export.
  * Parse with acorn-typescript, walk program body, emit const enum, VariableDeclaration, export.
  */
-import { TsParser } from "../parser/tsParser";
-import { FunctionType } from "../types/types";
 import {
   generate,
+  generateClassInterface,
   generateEnum,
   generateExport,
+  generateTypedef,
   generateTypeExpr,
-} from "./generator";
+} from "../generator/closureFromAst";
+import { TsParser } from "../parser/tsParser";
+import { FunctionType } from "../types/types";
+
+/** @param {acorn.ImportDeclaration} node */
+const generateImport = (node) => {
+  if (!node.specifiers || node.specifiers.length === 0)
+    return `import "${node.source.value}";\n`;
+  const parts = node.specifiers.map(s => {
+    if (s.type === "ImportDefaultSpecifier") return s.local.name;
+    if (s.type === "ImportNamespaceSpecifier") return `* as ${s.local.name}`;
+    return s.imported.name === s.local.name
+      ? s.local.name
+      : `${s.imported.name} as ${s.local.name}`;
+  });
+  return `import { ${parts.join(", ")} } from "${node.source.value}";\n`;
+};
 
 /** @param {acorn.VariableDeclaration} node */
 const generateVariableDeclaration = (node) => {
@@ -53,10 +69,16 @@ const transpileTs = (content) => {
   });
   let out = "";
   for (const node of ast.body) {
-    if (node.type == "TSEnumDeclaration") {
+    if (node.type == "ImportDeclaration")
+      out += generateImport(node);
+    else if (node.type == "TSEnumDeclaration") {
       if (!node.const) throw "Only const enum is allowed";
       out += generateEnum(node);
-    } else if (node.type == "VariableDeclaration")
+    } else if (node.type == "TSTypeAliasDeclaration")
+      out += "\n" + generateTypedef(node);
+    else if (node.type == "TSInterfaceDeclaration")
+      out += generateClassInterface(node);
+    else if (node.type == "VariableDeclaration")
       out += generateVariableDeclaration(node);
     else if (node.type == "ExportNamedDeclaration")
       out += "\n" + generateExport(node);

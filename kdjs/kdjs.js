@@ -10,7 +10,7 @@ const params = parseArgs(process.argv.slice(2), "entry", {
 });
 
 if (typeof params["entry"] != "string") {
-  console.log(`kdjs 0.0.1
+  console.log(`kdjs 0.0.2
 
 Usage: kdjs entry.js [parameters]
 

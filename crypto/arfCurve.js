@@ -22,20 +22,19 @@ import { inverse } from "./modular";
  * @interface
  */
 class Point {
-  /** @type {bigint} */
-  x;
-  /** @type {bigint} */
-  y;
-  /** @type {bigint} */
-  z;
-
   /**
-   * @pureOrBreakMyCode
    * @param {bigint} x
    * @param {bigint} y
    * @param {bigint=} z
    */
-  constructor(x, y, z) { }
+  constructor(x, y, z) {
+    /** @type {bigint} */
+    this.x;
+    /** @type {bigint} */
+    this.y;
+    /** @type {bigint} */
+    this.z;
+  }
 
   /**
    * @return {Point}
@@ -67,6 +66,7 @@ class Point {
   multiply(n) { }
 
   /**
+   * @nosideeffects
    * @return {Point}
    */
   copy() { }
@@ -110,12 +110,17 @@ const arfCurve = (P) => {
       this.z = z ?? 1n;
     }
 
-    /** @return {Point} */
+    /**
+     * @nosideeffects
+     * @return {Point}
+     */
     copy() {
       return new CurvePoint(this.x, this.y, this.z);
     }
 
-    /** @return {Point} */
+    /**
+     * @return {Point}
+     */
     project() {
       if (this.z != 0n) {
         /** @const {bigint} */
@@ -131,7 +136,9 @@ const arfCurve = (P) => {
       return this;
     }
 
-    /** @return {Point} */
+    /**
+     * @return {Point}
+     */
     negate() {
       this.y = P - this.y;
       return this;
@@ -229,6 +236,7 @@ const O = /** @type {Point} */({ x: 0n, y: 0n, z: 0n });
 /**
  * Computes aX + bY at the cost of a single scalar x point multiplication.
  *
+ * @nosideeffects
  * @pureOrBreakMyCode
  * @param {bigint} a
  * @param {Point} X

@@ -44,7 +44,7 @@ interface Section {
    */
   secp256k1: string[];
 
-  readonly minaSchnorr: SignerSignature[];
+  minaSchnorr: SignerSignature[];
 }
 
 interface HumanID extends Section, VerifiableID { }

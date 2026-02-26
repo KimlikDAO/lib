@@ -69,41 +69,35 @@ export default { Request, Response };
 const namespace$$api$jsonrpc = {};
 
 /**
- * @struct
  * @interface
  */
-namespace$$api$jsonrpc.Request = function () {};
-
-/** @const {string} */
-namespace$$api$jsonrpc.Request.prototype.jsonrpc;
-
-/** @const {string} */
-namespace$$api$jsonrpc.Request.prototype.method;
-
-/** @const {unknown[]} */
-namespace$$api$jsonrpc.Request.prototype.params;
-
-/** @const {number|string} */
-namespace$$api$jsonrpc.Request.prototype.id;
-
+namespace$$api$jsonrpc.Request = class {
+  constructor() {
+    /** @const {string} */
+    this.jsonrpc;
+    /** @const {string} */
+    this.method;
+    /** @const {unknown[]} */
+    this.params;
+    /** @const {number|string} */
+    this.id;
+  }
+}
 /**
- * @struct
  * @interface
  */
-namespace$$api$jsonrpc.Response = function () {};
-
-/** @const {string} */
-namespace$$api$jsonrpc.Response.prototype.jsonrpc;
-
-/** @const {unknown} */
-namespace$$api$jsonrpc.Response.prototype.result;
-
-/** @const {unknown} */
-namespace$$api$jsonrpc.Response.prototype.error;
-
-/** @const {number|string} */
-namespace$$api$jsonrpc.Response.prototype.id;
-
+namespace$$api$jsonrpc.Response = class {
+  constructor() {
+    /** @const {string} */
+    this.jsonrpc;
+    /** @const {unknown} */
+    this.result;
+    /** @const {unknown} */
+    this.error;
+    /** @const {number|string} */
+    this.id;
+  }
+}
 `;
 
   const result = transpile(input, "api/jsonrpc.d.ts");
@@ -132,23 +126,20 @@ import "../ethereum/provider.d.ts";
 const namespace$$api$client = {};
 
 /**
- * @struct
  * @interface
  */
-namespace$$api$client.ApiClient = function () {};
-
-/**
- * @param {string} token
- * @return {Promise<namespace$$auth$auth.User>}
- */
-namespace$$api$client.ApiClient.prototype.authenticate = function (token) {};
-
-/**
- * @param {namespace$$ethereum$provider.Transaction} tx
- * @return {Promise<string>}
- */
-namespace$$api$client.ApiClient.prototype.sendTransaction = function (tx) {};
-
+namespace$$api$client.ApiClient = class {
+  /**
+   * @param {string} token
+   * @return {Promise<namespace$$auth$auth.User>}
+   */
+  authenticate(token) {}
+  /**
+   * @param {namespace$$ethereum$provider.Transaction} tx
+   * @return {Promise<string>}
+   */
+  sendTransaction(tx) {}
+}
 `;
 
   const result = transpile(input, "api/client.d.ts");
@@ -175,20 +166,18 @@ import "../api/provider.d.ts";
 const namespace$$test$provider = {};
 
 /**
- * @struct
  * @interface
- * @extends {namespace$$api$provider.BaseProvider}
  */
-namespace$$test$provider.ExtendedProvider = function () {};
-
-/**
- * @return {void}
- */
-namespace$$test$provider.ExtendedProvider.prototype.additionalMethod = function () {};
-
-/** @type {string} */
-namespace$$test$provider.ExtendedProvider.prototype.additionalProperty;
-
+namespace$$test$provider.ExtendedProvider = class extends namespace$$api$provider.BaseProvider {
+  constructor() {
+    /** @type {string} */
+    this.additionalProperty;
+  }
+  /**
+   * @return {void}
+   */
+  additionalMethod() {}
+}
 `;
 
   const result = transpile(input, "test/provider.d.ts");

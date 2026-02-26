@@ -11,7 +11,7 @@ const PAGE_CACHE_CONTROL = "max-age=100,public,no-transform";
 /** @const {string} */
 const STATIC_CACHE_CONTROL = "max-age=29000000,public,immutable,no-transform";
 
-/** @const {ModuleWorker} */
+/** @type {ModuleWorker} */
 const Worker = {
   /**
    * @override

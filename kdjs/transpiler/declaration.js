@@ -5,13 +5,13 @@
  * @author KimlikDAO
  */
 import { combine, getDir } from "../../util/paths";
+import {
+  generateClassInterface,
+  generateEnum,
+  generateTypedef
+} from "../generator/closureFromAst";
 import { TsParser } from "../parser/tsParser";
 import { resolveExtension } from "../util/resolver";
-import {
-  generateEnum,
-  generateTypeExpr,
-  generateTypedef
-} from "./generator";
 
 /**
  * Converts a file path to a namespace name.
@@ -93,114 +93,14 @@ const transpileDeclaration = (content, sourcePath) => {
   output += `/** @const */\nconst ${namespace} = {};\n\n`;
   for (const node of ast.body) {
     if (node.type == "TSInterfaceDeclaration") {
-      output += generatePrototypeInterface(node, namespace, typeMap);
+      output += generateClassInterface(node, typeMap);
     } else if (node.type == "TSTypeAliasDeclaration") {
-      output += generateTypedef(node, namespace, typeMap);
+      output += generateTypedef(node, typeMap);
     } else if (node.type == "TSEnumDeclaration") {
-      output += generateEnum(node, namespace);
+      output += generateEnum(node, typeMap);
     }
   }
   return output;
-};
-
-/**
- * Serializes a TypeScript interface into a GCC interface definition.
- *
- * @param {acorn.TSInterfaceDeclaration} node The interface declaration node
- * @param {string} namespace The namespace name
- * @param {Map<string, string>} imports Map of imported names to namespaces
- * @return {string} The transpiled interface content
- */
-const generatePrototypeInterface = (node, namespace, typeMap) => {
-  const scopedName = `${namespace}.${node.id.name}`;
-
-  let output = "";
-  output += `/**\n`;
-  output += ` * @struct\n`;
-  output += ` * @interface\n`;
-  if (node.extends && node.extends.length > 0) {
-    for (const extendedInterface of node.extends) {
-      const extendsName = generateTypeExpr(extendedInterface.expression, typeMap);
-      output += ` * @extends {${extendsName}}\n`;
-    }
-  }
-  output += ` */\n`;
-  output += `${scopedName} = function () {};\n\n`;
-
-  if (!node.body || !node.body.body)
-    return output;
-  for (const member of node.body.body)
-    if (member.type == "TSPropertySignature")
-      output += generateProperty(member, scopedName, typeMap);
-    else if (member.type == "TSMethodSignature")
-      output += generateMethod(member, scopedName, typeMap);
-  return output;
-};
-
-/**
- * @param {acorn.TSPropertySignature} node The property signature node
- * @param {string} interfaceName The full interface name
- * @param {Map<string, string>} typeMap Map of type names to namespaces
- * @return {string} The transpiled property content
- */
-const generateProperty = (node, interfaceName, typeMap) => {
-  const propertyName = node.key.name || node.key.value;
-  const typeText = generateTypeExpr(
-    node.typeAnnotation && node.typeAnnotation.typeAnnotation,
-    typeMap
-  );
-  let output = "";
-  const finalType = typeText + (node.optional ? " | undefined" : "");
-  const annotation = node.readonly ? "const" : "type";
-  output += `/** @${annotation} {${finalType}} */\n`;
-  output += `${interfaceName}.prototype.${propertyName};\n\n`;
-  return output;
-};
-
-/**
- * @param {acorn.TSMethodSignature} node The method signature node
- * @param {string} interfaceName The full interface name
- * @param {Map<string, string>} typeMap Map of type names to namespaces
- * @return {string} The transpiled method content
- */
-const generateMethod = (node, interfaceName, typeMap) => {
-  const methodName = node.key.name || node.key.value;
-
-  // Process parameters
-  const params = node.parameters || [];
-  const paramDocs = params.map(param => getNameType(param, typeMap));
-  const returnType = generateTypeExpr(node.typeAnnotation?.typeAnnotation, typeMap);
-
-  let output = "";
-  output += `/**\n`;
-  for (const paramDoc of paramDocs)
-    output += ` * @param {${paramDoc.type}} ${paramDoc.name}\n`;
-  output += ` * @return {${returnType}}\n`;
-  output += ` */\n`;
-  output += `${interfaceName}.prototype.${methodName} = function (`;
-  const paramNames = params.map(p => p.name ? p.name.name || p.name : "");
-  output += paramNames.join(", ");
-  output += ") {};\n\n";
-  return output;
-};
-
-/**
- * Processes a parameter node.
- *
- * @param {acorn.TSParameterDeclaration} param The parameter node
- * @param {Map<string, string>} typeMap Map of type names to namespaces
- * @return {{ name: string, type: string }} The parameter name and type
- */
-const getNameType = (param, typeMap) => {
-  // Extract parameter name correctly based on node structure
-  const name = param.name ? param.name.name || param.name : "";
-  let type = "*";
-  if (param.typeAnnotation)
-    type = generateTypeExpr(param.typeAnnotation.typeAnnotation, typeMap);
-  // Handle optional parameters
-  if (param.optional)
-    type += "=";
-  return { name, type };
 };
 
 /**

@@ -65,3 +65,48 @@ export {
 };
 `);
 });
+
+test("crosschain signer", () => {
+  const input = `import { Signature as EthereumSignature } from "../ethereum/signature.d";
+import { SignerSignature as MinaSignature } from "../mina/signature.d";
+
+type Signature = MinaSignature | EthereumSignature;
+
+interface Signer {
+  deriveSecret(message: string, address: string): Promise<ArrayBuffer>;
+  signMessage(message: string, address: string): Promise<Signature>;
+}
+
+export { Signature, Signer };
+`;
+  expect(transpileTs(input)).toBe(
+`import { Signature as EthereumSignature } from "../ethereum/signature.d";
+import { SignerSignature as MinaSignature } from "../mina/signature.d";
+
+/** @typedef {MinaSignature|EthereumSignature} */
+const Signature = {};
+
+/**
+ * @interface
+ */
+class Signer {
+  /**
+   * @param {string} message
+   * @param {string} address
+   * @return {Promise<ArrayBuffer>}
+   */
+  deriveSecret(message, address) {}
+  /**
+   * @param {string} message
+   * @param {string} address
+   * @return {Promise<Signature>}
+   */
+  signMessage(message, address) {}
+}
+
+export {
+  Signature,
+  Signer
+};
+`);
+});
