@@ -30,6 +30,11 @@ const postprocess = (content, missingImports) => {
   let assignmentCode = "";
   let exportCode = "";
 
+  const astringOptions = {
+    indent: "",
+    lineEnd: "",
+  };
+
   simple(ast, /** @type {acorn.SimpleVisitor} */({
     AssignmentExpression(node) {
       if (node.left.type === 'MemberExpression' &&
@@ -37,14 +42,14 @@ const postprocess = (content, missingImports) => {
         node.left.property.name === 'KimlikDAOCompiler_exports') {
         const exportCount = node.right.properties.length;
         if (exportCount == 1 && node.right.properties[0].key.name == "KDdefault") {
-          exportCode = `export default ${generate(node.right.properties[0].value)}`;
+          exportCode = `export default ${generate(node.right.properties[0].value, astringOptions)}`;
         } else if (exportCount > 0) {
           exportCode = "export{";
           node.right.properties.forEach((prop) => {
             const prefix = 'KimlikDAOCompiler_';
             let exportName = prop.key.type === 'Identifier' ? prop.key.name : prop.key.value;
             if (exportName == "KDdefault") exportName = exportName.slice(2);
-            assignmentCode += `const ${prefix}${exportName} = ${generate(prop.value)};\n`;
+            assignmentCode += `const ${prefix}${exportName} = ${generate(prop.value, astringOptions)};\n`;
             exportCode += `${prefix}${exportName} as ${exportName},`;
           });
           exportCode = exportCode.slice(0, -1) + "}";

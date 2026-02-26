@@ -66,6 +66,89 @@ export {
 `);
 });
 
+test("crosschain walletConnector", () => {
+  const input =
+`import { EIP1193Provider as EthereumProvider } from "../ethereum/provider.d";
+import { Provider as MinaProvider } from "../mina/provider.d";
+import { ChainId } from "./chains";
+import { Signer } from "./signer";
+
+type Provider = MinaProvider | EthereumProvider;
+
+interface WalletConnector extends Signer {
+  isInitialized(): boolean;
+  setProvider(provider: Provider): void;
+  downloadURL(): string;
+  connect(
+    chain: ChainId,
+    chainChanged: (chainId: ChainId) => void,
+    addressChanged: (addresses: string[]) => void,
+    onlyIfApproved?: boolean
+  ): Promise<void> | void;
+  disconnect(): void;
+  switchChain(chainId: ChainId): Promise<unknown> | void;
+  isChainSupported(chainId: ChainId): boolean;
+}
+
+export { Provider, WalletConnector };
+`;
+  expect(transpileTs(input)).toBe(
+`import { EIP1193Provider as EthereumProvider } from "../ethereum/provider.d";
+import { Provider as MinaProvider } from "../mina/provider.d";
+import { ChainId } from "./chains";
+import { Signer } from "./signer";
+
+/** @typedef {MinaProvider|EthereumProvider} */
+const Provider = {};
+
+/**
+ * @interface
+ */
+class WalletConnector extends Signer {
+  /**
+   * @return {boolean}
+   */
+  isInitialized() {}
+  /**
+   * @param {Provider} provider
+   * @return {void}
+   */
+  setProvider(provider) {}
+  /**
+   * @return {string}
+   */
+  downloadURL() {}
+  /**
+   * @param {ChainId} chain
+   * @param {(chainId: ChainId) => void} chainChanged
+   * @param {(addresses: string[]) => void} addressChanged
+   * @param {boolean=} onlyIfApproved
+   * @return {Promise<void>|void}
+   */
+  connect(chain, chainChanged, addressChanged, onlyIfApproved) {}
+  /**
+   * @return {void}
+   */
+  disconnect() {}
+  /**
+   * @param {ChainId} chainId
+   * @return {Promise<unknown>|void}
+   */
+  switchChain(chainId) {}
+  /**
+   * @param {ChainId} chainId
+   * @return {boolean}
+   */
+  isChainSupported(chainId) {}
+}
+
+export {
+  Provider,
+  WalletConnector
+};
+`);
+});
+
 test("crosschain signer", () => {
   const input = `import { Signature as EthereumSignature } from "../ethereum/signature.d";
 import { SignerSignature as MinaSignature } from "../mina/signature.d";

@@ -35,6 +35,20 @@ const generateExport = (node) => {
   return "export {\n" + entries + "\n};\n";
 };
 
+/** @param {acorn.ImportDeclaration} node */
+const generateImport = (node) => {
+  if (!node.specifiers || node.specifiers.length === 0)
+    return `import "${node.source.value}";\n`;
+  const parts = node.specifiers.map(s => {
+    if (s.type === "ImportDefaultSpecifier") return s.local.name;
+    if (s.type === "ImportNamespaceSpecifier") return `* as ${s.local.name}`;
+    return s.imported.name === s.local.name
+      ? s.local.name
+      : `${s.imported.name} as ${s.local.name}`;
+  });
+  return `import { ${parts.join(", ")} } from "${node.source.value}";\n`;
+};
+
 /** Top-level: delegate to expression for init RHS, or use for future statement table. */
 const generate = (node, typeMap) => generateExpression(node, typeMap);
 
@@ -303,6 +317,7 @@ export {
   generateEnum,
   generateExport,
   generateExpression,
+  generateImport,
   generatePrototypeInterface,
   generateTypedef,
   generateTypeExpr,

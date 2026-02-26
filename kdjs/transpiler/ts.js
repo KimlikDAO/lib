@@ -7,25 +7,12 @@ import {
   generateClassInterface,
   generateEnum,
   generateExport,
+  generateImport,
   generateTypedef,
   generateTypeExpr,
 } from "../generator/closureFromAst";
 import { TsParser } from "../parser/tsParser";
 import { FunctionType } from "../types/types";
-
-/** @param {acorn.ImportDeclaration} node */
-const generateImport = (node) => {
-  if (!node.specifiers || node.specifiers.length === 0)
-    return `import "${node.source.value}";\n`;
-  const parts = node.specifiers.map(s => {
-    if (s.type === "ImportDefaultSpecifier") return s.local.name;
-    if (s.type === "ImportNamespaceSpecifier") return `* as ${s.local.name}`;
-    return s.imported.name === s.local.name
-      ? s.local.name
-      : `${s.imported.name} as ${s.local.name}`;
-  });
-  return `import { ${parts.join(", ")} } from "${node.source.value}";\n`;
-};
 
 /** @param {acorn.VariableDeclaration} node */
 const generateVariableDeclaration = (node) => {
