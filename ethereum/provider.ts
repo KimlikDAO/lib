@@ -3,7 +3,7 @@ import { EIP712TypedData } from "./contract/EIP712.d";
 import { RequestArguments } from "./provider.d";
 import { WideSignature } from "./signature.d";
 import { serialize, TransactionRequest } from "./transaction";
-import { TransactionHash } from "./transaction.e";
+import { TransactionHash } from "./transaction.d";
 
 interface Provider {
   read(txRequest: TransactionRequest): Promise<string>;
