@@ -93,7 +93,7 @@ const transpileDeclaration = (content, sourcePath) => {
   output += `/** @const */\nconst ${namespace} = {};\n\n`;
   for (const node of ast.body) {
     if (node.type == "TSInterfaceDeclaration") {
-      output += generateInterface(node, namespace, typeMap);
+      output += generatePrototypeInterface(node, namespace, typeMap);
     } else if (node.type == "TSTypeAliasDeclaration") {
       output += generateTypedef(node, namespace, typeMap);
     } else if (node.type == "TSEnumDeclaration") {
@@ -111,7 +111,7 @@ const transpileDeclaration = (content, sourcePath) => {
  * @param {Map<string, string>} imports Map of imported names to namespaces
  * @return {string} The transpiled interface content
  */
-const generateInterface = (node, namespace, typeMap) => {
+const generatePrototypeInterface = (node, namespace, typeMap) => {
   const scopedName = `${namespace}.${node.id.name}`;
 
   let output = "";

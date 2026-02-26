@@ -1,3 +1,3 @@
-preload = ["./kdjs/util/plugin.js"]
+preload = ["./kdjs/util/bunPlugin.js"]
 [test]
-preload = ["./kdjs/util/plugin.js"]
+preload = ["./kdjs/util/bunPlugin.js"]

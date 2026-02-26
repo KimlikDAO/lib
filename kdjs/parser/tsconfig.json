@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
-		"allowJs": false,
-		"target": "es6",
+		"allowJs": true,
+		"target": "esnext",
 		"allowSyntheticDefaultImports": true,
 		"moduleResolution": "node",
 		"outDir": "lib",

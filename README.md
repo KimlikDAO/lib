@@ -74,11 +74,16 @@ The tests can be run in two different modes:
   Note that `kdjs` makes aggressive optimizations using the provided
   type information. Running tests in compiled mode is crucial, as
   incorrect type annotations can lead to functionally incorrect output.
+  There is also a fast build mode, which doesn't do typechecking
+  and produces larger outputs
+  ```shell
+  bun run test --fast
+  ```
 
 To run tests in a specific directory, say `crypto`, you can also do
 ```shell
 bun test crypto # uncompiled
-bun run test crypto # compiled
+bun run test crypto # compiled, --fast param available
 ```
 
 ## ⏱️ Benchmarks

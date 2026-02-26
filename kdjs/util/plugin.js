@@ -1,16 +1,14 @@
-import { plugin } from "bun";
 import { readFileSync } from "node:fs";
 import { generatePlaceholder } from "../transpiler/declaration";
 
-plugin({
+const kdjsPlugin = {
   name: "kdjs",
-  async setup(build) {
-    build.onLoad({ filter: /\.d\.ts$/ }, (args) => {
-      const content = readFileSync(args.path, "utf8");
-      return {
-        contents: generatePlaceholder(content),
-        loader: "js"
-      };
-    });
+  setup(build) {
+    build.onLoad({ filter: /\.d\.ts$/ }, (args) => ({
+      contents: generatePlaceholder(readFileSync(args.path, "utf8")),
+      loader: "js"
+    }));
   }
-});
+};
+
+export { kdjsPlugin };

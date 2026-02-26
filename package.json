@@ -9,12 +9,15 @@
     "postinstall": "mkdir -p ./node_modules/@kimlikdao && ln -sfn ../../kdjs ./node_modules/@kimlikdao/kdjs",
     "test": "bun testing/runner.js",
     "bench": "bun testing/runner.js bench",
-    "test:compiled": "bun testing/runner.js test"
+    "test:compiled": "bun testing/runner.js test",
+    "kdjs": "bun kdjs/kdjs.js",
+    "clear": "rm -rf build && clear"
   },
   "devDependencies": {
     "@ethereumjs/evm": "^10.1.1",
     "@noble/secp256k1": "^3.0.0",
     "@types/bun": "^1.3.9",
+    "esbuild": "^0.27.3",
     "ethers": "^6.16.0",
     "mina-signer": "^3.1.0"
   },
@@ -26,7 +29,7 @@
     "astring": "^1.9.0",
     "css-tree": "^3.1.0",
     "csso": "^5.0.5",
-    "google-closure-compiler": "^20260218.0.0",
+    "google-closure-compiler": "^20260223.0.0",
     "html-minifier": "^4.0.0",
     "htmlparser2": "^10.1.0",
     "js-yaml": "^4.1.1",

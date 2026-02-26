@@ -1,14 +1,37 @@
 import * as swc from "@swc/core";
+import { write } from "bun";
+import { build as buildWithEsBuild } from "esbuild";
 import { compiler as ClosureCompiler } from "google-closure-compiler";
-import { writeFile } from "node:fs/promises";
 import UglifyJS from "uglify-js";
-import { ImportStatement } from "./util/modules";
 import { tweakPasses } from "./passes";
 import { postprocess } from "./postprocess";
 import { preprocessAndIsolate } from "./preprocess";
+import { ImportStatement } from "./util/modules";
+import { kdjsPlugin } from "./util/plugin";
 
 /** @typedef {Record<string, unknown>} */
 const Params = {};
+
+const compileWithEsbuild = async (params) => buildWithEsBuild({
+  entryPoints: [params["entry"]],
+  bundle: true,
+  format: "esm",
+  target: "esnext",
+  packages: "external",
+  minify: true,
+  legalComments: "none",
+  write: false,
+  plugins: [kdjsPlugin],
+})
+  .then((result) => {
+    const text = result.outputFiles[0].text;
+    console.log(`esbuild size: \t${text.length}`);
+    if (params["print"])
+      console.log("esbuild output:\n", text);
+    return params["output"]
+      ? write(params["output"], text).then(() => text)
+      : text;
+  });
 
 /**
  * Resolves to the compiled code or void if it determines that the code
@@ -21,11 +44,14 @@ const Params = {};
  * @return {Promise<string | void>}
  */
 const compile = async (params, checkFreshFn, transpileFn) => {
+  if (params["fast"])
+    return compileWithEsbuild(params);
+
   const {
-    /** @const {Map<string, ImportStatement>} */ unlinkedImports,
-    /** @const {Set<string>} */ allFiles,
-    /** @const {string} */ isolateDir,
-    /** @const {boolean} */ ignoreUnusedLocals
+    /** @type {Map<string, ImportStatement>} */ unlinkedImports,
+    /** @type {Set<string>} */ allFiles,
+    /** @type {string} */ isolateDir,
+    /** @type {boolean} */ ignoreUnusedLocals
   } = await preprocessAndIsolate(params, transpileFn);
   /** @const {string[]} */
   const allFilesArray = Array.from(allFiles).sort();
@@ -82,7 +108,7 @@ const compile = async (params, checkFreshFn, transpileFn) => {
       }
       output = postprocess(output, unlinkedImports);
       if (params["printGccOutput"])
-        console.log("GCC output:", output);
+        console.log("GCC output\n", output);
       const uglified = UglifyJS.minify(output, {
         mangle: {
           toplevel: true,
@@ -127,9 +153,9 @@ const compile = async (params, checkFreshFn, transpileFn) => {
     if (/** @type {boolean} */(params["emit_shebang"]))
       code = "#!/usr/bin/env bun\n" + code;
     if (params["print"])
-      console.log("UglifyJS\n", uglifiedCode, "\nSWC\n", swcOutput.code);
+      console.log("UglifyJS output:\n", uglifiedCode, "\nSWC output:\n", swcOutput.code);
     if (params["output"])
-      return writeFile(/** @type {string} */(params["output"]), code)
+      return write(/** @type {string} */(params["output"]), code)
         .then(() => code)
     return code;
   })

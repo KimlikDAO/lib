@@ -176,7 +176,7 @@ function tsPlugin(options?: {
       tokenIsTSTypeOperator
     } = acornTypeScript;
 
-    function nextLineBreak(code, from, end = code.length) {
+    const nextLineBreak =(code: string, from: number, end: number = code.length) => {
       for (let i = from; i < end; i++) {
         let next = code.charCodeAt(i);
         if (isNewLine(next))
