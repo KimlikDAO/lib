@@ -8,15 +8,15 @@ import {
 } from "../montgomery";
 
 test("unmont(mont(1)) == 1",
-  () => expect(unmont(mont(1n))).toBe(1n));
+  () => { expect(unmont(mont(1n))).toBe(1n); });
 test("unmont(mont(1000)) == 1000",
-  () => expect(unmont(mont(1000n))).toBe(1000n));
+  () => { expect(unmont(mont(1000n))).toBe(1000n); });
 test("unmont(mont(1000000)) == 1000000",
-  () => expect(unmont(mont(1000000n))).toBe(1000000n));
+  () => { expect(unmont(mont(1000000n))).toBe(1000000n); });
 test("mul(mont(1), mont(1)) == mont(1)",
-  () => expect(unmont(mul(mont(1n), mont(1n)))).toBe(1n));
+  () => { expect(unmont(mul(mont(1n), mont(1n)))).toBe(1n); });
 test("mul(mont(1000), mont(1000)) == mont(1000000)",
-  () => expect(unmont(mul(mont(1000n), mont(1000n)))).toBe(1000000n));
+  () => { expect(unmont(mul(mont(1000n), mont(1000n)))).toBe(1000000n); });
 
 test("mul", () => {
   let acc1 = mont(1n);

@@ -87,7 +87,10 @@ const encrypt = (text, userPrompt, version, signer, address) => {
         .then(encryptWithSecret)
         .catch(() => requestSecret().then((signature) => new Promise(
           (/** @type {(value: Promise<Unlockable>) => void} */ resolve) =>
-            setTimeout(() => resolve(encryptWithSecret(signature)), 200)))
+            setTimeout(
+              () => { resolve(encryptWithSecret(signature)); },
+              200
+            )))
         );
     }
   }

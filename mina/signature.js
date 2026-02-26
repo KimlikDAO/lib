@@ -11,7 +11,6 @@ import { Signature } from "./signature.d";
  * @return {Signature}
  */
 const fromUnpacked = ({ r, s }) => {
-  /** @const {Signature} */
   /** @const {Uint8Array} */
   const buff = new Uint8Array(70);
   buff[0] = 154;
@@ -22,6 +21,13 @@ const fromUnpacked = ({ r, s }) => {
   return base58.from(buff);
 }
 
+/**
+ * @param {Signature} sig
+ * @return {{
+ *   r: bigint,
+ *   s: bigint
+ * }}
+ */
 const toUnpacked = (sig) => {
   /** @const {Uint8Array} */
   const bytes = base58.toBytes(sig);

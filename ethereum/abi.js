@@ -21,7 +21,7 @@ const packedAddress = (addr) => addr.slice(2);
 const uint256 = (value) => {
   if (typeof value == "string")
     value = BigInt(value);
-  return /** @type {number | bigint} */(value).toString(16).padStart(64, "0");
+  return /** @type {bigint} */(value).toString(16).padStart(64, "0");
 };
 
 /** @const {(num: number) => string} */
@@ -39,6 +39,10 @@ const uint64 = (num) => num.toString(16).padStart(16, "0");
  */
 const isZero = (value) => value == "0x" || value.replaceAll("0", "") == 'x';
 
+/**
+ * @param {string} value
+ * @return {boolean}
+ */
 const isNonzero = (value) => !isZero(value);
 
 /**

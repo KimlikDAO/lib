@@ -28,11 +28,12 @@ const hashExposureReport = (exposureReport) => {
 
 /**
  * @param {HumanID} humanID
+ * @return {string}
  */
 const hashHumanID = (humanID) => {
   /**
    * The `humanID` is hashed in an EVM friendly way.
-   * 16 bytes KIMLIKDAO_HASH_PREFIX,
+   * 16 bytes {@link KIMLIKDAO_HASH_PREFIX},
    * 16 bytes signatureTs (big endian),
    * 32 bytes commitment,
    * 32 bytes humanID.id

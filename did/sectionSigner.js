@@ -19,6 +19,8 @@ const SignParams = {};
 
 /**
  * @param {HumanID} humanID
+ * @param {bigint} privateKey
+ * @return {void}
  */
 const signHumanID = (humanID, privateKey) => {
   humanID.minaSchnorr = [signFields([
@@ -30,6 +32,7 @@ const signHumanID = (humanID, privateKey) => {
 
 /**
  * @param {HumanID} humanID
+ * @param {string} ownerAddress
  * @return {string[]}
  */
 const recoverHumanIDSigners = (humanID, ownerAddress) => {

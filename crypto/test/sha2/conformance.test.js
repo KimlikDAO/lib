@@ -21,9 +21,10 @@ const toUint8Arr = (uint32Arr) => {
  * @param {Iterable | string} itr1
  * @param {Iterable | string} itr2
  */
-const check = (itr1, itr2) =>
+const check = (itr1, itr2) => {
   expect(toUint8Arr(sha256Uint32(Uint32Array.from(itr1))))
     .toEqual(Uint8Array.from(sha256.array(Uint8Array.from(itr2))));
+}
 
 test("agrees with js-sha256 on select values", () => {
   check("1", "0001");

@@ -15,8 +15,8 @@ const hmac = (key, message) => crypto.subtle
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"])
-  .then((key) => crypto.subtle.sign("HMAC", key, message))
-  .then((signature) => new Uint8Array(signature));
+  .then((/** @type {webCrypto.CryptoKey} */ key) => crypto.subtle.sign("HMAC", key, message))
+  .then((/** @type {ArrayBuffer} */ signature) => new Uint8Array(signature));
 
 /** @const {Uint8Array} */
 const SaltedBuff = new Uint8Array(64);

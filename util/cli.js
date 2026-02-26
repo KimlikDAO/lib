@@ -21,13 +21,15 @@ const parseArgs = (args, defaultArgKey, shortArgMap) => {
   let key = defaultArgKey;
   /** @type {string[]} */
   let values = [];
-  /** @type {Record<string, unknown>} */
+  /** @type {CliArgs} */
   const params = {};
 
   args.push("--");
   for (const arg of args) {
     if (arg.startsWith("-")) {
-      params[key] = values.length ? values.length == 1 ? values[0] : values : true;
+      params[key] = values.length
+        ? /** @type {string | string[]} */(values.length == 1 ? values[0] : values)
+        : true;
       key = arg.startsWith("--") ? arg.slice(2) : shortArgMap[arg];
       values = [];
     } else

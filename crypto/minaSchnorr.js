@@ -93,6 +93,7 @@ const signFields = (fields, privKey, pubKey) => {
  * @param {bigint} r
  * @param {bigint} s
  * @param {Point} pubKey which is modified during the verification
+ * @return {boolean}
  */
 const verifyFields = (fields, r, s, pubKey) => {
   /**
@@ -124,7 +125,10 @@ const hashMessage = (message, X, r) => {
     r
   ];
   const encoder = new TextEncoder();
-  const bits = Array.from(encoder.encode(message), (c) => c.toString(2).padStart(8, "0"))
+  const bits = Array.from(
+    encoder.encode(message),
+    (c) => /** @type {number} */(c).toString(2).padStart(8, "0")
+  )
     .join("")
     .split("")
     .reverse()
@@ -164,6 +168,7 @@ const signMessage = (message, privKey, pubKey) => {
  * @param {bigint} r
  * @param {bigint} s
  * @param {Point} pubKey which is modified during verification
+ * @return {boolean}
  */
 const verifyMessage = (message, r, s, pubKey) => {
   /**

@@ -79,16 +79,22 @@ Matcher.prototype.toBeLessThan = function (threshold) { }
  */
 Matcher.prototype.toBeGreaterThan = function (threshold) { }
 
+/** @return {void} */
 Matcher.prototype.toBeFalse = function () { }
 
+/** @return {void} */
 Matcher.prototype.toBeFalsy = function () { }
 
+/** @return {void} */
 Matcher.prototype.toBeNull = function () { }
 
+/** @return {void} */
 Matcher.prototype.toBeTrue = function () { }
 
+/** @return {void} */
 Matcher.prototype.toBeTruthy = function () { }
 
+/** @return {void} */
 Matcher.prototype.toThrow = function () { }
 
 /** @param {unknown} type */

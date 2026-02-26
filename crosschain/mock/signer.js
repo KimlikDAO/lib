@@ -1,7 +1,6 @@
 import { MockSigner as EvmSigner } from "../../ethereum/mock/signer";
 import { addr as minaAddr } from "../../mina/mock/signer";
 import { signMessage } from "../../mina/signer";
-import { assertEq } from "../../testing/assert";
 import base58 from "../../util/base58";
 import { ChainGroup } from "../chains";
 import { Signature, Signer } from "../signer";
@@ -48,7 +47,7 @@ class MockSigner {
     if (address.startsWith("B62")) {
       /** @const {bigint} */
       const privKey = this.evmSigner.privKey;
-      assertEq(address, minaAddr(privKey));
+      if (address !== minaAddr(privKey)) return Promise.reject();
       return Promise.resolve(signMessage(message, privKey));
     }
     return Promise.reject();

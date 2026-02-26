@@ -19,7 +19,7 @@ test("generate and verify", () => {
       generate("TR22345678902", generateKey))
     .then((/** @type {VerifiableID} */ verifiableID) =>
       verify(verifiableID, "TR22345678902", publicKey))
-    .then((result) => expect(result).toBeTrue());
+    .then((/** @type {boolean} */ result) => expect(result).toBeTrue());
 }, {
   timeout: 20_000
 });
@@ -41,7 +41,7 @@ test("generate and verify", () => {
       generate("PERSONID", generateKey))
     .then((/** @type {VerifiableID} */ verifiableID) =>
       verify(verifiableID, "PERSONID", publicKey))
-    .then((result) => expect(result).toBeTrue());
+    .then((/** @type {boolean} */ result) => expect(result).toBeTrue());
 }, {
   timeout: 20_000
 });
