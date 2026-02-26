@@ -120,14 +120,26 @@ const generateExport = (node) => {
 const generateImport = (node) => {
   if (!node.specifiers || node.specifiers.length === 0)
     return `import "${node.source.value}";\n`;
-  const parts = node.specifiers.map(s => {
-    if (s.type === "ImportDefaultSpecifier") return s.local.name;
-    if (s.type === "ImportNamespaceSpecifier") return `* as ${s.local.name}`;
-    return s.imported.name === s.local.name
-      ? s.local.name
-      : `${s.imported.name} as ${s.local.name}`;
-  });
-  return `import { ${parts.join(", ")} } from "${node.source.value}";\n`;
+  const defaultSpec = node.specifiers.find(s => s.type === "ImportDefaultSpecifier");
+  const namedSpecs = node.specifiers.filter(s => s.type !== "ImportDefaultSpecifier");
+  const defaultPart = defaultSpec ? defaultSpec.local.name : null;
+  const namespaceSpec = namedSpecs.find(s => s.type === "ImportNamespaceSpecifier");
+  const namedOnly = namedSpecs.filter(s => s.type !== "ImportNamespaceSpecifier");
+  const namedParts = namedOnly.map(s =>
+    s.imported.name === s.local.name ? s.local.name : `${s.imported.name} as ${s.local.name}`
+  );
+  const source = node.source.value;
+  if (defaultPart && namedSpecs.length === 0)
+    return `import ${defaultPart} from "${source}";\n`;
+  if (namespaceSpec && namedOnly.length === 0 && !defaultPart)
+    return `import * as ${namespaceSpec.local.name} from "${source}";\n`;
+  if (defaultPart && namespaceSpec && namedOnly.length === 0)
+    return `import ${defaultPart}, * as ${namespaceSpec.local.name} from "${source}";\n`;
+  if (defaultPart && namedParts.length > 0)
+    return `import ${defaultPart}, { ${namedParts.join(", ")} } from "${source}";\n`;
+  if (defaultPart && namespaceSpec)
+    return `import ${defaultPart}, * as ${namespaceSpec.local.name} from "${source}";\n`;
+  return `import { ${namedParts.join(", ")} } from "${source}";\n`;
 };
 
 /** Top-level: delegate to expression for init RHS, or use for future statement table. */

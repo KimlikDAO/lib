@@ -1,5 +1,53 @@
 import { expect, test } from "bun:test";
-import { generateClassInterface, generateEnum, generatePrototypeInterface } from "../closureFromAst";
+import {
+  generateClassInterface,
+  generateEnum,
+  generateImport,
+  generatePrototypeInterface
+} from "../closureFromAst";
+
+test("generateImport default import emits default syntax", () => {
+  const node = {
+    specifiers: [{ type: "ImportDefaultSpecifier", local: { name: "abi" } }],
+    source: { value: "../abi" }
+  };
+  expect(generateImport(node)).toBe('import abi from "../abi";\n');
+});
+
+test("generateImport named imports emit brace syntax", () => {
+  const node = {
+    specifiers: [
+      { type: "ImportSpecifier", imported: { name: "foo" }, local: { name: "foo" } },
+      { type: "ImportSpecifier", imported: { name: "Bar" }, local: { name: "Bar" } }
+    ],
+    source: { value: "./mod" }
+  };
+  expect(generateImport(node)).toBe('import { foo, Bar } from "./mod";\n');
+});
+
+test("generateImport default and named emits both", () => {
+  const node = {
+    specifiers: [
+      { type: "ImportDefaultSpecifier", local: { name: "abi" } },
+      { type: "ImportSpecifier", imported: { name: "helper" }, local: { name: "helper" } }
+    ],
+    source: { value: "../abi" }
+  };
+  expect(generateImport(node)).toBe('import abi, { helper } from "../abi";\n');
+});
+
+test("generateImport namespace import", () => {
+  const node = {
+    specifiers: [{ type: "ImportNamespaceSpecifier", local: { name: "ns" } }],
+    source: { value: "./mod" }
+  };
+  expect(generateImport(node)).toBe('import * as ns from "./mod";\n');
+});
+
+test("generateImport side-effect only", () => {
+  const node = { specifiers: [], source: { value: "./sideeffect" } };
+  expect(generateImport(node)).toBe('import "./sideeffect";\n');
+});
 
 test("generateEnum emits number enum with namespace", () => {
   const node = {
