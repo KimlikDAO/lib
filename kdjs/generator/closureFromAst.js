@@ -67,8 +67,8 @@ const generateEnum = (node, typeMap) => {
     const key = member.id.name;
     const value = member.initializer
       ? (member.initializer.value != null
-          ? member.initializer.value
-          : member.initializer.name)
+        ? member.initializer.value
+        : member.initializer.name)
       : index;
     return { key, value };
   });

@@ -44,7 +44,7 @@ kdjs 0.0.2
 Usage: kdjs entry.js [parameters]
 
 Parameters:
-  --fast         : Use esbuild (way faster, but larger output)
+  --fast         : Use Bun bundler (way faster, but larger output)
   --output (-o)  : The name of the output file
   --print        : Print the compiled code to stdout
   --strict       : Report unknown type

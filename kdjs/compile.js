@@ -1,6 +1,5 @@
 import * as swc from "@swc/core";
-import { write } from "bun";
-import { build as buildWithEsBuild } from "esbuild";
+import { build, write } from "bun";
 import { compiler as ClosureCompiler } from "google-closure-compiler";
 import UglifyJS from "uglify-js";
 import { tweakPasses } from "./passes";
@@ -12,26 +11,27 @@ import { kdjsPlugin } from "./util/plugin";
 /** @typedef {Record<string, unknown>} */
 const Params = {};
 
-const compileWithEsbuild = async (params) => buildWithEsBuild({
-  entryPoints: [params["entry"]],
-  bundle: true,
-  format: "esm",
-  target: "esnext",
-  packages: "external",
-  minify: true,
-  legalComments: "none",
-  write: false,
-  plugins: [kdjsPlugin],
-})
-  .then((result) => {
-    const text = result.outputFiles[0].text;
-    console.log(`esbuild size: \t${text.length}`);
-    if (params["print"])
-      console.log("esbuild output:\n", text);
-    return params["output"]
-      ? write(params["output"], text).then(() => text)
-      : text;
+const compileWithBun = async (params) => {
+  const result = await build({
+    entrypoints: [params["entry"]],
+    format: "esm",
+    target: "bun",
+    packages: "external",
+    minify: true,
+    plugins: [kdjsPlugin],
   });
+  if (!result.success) {
+    const messages = result.logs.map((l) => l.message).join("\n");
+    throw `Bun build failed: ${messages}`;
+  }
+  const text = await result.outputs[0].text();
+  console.log(`bun build size:\t${text.length}`);
+  if (params["print"])
+    console.log("bun build output:\n", text);
+  return params["output"]
+    ? write(params["output"], text).then(() => text)
+    : text;
+};
 
 /**
  * Resolves to the compiled code or void if it determines that the code
@@ -45,7 +45,7 @@ const compileWithEsbuild = async (params) => buildWithEsBuild({
  */
 const compile = async (params, checkFreshFn, transpileFn) => {
   if (params["fast"])
-    return compileWithEsbuild(params);
+    return compileWithBun(params);
 
   const {
     /** @type {Map<string, ImportStatement>} */ unlinkedImports,
