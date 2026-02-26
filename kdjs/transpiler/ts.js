@@ -4,6 +4,7 @@
  */
 import {
   generate,
+  generateClassDeclaration,
   generateClassInterface,
   generateEnum,
   generateExport,
@@ -65,6 +66,8 @@ const transpileTs = (content) => {
       out += "\n" + generateTypedef(node);
     else if (node.type == "TSInterfaceDeclaration")
       out += generateClassInterface(node);
+    else if (node.type == "ClassDeclaration")
+      out += generateClassDeclaration(node);
     else if (node.type == "VariableDeclaration")
       out += generateVariableDeclaration(node);
     else if (node.type == "ExportNamedDeclaration")

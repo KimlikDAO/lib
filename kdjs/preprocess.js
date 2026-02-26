@@ -38,12 +38,12 @@ const preprocessAndIsolate = async (params, transpileFn) => {
   /** @type {boolean} */
   let ignoreUnusedLocals = false;
 
-  for (let file; file = files.pop();) {
+  for (let /** @type {string} */ file; file = files.pop();) {
     if (allFiles.has(file)) continue;
     allFiles.add(file);
     /** @type {string} */
     let content = await readFile(file, "utf8");
-    if (file.endsWith(".d.ts"))
+    if (file.endsWith(".d.ts") || file.endsWith(".e.ts"))
       content = transpileDeclaration(content, file);
     else if (file.endsWith(".ts"))
       content = transpileTs(content);

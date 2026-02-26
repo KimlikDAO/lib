@@ -4,9 +4,10 @@ import { generate as generateAstring } from "astring";
 const expressionGenerators = {
   ArrowFunctionExpression(node, typeMap) {
     const params = (node.params || []).map((p) => (p.type === "Identifier" ? p.name : "")).filter(Boolean);
-    const body = (node.body.type === "TSAsExpression" || node.body.type === "TSTypeAssertion")
-      ? generateExpression(node.body, typeMap)
-      : generateAstring(node.body);
+    const body =
+      node.body.type === "BlockStatement"
+        ? generateBlock(node.body, typeMap, "  ")
+        : generateExpression(node.body, typeMap);
     return "(" + params.join(", ") + ") => " + body;
   },
   TSAsExpression(node, typeMap) {
@@ -14,6 +15,31 @@ const expressionGenerators = {
   },
   TSTypeAssertion(node, typeMap) {
     return `/** @type {${generateTypeExpr(node.typeAnnotation, typeMap)}} */(${generateExpression(node.expression, typeMap)})`;
+  },
+  CallExpression(node, typeMap) {
+    const callee = generateExpression(node.callee, typeMap);
+    const args = (node.arguments || []).map(arg => generateExpression(arg, typeMap));
+    return callee + "(" + args.join(", ") + ")";
+  },
+  MemberExpression(node, typeMap) {
+    const obj = generateExpression(node.object, typeMap);
+    const prop = node.computed
+      ? "[" + generateExpression(node.property, typeMap) + "]"
+      : "." + (node.property?.name ?? "");
+    return obj + prop;
+  },
+  ObjectExpression(node, typeMap) {
+    const props = (node.properties || []).map(prop => {
+      if (prop.type === "SpreadElement")
+        return "..." + generateExpression(prop.argument, typeMap);
+      const key = prop.key?.name ?? (prop.key ? generateExpression(prop.key, typeMap) : "");
+      const value = prop.value ? generateExpression(prop.value, typeMap) : "";
+      return prop.shorthand ? key : key + ": " + value;
+    });
+    return "{ " + props.join(", ") + " }";
+  },
+  Identifier(node) {
+    return node.name ?? "";
   },
 };
 
@@ -26,6 +52,61 @@ const generateExpression = (node, typeMap) => {
   const f = expressionGenerators[node.type];
   if (f) return f(node, typeMap);
   return generateAstring(node);
+};
+
+/** Statement generators: serialize statement nodes to kdjs-js with ts-like JSDoc where needed. */
+const statementGenerators = {
+  VariableDeclaration(node, typeMap) {
+    const lines = [];
+    const kind = node.kind;
+    const tag = kind === "const" ? "const" : "type";
+    for (const decl of node.declarations || []) {
+      const name = decl.id?.type === "Identifier" ? decl.id.name : null;
+      if (name == null) continue;
+      const typeNode = decl.id.typeAnnotation?.typeAnnotation;
+      const typeStr = typeNode ? generateTypeExpr(typeNode, typeMap) : "";
+      if (typeStr)
+        lines.push(`/** @${tag} {${typeStr}} */`);
+      const init = decl.init ? generateExpression(decl.init, typeMap) : "";
+      lines.push(init ? `${kind} ${name} = ${init};` : `${kind} ${name};`);
+    }
+    return lines.join("\n");
+  },
+  ExpressionStatement(node, typeMap) {
+    return generateExpression(node.expression, typeMap) + ";";
+  },
+  ReturnStatement(node, typeMap) {
+    if (!node.argument) return "return;";
+    return "return " + generateExpression(node.argument, typeMap) + ";";
+  },
+};
+
+/**
+ * @param {acorn.Statement} node
+ * @param {Map<string, string>=} typeMap
+ * @return {string}
+ */
+const generateStatement = (node, typeMap) => {
+  const f = statementGenerators[node.type];
+  if (f) return f(node, typeMap);
+  return generateAstring(node);
+};
+
+/**
+ * @param {acorn.BlockStatement} blockNode
+ * @param {Map<string, string>=} typeMap
+ * @param {string} indent Inner indentation (e.g. "    " for method body)
+ * @param {string} closingIndent Indentation for closing brace (defaults to indent)
+ * @return {string}
+ */
+const generateBlock = (blockNode, typeMap, indent = "  ", closingIndent = undefined) => {
+  const close = closingIndent !== undefined ? closingIndent : indent;
+  if (!blockNode || blockNode.type !== "BlockStatement" || !blockNode.body)
+    return "{}";
+  const inner = blockNode.body
+    .map(stmt => indent + generateStatement(stmt, typeMap))
+    .join("\n");
+  return inner ? `{\n${inner}\n${close}}` : "{}";
 };
 
 /** @param {acorn.ExportNamedDeclaration} node */
@@ -282,14 +363,29 @@ const generateClassInterface = (node, typeMap) => {
     output += `  /**\n`;
     for (const paramDoc of paramDocs)
       output += `   * @param {${paramDoc.type}} ${paramDoc.name}\n`;
-    output += `   * @return {${returnType}}\n`;
+    if (returnType)
+      output += `   * @return {${returnType}}\n`;
     output += `   */\n`;
-    const paramNames = params.map(p => p.name ? p.name.name || p.name : "");
+    const paramNames = params.map(p => getParamNameString(p));
     output += `  ${methodName}(${paramNames.join(", ")}) {}\n`;
   }
 
   output += `}\n`;
   return output;
+};
+
+/**
+ * Normalize parameter name to a string. AST can have param.name as Identifier object or string.
+ * @param {acorn.TSParameterDeclaration|acorn.Identifier} paramOrInner
+ * @return {string}
+ */
+const getParamNameString = (paramOrInner) => {
+  const inner = paramOrInner?.type === "TSParameterProperty" ? paramOrInner.parameter : paramOrInner;
+  if (!inner) return "";
+  if (typeof inner.name === "string") return inner.name;
+  if (inner.name && typeof inner.name === "object" && typeof inner.name.name === "string")
+    return inner.name.name;
+  return "";
 };
 
 /**
@@ -300,25 +396,84 @@ const generateClassInterface = (node, typeMap) => {
  * @return {{ name: string, type: string }} The parameter name and type
  */
 const getNameType = (param, typeMap) => {
-  // Extract parameter name correctly based on node structure
-  const name = param.name ? param.name.name || param.name : "";
+  const inner = param.type === "TSParameterProperty" ? param.parameter : param;
+  const name = getParamNameString(inner || param);
   let type = "unknown";
-  if (param.typeAnnotation)
-    type = generateTypeExpr(param.typeAnnotation.typeAnnotation, typeMap);
-  // Handle optional parameters
-  if (param.optional)
+  if (inner?.typeAnnotation)
+    type = generateTypeExpr(inner.typeAnnotation.typeAnnotation, typeMap);
+  if (inner?.optional)
     type += "=";
   return { name, type };
 };
 
+/**
+ * Serializes a ClassDeclaration (or class with real bodies) to kdjs class with JSDoc.
+ * Uses generateBlock for method bodies so statements and expressions are in ts-in-jsdoc style.
+ *
+ * @param {acorn.ClassDeclaration} node
+ * @param {Map<string, string>=} typeMap
+ * @return {string}
+ */
+const generateClassDeclaration = (node, typeMap) => {
+  const className = node.id?.name ?? "";
+  const extendsClause = node.superClass
+    ? " extends " + generateExpression(node.superClass, typeMap)
+    : "";
+  const implementsDoc = (node.implements || []).length > 0
+    ? node.implements
+        .map(impl => ` * @implements {${generateTypeExpr(impl.expression, typeMap)}}\n`)
+        .join("")
+    : "";
+  let output = "";
+  if (implementsDoc)
+    output += `/**\n${implementsDoc} */\n`;
+  output += `class ${className}${extendsClause} {\n`;
+
+  const body = node.body?.body || [];
+  for (const member of body) {
+    if (member.type !== "MethodDefinition")
+      continue;
+    const key = member.key;
+    const methodName = key?.name ?? (key?.type === "Identifier" ? key.name : "");
+    const value = member.value;
+    const params = value.params || [];
+    const paramNames = params.map(p => {
+      const inner = p.type === "TSParameterProperty" ? p.parameter : p;
+      if (inner?.type === "Identifier") return inner.name ?? "";
+      if (inner?.name) return inner.name.name ?? inner.name;
+      return "";
+    });
+    const paramDocs = params.map(p => getNameType(p, typeMap));
+    const returnTypeNode = value.returnType?.typeAnnotation;
+    const returnType = returnTypeNode ? generateTypeExpr(returnTypeNode, typeMap) : "void";
+
+    output += `  /**\n`;
+    for (const paramDoc of paramDocs)
+      if (paramDoc.name)
+        output += `   * @param {${paramDoc.type}} ${paramDoc.name}\n`;
+    if (returnType)
+      output += `   * @return {${returnType}}\n`;
+    output += `   */\n`;
+    const methodHead = methodName + "(" + paramNames.join(", ") + ")";
+    const block = value.body ? generateBlock(value.body, typeMap, "    ", "  ") : "{}";
+    output += `  ${methodHead} ${block}\n`;
+  }
+
+  output += `}\n`;
+  return output;
+};
+
 export {
   generate,
+  generateBlock,
+  generateClassDeclaration,
   generateClassInterface,
   generateEnum,
   generateExport,
   generateExpression,
   generateImport,
   generatePrototypeInterface,
+  generateStatement,
   generateTypedef,
   generateTypeExpr,
 };

@@ -10,7 +10,7 @@ import { pathToNamespace } from "./declaration";
 import { transpileJsDoc } from "./jsdoc";
 
 const PACKAGE_EXTERNS = "node_modules/@kimlikdao/kdjs/externs/";
-const DeclarationFile = /\.d\.(js|ts)$/;
+const DeclarationFile = /\.(d|e)\.(js|ts)$/;
 
 /**
  * @param {ExportStatement} exportStmt
@@ -145,7 +145,8 @@ const transpileJs = (isEntry, file, content, files, globals, unlinkedImports) =>
           put: "; // imports from declaration files are removed for gcc"
         });
       else if (DeclarationFile.test(nextFile)) {
-        if (!nextFile.startsWith(PACKAGE_EXTERNS) && nextFile.endsWith("d.ts")) {
+        if (!nextFile.startsWith(PACKAGE_EXTERNS) &&
+          (nextFile.endsWith("d.ts") || nextFile.endsWith("e.ts"))) {
           const namespace = pathToNamespace(nextFile);
           for (const specifier of node.specifiers) {
             if (specifier.type === "ImportDefaultSpecifier") {
@@ -173,12 +174,12 @@ const transpileJs = (isEntry, file, content, files, globals, unlinkedImports) =>
           end: node.source.end,
           put: `"${sourceName}.jsx"`
         });
-        else if (nextFile.endsWith(".ts") && !sourceName.endsWith(".ts"))
-          updates.push({
-            beg: node.source.start,
-            end: node.source.end,
-            put: `"${sourceName}.ts"`
-          });
+      else if (nextFile.endsWith(".ts") && !sourceName.endsWith(".ts"))
+        updates.push({
+          beg: node.source.start,
+          end: node.source.end,
+          put: `"${sourceName}.ts"`
+        });
       else if (nextFile.endsWith(".css") && file.endsWith(".js"))
         throw `css files cannot be imported in js files (${file}->${nextFile})`;
 
@@ -216,7 +217,7 @@ const transpileJs = (isEntry, file, content, files, globals, unlinkedImports) =>
             put: `const KDdefault__ = ${serializeWithStringKeys(node.declaration, content)};`
           });
         }
-      } else if (file.endsWith(".d.js"))
+      } else if (file.endsWith(".d.js") || file.endsWith(".e.js"))
         updates.push({
           beg: node.start,
           end: node.end,
@@ -224,7 +225,7 @@ const transpileJs = (isEntry, file, content, files, globals, unlinkedImports) =>
         });
     },
     ExportNamedDeclaration(node) {
-      if (file.endsWith(".d.js")) {
+      if (file.endsWith(".d.js") || file.endsWith(".e.js")) {
         updates.push({
           beg: node.start,
           end: node.end,
@@ -265,7 +266,7 @@ const transpileJs = (isEntry, file, content, files, globals, unlinkedImports) =>
     updates.push({
       beg: lastImportEnd,
       end: lastImportEnd + 1,
-      put: "\n" + typeAliases.join("\n")
+      put: "\n" + typeAliases.join("\n") + "\n"
     });
   return update(content, updates) + exportStmtToExportMap(exportStmt);
 }

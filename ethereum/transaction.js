@@ -1,5 +1,5 @@
 import { Address } from "./address.d";
-import { Transaction } from "./transaction.d";
+import { Transaction } from "./transaction.e";
 
 /**
  * Internal struct for building a transaction. Props are mangleable.
