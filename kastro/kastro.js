@@ -209,4 +209,3 @@ else if (args["command"] == "build")
   buildCrate(crateName, compiler.BuildMode.Compiled, args["lang"]);
 else if (args["command"] == "deploy")
   deployCrate(crateName, args["target"] || "cloudflare");
-
