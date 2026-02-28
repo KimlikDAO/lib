@@ -4,10 +4,11 @@ import { keccak256Uint8 } from "../../crypto/sha3";
 import { getExt } from "../../util/paths";
 import { Props } from "../props";
 import { CompressedMimes } from "../workers/mimes";
+import { BundleReport } from "./bundleReport";
 import { brotli, zopfli } from "./compression";
-import hash, { AssetHash } from "./hash";
+import hash from "./hash";
 import marker from "./marker";
-import { getTargetFunction, Target } from "./target";
+import { getTargetFunction, Target, TargetFunction } from "./target";
 
 /**
  * Dev: Try to do as little work as possible while providing the fundamental
@@ -35,11 +36,11 @@ const Encoder = new TextEncoder();
 /** @const {Record<string, Target | undefined>} */
 const CACHE = {};
 
-/** @type {Record<string, AssetHash>} */
-const NAMED_ASSETS = {};
-
-/** @const {Record<string, AssetHash>} */
-const PIGGYBACK_ASSETS = {};
+const BUNDLE_REPORT = /** @type {BundleReport} */ ({
+  namedAssets: {},
+  piggybackAssets: {},
+  hashedAssets: [],
+});
 
 /**
  * @param {string} targetName
@@ -75,7 +76,7 @@ const populateChildTargets = (props) => {
         })
       }
       const targetName = typeof target == "string" ? target : target.targetName;
-      const props = typeof target == "string" ? childProps : target.props;
+      const props = typeof target == "string" ? childProps : target;
       return buildTarget(targetName, props)
         .then((childTarget) => ({
           ...childTarget,
@@ -90,7 +91,7 @@ const populateChildTargets = (props) => {
  */
 const computeDepHash = (props) => {
   populateChildTargets(props);
-  const { childTargets = [], ...otherProps } = props;
+  const { childTargets = [], targetName: _, ...otherProps } = props;
   const acc = keccak256Uint8(Encoder.encode(JSON.stringify(otherProps)))
     .slice(0, 32); // Drop the excess buffer.
   return Promise.all(
@@ -107,6 +108,8 @@ const computeDepHash = (props) => {
  * @const {TargetFunction}
  */
 const forceBuildTarget = (targetName, props) => {
+  if (!props.dynamicDeps)
+    console.info("Building:", targetName);
   populateChildTargets(props);
   const targetFunc = getTargetFunction(targetName);
   if (!targetFunc) console.error("targetFunc not found", targetName, targetFunc);
@@ -121,7 +124,9 @@ const forceBuildTarget = (targetName, props) => {
  *     the targetFunction.
  *  4. Returning a `Target` containing at least `content` and `contentHash`
  *
- * @const {TargetFunction}
+ * @param {string} targetName
+ * @param {Props} props
+ * @return {Promise<Target>}
  */
 const buildTarget = (targetName, props) => {
   if (!targetName.startsWith("/build/"))
@@ -175,7 +180,7 @@ const buildTarget = (targetName, props) => {
       let fromCachePromise;
       let newDepHash;
       props.checkFreshFn = (deps) => {
-        props.childTargets = deps.map((dep) => "/" + dep);
+        props.childTargets = deps;
         return computeDepHash(props)
           .then((depHash) => {
             newDepHash = depHash;
@@ -217,7 +222,10 @@ const buildTarget = (targetName, props) => {
  * Builds the target, creates the bundle file and compressed versions if needed,
  * and returns the bundle name of the asset.
  *
- * @const {TargetFunction} */
+ * @param {string} targetName
+ * @param {Props} props
+ * @return {Promise<string>}
+ */
 const bundleTarget = (targetName, props) => props.BuildMode == BuildMode.Dev
   ? Promise.resolve(props.childTargets[0])
     .then((target) => ((typeof target == "string") ? target : target.targetName).slice(1))
@@ -227,40 +235,49 @@ const bundleTarget = (targetName, props) => props.BuildMode == BuildMode.Dev
     /** @const {string} */
     const contentHashStr = hash.toStr(contentHash);
     /** @const {string} */
-    const bundleName = "build/bundle/" +
-      (props.bundleName || `${contentHashStr}.${getExt(targetName)}`);
-    if (props.bundleName)
-      NAMED_ASSETS[props.bundleName] = contentHashStr;
-
+    const bundleName = (props.bundleName || `${contentHashStr}.${getExt(targetName)}`);
     if (props.piggyback) {
-      const piggybackUrl = `${props.piggyback}/${bundleName.slice(13)}`;
-      PIGGYBACK_ASSETS[piggybackUrl] = contentHashStr;
+      const piggybackUrl = `${props.piggyback}/${bundleName}`;
+      BUNDLE_REPORT.piggybackAssets[piggybackUrl] = contentHashStr;
       return piggybackUrl;
     }
+    if (props.bundleName)
+      BUNDLE_REPORT.namedAssets[props.bundleName] = contentHashStr;
+    else
+      BUNDLE_REPORT.hashedAssets.push(bundleName);
+
+    const bundlePath = "build/bundle/" + bundleName;
     /** @const {Promise<void>} */
     const bundle = mkdir("build/bundle", { recursive: true })
       .catch(() => { })
       .then(() =>
         CompressedMimes[getExt(targetName)]
-          ? access(bundleName).catch(() => cp(targetFile, bundleName))
+          ? access(bundlePath).catch(() => cp(targetFile, bundlePath))
           : Promise.all([
-            access(bundleName).catch(() => cp(targetFile, bundleName)),
-            access(`${bundleName}.br`).catch(() => brotli(targetFile, bundleName)),
-            access(`${bundleName}.gz`).catch(() => zopfli(targetFile, bundleName))
+            access(bundlePath).catch(() => cp(targetFile, bundlePath)),
+            access(`${bundlePath}.br`).catch(() => brotli(targetFile, bundlePath)),
+            access(`${bundlePath}.gz`).catch(() => zopfli(targetFile, bundlePath))
           ])
       );
-    return bundle.then(() => bundleName.slice(13)); // Remove "/build/bundle/" prefix
+    return bundle.then(() => bundleName); // Remove "/build/bundle/" prefix
   });
 
 /**
- * @return {Record<string, string>}
+ * @return {BundleReport}
  */
-const getNamedAssets = () => NAMED_ASSETS;
+const getBundleReport = () => BUNDLE_REPORT;
+
+const resetBundleReport = () => {
+  BUNDLE_REPORT.namedAssets = {};
+  BUNDLE_REPORT.piggybackAssets = {};
+  BUNDLE_REPORT.hashedAssets = [];
+};
 
 export default {
   BuildMode,
   bundleTarget,
   buildTarget,
   forceBuildTarget,
-  getNamedAssets,
+  getBundleReport,
+  resetBundleReport,
 };

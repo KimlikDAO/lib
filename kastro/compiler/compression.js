@@ -32,7 +32,7 @@ const zopfli = (inputName, outputName) => spawn({
  * @return {Promise<string>}
  */
 const brotli = (inputName, outputName) => {
-  console.info(`brotli: ${inputName} -> ${outputName}.br`);
+  console.info(`brotli: ${outputName}.br <- ${inputName}`);
   return spawn({
     cmd: [
       "brotli",

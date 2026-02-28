@@ -3,12 +3,14 @@ import process from "node:process";
 import { parseArgs } from "../util/cli";
 import compiler from "./compiler/compiler";
 import { getPageTargets, setupKastro } from "./compiler/crate";
+import { Props } from "./props";
 import { CompressedMimes, Mimes } from "./workers/mimes";
+import { Target } from "./compiler/target";
 
 const PAGE_CACHE_CONTROL: string = "no-cache";
 const STATIC_CACHE_CONTROL: string = "max-age=29000000,public,immutable,no-transform";
 
-const serveCrate = async (crateName: string, { BuildMode }: { BuildMode: number }) => {
+const serveCrate = async (crateName: string, { BuildMode }: Props) => {
   setupKastro();
   const map = getPageTargets(await import(crateName), BuildMode);
   serve({
@@ -53,24 +55,37 @@ const serveCrate = async (crateName: string, { BuildMode }: { BuildMode: number 
   console.log("Serve at http://localhost:3000");
 }
 
-const deployCrate = (crateName: string, _targetName: string) => {
-  console.log(crateName);
-  /*
-  Promise.all([
-    compiler.buildTarget(crateName, compiler.BuildMode.Compiled),
+const buildCrate = async (crateName: string, { BuildMode }: Props): Promise<Target> => {
+  setupKastro();
+  const crate = await import(crateName);
+  console.log(crate);
+  return compiler.buildTarget(`/build${crateName.slice(0, -3)}.c.json`, {
+    dynamicDeps: true,
+    BuildMode,
+    crate
+  });
+}
+
+const deployCrate = async (crateName: string, props: Props) => {
+  const [_auth, crateTarget] = await Promise.all([
     import(`${process.cwd()}/.secrets.js`),
-    import(`./${targetName}/crate.js`)
-  ])
-    .then(([_, secrets, crateDeployer]) =>
-      crateDeployer.deploy(crateName, secrets, compiler.getNamedAssets()));
-  */
+    buildCrate(crateName, props)
+  ]);
+  throw `Not implemented ${crateTarget}`;
 }
 
 const args = parseArgs((process as NodeJS.Process).argv.slice(2), "command");
 const crateName = (Array.isArray(args["command"]) ? args["command"][1] : "")
-  + "/crate.js";
+  + "/mpa.js";
+const BuildMode = (args["release"] as boolean)
+  ? compiler.BuildMode.Release
+  : (args["compiled"] as boolean) ? compiler.BuildMode.Compiled : compiler.BuildMode.Dev;
 
-if (args["command"] == "serve")
-  serveCrate(crateName, { BuildMode: compiler.BuildMode.Release });
-else if (args["command"] == "deploy")
-  deployCrate(crateName, (args["target"] as string) || "cloudflare")
+switch (args["command"] as string) {
+  case "serve":
+    serveCrate(crateName, { BuildMode }); break;
+  case "build":
+    buildCrate(crateName, { BuildMode }); break;
+  case "deploy":
+    deployCrate(crateName, { BuildMode }); break;
+}

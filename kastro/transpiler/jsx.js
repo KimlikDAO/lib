@@ -342,8 +342,8 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
         const isAsset = ext == "svg" || ext == "png" || ext == "webp"
           || ext == "ttf" || ext == "woff2"
           || source.startsWith("kastro:")
-          || source.includes("kastro/image")
-          || source.includes("kastro/stylesheet");
+          || source.includes("kastro/Image")
+          || source.includes("kastro/StyleSheet");
         if (isAsset) {
           for (const specifier of node.specifiers)
             assetComponents.add(specifier.local.name);

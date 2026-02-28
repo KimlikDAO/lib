@@ -55,7 +55,7 @@ const compile = async (params, checkFreshFn, transpileFn) => {
   } = await preprocessAndIsolate(params, transpileFn);
   /** @const {string[]} */
   const allFilesArray = Array.from(allFiles).sort();
-  if (checkFreshFn && await checkFreshFn(allFilesArray))
+  if (checkFreshFn && await checkFreshFn(allFilesArray.map(f => "/" + f)))
     return;
 
   /** @const {string[]} */

@@ -1,4 +1,18 @@
-/** @typedef {!Object<string, *>} */
+import { LangCode } from "../util/i18n";
+
+/**
+ * @typedef {{
+ *   targetName?: string,
+ *   BuildMode?: number,
+ *   Lang?: LangCode,
+ *   CodebaseLang?: LangCode,
+ *   Route?: Record<LangCode, string>,
+ *   bundleName?: string,
+ *   alwaysBuild?: boolean,
+ *   dynamicDeps?: boolean,
+ *   crate?: unknown,
+ * }}
+ */
 const Props = {};
 
 const removeGlobalProps = (props) => {

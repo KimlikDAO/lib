@@ -1,8 +1,8 @@
 import { minify } from "html-minifier";
 import { capitalize, getDir } from "../../util/paths";
 import { filterGlobalProps } from "../props";
-import { Script } from "../script";
-import { makeStyleSheets } from "../stylesheet";
+import { Script } from "../Script";
+import { makeStyleSheets } from "../StyleSheet";
 import { initGlobals } from "../transpiler/pageGlobals";
 import HtmlMinifierConfig from "./config/htmlMinifierConfig";
 

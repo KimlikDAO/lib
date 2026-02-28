@@ -14,9 +14,6 @@ const Fragment = "";
  *   - on[A-Z]\w*
  *   - instance
  *
- * We also have an obsolete i18n mechanism through the data-{LangCode} attribute.
- * We still support it but we don't use it in new code.
- *
  * @param {Record<string, unknown>} props
  * @param {LangCode} lang
 */
@@ -25,10 +22,7 @@ const resolveComponentProps = (props, lang) => {
   for (const key in props)
     if (key != "children" && typeof props[key] == "object" && (lang in props[key]))
       props[key] = props[key][lang];
-    else if (key.startsWith("data-")) {
-      if (key == "data-" + lang) props.children = [props[key]];
-      delete props[key];
-    } else if (/^(on[A-Z]|controls[A-Z])/.test(key)) {
+    else if (/^(on[A-Z]|controls[A-Z])/.test(key)) {
       delete props[key];
     }
 }

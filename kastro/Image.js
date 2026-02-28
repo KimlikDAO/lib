@@ -73,7 +73,7 @@ const SvgJsxImage = ({ src, ...props }) => {
   return compiler.buildTarget(svgTarget, svgProps)
     .then(() => SvgImage({
       src: svgTarget.slice(1),
-      childTargets: [{ targetName: svgTarget, props: svgProps }],
+      childTargets: [{ targetName: svgTarget, ...svgProps }],
       ...props
     }));
 }
@@ -107,7 +107,7 @@ const Favicon = ({ src, raster, BuildMode, ...props }) => {
 };
 
 /**
- * @param {!Object<string, *>} props
+ * @param {Record<string, unknown>} props
  * @return {Promise<string>}
  */
 const Image = ({ inline, ...props }) => {
@@ -139,3 +139,5 @@ export {
   SvgJsxImage,
   url
 };
+
+export default Image;

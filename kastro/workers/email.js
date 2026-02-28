@@ -4,7 +4,7 @@ const RESEND_API_KEY = "RESEND_API_KEY";
 /**
  * @param {{
  *   from: string,
- *   to: (string|string[]),
+ *   to: string | string[],
  *   subject: string,
  *   html: string
  * }} params

@@ -35,10 +35,12 @@ const Worker = (props) => {
       ...props,
     }).then((bundleName) => {
       const globals = getGlobals();
-      if (!globals.Workers) globals.Workers = {};
+      globals.Workers ||= {};
       globals.Workers[props.src] = bundleName;
     })
   );
 }
 
 export { Script, Worker };
+
+export default Script;

@@ -1,7 +1,7 @@
 import { tagYaz } from "../util/html";
 import { LangCode } from "../util/i18n";
 import compiler from "./compiler/compiler";
-import { addStyleSheet } from "./stylesheet";
+import { addStyleSheet } from "./StyleSheet";
 
 /**
  * @param {{
@@ -16,7 +16,7 @@ import { addStyleSheet } from "./stylesheet";
  * }} params
  * @return {Promise<string>}
  */
-const TtfFont = ({ Lang, BuildMode, SharedCss, PageCss, shared, href, name, weight }) => {
+const Font = ({ Lang, BuildMode, SharedCss, PageCss, shared, href, name, weight }) => {
   const match = href.match(/([^/]+?)(\d{3})?\.[^.]+$/);
   if (match) {
     name ||= match[1];
@@ -48,7 +48,7 @@ const TtfFont = ({ Lang, BuildMode, SharedCss, PageCss, shared, href, name, weig
 
   return compiler.bundleTarget(ttfTarget, ttfProps)
     .then((ttfBundled) => compiler.bundleTarget(`/build/${fontBase}-${Lang}.woff2`, {
-      childTargets: [{ targetName: ttfTarget, props: ttfProps }]
+      childTargets: [{ targetName: ttfTarget, ...ttfProps }]
     }).then((woff2Bundled) => {
       addStyleSheet(shared, {
         targetName: cssTarget,
@@ -68,4 +68,4 @@ const TtfFont = ({ Lang, BuildMode, SharedCss, PageCss, shared, href, name, weig
     );
 }
 
-export { TtfFont };
+export default Font;

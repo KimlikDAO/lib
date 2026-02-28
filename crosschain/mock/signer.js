@@ -47,7 +47,7 @@ class MockSigner {
     if (address.startsWith("B62")) {
       /** @const {bigint} */
       const privKey = this.evmSigner.privKey;
-      if (address !== minaAddr(privKey)) return Promise.reject();
+      if (address != minaAddr(privKey)) return Promise.reject();
       return Promise.resolve(signMessage(message, privKey));
     }
     return Promise.reject();

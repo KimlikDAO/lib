@@ -159,5 +159,6 @@ export {
   css,
   makeStyleSheet,
   makeStyleSheets,
-  StyleSheet
 };
+
+export default StyleSheet;

@@ -1,5 +1,5 @@
 import { DecryptedSections } from "../../did/section.d";
-import { SeedNodes } from "../network/network";
+import { SeedNodes } from "../network/nodes";
 
 /** @enum {number} */
 const ErrorCode = {

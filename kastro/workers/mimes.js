@@ -17,11 +17,11 @@ const Mimes = {
   // Font
   "ttf": "font/ttf",
   "woff2": "font/woff2",
-  // Resim ve foto
+  // Image
   "svg": "image/svg+xml",
   "png": "image/png",
   "webp": "image/webp",
-  // Metin
+  // Text
   "txt": "text/plain",
 };
 
