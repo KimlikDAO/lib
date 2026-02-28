@@ -18,7 +18,7 @@ const Worker = {
    * @param {CfRequest} req
    * @return {Promise<Response> | Response}
    */
-  fetch(req) {
+  fetch(req, env) {
     /** @const {string} */
     const path = new URL(req.url).pathname.slice(1);
     /** @const {number} */
@@ -48,29 +48,34 @@ const Worker = {
     if (maybeEtag && req.headers.get("if-none-match") == maybeEtag)
       return new Response(null, { status: 304 });
 
-    return import(resolvedPath + ext.slice(0, 3))
-      .then(({ default: file }) => {
-        /** @const {Record<string, string | number>} */
-        const headers = {
-          "cache-control": (dot == -1 || maybeEtag) ? PAGE_CACHE_CONTROL : STATIC_CACHE_CONTROL,
-          "content-type": dot == -1 ? "text/html;charset=utf-8" : Mimes[suffix],
-          "content-length": file.byteLength,
-          "expires": "Sun, 01 Jan 2034 00:00:00 GMT",
-          // Technically no vary header is needed for CompressedMimes, but
-          // when left empty, Cloudflare inserts "Accept-Encoding"
-          // anyway, so we don't distinguish this case.
-          "vary": path ? "accept-encoding" : "accept-encoding,cookie"
-        };
-        if (maybeEtag)
-          headers["etag"] = maybeEtag;
-        if (ext.length)
-          headers["content-encoding"] = ext.slice(1);
-        if (suffix == "woff2" || suffix == "ttf")
-          headers["access-control-allow-origin"] = "*";
-        return new Response(file, { headers, "encodeBody": "manual" });
-      })
+    const serve = (arrBuff) => {
+      /** @const {Record<string, string | number>} */
+      const headers = {
+        "cache-control": (dot == -1 || maybeEtag) ? PAGE_CACHE_CONTROL : STATIC_CACHE_CONTROL,
+        "content-type": dot == -1 ? "text/html;charset=utf-8" : Mimes[suffix],
+        "content-length": arrBuff.byteLength,
+        "expires": "Sun, 01 Jan 2034 00:00:00 GMT",
+        // Technically no vary header is needed for CompressedMimes, but
+        // when left empty, Cloudflare inserts "Accept-Encoding"
+        // anyway, so we don't distinguish this case.
+        "vary": path ? "accept-encoding" : "accept-encoding,cookie"
+      };
+      if (maybeEtag)
+        headers["etag"] = maybeEtag;
+      if (ext)
+        headers["content-encoding"] = ext.slice(1);
+      if (suffix == "woff2" || suffix == "ttf")
+        headers["access-control-allow-origin"] = "*";
+      return new Response(arrBuff, { headers, "encodeBody": "manual" });
+    };
+
+    const assetName = resolvedPath + ext.slice(0, 3);
+    return import(assetName)
+      .then(
+        ({ default: arrBuff }) => serve(arrBuff),
+        () => env.KV.get(assetName, "arrayBuffer").then(serve))
       .catch(() => Response.redirect(HOST_URL));
-  }
-}
+  },
+};
 
 export default Worker;

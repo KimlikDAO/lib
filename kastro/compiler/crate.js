@@ -1,24 +1,29 @@
-import { plugin, spawn } from "bun";
-import { cp } from "node:fs/promises";
+import { plugin } from "bun";
 import process from "node:process";
-import { Blue, Clear, parseArgs } from "../util/cli";
-import { combine, getDir, getExt } from "../util/paths";
-import compiler from "./compiler/compiler";
-import crates from "./compiler/crates";
-import { ttfTarget, woff2Target } from "./compiler/font";
+import { LangCode } from "../../util/i18n";
+import { combine, getDir } from "../../util/paths";
+import compiler from "./compiler";
+import { ttfTarget, woff2Target } from "./font";
 import {
   inlineSvgTarget,
   jsxSvgTarget,
   pngTarget,
   svgTarget,
   webpTarget
-} from "./compiler/image";
-import { pageTarget } from "./compiler/page";
-import { scriptTarget } from "./compiler/script";
-import { styleSheetTarget } from "./compiler/styleSheet";
-import { registerTargetFunction } from "./compiler/target";
-import { CompressedMimes } from "./workers/mimes";
+} from "./image";
+import { pageTarget } from "./page";
+import { scriptTarget } from "./script";
+import { styleSheetTarget } from "./styleSheet";
+import { registerTargetFunction } from "./target";
 
+/**
+ * Sets up Kastro compiler:
+ *  - Registers `TargetFunction`'s for the compiler per extension.
+ *  - Installs asset loaders.
+ *  - Creates a minimal fake DOM (includes some injected providers)
+ *  - Sets the global GEN flag, which makes `dom` module
+ *    and Kastro components run in the generate mode.
+ */
 const setupKastro = () => {
   registerTargetFunction(".html", pageTarget);
   registerTargetFunction(".inl.svg", inlineSvgTarget);
@@ -63,7 +68,7 @@ const setupKastro = () => {
           `export default (props) => SvgJsxImage({...props, src: "${path(args)}" });`;
         return { contents: code, loader: "js" };
       });
-      build.onLoad({ filter: /.js$/, namespace: "kastro" }, (args) => {
+      build.onLoad({ filter: /\.(js|ts)$/, namespace: "kastro" }, (args) => {
         const code = `import { Worker } from "@kimlikdao/lib/kastro/script";\n` +
           `export default (props) => Worker({...props, src: "${path(args)}" });`;
         return { contents: code, loader: "js" };
@@ -127,9 +132,9 @@ const setupKastro = () => {
 
   /**
    * @template T
-   * @this {Array<T>}
-   * @param {function(T, number=): void} lambda 
-   * @return {!Array<T>}
+   * @this {T[]}
+   * @param {(elem: T, index?: number) => void} lambda
+   * @return {T[]}
    */
   Array.prototype.modify = function (lambda) {
     for (let i = 0, n = this.length; i < n; ++i)
@@ -138,13 +143,39 @@ const setupKastro = () => {
   };
 }
 
-const serveCrate = async (crateName, buildMode) => {
-  setupKastro(buildMode);
-  const crate = await import(crateName);
-  /** @const {Record<string, PageTarget>} */
-  const map = crates.getPageTargets(crate, buildMode);
-  console.log(map);
-}
+/**
+ * Infers `LangCode`s used in a crate.
+ * @param {Object} crate
+ * @return {LangCode[]}
+ */
+const getLanguages = (crate) => crate.Languages || Object.keys(Object.values(crate.Page)[0]);
+
+/**
+ * @param {Record<string, PageTarget>} map
+ * @param {Object} crate
+ * @param {compiler.BuildMode} buildMode
+ * @param {LangCode} lang
+ * @return {Record<string, PageTarget>} Returns a map from routes to page props.
+ */
+const addPageTargets = (map, { Page, CodebaseLang, Entry }, buildMode, lang) => {
+  for (const name in Page) {
+    const dirName = Entry == Page[name] ? name.toLowerCase() : Page[name][CodebaseLang];
+    const pageProps = {
+      BuildMode: buildMode,
+      Lang: lang,
+      CodebaseLang,
+      Route: { ...Page[name] },
+      bundleName: Page[name][lang],
+      targetName: `/build/${dirName}/page-${lang}.html`,
+      alwaysBuild: true,
+    };
+    delete pageProps.Route[lang];
+    map[`${pageProps.bundleName}`] = pageProps;
+  }
+};
+
+/** @const {TargetFunction} */
+const crateTarget = (targetName, props) => { }
 
 /**
  * @param {string} crateName
@@ -179,7 +210,7 @@ const buildCrate = async (crateName, buildMode, lang) => {
   // If a language is specified, build each page for that language.
   setupKastro();
   /** @const {Record<string, PageTarget>} */
-  const map = crates.getPageTargets(crate, buildMode, lang);
+  const map = getPageTargets(crate, buildMode, lang);
 
   for (const page of Object.values(map))
     if (["mint", "en"].includes(page.bundleName)) {
@@ -189,23 +220,21 @@ const buildCrate = async (crateName, buildMode, lang) => {
 }
 
 /**
- * @param {string} crateName
- * @param {string} target
-*/
-const deployCrate = (crateName, target) => Promise.all([
-  buildCrate(crateName, compiler.BuildMode.Compiled),
-  import(`${process.cwd()}/.secrets.js`),
-  import(`./${target}/crate.js`)
-])
-  .then(([_, secrets, crateDeployer]) => crateDeployer.deploy(crateName, secrets, compiler.getNamedAssets()));
+ * @param {Object} crate
+ * @param {compiler.BuildMode} buildMode
+ * @param {LangCode=} lang
+ * @return {Record<string, PageTarget>}
+ */
+const getPageTargets = (crate, buildMode, lang) => {
+  const map = {};
+  const langs = lang ? [lang] : getLanguages(crate);
+  for (const lang of langs)
+    addPageTargets(map, crate, buildMode, lang);
+  return map;
+}
 
-const args = parseArgs(process.argv.slice(2), "command");
-/** @const {string} */
-const crateName = (Array.isArray(args["command"]) ? args["command"][1] : "") + "/crate.js";
-
-if (args["command"] == "serve")
-  serveCrate(crateName, args["compiled"] ? compiler.BuildMode.Compiled : compiler.BuildMode.Dev);
-else if (args["command"] == "build")
-  buildCrate(crateName, compiler.BuildMode.Compiled, args["lang"]);
-else if (args["command"] == "deploy")
-  deployCrate(crateName, args["target"] || "cloudflare");
+export {
+  getLanguages,
+  getPageTargets,
+  setupKastro
+};

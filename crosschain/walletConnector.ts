@@ -6,24 +6,19 @@ import { Signer } from "./signer";
 type Provider = MinaProvider | EthereumProvider;
 
 interface WalletConnector extends Signer {
+  downloadURL(): string;
   isInitialized(): boolean;
+  isChainSupported(chainId: ChainId): boolean;
 
   setProvider(provider: Provider): void;
-
-  downloadURL(): string;
-
   connect(
     chain: ChainId,
     chainChanged: (chainId: ChainId) => void,
     addressChanged: (addresses: string[]) => void,
     onlyIfApproved?: boolean
   ): Promise<void> | void;
-
   disconnect(): void;
-
   switchChain(chainId: ChainId): Promise<unknown> | void;
-
-  isChainSupported(chainId: ChainId): boolean;
 }
 
 export { Provider, WalletConnector };

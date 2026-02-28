@@ -7,7 +7,9 @@ const kdjsPlugin = {
   setup(build) {
     build.onLoad({ filter: /\.ts$/ }, (args) => {
       const contents = readFileSync(args.path, "utf8");
-      if (args.path.includes("/node_modules/") || args.path.includes("/kdjs/"))
+      if (args.path.includes("/node_modules/")
+        || args.path.includes("/kdjs/")
+        || args.path.includes("/kastro/kastro.ts"))
         return { contents, loader: "ts" };
       return {
         contents: args.path.endsWith(".d.ts")

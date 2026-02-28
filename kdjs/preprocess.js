@@ -28,7 +28,7 @@ const preprocessAndIsolate = async (params, transpileFn) => {
   /** @const {Map<string, ImportStatement>} */
   const unlinkedImports = new Map();
   /** @const {string[]} */
-  const externs = params["externs"] || [];
+  const externs = [].concat(params["externs"] || []);
   /** @const {string[]} */
   const files = [entry, ...externs];
   /** @const {Set<string>} */

@@ -13,7 +13,7 @@ const CliArgs = {};
 /**
  * @param {string[]} args
  * @param {string} defaultArgKey
- * @param {Record<string, string>} shortArgMap
+ * @param {Record<string, string>=} shortArgMap
  * @return {CliArgs}
  */
 const parseArgs = (args, defaultArgKey, shortArgMap) => {

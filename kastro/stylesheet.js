@@ -23,6 +23,17 @@ class StyleSheetCollection {
       ? targetName.replace(".jsx", `-${hash.toStr(contentHash)}.css`)
       : targetName;
     this.targets.set(key, { targetName, content, contentHash });
+    return key;
+  }
+
+  addWithKey(key, { targetName, content: contentString }) {
+    if (this.targets.has(key))
+      return;
+    /** @const {Uint8Array} */
+    const content = Encoder.encode(contentString);
+    /** @const {ContentHash} */
+    const contentHash = keccak256Uint8(content);
+    this.targets.set(key, { targetName, content, contentHash });
   }
 
   removeAll(entries) {
@@ -91,28 +102,25 @@ const addStyleSheet = (shared, target) => (shared ? SharedCss : PageCss).add(tar
  * @return {StyleSheet}
  */
 const makeStyleSheet = (fileName, cssContent) => {
-  console.log("Making stylesheet for", fileName);
   const { content, enumEntries } = minifyCss(cssContent, fileName);
   const target = { targetName: "/" + fileName, content };
-  let addedToPage = false;
-  const ensurePageCss = () => {
-    if (!addedToPage) {
-      addStyleSheet(false, target);
-      addedToPage = true;
-    }
-  };
+  let maybeKey;
+
   const Css = new Proxy(Object.assign(
     ({ shared }) => {
-      addStyleSheet(shared, target);
+      maybeKey = shared ? SharedCss.add(target) : PageCss.add(target);
       return null;
     },
     enumEntries
   ), {
     get(targetObj, prop) {
       const value = targetObj[prop];
-      if (typeof value == "string")
-        ensurePageCss();
-      else if (value === undefined)
+      if (typeof value == "string") {
+        if (maybeKey)
+          PageCss.addWithKey(maybeKey, target);
+        else
+          maybeKey = PageCss.add(target);
+      } else if (value === undefined)
         console.warn(`StyleSheet: ${prop} is not defined in ${fileName}`);
       return value;
     }

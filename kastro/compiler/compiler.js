@@ -1,15 +1,13 @@
-import {
-  access, cp, mkdir, readFile, writeFile
-} from "node:fs/promises";
+import { write } from "bun";
+import { access, cp, mkdir, readFile } from "node:fs/promises";
 import { keccak256Uint8 } from "../../crypto/sha3";
-import { getDir, getExt } from "../../util/paths";
+import { getExt } from "../../util/paths";
 import { Props } from "../props";
 import { CompressedMimes } from "../workers/mimes";
 import { brotli, zopfli } from "./compression";
 import hash, { AssetHash } from "./hash";
 import marker from "./marker";
-import { getTargetFunction } from "./target";
-import { Target } from "./target";
+import { getTargetFunction, Target } from "./target";
 
 /**
  * Dev: Try to do as little work as possible while providing the fundamental
@@ -17,14 +15,18 @@ import { Target } from "./target";
  *      the js defines. The rendered page should be visually identical to the
  *      Compiled version; anything else is a bug.
  *
- * Compiled: Produce the most optimized version of the app while checking the
- *      freshness of each target through content hashes.
+ * Compiled: All assets get the same treatment as Release (fonts, images, css, html)
+ *      however the js bundle is compiled with kdjs --fast.
+ *
+ * Release: Produce the most optimized version of the app. Js bundle is
+ *      compiled with kdjs in the full optimization mode.
  *
  * @enum {number}
  */
 const BuildMode = {
   Dev: 0,
   Compiled: 1,
+  Release: 2,
 };
 
 /** @const {TextEncoder} */
@@ -99,7 +101,8 @@ const computeDepHash = (props) => {
 }
 
 /**
- * Removes the marker file and builds the target fresh from source.
+ * Normalizes the childTargets to actual `Promise<Target>`'s and runs the
+ * {@link TargetFunction} with the targetName and props.
  *
  * @const {TargetFunction}
  */
@@ -116,6 +119,7 @@ const forceBuildTarget = (targetName, props) => {
  *  2. Determining the targetFunction from the extension of the targetName
  *  3. Handing the targetName and props (which includes the childTargets) to
  *     the targetFunction.
+ *  4. Returning a `Target` containing at least `content` and `contentHash`
  *
  * @const {TargetFunction}
  */
@@ -123,11 +127,24 @@ const buildTarget = (targetName, props) => {
   if (!targetName.startsWith("/build/"))
     return fileTarget(targetName, props);
 
+  // Always build targets: when deps are large and the targetFunction is cheap.
+  if (props.alwaysBuild)
+    return forceBuildTarget(targetName, props)
+      .then((maybeResult) => {
+        if (typeof maybeResult != "string")
+          throw "Not implemented yet";
+        const content = Encoder.encode(maybeResult);
+        return write(targetName.slice(1), content)
+          .then(() => ({
+            content,
+            contentHash: keccak256Uint8(content),
+          }))
+      });
+
   // Explicit list of dependencies.
   if (!props.dynamicDeps)
     return CACHE[targetName] = Promise.all([CACHE[targetName], computeDepHash(props)])
       .then(([target, depHash]) => {
-        console.log("target", targetName);
         if (target && hash.equal(target.depHash, depHash))
           return target;
 
@@ -142,9 +159,7 @@ const buildTarget = (targetName, props) => {
               return readFile(fileName);
             if (typeof maybeResult == "string")
               maybeResult = Encoder.encode(maybeResult);
-            return mkdir(getDir(fileName), { recursive: true })
-              .catch(() => { })
-              .then(() => writeFile(fileName, maybeResult))
+            return write(fileName, maybeResult)
               .then(() => maybeResult);
           })
           .then((content) => marker.write(targetName, {
@@ -188,9 +203,7 @@ const buildTarget = (targetName, props) => {
           if (!maybeResult) return fromCachePromise;
           if (typeof maybeResult == "string")
             maybeResult = Encoder.encode(maybeResult);
-          return mkdir(getDir(targetName.slice(1)), { recursive: true })
-            .catch(() => { })
-            .then(() => writeFile(targetName.slice(1), maybeResult))
+          return write(targetName.slice(1), maybeResult)
             .then(() => marker.write(targetName, {
               content: maybeResult,
               contentHash: keccak256Uint8(maybeResult),
