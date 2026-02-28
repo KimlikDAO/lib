@@ -7,23 +7,23 @@ const LangCode = {
 };
 
 /**
- * Since {@link dom} fixed the LangCode, {@link dom.i18n()}
- * will resolve this to a `string`.
+ * If `LangCode` is fixed at compile time, kdjs will resolve this to a
+ * `string`.
  *
  * @typedef {Record<LangCode, string>}
  */
 const I18nString = {};
 
 /**
- * Since {@link dom} fixed the LangCode, {@link dom.i18n()}
- * will resolve this to a `string[]`.
+ * If `LangCode` is fixed at compile time, kdjs will resolve this to a
+ * `string[]`.
  *
  * @typedef {Record<LangCode, string[]>}
  */
 const I18nStrings = {};
 
 /**
- * `Localizable` cannot be resolved at compile time and typically used
+ * `Localizable` cannot be reliably resolved at compile time and typically used
  * only on render time code.
  *
  * @typedef {Record<LangCode, string> | string}
@@ -61,9 +61,9 @@ const i18n = (strings, ...values) => {
 };
 
 export {
+  i18n,
   I18nString,
   I18nStrings,
   LangCode,
-  Localizable,
-  i18n
+  Localizable
 };

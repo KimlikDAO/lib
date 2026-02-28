@@ -1,7 +1,7 @@
 import { ChainId } from "../crosschain/chains";
 import { ERC721MetaData } from "../ethereum/contract/ERC721.d";
 import KPass from "../ethereum/KPassLite";
-import dom from "../util/dom";
+import dom from "../kastro/dom";
 import hex from "../util/hex";
 import { I18nString } from "../util/i18n";
 import { SectionGroup } from "./KPass";

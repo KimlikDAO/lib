@@ -1,4 +1,4 @@
-import { LangCode } from "./i18n";
+import { LangCode } from "../util/i18n";
 
 /** @define {boolean} */
 const GEN = true;

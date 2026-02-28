@@ -58,7 +58,6 @@ const serveCrate = async (crateName: string, { BuildMode }: Props) => {
 const buildCrate = async (crateName: string, { BuildMode }: Props): Promise<Target> => {
   setupKastro();
   const crate = await import(crateName);
-  console.log(crate);
   return compiler.buildTarget(`/build${crateName.slice(0, -3)}.c.json`, {
     dynamicDeps: true,
     BuildMode,

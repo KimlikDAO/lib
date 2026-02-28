@@ -259,7 +259,7 @@ const bundleTarget = (targetName, props) => props.BuildMode == BuildMode.Dev
             access(`${bundlePath}.gz`).catch(() => zopfli(targetFile, bundlePath))
           ])
       );
-    return bundle.then(() => bundleName); // Remove "/build/bundle/" prefix
+    return bundle.then(() => bundleName);
   });
 
 /**

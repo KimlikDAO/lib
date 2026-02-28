@@ -1,4 +1,4 @@
-import dom from "../util/dom";
+import dom from "./dom";
 
 /**
  * @param {{

@@ -1,4 +1,4 @@
-import { plugin } from "bun";
+import { file, plugin, write } from "bun";
 import process from "node:process";
 import { LangCode } from "../../util/i18n";
 import { combine, getDir } from "../../util/paths";
@@ -32,9 +32,13 @@ const crateTarget = async (_targetName, props) => {
   if (await props.checkFreshFn(childTargets))
     return null;
   /** @type {BundleReport} */
+  const aliases = props.crate.Aliases || {};
+  for (const key in aliases) {
+    const source = file(`build/bundle/${aliases[key]}`);
+    await write(`build/bundle/${key}`, source);
+  }
+
   const bundleReport = compiler.getBundleReport();
-  if (props.crate.Aliases)
-    console.log(props.crate.Aliases);
   bundleReport.hostUrl = props.crate.HostUrl;
   return JSON.stringify(bundleReport);
 }
