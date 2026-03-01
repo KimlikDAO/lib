@@ -3,7 +3,6 @@ import { readFile } from "node:fs/promises";
 import { keccak256Uint8 } from "../../crypto/sha3";
 import { getExt } from "../../util/paths";
 import { Props } from "../props";
-import { BundleReport } from "./bundleReport";
 import hash from "./hash";
 import marker from "./marker";
 import { getTargetFunction, Target, TargetFunction } from "./target";
@@ -34,12 +33,6 @@ const Encoder = new TextEncoder();
 
 /** @const {Record<string, Target | undefined>} */
 const CACHE = {};
-
-const BUNDLE_REPORT = {
-  namedAssets: {},
-  piggybackAssets: {},
-  hashedAssets: new Set(),
-};
 
 /**
  * @param {string} targetName
@@ -115,19 +108,7 @@ const forceBuildTarget = (targetName, props) => {
   return targetFunc(targetName, props);
 }
 
-/**
- * Builds a given target. This involves
- *  1. Building all childTargets
- *  2. Determining the targetFunction from the extension of the targetName
- *  3. Handing the targetName and props (which includes the childTargets) to
- *     the targetFunction.
- *  4. Returning a `Target` containing at least `content` and `contentHash`
- *
- * @param {string} targetName
- * @param {Props} props
- * @return {Promise<Target>}
- */
-const buildTarget = (targetName, props) => {
+const buildTargetOnly = (targetName, props) => {
   if (!targetName.startsWith("/build/"))
     return fileTarget(targetName, props);
 
@@ -218,52 +199,53 @@ const buildTarget = (targetName, props) => {
 }
 
 /**
- * Builds the target, creates the bundle file and compressed versions if needed,
- * and returns the bundle name of the asset.
+ * Builds a given target. This involves
+ *  1. Building all childTargets
+ *  2. Determining the targetFunction from the extension of the targetName
+ *  3. Handing the targetName and props (which includes the childTargets) to
+ *     the targetFunction.
+ *  4. Returning a `Target` containing at least `content` and `contentHash`
+ *
+ * @param {string} targetName
+ * @param {Props} props
+ * @return {Promise<Target>}
+ */
+const buildTarget = async (targetName, props) => {
+  const target = await buildTargetOnly(targetName, props);
+  const hashStr = hash.toStr(target.contentHash)
+  const hashedName = `${hashStr}.${getExt(targetName)}`;
+  const bundleName = props.bundleName || hashedName;
+  if (props.piggyback) {
+    bundle.piggyback(props.piggyback, bundleName);
+    return target;
+  }
+  if (props.bundleHashed || props.bundleName)
+    await bundle.add(targetName, hashedName);
+  if (props.bundleName)
+    await bundle.alias(bundleName, hashedName);
+  return target;
+};
+
+/**
+ * Marks the target as a bundle target, builds it, and returns the bundle name
+ * of the asset.
  *
  * @param {string} targetName
  * @param {Props} props
  * @return {Promise<string>}
  */
-const bundleTarget = async (targetName, props) => {
-  const { contentHash } = await buildTarget(targetName, props);
-  const targetFile = targetName.slice(1);
-  const contentHashStr = hash.toStr(contentHash);
-  const hashedName = `${contentHashStr}.${getExt(targetName)}`;
-  const bundleName = props.bundleName || hashedName;
-  if (props.piggyback) {
-    const piggybackUrl = `${props.piggyback}/${bundleName}`;
-    BUNDLE_REPORT.piggybackAssets[piggybackUrl] = contentHashStr;
-    return piggybackUrl;
-  }
-  await bundle.add(targetFile, hashedName);
-  BUNDLE_REPORT.hashedAssets.add(hashedName);
-  if (props.bundleName) {
-    await bundle.alias(hashedName, bundleName);
-    BUNDLE_REPORT.namedAssets[bundleName] = contentHashStr;
-  }
-  return bundleName;
-};
-
-/**
- * @return {BundleReport}
- */
-const getBundleReport = () => /** @type {BundleReport} */({
-  ...BUNDLE_REPORT,
-  hashedAssets: Array.from(BUNDLE_REPORT.hashedAssets),
-});
-
-const resetBundleReport = () => {
-  BUNDLE_REPORT.namedAssets = {};
-  BUNDLE_REPORT.piggybackAssets = {};
-  BUNDLE_REPORT.hashedAssets.clear();
-};
+const bundleTarget = (targetName, props) => {
+  if (!props.bundleName) props.bundleHashed = true;
+  return buildTarget(targetName, props)
+    .then(({ contentHash }) => {
+      const bundleName = props.bundleName ||
+        `${hash.toStr(contentHash)}.${getExt(targetName)}`
+      return props.piggyback ? `${props.piggyback}/${bundleName}` : bundleName;
+    });
+}
 
 export default {
   BuildMode,
   bundleTarget,
-  buildTarget,
-  forceBuildTarget,
-  getBundleReport,
-  resetBundleReport,
+  buildTarget
 };

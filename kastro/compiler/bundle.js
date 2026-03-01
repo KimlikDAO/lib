@@ -1,8 +1,42 @@
 import { file, spawn, write } from "bun";
 import { getExt } from "../../util/paths";
 import { CompressedMimes } from "../workers/mimes";
+import { BundleReport } from "./bundleReport";
+import { AssetHash } from "./hash";
 
 const BundleDir = "build/bundle";
+/** @type {Map<string, AssetHash>} */
+const NamedAssets = new Map();
+/** @type {Map<string, AssetHash>} */
+const PiggybackAssets = new Map();
+/** @type {Set<string>} */
+const HashedAssets = new Set();
+
+/**
+ * Returns the BundleReport with the following normalizations
+ *  - If a hashedAsset has been aliased by a name, then we remove it from
+ *    hashed assets.
+ *  - Maps and the Set is converted to Object and Array for serializability.
+ *
+ * Recall that the names appearing in the report are always compress-extension
+ * free. The deployer needs to determine whether an asset will have compressed
+ * variants by looking up from the {@link CompressedMimes} table.
+ *
+ * @return {BundleReport} */
+const getReport = () => {
+  const hasName = new Set(NamedAssets.values());
+  return {
+    namedAssets: Object.fromEntries(NamedAssets),
+    piggybackAssets: Object.fromEntries(PiggybackAssets),
+    hashedAssets: Array.from(HashedAssets.difference(hasName))
+  }
+};
+
+const reset = () => {
+  NamedAssets.clear();
+  PiggybackAssets.clear();
+  HashedAssets.clear();
+};
 
 /**
  * @param {string} source
@@ -17,11 +51,24 @@ const cp = async (source, destination, noOverwrite = false) => {
 };
 
 /**
- * @param {string} hashedName
+ * Records the asset as piggyback asset at a certain external url. These
+ * assets are not written into the bundle, but the deployer needs to ensure
+ * the assets are present at the claimed url before the deployment.
+ *
+ * @param {string} piggybackUrl
  * @param {string} bundleName
+ * @return {void}
+ */
+const piggyback = (piggybackUrl, bundleName) =>
+  PiggybackAssets.set(bundleName, `${piggybackUrl}/${bundleName}`);
+
+/**
+ * @param {string} bundleName
+ * @param {string} hashedName
  * @return {Promise<void>}
  */
-const alias = (hashedName, bundleName) => {
+const alias = (bundleName, hashedName) => {
+  NamedAssets.set(bundleName, hashedName);
   const promises = [cp(`${BundleDir}/${hashedName}`, `${BundleDir}/${bundleName}`)];
   if (!CompressedMimes[getExt(hashedName)])
     promises.push(
@@ -33,14 +80,16 @@ const alias = (hashedName, bundleName) => {
 
 /**
  * Copies targetFile into the bundle as bundleName; optionally creates .br and .gz.
- * Uses Bun.write for the main copy.
+ * Uses `write` from "bun" for the main copy.
  *
- * @param {string} targetFile Source file path (e.g. "build/landing/kdjs-en/landing/Landing.js")
- * @param {string} bundleName Filename in the bundle (e.g. "abc123.js" or "landing-en.js")
+ * @param {string} targetName Source file path (e.g. "build/landing/kdjs-en/landing/Landing.js")
+ * @param {string} hashedName Filename in the bundle (e.g. "abc123.js" or "landing-en.js")
  * @return {Promise<void>}
  */
-const add = (targetFile, bundleName) => {
-  const bundlePath = `${BundleDir}/${bundleName}`;
+const add = (targetName, hashedName) => {
+  HashedAssets.add(hashedName);
+  const targetFile = targetName.slice(1);
+  const bundlePath = `${BundleDir}/${hashedName}`;
   const promises = [cp(targetFile, bundlePath, true)];
   if (!CompressedMimes[getExt(targetFile)])
     promises.push(
@@ -108,4 +157,7 @@ const brotli = async (inputName, outputName) => {
 export default {
   add,
   alias,
+  piggyback,
+  getReport,
+  reset,
 };

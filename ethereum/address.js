@@ -1,5 +1,5 @@
 import { keccak256 } from "../crypto/sha3";
-import { Address, PackedAddress } from "./address.d";
+import { Address } from "./address.d";
 
 /**
  * Implements EIP-55 address checksum encoding, for UI validation.

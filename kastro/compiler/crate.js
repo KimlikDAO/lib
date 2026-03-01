@@ -16,6 +16,7 @@ import { pageTarget } from "./page";
 import { scriptTarget } from "./script";
 import { styleSheetTarget } from "./styleSheet";
 import { registerTargetFunction } from "./target";
+import bundle from "./bundle";
 
 /**
  * @param {string} _targetName
@@ -28,7 +29,7 @@ const crateTarget = async (_targetName, props) => {
   const map = getPageTargets(props.crate, props);
   const childTargets = [map["en"], map["mint"]];
 
-  compiler.resetBundleReport();
+  bundle.reset();
   if (await props.checkFreshFn(childTargets))
     return null;
   /** @type {BundleReport} */
@@ -37,8 +38,7 @@ const crateTarget = async (_targetName, props) => {
     const source = file(`build/bundle/${aliases[key]}`);
     await write(`build/bundle/${key}`, source);
   }
-
-  const bundleReport = compiler.getBundleReport();
+  const bundleReport = bundle.getReport();
   bundleReport.hostUrl = props.crate.HostUrl;
   return JSON.stringify(bundleReport);
 }

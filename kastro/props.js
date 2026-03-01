@@ -8,6 +8,8 @@ import { LangCode } from "../util/i18n";
  *   CodebaseLang?: LangCode,
  *   Route?: Record<LangCode, string>,
  *   bundleName?: string,
+ *   bundleHashed?: boolean,
+ *   piggyback?: string,
  *   alwaysBuild?: boolean,
  *   dynamicDeps?: boolean,
  *   crate?: unknown,

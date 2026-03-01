@@ -62,6 +62,9 @@ const buildCrate = async (crateName: string, { BuildMode }: Props): Promise<Targ
     dynamicDeps: true,
     BuildMode,
     crate
+  }).then((target) => {
+    console.log(JSON.parse(new TextDecoder().decode(target.content)));
+    return target;
   });
 }
 
