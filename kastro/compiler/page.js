@@ -15,11 +15,8 @@ import HtmlMinifierConfig from "./config/htmlMinifierConfig";
  * @return {Promise<string>}
  */
 const pageTarget = (targetName, props) => {
-  /** @const {string} */
   const targetDir = getDir(targetName);
-  /** @const {string} */
   const targetModuleName = capitalize(targetDir.slice(getDir(targetDir).length + 1));
-  /** @const {string} */
   const targetModulePath = `${targetDir.slice(7)}/${targetModuleName}.jsx`;
 
   const { BuildMode, Lang } = props;

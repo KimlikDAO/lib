@@ -194,7 +194,7 @@ const addPageTargets = (map, { Page, CodebaseLang, Entry }, buildMode, lang) => 
       CodebaseLang,
       Route: { ...Page[name] },
       bundleName: Page[name][lang],
-      targetName: `/build/${dirName}/page-${lang}.html`,
+      targetName: `/build/${dirName}/${name}-${lang}.html`,
       alwaysBuild: true,
     };
     delete pageProps.Route[lang];

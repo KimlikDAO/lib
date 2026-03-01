@@ -1,14 +1,13 @@
 import { write } from "bun";
-import { access, cp, mkdir, readFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { keccak256Uint8 } from "../../crypto/sha3";
 import { getExt } from "../../util/paths";
 import { Props } from "../props";
-import { CompressedMimes } from "../workers/mimes";
 import { BundleReport } from "./bundleReport";
-import { brotli, zopfli } from "./compression";
 import hash from "./hash";
 import marker from "./marker";
 import { getTargetFunction, Target, TargetFunction } from "./target";
+import bundle from "./bundle";
 
 /**
  * Dev: Try to do as little work as possible while providing the fundamental
@@ -36,11 +35,11 @@ const Encoder = new TextEncoder();
 /** @const {Record<string, Target | undefined>} */
 const CACHE = {};
 
-const BUNDLE_REPORT = /** @type {BundleReport} */ ({
+const BUNDLE_REPORT = {
   namedAssets: {},
   piggybackAssets: {},
-  hashedAssets: [],
-});
+  hashedAssets: new Set(),
+};
 
 /**
  * @param {string} targetName
@@ -226,51 +225,38 @@ const buildTarget = (targetName, props) => {
  * @param {Props} props
  * @return {Promise<string>}
  */
-const bundleTarget = (targetName, props) => props.BuildMode == BuildMode.Dev
-  ? Promise.resolve(props.childTargets[0])
-    .then((target) => ((typeof target == "string") ? target : target.targetName).slice(1))
-  : buildTarget(targetName, props).then(({ contentHash }) => {
-    /** @const {string} */
-    const targetFile = targetName.slice(1);
-    /** @const {string} */
-    const contentHashStr = hash.toStr(contentHash);
-    /** @const {string} */
-    const bundleName = (props.bundleName || `${contentHashStr}.${getExt(targetName)}`);
-    if (props.piggyback) {
-      const piggybackUrl = `${props.piggyback}/${bundleName}`;
-      BUNDLE_REPORT.piggybackAssets[piggybackUrl] = contentHashStr;
-      return piggybackUrl;
-    }
-    if (props.bundleName)
-      BUNDLE_REPORT.namedAssets[props.bundleName] = contentHashStr;
-    else
-      BUNDLE_REPORT.hashedAssets.push(bundleName);
-
-    const bundlePath = "build/bundle/" + bundleName;
-    /** @const {Promise<void>} */
-    const bundle = mkdir("build/bundle", { recursive: true })
-      .catch(() => { })
-      .then(() =>
-        CompressedMimes[getExt(targetName)]
-          ? access(bundlePath).catch(() => cp(targetFile, bundlePath))
-          : Promise.all([
-            access(bundlePath).catch(() => cp(targetFile, bundlePath)),
-            access(`${bundlePath}.br`).catch(() => brotli(targetFile, bundlePath)),
-            access(`${bundlePath}.gz`).catch(() => zopfli(targetFile, bundlePath))
-          ])
-      );
-    return bundle.then(() => bundleName);
-  });
+const bundleTarget = async (targetName, props) => {
+  const { contentHash } = await buildTarget(targetName, props);
+  const targetFile = targetName.slice(1);
+  const contentHashStr = hash.toStr(contentHash);
+  const hashedName = `${contentHashStr}.${getExt(targetName)}`;
+  const bundleName = props.bundleName || hashedName;
+  if (props.piggyback) {
+    const piggybackUrl = `${props.piggyback}/${bundleName}`;
+    BUNDLE_REPORT.piggybackAssets[piggybackUrl] = contentHashStr;
+    return piggybackUrl;
+  }
+  await bundle.add(targetFile, hashedName);
+  BUNDLE_REPORT.hashedAssets.add(hashedName);
+  if (props.bundleName) {
+    await bundle.alias(hashedName, bundleName);
+    BUNDLE_REPORT.namedAssets[bundleName] = contentHashStr;
+  }
+  return bundleName;
+};
 
 /**
  * @return {BundleReport}
  */
-const getBundleReport = () => BUNDLE_REPORT;
+const getBundleReport = () => /** @type {BundleReport} */({
+  ...BUNDLE_REPORT,
+  hashedAssets: Array.from(BUNDLE_REPORT.hashedAssets),
+});
 
 const resetBundleReport = () => {
   BUNDLE_REPORT.namedAssets = {};
   BUNDLE_REPORT.piggybackAssets = {};
-  BUNDLE_REPORT.hashedAssets = [];
+  BUNDLE_REPORT.hashedAssets.clear();
 };
 
 export default {

@@ -21,7 +21,7 @@
     "mina-signer": "^3.1.0"
   },
   "dependencies": {
-    "@swc/core": "^1.15.17",
+    "@swc/core": "^1.15.18",
     "acorn": "^8.16.0",
     "acorn-jsx": "^5.3.2",
     "acorn-walk": "^8.3.5",
