@@ -55,16 +55,17 @@ const serveCrate = async (crateName: string, { BuildMode }: Props) => {
   console.log("Serve at http://localhost:3000");
 }
 
-const buildCrate = async (crateName: string, { BuildMode }: Props): Promise<Target> => {
+const buildCrate = (crateName: string, { BuildMode }: Props): Promise<Target> => {
   setupKastro();
-  const crate = await import(crateName);
-  return compiler.buildTarget(`/build${crateName.slice(0, -3)}.c.json`, {
-    dynamicDeps: true,
-    BuildMode,
-    crate
-  }).then((target) => {
-    console.log(JSON.parse(new TextDecoder().decode(target.content)));
-    return target;
+  return import(crateName).then((crate) => {
+    return compiler.buildTarget(`/build${crateName.slice(0, -3)}.c.json`, {
+      dynamicDeps: true,
+      BuildMode,
+      crate
+    }).then((target) => {
+      console.log(JSON.parse(new TextDecoder().decode(target.content)));
+      return target;
+    });
   });
 }
 

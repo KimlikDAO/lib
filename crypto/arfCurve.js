@@ -1,78 +1,24 @@
 /**
  * An elliptic curve over a prime field given by the equation
  *
- *   y^2 = x^3 + b.
+ *   y² = x³ + b.
  * 
  * @author KimlikDAO
  */
-
+import { Point } from "./ellipticCurve";
 import { inverse } from "./modular";
 
 /**
- * We work with a lifting of the Arf curve x^2 = y^3 + b
+ * We work with a lifting of the Arf curve x² = y³ + b
  *
- *   y^2 = x^3 + b.z^6
+ *   y² = x³ + b·z⁶
  *
- * over (F_P)^3. The projection onto the z = 1 plane gives the regular
+ * over (F_P)^³. The projection onto the z = 1 plane gives the regular
  * Arf curve.
  *
  * For other values of z ∉ {0, 1}, the projected curve is isomorphic to the z=1 curve
- * through the map (x, y) ↦ (x/z^2, y/z^3).
+ * through the map (x, y) ↦ (x/z², y/z³).
  *
- * @interface
- */
-class Point {
-  /**
-   * @param {bigint} x
-   * @param {bigint} y
-   * @param {bigint=} z
-   */
-  constructor(x, y, z) {
-    /** @type {bigint} */
-    this.x;
-    /** @type {bigint} */
-    this.y;
-    /** @type {bigint} */
-    this.z;
-  }
-
-  /**
-   * @return {Point}
-   */
-  project() { }
-
-  /**
-   * Negates the point in place.
-   * @return {Point}
-   */
-  negate() { }
-
-  /**
-   * Doubles the point in place.
-   * @return {Point}
-   */
-  double() { }
-
-  /**
-   * @param {Point} other
-   * @return {Point}
-   */
-  increment(other) { }
-
-  /**
-   * @param {bigint} n
-   * @return {Point}
-   */
-  multiply(n) { }
-
-  /**
-   * @nosideeffects
-   * @return {Point}
-   */
-  copy() { }
-}
-
-/**
  * @nosideeffects
  * @pureOrBreakMyCode
  * @param {bigint} P
@@ -253,7 +199,7 @@ const aX_bY = (a, X, b, Y) => {
     bBits = bBits.padStart(aBits.length, "0");
   else if (bBits.length > aBits.length)
     aBits = aBits.padStart(bBits.length, "0");
-  /** @const {Point[]} */
+  /** @const {readonly Point[]} */
   const d = [O, X, Y, X.copy().increment(Y)];
   /** @type {Point} */
   let R = d[(aBits.charCodeAt(0) - 48) + 2 * (bBits.charCodeAt(0) - 48)].copy();
