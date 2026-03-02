@@ -1,4 +1,4 @@
-import { expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { transpileTs } from "../ts";
 
 test("enums and variables", () => {
@@ -324,11 +324,11 @@ class RemoteProvider {
    */
   whenWritten(txHash, then) {
     const interval = setInterval(() => this.request(/** @type {RequestArguments} */({ method: "eth_getTransactionReceipt", params: [txHash] })).then((receipt) => {
-  if (receipt) {
-  clearInterval(interval);
-  then();
-}
-  }), 1000);
+      if (receipt) {
+        clearInterval(interval);
+        then();
+      }
+    }), 1000);
   }
   /**
    * @param {Address} address
@@ -347,4 +347,105 @@ export {
 `;
 
   expect(transpileTs(input)).toBe(expected.slice(1));
+});
+
+test("declaration", () => {
+  expect(transpileTs("const a: bigint = 1n;"))
+    .toBe("/** @const {bigint} */\n" +
+      "const a = 1n;\n");
+  expect(transpileTs("let a: bigint = 1n;"))
+    .toBe("/** @type {bigint} */\n" +
+      "let a = 1n;\n");
+});
+
+describe("for loops", () => {
+  test("singleton body", () => {
+    expect(transpileTs("for (let i = 0; i < 10; ++i)\n  console.log(i);"))
+      .toContain("for (let i = 0; i < 10; ++i)\n  console.log(i);");
+  });
+  test("for if-else", () => {
+    expect(transpileTs(`
+for (let i = 0; i < 10; ++i)
+  if (i % 2 == 0)
+    console.log(i);
+  else
+    console.log('done');`))
+      .toContain(`
+for (let i = 0; i < 10; ++i)
+  if (i % 2 == 0)
+    console.log(i);
+  else
+    console.log("done");
+`.slice(1));
+  });
+  test("for in", () => {
+    expect(transpileTs("for (const key in object)\n  console.log(key);"))
+      .toContain("for (const key in object)\n  console.log(key);");
+  });
+  test("for of", () => {
+    expect(transpileTs("for (const value of array)\n  console.log(value);"))
+      .toContain("for (const value of array)\n  console.log(value);");
+  });
+});
+
+test("", () => {
+  const input = `
+/**
+ * @fileoverview A fast and tiny keccak256 implementation using TypedArrays.
+ * @author KimlikDAO
+ */
+import hex from '../util/hex';
+
+/**
+ * Computes the keccak256 of an Uint32Array.
+ */
+const keccak256Uint32 = (words: Uint32Array): Uint32Array => {
+  const s: Uint32Array = new Uint32Array(50);
+  let i = 0;
+  for (const end = words.length - 33; i < end; i += 34) {
+    for (let j = 0; j < 34; ++j)
+      s[j] ^= words[i + j];
+    f(s);
+  }
+  let j = 0;
+  for (; i < words.length; ++i, ++j)
+    s[j] ^= words[i];
+  s[j] ^= 1;
+  s[33] ^= 1 << 31;
+  f(s);
+  return s.subarray(0, 8);
+}
+export {
+  keccak256Uint32,
+};
+`;
+  const expected = `
+import hex from "../util/hex";
+/**
+ * @param {Uint32Array} words
+ * @return {Uint32Array}
+ */
+const keccak256Uint32 = (words) => {
+  /** @const {Uint32Array} */
+  const s = new Uint32Array(50);
+  let i = 0;
+  for (const end = words.length - 33; i < end; i += 34) {
+    for (let j = 0; j < 34; ++j)
+      s[j] ^= words[i + j];
+    f(s);
+  }
+  let j = 0;
+  for (; i < words.length; (++i, ++j))
+    s[j] ^= words[i];
+  s[j] ^= 1;
+  s[33] ^= 1 << 31;
+  f(s);
+  return s.subarray(0, 8);
+};
+
+export {
+  keccak256Uint32
+};
+`.slice(1);
+  expect(transpileTs(input)).toBe(expected);
 });
