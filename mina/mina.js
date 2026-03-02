@@ -74,7 +74,7 @@ const addChecksum = (buff) => {
   /** @const {number} */
   const n = buff.length - 4;
   /** @const {Uint32Array} */
-  const s = new Uint32Array(IC);
+  const s = new Uint32Array(/** @type {number[]} */(IC));
   /** @const {Uint32Array} */
   const t = new Uint32Array(64);
   buff[n] = 128;
@@ -94,7 +94,7 @@ const addChecksum = (buff) => {
   t.fill(0, 9, 15);
   t[8] = 1 << 31;
   t[15] = 256;
-  s.set(IC);
+  s.set(/** @type {number[]} */(IC));
   sha256F(s, t);
   const /** number */ v = s[0];
   buff[n + 3] = v & 255;

@@ -449,3 +449,8 @@ export {
 `.slice(1);
   expect(transpileTs(input)).toBe(expected);
 });
+
+test("destructing assignment", () => {
+  const input = "const s = new Uint8Array(8);\nlet [a, b, c, d, e, f, g, h] = s;";
+  expect(transpileTs(input)).toContain(input);
+});

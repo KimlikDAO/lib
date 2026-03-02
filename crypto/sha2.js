@@ -4,7 +4,7 @@
 
 /**
  * Initial constants
- * @const {number[]}
+ * @const {readonly number[]}
  */
 const IC = [
   0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
@@ -14,7 +14,7 @@ const IC = [
 /**
  * Round constants for each of the 64 rounds.
  *
- * @const {number[]}
+ * @const {readonly number[]}
  */
 const RC = [
   0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
@@ -35,13 +35,9 @@ const RC = [
  * @return {Uint32Array} hash as Uint32Array of length 8.
  */
 const sha256Uint32 = (words) => {
-  /** @const {number} */
   const n = words.length;
-  /** @const {Uint32Array} */
-  const s = new Uint32Array(IC);
-  /** @const {Uint32Array} */
+  const s = new Uint32Array(/** @type {number[]} */(IC));
   const t = new Uint32Array(64);
-  /** @type {number} */
   let i = 0;
   for (const end = n - 15; i < end; i += 16) {
     t.set(words.subarray(i, i + 16))

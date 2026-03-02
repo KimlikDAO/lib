@@ -160,7 +160,7 @@ const arfCurve = (P) => {
       } else {
         /** @const {string} */
         const nNibs = n.toString(4);
-        /** @const {Point[]} */
+        /** @const {readonly Point[]} */
         const d = [
           O, this.copy(),
           this.copy().double(), this.copy().double().increment(this)
@@ -176,7 +176,6 @@ const arfCurve = (P) => {
   }
 }
 
-/** @const {Point} */
 const O = /** @type {Point} */({ x: 0n, y: 0n, z: 0n });
 
 /**
@@ -191,9 +190,7 @@ const O = /** @type {Point} */({ x: 0n, y: 0n, z: 0n });
  * @return {Point} aX + bY
  */
 const aX_bY = (a, X, b, Y) => {
-  /** @type {string} */
   let aBits = a.toString(2);
-  /** @type {string} */
   let bBits = b.toString(2);
   if (aBits.length > bBits.length)
     bBits = bBits.padStart(aBits.length, "0");

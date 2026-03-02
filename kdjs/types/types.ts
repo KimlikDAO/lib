@@ -274,9 +274,9 @@ class GenericType extends Type {
     const modifiers = bare ? 0 : this.modifiers;
     let inner: string;
     if (this.name === "Array")
-      inner = this.params[0]!.toTsExpr({ wrap: true }) + "[]";
+      inner = this.params[0].toTsExpr({ wrap: true }) + "[]";
     else if (this.name === "ReadonlyArray")
-      inner = "readonly " + this.params[0]!.toTsExpr({ wrap: true }) + "[]";
+      inner = "readonly " + this.params[0].toTsExpr({ wrap: true }) + "[]";
     else
       inner = this.name + "<" + this.params.map((p) => p.toTsExpr()).join(", ") + ">";
     let expr = inner;
@@ -303,7 +303,7 @@ class StructType extends Type {
     let expr = "";
     let sep = "";
     for (const key in members) {
-      expr += `${sep}${key}: ${members[key]!.toClosureExpr({ wrap: true })}`;
+      expr += `${sep}${key}: ${members[key].toClosureExpr({ wrap: true })}`;
       sep = ", ";
     }
     expr = `{ ${expr} }`;
@@ -322,7 +322,7 @@ class StructType extends Type {
     let expr = "";
     let sep = "";
     for (const key in members) {
-      expr += `${sep}${key}: ${members[key]!.toTsExpr({ wrap: true })}`;
+      expr += `${sep}${key}: ${members[key].toTsExpr({ wrap: true })}`;
       sep = ", ";
     }
     expr = `{ ${expr} }`;

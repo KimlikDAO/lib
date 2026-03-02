@@ -40,7 +40,7 @@ const serveCrate = async (crateName: string, { BuildMode }: Props) => {
         .arrayBuffer();
       const headers: Record<string, string> = {
         "cache-control": dot == -1 ? PAGE_CACHE_CONTROL : STATIC_CACHE_CONTROL,
-        "content-type": dot == -1 ? "text/html;charset=utf-8" : (Mimes[suffix] as string),
+        "content-type": dot == -1 ? "text/html;charset=utf-8" : Mimes[suffix],
         "content-length": "" + arrBuff.byteLength,
         "expires": "Sun, 01 Jan 2034 00:00:00 GMT",
         "vary": path ? "accept-encoding" : "accept-encoding,cookie"

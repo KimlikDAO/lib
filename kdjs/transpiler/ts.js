@@ -1,4 +1,4 @@
-import { generateProgram } from "../generator/closureFromAst";
+import { generate } from "../generator/closureFromAst2";
 import { TsParser } from "../parser/tsParser";
 
 /**
@@ -11,7 +11,7 @@ const transpileTs = (content) => {
     ecmaVersion: "latest",
     locations: true,
   });
-  return generateProgram(ast);
+  return generate(ast);
 };
 
 export { transpileTs };

@@ -120,7 +120,7 @@ const expressionGenerators = {
     return "`" + parts.join("") + "`";
   },
   TSNonNullExpression(node, typeMap, indent) {
-    return generateExpression(node.expression, typeMap, indent) + "!";
+    return generateExpression(node.expression, typeMap, indent);
   },
   OptionalMemberExpression(node, typeMap, indent) {
     const obj = generateExpression(node.object, typeMap, indent);
@@ -137,6 +137,51 @@ const expressionGenerators = {
   ChainExpression(node, typeMap, indent) {
     return generateExpression(node.expression, typeMap, indent);
   },
+  ArrayPattern(node, typeMap, indent) {
+    return generateBindingPattern(node, typeMap, indent);
+  },
+  ObjectPattern(node, typeMap, indent) {
+    return generateBindingPattern(node, typeMap, indent);
+  },
+};
+
+/**
+ * Serialize a binding pattern (ArrayPattern, ObjectPattern, etc.) to source text.
+ * Used for variable declarations and assignment LHS.
+ *
+ * @param {acorn.Node} node ArrayPattern | ObjectPattern | Identifier | RestElement | AssignmentPattern
+ * @param {Map<string, string>=} typeMap
+ * @param {string} indent
+ * @return {string}
+ */
+const generateBindingPattern = (node, typeMap, indent = "") => {
+  if (!node) return "";
+  if (node.type == "Identifier")
+    return node.name ?? "";
+  if (node.type == "RestElement")
+    return "..." + generateBindingPattern(node.argument, typeMap, indent);
+  if (node.type == "AssignmentPattern") {
+    const left = generateBindingPattern(node.left, typeMap, indent);
+    const right = node.right ? generateExpression(node.right, typeMap, indent) : "";
+    return right ? left + " = " + right : left;
+  }
+  if (node.type == "ArrayPattern") {
+    const elts = (node.elements || []).map(el =>
+      el == null ? "" : generateBindingPattern(el, typeMap, indent)
+    );
+    return "[" + elts.join(", ") + "]";
+  }
+  if (node.type == "ObjectPattern") {
+    const props = (node.properties || []).map(prop => {
+      if (prop.type == "RestElement")
+        return "..." + generateBindingPattern(prop.argument, typeMap, indent);
+      const key = prop.key?.name ?? (prop.key?.value != null ? JSON.stringify(prop.key.value) : (prop.computed ? generateExpression(prop.key, typeMap, indent) : ""));
+      const value = prop.value ? generateBindingPattern(prop.value, typeMap, indent) : "";
+      return prop.shorthand ? key : key + ": " + value;
+    });
+    return "{ " + props.join(", ") + " }";
+  }
+  return "";
 };
 
 /**
@@ -163,10 +208,11 @@ const serializeForInit = (node, typeMap, indent) => {
   if (node.type != "VariableDeclaration")
     return generateExpression(node, typeMap, indent);
   const parts = (node.declarations || []).map((decl) => {
-    const name = decl.id?.type == "Identifier" ? decl.id.name : "";
-    if (!name) return "";
+    const id = decl.id;
+    const leftPart = id?.type == "Identifier" ? id.name : generateBindingPattern(id, typeMap, indent);
+    if (!leftPart) return "";
     const init = decl.init ? generateExpression(decl.init, typeMap, indent) : "";
-    return init ? `${name} = ${init}` : name;
+    return init ? `${leftPart} = ${init}` : leftPart;
   }).filter(Boolean);
   return parts.length ? `${node.kind} ${parts.join(", ")}` : node.kind;
 };
@@ -205,13 +251,14 @@ const statementGenerators = {
     const kind = node.kind;
     const tag = kind == "const" ? "const" : "type";
     for (const decl of node.declarations || []) {
-      const name = decl.id?.type == "Identifier" ? decl.id.name : null;
-      if (name == null) continue;
+      const id = decl.id;
+      const leftPart = id?.type == "Identifier" ? id.name : generateBindingPattern(id, typeMap, indent);
+      if (!leftPart) continue;
       const init = decl.init;
-      const typeNode = decl.id.typeAnnotation?.typeAnnotation;
+      const typeNode = id?.typeAnnotation?.typeAnnotation;
       const isFunctionInit = init?.type == "ArrowFunctionExpression" || init?.type == "FunctionExpression";
       const block =
-        generateFunctionTypeJSDoc(decl.id.typeAnnotation || (isFunctionInit ? init : null), typeMap) ??
+        generateFunctionTypeJSDoc(id?.typeAnnotation || (isFunctionInit ? init : null), typeMap) ??
         (typeNode ? (() => {
           const typeStr = generateTypeExpr(typeNode, typeMap);
           return typeStr ? `/** @${tag} {${typeStr}} */` : "";
@@ -219,7 +266,7 @@ const statementGenerators = {
       if (block)
         lines.push(block);
       const initCode = init ? generateExpression(init, typeMap, indent) : "";
-      lines.push(initCode ? `${kind} ${name} = ${initCode};` : `${kind} ${name};`);
+      lines.push(initCode ? `${kind} ${leftPart} = ${initCode};` : `${kind} ${leftPart};`);
     }
     return lines.join("\n");
   },
