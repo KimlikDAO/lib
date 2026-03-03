@@ -6,18 +6,13 @@
  * - generateTypeExpr(node, typeMap) — typeExpr generators (for JSDoc type strings)
  * - generateStatement(node, context) — statement generators
  *
+ * Whole program: generate(ast, typeMap) iterates Program.body and uses generateProgramBody.
+ *
  * Context carries: indent, typeMap, parent (for precedence), isRightHand (for associativity).
  */
 
-import {
-  generateClassDeclaration,
-  generateClassInterface,
-  generateEnum,
-  generateTypedef,
-} from "./closureFromAst";
-
 /** Context passed through generation. Parent + isRightHand used later for precedence-aware parens. */
-export interface GenerateContext {
+interface GenerateContext {
   indent?: string;
   typeMap?: Map<string, string>;
   /** Parent node when emitting a child expression (for parens). */
@@ -27,7 +22,7 @@ export interface GenerateContext {
 }
 
 /** Minimal ESTree-like node (acorn/TypeScript parser output). Explicit optional props allow dot access. */
-export interface ESTreeNode {
+interface ESTreeNode {
   type: string;
   // Expression / type nodes
   name?: string;
@@ -82,9 +77,6 @@ export interface ESTreeNode {
   source?: { value?: string };
   specifiers?: Array<{ type?: string; imported?: { name?: string }; local?: { name?: string }; exported?: { name?: string } }>;
   [key: string]: unknown;
-}
-function defaultContext(overrides?: Partial<GenerateContext>): GenerateContext {
-  return { indent: "", ...overrides };
 }
 
 /** Build context for a child expression (e.g. left/right of BinaryExpression). */
@@ -172,7 +164,7 @@ const typeExprGenerators: Record<string, TypeExprHandler> = {
   },
 
   TSTypeLiteral(node, typeMap) {
-    const members = (node.members ?? []).filter((m) => m.type === "TSPropertySignature");
+    const members = (node.members ?? []).filter((m) => m.type == "TSPropertySignature");
     const parts = members.map((member) => {
       const key = (member.key as ESTreeNode)?.name ?? (member.key as { value?: string })?.value ?? "";
       const typeAnn = member.typeAnnotation as { typeAnnotation?: ESTreeNode };
@@ -187,7 +179,7 @@ const typeExprGenerators: Record<string, TypeExprHandler> = {
     const params = node.parameters ?? [];
     const paramParts = params.map((param) => {
       const paramName = param.name as unknown;
-      const name = (typeof paramName === "object" && paramName && "name" in paramName
+      const name = (typeof paramName == "object" && paramName && "name" in paramName
         ? (paramName as { name: string }).name
         : paramName) ?? "";
       const typeAnn = param.typeAnnotation as { typeAnnotation?: ESTreeNode };
@@ -204,10 +196,10 @@ const typeExprGenerators: Record<string, TypeExprHandler> = {
 /**
  * Generate JSDoc type string for a type AST node. Dispatches via typeExprGenerators.
  */
-export function generateTypeExpr(
+const generateTypeExpr =(
   typeNode: ESTreeNode | undefined | null,
   typeMap?: Map<string, string>
-): string {
+): string => {
   if (!typeNode) return "unknown";
   const handler = typeExprGenerators[typeNode.type];
   if (handler) return handler(typeNode, typeMap);
@@ -220,28 +212,28 @@ export function generateTypeExpr(
 
 function generateBindingPattern(node: ESTreeNode, ctx: GenerateContext): string {
   if (!node) return "";
-  if (node.type === "Identifier")
+  if (node.type == "Identifier")
     return (node.name as string) ?? "";
-  if (node.type === "RestElement")
+  if (node.type == "RestElement")
     return "..." + generateBindingPattern(node.argument as ESTreeNode, ctx);
-  if (node.type === "AssignmentPattern") {
+  if (node.type == "AssignmentPattern") {
     const left = generateBindingPattern(node.left as ESTreeNode, ctx);
     const right = node.right
       ? generateExpression(node.right as ESTreeNode, ctx)
       : "";
     return right ? `${left} = ${right}` : left;
   }
-  if (node.type === "ArrayPattern") {
+  if (node.type == "ArrayPattern") {
     const elements = (node.elements ?? []) as (ESTreeNode | null)[];
     const elts = elements.map((el) =>
       el == null ? "" : generateBindingPattern(el, ctx)
     );
     return "[" + elts.join(", ") + "]";
   }
-  if (node.type === "ObjectPattern") {
+  if (node.type == "ObjectPattern") {
     const props = (node.properties ?? []) as ESTreeNode[];
     const parts = props.map((prop) => {
-      if (prop.type === "RestElement")
+      if (prop.type == "RestElement")
         return "..." + generateBindingPattern(prop.argument as ESTreeNode, ctx);
       const key = (prop.key as { name?: string; value?: unknown }).name ??
         ((prop.key as { value?: unknown }).value != null
@@ -277,17 +269,17 @@ function exprChild(
   return generateExpression(child as ESTreeNode, childContext(ctx, parent, isRightHand));
 }
 
-const expressionGenerators: Record<string, ExpressionHandler> = {
+const ExpressionGenerators: Record<string, ExpressionHandler> = {
   Identifier(node) {
     return (node.name as string) ?? "";
   },
 
   Literal(node) {
     const v = node.value;
-    if (v === null) return "null";
-    if (typeof v === "number") return String(v);
-    if (typeof v === "boolean") return v ? "true" : "false";
-    if (typeof v === "string") return JSON.stringify(v);
+    if (v == null) return "null";
+    if (typeof v == "number") return String(v);
+    if (typeof v == "boolean") return v ? "true" : "false";
+    if (typeof v == "string") return JSON.stringify(v);
     if (node.raw != null) return node.raw as string;
     return String(v);
   },
@@ -344,13 +336,13 @@ const expressionGenerators: Record<string, ExpressionHandler> = {
   ArrowFunctionExpression(node, ctx) {
     const params = (node.params ?? node.parameters ?? []) as ESTreeNode[];
     const paramStr = params
-      .map((p) => (p.type === "Identifier" ? (p.name as string) : generateBindingPattern(p, ctx)))
+      .map((p) => (p.type == "Identifier" ? (p.name as string) : generateBindingPattern(p, ctx)))
       .filter(Boolean)
       .join(", ");
     const body = node.body as ESTreeNode;
     const bodyCode =
-      body?.type === "BlockStatement"
-        ? generateBlock(body, ctx)
+      body?.type == "BlockStatement"
+        ? generateBlock(body, { ...ctx, indent: (ctx.indent ?? "") + INDENT })
         : body
           ? generateExpression(body, ctx)
           : "{}";
@@ -361,12 +353,12 @@ const expressionGenerators: Record<string, ExpressionHandler> = {
     const namePart = (node.id as ESTreeNode)?.name ? (node.id as ESTreeNode).name + " " : "";
     const params = (node.params ?? node.parameters ?? []) as ESTreeNode[];
     const paramStr = params
-      .map((p) => (p.type === "Identifier" ? (p.name as string) : generateBindingPattern(p, ctx)))
+      .map((p) => (p.type == "Identifier" ? (p.name as string) : generateBindingPattern(p, ctx)))
       .filter(Boolean)
       .join(", ");
     const body = node.body as ESTreeNode;
     const bodyCode =
-      body?.type === "BlockStatement" ? generateBlock(body, ctx) : "{}";
+      body?.type == "BlockStatement" ? generateBlock(body, { ...ctx, indent: (ctx.indent ?? "") + INDENT }) : "{}";
     return "function " + namePart + "(" + paramStr + ") " + bodyCode;
   },
 
@@ -395,7 +387,7 @@ const expressionGenerators: Record<string, ExpressionHandler> = {
   ObjectExpression(node, ctx) {
     const props = (node.properties ?? []) as ESTreeNode[];
     const parts = props.map((prop) => {
-      if (prop.type === "SpreadElement")
+      if (prop.type == "SpreadElement")
         return "..." + generateExpression(prop.argument as ESTreeNode, ctx);
       const key = (prop.key as { name?: string })?.name ??
         (prop.key ? generateExpression(prop.key as ESTreeNode, ctx) : "");
@@ -412,7 +404,7 @@ const expressionGenerators: Record<string, ExpressionHandler> = {
     const elts = elements.map((el) =>
       el == null
         ? ""
-        : el.type === "SpreadElement"
+        : el.type == "SpreadElement"
           ? "..." + generateExpression(el.argument as ESTreeNode, ctx)
           : generateExpression(el, ctx)
     );
@@ -462,7 +454,7 @@ const expressionGenerators: Record<string, ExpressionHandler> = {
   TSAsExpression(node, ctx) {
     const ann = node.typeAnnotation as ESTreeNode | { typeAnnotation?: ESTreeNode } | undefined;
     const typeNode =
-      ann && typeof ann === "object" && (ann as ESTreeNode).type === "TSTypeAnnotation"
+      ann && typeof ann == "object" && (ann as ESTreeNode).type == "TSTypeAnnotation"
         ? (ann as { typeAnnotation: ESTreeNode }).typeAnnotation
         : (ann as { typeAnnotation?: ESTreeNode })?.typeAnnotation ?? (ann as ESTreeNode);
     const typeStr = generateTypeExpr(typeNode, ctx.typeMap);
@@ -473,7 +465,7 @@ const expressionGenerators: Record<string, ExpressionHandler> = {
   TSTypeAssertion(node, ctx) {
     const ann = node.typeAnnotation as ESTreeNode | { typeAnnotation?: ESTreeNode } | undefined;
     const typeNode =
-      ann && typeof ann === "object" && (ann as ESTreeNode).type === "TSTypeAnnotation"
+      ann && typeof ann == "object" && (ann as ESTreeNode).type == "TSTypeAnnotation"
         ? (ann as { typeAnnotation: ESTreeNode }).typeAnnotation
         : (ann as { typeAnnotation?: ESTreeNode })?.typeAnnotation ?? (ann as ESTreeNode);
     const typeStr = generateTypeExpr(typeNode, ctx.typeMap);
@@ -497,29 +489,29 @@ const expressionGenerators: Record<string, ExpressionHandler> = {
 type StatementHandler = (node: ESTreeNode, ctx: GenerateContext) => string;
 
 /** JSDoc for function type (e.g. variable with function type annotation or arrow init). Used by VariableDeclaration. */
-function generateFunctionTypeJSDoc(
+const generateFunctionTypeJSDoc = (
   node: ESTreeNode | { typeAnnotation?: ESTreeNode; type?: string } | null | undefined,
   typeMap?: Map<string, string>
-): string | null {
+): string | null => {
   if (!node) return null;
   const n = node as ESTreeNode;
   const typeAnn =
-    n.type === "TSTypeAnnotation"
+    n.type == "TSTypeAnnotation"
       ? (n.typeAnnotation as ESTreeNode)
       : n;
   let parameters: ESTreeNode[] = [];
   let returnTypeNode: ESTreeNode | undefined;
 
-  if (typeAnn?.type === "TSFunctionType") {
+  if (typeAnn?.type == "TSFunctionType") {
     parameters = (typeAnn.parameters as ESTreeNode[]) ?? [];
     const tt = typeAnn.typeAnnotation as { typeAnnotation?: ESTreeNode };
     returnTypeNode = tt?.typeAnnotation;
   } else if (
-    n.type === "ArrowFunctionExpression" ||
-    n.type === "FunctionExpression"
+    n.type == "ArrowFunctionExpression" ||
+    n.type == "FunctionExpression"
   ) {
     const typeAnn = n.typeAnnotation as { type?: string; parameters?: ESTreeNode[]; typeAnnotation?: { typeAnnotation?: ESTreeNode } } | undefined;
-    if (typeAnn?.type === "TSFunctionType") {
+    if (typeAnn?.type == "TSFunctionType") {
       parameters = (typeAnn.parameters as ESTreeNode[]) ?? [];
       returnTypeNode = typeAnn.typeAnnotation?.typeAnnotation;
     } else {
@@ -527,7 +519,7 @@ function generateFunctionTypeJSDoc(
       const arrowRet = (n as { returnType?: { typeAnnotation?: ESTreeNode } }).returnType;
       returnTypeNode = arrowRet?.typeAnnotation ?? (n.typeAnnotation as { typeAnnotation?: ESTreeNode })?.typeAnnotation;
     }
-  } else if (n.type === "TSTypeAnnotation") {
+  } else if (n.type == "TSTypeAnnotation") {
     return generateFunctionTypeJSDoc(n.typeAnnotation as ESTreeNode, typeMap);
   } else {
     return null;
@@ -537,12 +529,12 @@ function generateFunctionTypeJSDoc(
   for (let i = 0; i < parameters.length; i++) {
     const param = parameters[i];
     const name =
-      param.type === "RestElement"
+      param.type == "RestElement"
         ? ((param.argument as ESTreeNode)?.name ?? "rest")
         : ((param as { name?: string | ESTreeNode }).name as string) ??
         (param as ESTreeNode).name ??
         "arg" + i;
-    if (param.type === "RestElement") {
+    if (param.type == "RestElement") {
       const argType = (param.argument as ESTreeNode)?.typeAnnotation as { typeAnnotation?: ESTreeNode } | undefined;
       const restType = generateTypeExpr(argType?.typeAnnotation, typeMap);
       lines.push(` * @param {...${restType || "unknown"}} ${name}`);
@@ -566,7 +558,7 @@ function serializeForInit(node: ESTreeNode | null | undefined, ctx: GenerateCont
   const decls = node.declarations ?? [];
   const parts = decls.map((decl) => {
     const id = decl.id ?? decl;
-    const leftPart = id.type === "Identifier" ? id.name : generateBindingPattern(id, ctx);
+    const leftPart = id.type == "Identifier" ? id.name : generateBindingPattern(id, ctx);
     if (!leftPart) return "";
     const init = decl.init ? generateExpression(decl.init, ctx) : "";
     return init ? `${leftPart} = ${init}` : leftPart;
@@ -574,19 +566,19 @@ function serializeForInit(node: ESTreeNode | null | undefined, ctx: GenerateCont
   return parts.length ? `${node.kind} ${parts.join(", ")}` : node.kind ?? "";
 }
 
-const statementGenerators: Record<string, StatementHandler> = {
+const StatementGenerators: Record<string, StatementHandler> = {
   VariableDeclaration(node, ctx) {
     const lines: string[] = [];
     const kind = node.kind ?? "const";
-    const tag = kind === "const" ? "const" : "type";
+    const tag = kind == "const" ? "const" : "type";
     for (const decl of node.declarations ?? []) {
       const id = decl.id ?? decl;
-      const leftPart = id.type === "Identifier" ? id.name : generateBindingPattern(id, ctx);
+      const leftPart = id.type == "Identifier" ? id.name : generateBindingPattern(id, ctx);
       if (!leftPart) continue;
       const init = decl.init;
       const typeAnn = id.typeAnnotation as { typeAnnotation?: ESTreeNode } | undefined;
       const typeNode = typeAnn?.typeAnnotation;
-      const isFunctionInit = init?.type === "ArrowFunctionExpression" || init?.type === "FunctionExpression";
+      const isFunctionInit = init?.type == "ArrowFunctionExpression" || init?.type == "FunctionExpression";
       const block =
         generateFunctionTypeJSDoc(id.typeAnnotation ?? (isFunctionInit ? init : null), ctx.typeMap) ??
         (typeNode
@@ -600,6 +592,22 @@ const statementGenerators: Record<string, StatementHandler> = {
       lines.push(initCode ? `${kind} ${leftPart} = ${initCode};` : `${kind} ${leftPart};`);
     }
     return lines.join("\n");
+  },
+
+  TSEnumDeclaration(node, ctx) {
+    return generateEnumNode(node, ctx.typeMap);
+  },
+
+  TSTypeAliasDeclaration(node, ctx) {
+    return generateTypedefNode(node, ctx.typeMap);
+  },
+
+  TSInterfaceDeclaration(node, ctx) {
+    return generateClassInterfaceNode(node, ctx.typeMap);
+  },
+
+  ClassDeclaration(node, ctx) {
+    return generateClassDeclarationNode(node, ctx);
   },
 
   ExpressionStatement(node, ctx) {
@@ -638,14 +646,14 @@ const statementGenerators: Record<string, StatementHandler> = {
     const inner = indent + INDENT;
     const consequent = Array.isArray(node.consequent) ? node.consequent[0] : node.consequent;
     const consequentCode =
-      consequent?.type === "BlockStatement"
-        ? " " + generateBlock(consequent, ctx)
+      consequent?.type == "BlockStatement"
+        ? " " + generateBlock(consequent, { ...ctx, indent: (ctx.indent ?? "") + INDENT })
         : "\n" + indentText(generateStatement(consequent!, { ...ctx, indent: inner }), INDENT);
     let out = test + consequentCode;
     if (node.alternate) {
       const alt = node.alternate;
-      if (alt.type === "BlockStatement")
-        out += " else " + generateBlock(alt, ctx);
+      if (alt.type == "BlockStatement")
+        out += " else " + generateBlock(alt, { ...ctx, indent: (ctx.indent ?? "") + INDENT });
       else
         out += "\nelse\n" + indentText(generateStatement(alt, { ...ctx, indent: inner }), INDENT);
     }
@@ -657,7 +665,7 @@ const statementGenerators: Record<string, StatementHandler> = {
   },
 
   BlockStatement(node, ctx) {
-    return generateBlock(node, ctx);
+    return generateBlock(node, { ...ctx, indent: (ctx.indent ?? "") + INDENT });
   },
 
   BreakStatement(node) {
@@ -682,8 +690,8 @@ const statementGenerators: Record<string, StatementHandler> = {
   DoWhileStatement(node, ctx) {
     const indent = ctx.indent ?? "";
     const body = Array.isArray(node.body) ? node.body[0] : node.body;
-    const bodyCode = body?.type === "BlockStatement"
-      ? " " + generateBlock(body, ctx)
+    const bodyCode = body?.type == "BlockStatement"
+      ? " " + generateBlock(body, { ...ctx, indent: (ctx.indent ?? "") + INDENT })
       : "\n" + indentText(generateStatement(body!, { ...ctx, indent: indent + INDENT }), INDENT);
     const test = generateExpression(node.test!, ctx);
     return "do" + bodyCode + " while (" + test + ");";
@@ -708,19 +716,20 @@ const statementGenerators: Record<string, StatementHandler> = {
   },
 
   TryStatement(node, ctx) {
-    let out = "try " + generateBlock(node.block!, ctx);
+    const blockIndent = (ctx.indent ?? "") + INDENT;
+    let out = "try " + generateBlock(node.block!, { ...ctx, indent: blockIndent });
     if (node.handler) {
       const param = node.handler.param;
-      const paramName = param?.type === "Identifier" ? param.name : "e";
+      const paramName = param?.type == "Identifier" ? param.name : "e";
       const handlerBody = node.handler.body;
       const block =
         Array.isArray(handlerBody)
           ? ({ type: "BlockStatement", body: handlerBody } as ESTreeNode)
           : handlerBody!;
-      out += " catch (" + paramName + ") " + generateBlock(block, ctx);
+      out += " catch (" + paramName + ") " + generateBlock(block, { ...ctx, indent: blockIndent });
     }
     if (node.finalizer)
-      out += " finally " + generateBlock(node.finalizer, ctx);
+      out += " finally " + generateBlock(node.finalizer, { ...ctx, indent: blockIndent });
     return out;
   },
 
@@ -742,8 +751,8 @@ function formatLoopBody(
 ): string {
   const single = Array.isArray(body) ? body[0] : body;
   if (!single) return " {}";
-  if (single.type === "BlockStatement")
-    return " " + generateBlock(single, { ...ctx, indent: "" });
+  if (single.type == "BlockStatement")
+    return " " + generateBlock(single, ctx);
   const indent = ctx.indent ?? "";
   const inner = indent + INDENT;
   return "\n" + indentText(generateStatement(single, { ...ctx, indent: inner }), INDENT);
@@ -751,9 +760,8 @@ function formatLoopBody(
 
 /** Generate block body; calls generateStatement for each statement. */
 function generateBlock(blockNode: ESTreeNode, ctx: GenerateContext): string {
-  const baseIndent = ctx.indent ?? "";
-  const contentIndent = baseIndent + INDENT;
-  const close = baseIndent;
+  const contentIndent = (ctx.indent?.length ?? 0) > 0 ? (ctx.indent ?? "") : INDENT;
+  const close = contentIndent.length >= 2 ? contentIndent.slice(2) : "";
   if (!blockNode || blockNode.type !== "BlockStatement" || !blockNode.body)
     return "{}";
   const raw = blockNode.body;
@@ -766,18 +774,187 @@ function generateBlock(blockNode: ESTreeNode, ctx: GenerateContext): string {
   return inner ? `{\n${inner}\n${close}}` : "{}";
 }
 
-/**
- * Generate JS source for a statement AST node. Dispatches via statementGenerators.
- * Cross-calls: generateExpression (for expr parts), generateBlock (which calls generateStatement).
- */
-const generateStatement = (
+// ---------------------------------------------------------------------------
+// Helpers for enum/typedef/interface/class (inlined from closureFromAst)
+// ---------------------------------------------------------------------------
+
+function getParamNameString(paramOrInner: ESTreeNode | { parameter?: ESTreeNode; name?: string | ESTreeNode } | null): string {
+  const inner = paramOrInner && (paramOrInner as ESTreeNode).type == "TSParameterProperty"
+    ? (paramOrInner as unknown as { parameter: ESTreeNode }).parameter
+    : (paramOrInner as ESTreeNode | undefined);
+  if (!inner) return "";
+  const n = (inner as ESTreeNode).name;
+  if (typeof n == "string") return n;
+  if (n && typeof n == "object" && typeof (n as { name?: string }).name == "string")
+    return (n as { name: string }).name;
+  return "";
+}
+
+function getNameType(param: ESTreeNode, typeMap?: Map<string, string>): { name: string; type: string } {
+  const inner = (param as ESTreeNode).type == "TSParameterProperty"
+    ? (param as unknown as { parameter: ESTreeNode }).parameter
+    : param;
+  const name = getParamNameString(inner ?? param);
+  let type = "unknown";
+  const innerNode = inner as ESTreeNode;
+  const typeAnn = innerNode?.typeAnnotation as { typeAnnotation?: ESTreeNode } | undefined;
+  if (typeAnn?.typeAnnotation)
+    type = generateTypeExpr(typeAnn.typeAnnotation, typeMap);
+  if ((innerNode as { optional?: boolean })?.optional)
+    type += "=";
+  return { name, type };
+}
+
+function emitMethodJSDoc(
+  paramDocs: { name: string; type: string }[],
+  returnType: string | null,
+  linePrefix = " * "
+): string {
+  const lines: string[] = [];
+  for (const p of paramDocs ?? [])
+    if (p.name)
+      lines.push(`${linePrefix}@param {${p.type}} ${p.name}`);
+  if (returnType)
+    lines.push(`${linePrefix}@return {${returnType}}`);
+  const close = linePrefix.replace(/\*\s*$/, "*/");
+  return "/**\n" + lines.join("\n") + "\n" + close;
+}
+
+const generateEnumNode = (
   node: ESTreeNode,
-  context?: Partial<GenerateContext>
+  typeMap?: Map<string, string>
 ): string => {
-  const ctx = { ...defaultContext(), ...context };
-  const handler = statementGenerators[node.type];
-  if (handler) return handler(node, ctx);
-  throw new Error("Unsupported statement type: " + (node?.type ?? "null"));
+  const enumName = (node.id as ESTreeNode)?.name ?? "";
+  const resolvedName = typeMap?.get(enumName);
+  const statement = resolvedName ?? `const ${enumName}`;
+  const members = (node.members ?? []).map((member: ESTreeNode, index: number) => {
+    const key = (member.id as ESTreeNode)?.name ?? "";
+    const init = member["initializer"] as ESTreeNode | undefined;
+    const value = init
+      ? (init.value != null ? init.value : (init as { name?: string }).name)
+      : index;
+    return { key, value };
+  });
+  const hasString = members.some((m: { value: unknown }) => typeof m.value == "string");
+  const enumType = hasString ? "string" : "number";
+  const entries = members
+    .map((m: { key: string; value: unknown }) => {
+      const val = typeof m.value == "string" ? JSON.stringify(m.value) : String(m.value);
+      return "  " + m.key + ": " + val;
+    })
+    .join(",\n");
+  return "/** @enum {" + enumType + "} */\n"
+    + statement + " = {\n" + entries + "\n};\n";
+};
+
+const generateTypedefNode = (
+  node: ESTreeNode,
+  typeMap?: Map<string, string>
+): string => {
+  const shortName = (node.id as ESTreeNode)?.name ?? "";
+  const resolvedName = typeMap?.get(shortName);
+  const statement = resolvedName ?? `const ${shortName} = {}`;
+  const typeText = generateTypeExpr((node.typeAnnotation as { typeAnnotation?: ESTreeNode })?.typeAnnotation ?? node.typeAnnotation as ESTreeNode, typeMap);
+  return `/** @typedef {${typeText}} */\n${statement};\n`;
+};
+
+const generateClassInterfaceNode = (
+  node: ESTreeNode,
+  typeMap?: Map<string, string>
+): string => {
+  const resolvedName = typeMap?.get((node.id as ESTreeNode)?.name ?? "");
+  const extendsNodes = (node["extends"] ?? []) as ESTreeNode[];
+  const body = node.body as { body?: ESTreeNode[] } | undefined;
+  const members = body?.body ?? [];
+  const properties = members.filter((m: ESTreeNode) => m.type == "TSPropertySignature");
+  const methods = members.filter((m: ESTreeNode) => m.type == "TSMethodSignature");
+
+  let output = `/**\n * @interface\n`;
+  for (let i = 1; i < extendsNodes.length; i++) {
+    const ext = extendsNodes[i] as { expression?: ESTreeNode };
+    output += ` * @extends {${generateTypeExpr(ext?.expression, typeMap)}}\n`;
+  }
+  output += ` */\n`;
+
+  const extendsClause = extendsNodes.length > 0
+    ? ` extends ${generateTypeExpr((extendsNodes[0] as { expression?: ESTreeNode }).expression, typeMap)}`
+    : "";
+  const classDecl = resolvedName
+    ? `${resolvedName} = class${extendsClause}`
+    : `class ${(node.id as ESTreeNode)?.name ?? ""}${extendsClause}`;
+  output += `${classDecl} {\n`;
+
+  if (properties.length > 0) {
+    output += `  constructor() {\n`;
+    for (const member of properties as ESTreeNode[]) {
+      const propertyName = (member.key as ESTreeNode)?.name ?? (member.key as { value?: string })?.value ?? "";
+      const typeAnn = member.typeAnnotation as { typeAnnotation?: ESTreeNode };
+      const typeText = generateTypeExpr(typeAnn?.typeAnnotation, typeMap);
+      const finalType = typeText + ((member as { optional?: boolean }).optional ? " | undefined" : "");
+      const annotation = (member as { readonly?: boolean }).readonly ? "const" : "type";
+      output += `    /** @${annotation} {${finalType}} */\n`;
+      output += `    this.${propertyName};\n`;
+    }
+    output += `  }\n`;
+  }
+
+  for (const member of methods as ESTreeNode[]) {
+    const methodName = (member.key as ESTreeNode)?.name ?? (member.key as { value?: string })?.value ?? "";
+    const params = (member.parameters ?? []) as ESTreeNode[];
+    const paramDocs = params.map((p) => getNameType(p, typeMap));
+    const returnTypeAnn = member.typeAnnotation as { typeAnnotation?: ESTreeNode };
+    const returnType = generateTypeExpr(returnTypeAnn?.typeAnnotation, typeMap);
+    output += "  " + emitMethodJSDoc(paramDocs, returnType, "   * ") + "\n";
+    const paramNames = params.map((p) => getParamNameString(p));
+    output += `  ${methodName}(${paramNames.join(", ")}) {}\n`;
+  }
+
+  output += `}\n`;
+  return output;
+}
+
+/** ClassDeclaration → kdjs class with JSDoc. */
+function generateClassDeclarationNode(node: ESTreeNode, ctx: GenerateContext): string {
+  const className = (node.id as ESTreeNode)?.name ?? "";
+  const superClass = node["superClass"] as ESTreeNode | undefined;
+  const extendsClause = superClass
+    ? " extends " + generateExpression(superClass, ctx)
+    : "";
+  const implementsList = (node["implements"] ?? []) as { expression?: ESTreeNode }[];
+  const implementsDoc = implementsList.length > 0
+    ? implementsList
+        .map((impl) => ` * @implements {${generateTypeExpr(impl.expression, ctx.typeMap)}}\n`)
+        .join("")
+    : "";
+  let output = "";
+  if (implementsDoc)
+    output += `/**\n${implementsDoc} */\n`;
+  output += `class ${className}${extendsClause} {\n`;
+
+  const bodyMembers = (node.body as { body?: ESTreeNode[] } | undefined)?.body ?? [];
+  for (const member of bodyMembers) {
+    if ((member as ESTreeNode).type !== "MethodDefinition")
+      continue;
+    const m = member as ESTreeNode;
+    const key = m.key as ESTreeNode;
+    const methodName = key?.name ?? (key?.type == "Identifier" ? key.name : "") ?? "";
+    const value = m.value as ESTreeNode;
+    const params = (value.params ?? value.parameters ?? []) as ESTreeNode[];
+    const paramNames = params.map((p) => getParamNameString(p));
+    const paramDocs = params.map((p) => getNameType(p, ctx.typeMap));
+    const returnTypeAnn = (value as { returnType?: { typeAnnotation?: ESTreeNode } }).returnType?.typeAnnotation;
+    const returnType = returnTypeAnn ? generateTypeExpr(returnTypeAnn, ctx.typeMap) : "void";
+
+    output += "  " + emitMethodJSDoc(paramDocs, returnType, "   * ") + "\n";
+    const methodHead = methodName + "(" + paramNames.join(", ") + ")";
+    const bodyNode = value.body;
+    const block = bodyNode
+      ? generateBlock(Array.isArray(bodyNode) ? (bodyNode[0] as ESTreeNode) : bodyNode, { ...ctx, indent: "    " })
+      : "{}";
+    output += `  ${methodHead} ${block}\n`;
+  }
+  output += `}\n`;
+  return output;
 }
 
 // ---------------------------------------------------------------------------
@@ -785,22 +962,22 @@ const generateStatement = (
 // ---------------------------------------------------------------------------
 
 /** ImportDeclaration → JS import string. */
-export function generateImport(node: ESTreeNode): string {
+const generateImport = (node: ESTreeNode): string => {
   const specifiers = node.specifiers ?? [];
   const source = (node.source as { value?: string } | undefined)?.value ?? "";
-  if (specifiers.length === 0) return `import "${source}";\n`;
-  const defaultSpec = specifiers.find((s) => s.type === "ImportDefaultSpecifier");
+  if (specifiers.length == 0) return `import "${source}";\n`;
+  const defaultSpec = specifiers.find((s) => s.type == "ImportDefaultSpecifier");
   const namedSpecs = specifiers.filter((s) => s.type !== "ImportDefaultSpecifier");
   const defaultPart = defaultSpec?.local?.name ?? null;
-  const namespaceSpec = namedSpecs.find((s) => s.type === "ImportNamespaceSpecifier");
+  const namespaceSpec = namedSpecs.find((s) => s.type == "ImportNamespaceSpecifier");
   const namedOnly = namedSpecs.filter((s) => s.type !== "ImportNamespaceSpecifier");
   const namedParts = namedOnly.map((s) =>
-    s.imported?.name === s.local?.name ? s.local?.name ?? "" : `${s.imported?.name ?? ""} as ${s.local?.name ?? ""}`
+    s.imported?.name == s.local?.name ? s.local?.name ?? "" : `${s.imported?.name ?? ""} as ${s.local?.name ?? ""}`
   );
-  if (defaultPart && namedSpecs.length === 0) return `import ${defaultPart} from "${source}";\n`;
-  if (namespaceSpec && namedOnly.length === 0 && !defaultPart)
+  if (defaultPart && namedSpecs.length == 0) return `import ${defaultPart} from "${source}";\n`;
+  if (namespaceSpec && namedOnly.length == 0 && !defaultPart)
     return `import * as ${namespaceSpec.local?.name ?? ""} from "${source}";\n`;
-  if (defaultPart && namespaceSpec && namedOnly.length === 0)
+  if (defaultPart && namespaceSpec && namedOnly.length == 0)
     return `import ${defaultPart}, * as ${namespaceSpec.local?.name ?? ""} from "${source}";\n`;
   if (defaultPart && namedParts.length > 0)
     return `import ${defaultPart}, { ${namedParts.join(", ")} } from "${source}";\n`;
@@ -812,70 +989,53 @@ export function generateImport(node: ESTreeNode): string {
 /** ExportNamedDeclaration → JS export block. */
 const generateExport = (node: ESTreeNode): string => {
   const specifiers = node.specifiers ?? [];
-  if (specifiers.length === 0) return "";
+  if (specifiers.length == 0) return "";
   const entries = specifiers.map((s) => "  " + (s.exported?.name ?? "")).join(",\n");
   return "export {\n" + entries + "\n};\n";
 }
 
 // ---------------------------------------------------------------------------
-// Program root (delegate enum/typedef/interface/class to closureFromAst)
+// Program body and whole-program generator
 // ---------------------------------------------------------------------------
 
 /**
- * One program-body node: import, export, enum, typedef, interface, class, or statement.
- */
-const generateProgramBody = (
-  node: ESTreeNode,
-  typeMap?: Map<string, string>
-): string => {
-  const type = node?.type;
-  if (!type) return "";
-  if (type === "ImportDeclaration") return generateImport(node);
-  if (type === "TSEnumDeclaration") {
-    if (!(node as { const?: boolean }).const) throw new Error("Only const enum is allowed");
-    return generateEnum(node, typeMap);
-  }
-  if (type === "TSTypeAliasDeclaration") return "\n" + generateTypedef(node, typeMap);
-  if (type === "TSInterfaceDeclaration") return generateClassInterface(node, typeMap);
-  if (type === "ClassDeclaration") return generateClassDeclaration(node, typeMap);
-  if (type === "VariableDeclaration") return generateStatement(node, { typeMap }) + "\n";
-  if (type === "ExportNamedDeclaration") return "\n" + generateExport(node);
-  if (type.endsWith("Statement")) return generateStatement(node, { typeMap }) + "\n";
-  return "";
-}
-
-// ---------------------------------------------------------------------------
-// Public API
-// ---------------------------------------------------------------------------
-
-/**
- * Serialize a full program AST to kdjs-js. Loops program.body and uses generateProgramBody.
+ * Serialize a full program AST (Program) to kdjs-js.
  */
 const generate = (
   ast: ESTreeNode & { body?: ESTreeNode[] },
   typeMap?: Map<string, string>
 ): string => {
   let out = "";
-  for (const node of ast?.body ?? []) out += generateProgramBody(node, typeMap);
+  for (const node of ast?.body ?? [])
+    if (node.type == "ImportDeclaration") out += generateImport(node);
+    else if (node.type == "ExportNamedDeclaration") out += generateExport(node);
+    else out += generateStatement(node, { typeMap }) + "\n";
   return out;
 }
 
-/**
- * Generate JS source for an expression AST node.
- * Step 1: only expression types that do not contain statements (no ArrowFunction/FunctionExpression with block body).
- */
 const generateExpression = (
   node: ESTreeNode,
-  context?: Partial<GenerateContext>
+  context?: GenerateContext
 ): string => {
-  const ctx = { ...defaultContext(), ...context };
-  const handler = expressionGenerators[node.type];
+  const ctx: GenerateContext = { indent: "", ...context };
+  const handler = ExpressionGenerators[node.type];
   if (handler) return handler(node, ctx);
-  throw new Error("Unsupported expression type: " + (node?.type ?? "null"));
+  throw "Unsupported expression type: " + (node?.type ?? "null");
 }
+
+const generateStatement = (
+  node: ESTreeNode,
+  context?: GenerateContext,
+): string => {
+  const ctx: GenerateContext = { indent: "", ...context };
+  const handler = StatementGenerators[node.type];
+  if (handler) return handler(node, ctx);
+  throw "Unsupported statement type: " + (node?.type ?? "null");
+};
 
 export {
   generate,
   generateExpression,
-  generateStatement
+  generateStatement,
+  generateTypeExpr,
 };

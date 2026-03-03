@@ -9,9 +9,9 @@
  *
  * @author KimlikDAO
  */
-
 import bigints from "../util/bigints";
-import { arfCurve, aX_bY, Point as IPoint } from "./arfCurve";
+import { arfCurve } from "./arfCurve";
+import { Point as IPoint, aX_bY } from "./ellipticCurve";
 import { inverse } from "./modular";
 
 /**
@@ -104,17 +104,6 @@ const G = /** @pureOrBreakMyCode */(new Point(
 const O = new Point(0n, 0n, 0n);
 
 /**
- * @param {Point} p
- * @param {Point} q
- * @return {boolean}
- */
-const equal = (p, q) => {
-  q.project();
-  p.project();
-  return p.x == q.x && p.y == q.y;
-}
-
-/**
  * @param {bigint} digest
  * @param {bigint} privKey
  * @return {{
@@ -191,13 +180,9 @@ const recoverSigner = (digest, r, s, yParity) => {
 }
 
 export {
-  equal,
-  G,
-  O,
-  P,
+  G, O, P, Q,
   Point,
   pointFrom,
-  Q,
   recoverSigner,
   sign,
   verify

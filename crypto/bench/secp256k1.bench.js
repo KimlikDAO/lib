@@ -1,5 +1,6 @@
 import { assert, assertEq } from "../../testing/assert";
-import { equal, G, O, P, Point, Q } from "../secp256k1";
+import { equal } from "../ellipticCurve";
+import { G, O, P, Point, Q } from "../secp256k1";
 
 /**
  * @param {Point} R

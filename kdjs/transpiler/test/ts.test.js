@@ -3,7 +3,7 @@ import { transpileTs } from "../ts";
 
 test("enums and variables", () => {
   const input = `
-const enum ChainId {
+enum ChainId {
   x1 = "0x1",
   x144 = "0x144",
   x38 = "0x38",
@@ -17,7 +17,7 @@ const enum ChainId {
   MinaTestnet = "mina:testnet",
 }
 
-const enum ChainGroup {
+enum ChainGroup {
   EVM = "0x",
   MINA = "mi",
 }
@@ -67,8 +67,8 @@ export {
 });
 
 test("crosschain walletConnector", () => {
-  const input =
-    `import { EIP1193Provider as EthereumProvider } from "../ethereum/provider.d";
+  const input = `
+import { EIP1193Provider as EthereumProvider } from "../ethereum/provider.d";
 import { Provider as MinaProvider } from "../mina/provider.d";
 import { ChainId } from "./chains";
 import { Signer } from "./signer";
@@ -97,10 +97,10 @@ import { EIP1193Provider as EthereumProvider } from "../ethereum/provider.d";
 import { Provider as MinaProvider } from "../mina/provider.d";
 import { ChainId } from "./chains";
 import { Signer } from "./signer";
-
-/** @typedef {MinaProvider|EthereumProvider} */
+/**
+ * @typedef {MinaProvider | EthereumProvider}
+ */
 const Provider = {};
-
 /**
  * @interface
  */
@@ -123,7 +123,7 @@ class WalletConnector extends Signer {
    * @param {(chainId: ChainId) => void} chainChanged
    * @param {(addresses: string[]) => void} addressChanged
    * @param {boolean=} onlyIfApproved
-   * @return {Promise<void>|void}
+   * @return {Promise<void> | void}
    */
   connect(chain, chainChanged, addressChanged, onlyIfApproved) {}
   /**
@@ -132,7 +132,7 @@ class WalletConnector extends Signer {
   disconnect() {}
   /**
    * @param {ChainId} chainId
-   * @return {Promise<unknown>|void}
+   * @return {Promise<unknown> | void}
    */
   switchChain(chainId) {}
   /**
@@ -140,19 +140,16 @@ class WalletConnector extends Signer {
    * @return {boolean}
    */
   isChainSupported(chainId) {}
-}
-
-export {
-  Provider,
-  WalletConnector
 };
+
+export { Provider, WalletConnector };
 `.slice(1));
 });
 
 test("crosschain signer", () => {
-  const input = `import { Signature as EthereumSignature } from "../ethereum/signature.d";
+  const input = `
+import { Signature as EthereumSignature } from "../ethereum/signature.d";
 import { SignerSignature as MinaSignature } from "../mina/signature.d";
-
 type Signature = MinaSignature | EthereumSignature;
 
 interface Signer {
@@ -165,10 +162,10 @@ export { Signature, Signer };
   expect(transpileTs(input)).toBe(`
 import { Signature as EthereumSignature } from "../ethereum/signature.d";
 import { SignerSignature as MinaSignature } from "../mina/signature.d";
-
-/** @typedef {MinaSignature|EthereumSignature} */
+/**
+ * @typedef {MinaSignature | EthereumSignature}
+ */
 const Signature = {};
-
 /**
  * @interface
  */
@@ -185,12 +182,9 @@ class Signer {
    * @return {Promise<Signature>}
    */
   signMessage(message, address) {}
-}
-
-export {
-  Signature,
-  Signer
 };
+
+export { Signature, Signer };
 `.slice(1));
 });
 
@@ -289,7 +283,7 @@ class Provider {
    * @return {Promise<WideSignature>}
    */
   signData(address, typedData) {}
-}
+};
 /**
  * @implements {Provider}
  */
@@ -299,6 +293,7 @@ class RemoteProvider {
    * @return {void}
    */
   constructor(request) {
+    /** @const {(params: RequestArguments) => Promise<unknown>} */
     this.request = request;
   }
   /**
@@ -307,7 +302,10 @@ class RemoteProvider {
    */
   read(txRequest) {
     const tx = serialize(txRequest);
-    return /** @type {Promise<string>} */(this.request(/** @type {RequestArguments} */({ method: "eth_call", params: [tx, "latest"] })));
+    return /** @type {Promise<string>} */(this.request(/** @type {RequestArguments} */({
+      method: "eth_call",
+      params: [tx, "latest"]
+    })));
   }
   /**
    * @param {TransactionRequest} txRequest
@@ -315,7 +313,10 @@ class RemoteProvider {
    */
   write(txRequest) {
     const tx = serialize(txRequest);
-    return /** @type {Promise<TransactionHash>} */(this.request(/** @type {RequestArguments} */({ method: "eth_sendTransaction", params: [tx] })));
+    return /** @type {Promise<TransactionHash>} */(this.request(/** @type {RequestArguments} */({
+      method: "eth_sendTransaction",
+      params: [tx]
+    })));
   }
   /**
    * @param {TransactionHash} txHash
@@ -323,11 +324,14 @@ class RemoteProvider {
    * @return {void}
    */
   whenWritten(txHash, then) {
-    const interval = setInterval(() => this.request(/** @type {RequestArguments} */({ method: "eth_getTransactionReceipt", params: [txHash] })).then((receipt) => {
+    const interval = setInterval(() => this.request(/** @type {RequestArguments} */({
+      method: "eth_getTransactionReceipt",
+      params: [txHash]
+    })).then((receipt) => {
       if (receipt) {
         clearInterval(interval);
         then();
-      }
+      };
     }), 1000);
   }
   /**
@@ -336,32 +340,31 @@ class RemoteProvider {
    * @return {Promise<WideSignature>}
    */
   signData(address, typedData) {
-    return /** @type {Promise<WideSignature>} */(this.request(/** @type {RequestArguments} */({ method: "eth_signTypedData_v4", params: [address, JSON.stringify(typedData)] })));
+    return /** @type {Promise<WideSignature>} */(this.request(/** @type {RequestArguments} */({
+      method: "eth_signTypedData_v4",
+      params: [address, JSON.stringify(typedData)]
+    })));
   }
-}
-
-export {
-  Provider,
-  RemoteProvider
 };
-`;
 
-  expect(transpileTs(input)).toBe(expected.slice(1));
+export { Provider, RemoteProvider };
+`.slice(1);
+  expect(transpileTs(input)).toBe(expected);
 });
 
 test("declaration", () => {
   expect(transpileTs("const a: bigint = 1n;"))
-    .toBe("/** @const {bigint} */\n" +
-      "const a = 1n;\n");
+    .toBe("/** @const {bigint} */\nconst a = 1n;\n");
   expect(transpileTs("let a: bigint = 1n;"))
-    .toBe("/** @type {bigint} */\n" +
-      "let a = 1n;\n");
+    .toBe("/** @type {bigint} */\nlet a = 1n;\n");
 });
 
 describe("for loops", () => {
   test("singleton body", () => {
     expect(transpileTs("for (let i = 0; i < 10; ++i)\n  console.log(i);"))
-      .toContain("for (let i = 0; i < 10; ++i)\n  console.log(i);");
+      .toContain(`
+for (let i = 0; (i < 10); ++i)
+  console.log(i);`.slice(1));
   });
   test("for if-else", () => {
     expect(transpileTs(`
@@ -371,20 +374,19 @@ for (let i = 0; i < 10; ++i)
   else
     console.log('done');`))
       .toContain(`
-for (let i = 0; i < 10; ++i)
-  if (i % 2 == 0)
+for (let i = 0; (i < 10); ++i)
+  if (((i % 2) == 0))
     console.log(i);
   else
-    console.log("done");
-`.slice(1));
+    console.log('done');`.slice(1));
   });
   test("for in", () => {
     expect(transpileTs("for (const key in object)\n  console.log(key);"))
-      .toContain("for (const key in object)\n  console.log(key);");
+      .toContain("for (const key in object)\n  console.log(key);\n");
   });
   test("for of", () => {
     expect(transpileTs("for (const value of array)\n  console.log(value);"))
-      .toContain("for (const value of array)\n  console.log(value);");
+      .toContain("for (const value of array)\n  console.log(value);\n");
   });
 });
 
@@ -415,12 +417,9 @@ const keccak256Uint32 = (words: Uint32Array): Uint32Array => {
   f(s);
   return s.subarray(0, 8);
 }
-export {
-  keccak256Uint32,
-};
+export { keccak256Uint32 };
 `;
-  const expected = `
-import hex from "../util/hex";
+  const expected = `import hex from '../util/hex';
 /**
  * @param {Uint32Array} words
  * @return {Uint32Array}
@@ -429,28 +428,52 @@ const keccak256Uint32 = (words) => {
   /** @const {Uint32Array} */
   const s = new Uint32Array(50);
   let i = 0;
-  for (const end = words.length - 33; i < end; i += 34) {
-    for (let j = 0; j < 34; ++j)
-      s[j] ^= words[i + j];
+  for (const end = (words.length - 33); (i < end); i += 34) {
+    for (let j = 0; (j < 34); ++j)
+      s[j] ^= words[(i + j)];
     f(s);
-  }
+  };
   let j = 0;
-  for (; i < words.length; (++i, ++j))
+  for (; (i < words.length); ++i, ++j)
     s[j] ^= words[i];
   s[j] ^= 1;
-  s[33] ^= 1 << 31;
+  s[33] ^= (1 << 31);
   f(s);
   return s.subarray(0, 8);
 };
 
-export {
-  keccak256Uint32
-};
-`.slice(1);
+export { keccak256Uint32 };
+`;
   expect(transpileTs(input)).toBe(expected);
 });
 
 test("destructing assignment", () => {
   const input = "const s = new Uint8Array(8);\nlet [a, b, c, d, e, f, g, h] = s;";
   expect(transpileTs(input)).toContain(input);
+});
+
+test("type alias with optional properties", () => {
+  const input = `
+type TransactionRequest = {
+  to?: Address;
+  from?: Address;
+  value?: number | bigint;
+  data?: string;
+  chainId?: string;
+  gas?: number;
+};
+`;
+  expect(transpileTs(input)).toBe(`
+/**
+ * @typedef {{
+  to?: Address,
+  from?: Address,
+  value?: number | bigint,
+  data?: string,
+  chainId?: string,
+  gas?: number
+}}
+ */
+const TransactionRequest = {};
+`.slice(1));
 });

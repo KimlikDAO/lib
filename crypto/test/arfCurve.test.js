@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { arfCurve, aX_bY, Point as IPoint } from "../arfCurve";
+import { arfCurve, Point as IPoint } from "../arfCurve";
+import { aX_bY } from "../ellipticCurve";
 import { pointFrom } from "../minaSchnorr";
 
 /** @const {bigint} */

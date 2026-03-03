@@ -1,5 +1,11 @@
 import { expect, test } from "bun:test";
-import { equal, G, O, Q, recoverSigner, sign, verify } from "../../secp256k1";
+import { equal } from "../../ellipticCurve";
+import {
+  G, O, Q,
+  recoverSigner,
+  sign,
+  verify
+} from "../../secp256k1";
 
 test("copies of points are equal", () => {
   const P = G.copy();

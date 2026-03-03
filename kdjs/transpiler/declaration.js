@@ -77,11 +77,7 @@ const collectTypes = (ast, importer) => {
  * @return {string} The transpiled content
  */
 const transpileDeclaration = (content, sourcePath) => {
-  const ast = TsParser.parse(content, {
-    sourceType: "module",
-    ecmaVersion: "latest",
-    locations: true,
-  });
+  const ast = TsParser.parse(content);
   const namespace = pathToNamespace(sourcePath);
   const typeMap = collectTypes(ast, sourcePath);
 
@@ -108,11 +104,7 @@ const transpileDeclaration = (content, sourcePath) => {
  * @return {string}
  */
 const generatePlaceholder = (content) => {
-  const ast = TsParser.parse(content, {
-    sourceType: "module",
-    ecmaVersion: "latest",
-    locations: true,
-  });
+  const ast = TsParser.parse(content);
 
   const namedExports = new Set();
   let defaultExport = null;

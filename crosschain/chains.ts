@@ -1,4 +1,4 @@
-const enum ChainId {
+enum ChainId {
   x1 = "0x1",
   x144 = "0x144",
   x38 = "0x38",
@@ -12,7 +12,7 @@ const enum ChainId {
   MinaTestnet = "mina:testnet",
 }
 
-const enum ChainGroup {
+enum ChainGroup {
   EVM = "0x",
   MINA = "mi",
 }

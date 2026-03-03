@@ -13,9 +13,9 @@ interface Provider {
 }
 
 class RemoteProvider implements Provider {
-  constructor(readonly request: (params: RequestArguments) => Promise<unknown>) {
-    this.request = request;
-  }
+  constructor(
+    readonly request: (params: RequestArguments) => Promise<unknown>
+  ) { }
 
   read(txRequest: TransactionRequest): Promise<string> {
     const tx = serialize(txRequest);

@@ -29,4 +29,20 @@ const chunk = (arr, n) => {
   return result;
 };
 
-export { chunk, shuffle };
+/**
+ * @template T
+ * @param {T[]} arr 
+ * @param {(element: T) => boolean} p The predicate with which to partition.
+ * @return {T[][]}
+ */
+const partition = (arr, p) => {
+  /** @const {T[]} */
+  const pos = [];
+  /** @const {T[]} */
+  const neg = [];
+  for (const element of arr)
+    (p(element) ? pos : neg).push(element);
+  return [pos, neg];
+}
+
+export { chunk, partition, shuffle };

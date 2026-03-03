@@ -40,6 +40,13 @@ const arfCurve = (P) => {
     return res >= 0n ? res : res + P;
   }
 
+  /**
+   * A fake point used in the multiplication subroutine. Always appears as RHS
+   * so a bare object works.
+   *
+   * @const {Point} */
+  const O = /** @type {Point} */({ x: 0n, y: 0n, z: 0n });
+
   return /** @implements {Point} */ class CurvePoint {
     /**
      * @nosideeffects
@@ -155,10 +162,9 @@ const arfCurve = (P) => {
      * @return {Point}
      */
     multiply(n) {
-      if (!n) {
+      if (!n)
         this.x = this.y = this.z = 0n;
-      } else {
-        /** @const {string} */
+      else {
         const nNibs = n.toString(4);
         /** @const {readonly Point[]} */
         const d = [
@@ -176,35 +182,4 @@ const arfCurve = (P) => {
   }
 }
 
-const O = /** @type {Point} */({ x: 0n, y: 0n, z: 0n });
-
-/**
- * Computes aX + bY at the cost of a single scalar x point multiplication.
- *
- * @nosideeffects
- * @pureOrBreakMyCode
- * @param {bigint} a
- * @param {Point} X
- * @param {bigint} b
- * @param {Point} Y
- * @return {Point} aX + bY
- */
-const aX_bY = (a, X, b, Y) => {
-  let aBits = a.toString(2);
-  let bBits = b.toString(2);
-  if (aBits.length > bBits.length)
-    bBits = bBits.padStart(aBits.length, "0");
-  else if (bBits.length > aBits.length)
-    aBits = aBits.padStart(bBits.length, "0");
-  /** @const {readonly Point[]} */
-  const d = [O, X, Y, X.copy().increment(Y)];
-  /** @type {Point} */
-  let R = d[(aBits.charCodeAt(0) - 48) + 2 * (bBits.charCodeAt(0) - 48)].copy();
-  for (let i = 1; i < aBits.length; ++i) {
-    R.double();
-    R.increment(d[(aBits.charCodeAt(i) - 48) + 2 * (bBits.charCodeAt(i) - 48)]);
-  }
-  return R;
-}
-
-export { arfCurve, aX_bY, Point };
+export { arfCurve, Point };

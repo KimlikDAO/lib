@@ -1,4 +1,4 @@
-import { generate } from "../generator/closureFromAst2";
+import { generate } from "../generator/closureFromAst3";
 import { TsParser } from "../parser/tsParser";
 
 /**
@@ -6,11 +6,7 @@ import { TsParser } from "../parser/tsParser";
  * @returns {string} kdjs-js: /** @enum *\/ const Name = { ... }; export { ... };
  */
 const transpileTs = (content) => {
-  const ast = TsParser.parse(content, {
-    sourceType: "module",
-    ecmaVersion: "latest",
-    locations: true,
-  });
+  const ast = TsParser.parse(content);
   return generate(ast);
 };
 

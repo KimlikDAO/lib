@@ -832,10 +832,8 @@ const generateProgramBody = (node, typeMap) => {
 
   if (type == "ImportDeclaration")
     return generateImport(node);
-  if (type == "TSEnumDeclaration") {
-    if (!node.const) throw new Error("Only const enum is allowed");
+  if (type == "TSEnumDeclaration")
     return generateEnum(node, typeMap);
-  }
   if (type == "TSTypeAliasDeclaration")
     return "\n" + generateTypedef(node, typeMap);
   if (type == "TSInterfaceDeclaration")

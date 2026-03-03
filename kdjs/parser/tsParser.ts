@@ -5003,13 +5003,10 @@ function tsPlugin(options?: {
         return this.finishNode(node, 'FunctionExpression');
       }
 
-      static parse(input: string, options: Options) {
-        if (options.locations === false) {
-          throw new Error(`You have to enable options.locations while using acorn-typescript`);
-        } else {
-          options.locations = true;
-        }
-
+      static parse(input: string, options: Options = {} as Options) {
+        options.locations = true;
+        options.sourceType = "module";
+        options.ecmaVersion = "latest";
         const parser = new this(options, input);
         if (dts) {
           parser.isAmbientContext = true;
