@@ -64,6 +64,8 @@ class Generator {
   }
   TSLiteralType(n) { this.put(typeof n.literal.value); }
   TSParenthesizedType(n) { this.put("("); this.rec(n.typeAnnotation); this.put(")"); }
+  TSTupleType(n) { this.rec(n.elementTypes[0]); this.put("[]"); } // TODO() throw if multiple types
+  TSUnionType(n) { this.arr(n.types, " | "); }
   TSPropertySignature(n) {
     this.rec(n.key); if (n.optional) this.put("?"); this.put(": "); this.rec(n.typeAnnotation);
   }
@@ -75,9 +77,9 @@ class Generator {
     this.put("}");
   }
   TSTypeOperator(n) { this.put(n.operator + " "); this.rec(n.typeAnnotation); }
+  TSTypeParameter(n) { this.put(n.name); }
   TSTypeParameterInstantiation(n) { this.put("<"); this.arr(n.params, ", "); this.put(">"); }
   TSTypeReference(n) { this.rec(n.typeName); this.rec(n.typeArguments); }
-  TSUnionType(n) { this.arr(n.types, " | "); }
   TSExpressionWithTypeArguments(n) { this.rec(n.expression); }
 
   // TS Declarations
@@ -145,6 +147,10 @@ class Generator {
     this.put("("); this.rec(n.left); this.put(` ${n.operator} `); this.rec(n.right); this.put(")");
   }
   CallExpression(n) { this.rec(n.callee); this.put("("); this.arr(n.arguments, ", "); this.put(")"); }
+  ConditionalExpression(n) {
+    this.put("("); this.rec(n.test); this.put(" ? ");
+    this.rec(n.consequent); this.put(" : "); this.rec(n.alternate); this.put(")");
+  }
   MemberExpression(n) {
     this.rec(n.object);
     if (n.computed) {
@@ -175,9 +181,11 @@ class Generator {
     this.put("new "); this.rec(n.callee);
     this.put("("); this.arr(n.arguments, ", "); this.put(")");
   }
+  AssignmentExpression(n) { this.rec(n.left); this.put(` ${n.operator} `); this.rec(n.right); }
   ThisExpression(n) { this.put("this"); }
 
   // JS Statements
+  EmptyStatement(n) { }
   ImportDeclaration(n) {
     const specifiers = n.specifiers ?? [];
     let i = 0;
@@ -237,7 +245,7 @@ class Generator {
     this.jsDoc(n.value);
     if (n.static) this.put("static "); if (n.value.async) this.put("async ");
     this.rec(n.key); this.put("("); this.arr(n.value.params, ", "); this.put(") ");
-    if (n.kind == "constructor") 
+    if (n.kind == "constructor")
       this.constructorBody(n.value.params, n.value.body);
     else
       this.rec(n.value.body);
@@ -261,8 +269,8 @@ class Generator {
     }
   }
   ArrayPattern(n) { this.put("["); this.arr(n.elements, ", "); this.put("]"); }
-  AssignmentExpression(n) { this.rec(n.left); this.put(` ${n.operator} `); this.rec(n.right); }
   ExpressionStatement(n) { this.rec(n.expression); }
+  ThrowStatement(n) { this.put("throw "); this.rec(n.argument); }
   IfStatement(n) {
     this.put("if ("); this.rec(n.test); this.put(")");
     this.blockLike(n.consequent);
@@ -299,10 +307,15 @@ class Generator {
     const params = n.params || n.parameters;
     const retType = n.returnType || n.typeAnnotation || { type: "TSVoidKeyword" };
     this.put("/**");
+    if (n.typeParameters)
+      for (const param of n.typeParameters.params) {
+        this.ret();
+        this.put(" * @template "); this.rec(param);
+      }
     for (const param of params) {
       const typeAnnotation = param.typeAnnotation || param.parameter.typeAnnotation;
       this.ret();
-      this.put(" * @param {"); this.rec(typeAnnotation); 
+      this.put(" * @param {"); this.rec(typeAnnotation);
       if (param.optional) this.put("="); this.put("} "); this.rec(param);
     }
     this.ret();
