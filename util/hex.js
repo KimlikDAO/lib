@@ -39,19 +39,12 @@ const toBinary = (hexStr) =>
   Array.from(hexStr, (/** @type {string} */ s) => ToBinary[s]).join("");
 
 /**
- * TODO(KimlikDAO-bot): Switch to Uint8Array.toHex() once GCC supports it.
  * @nosideeffects
  * @noinline
- * @param {Uint8Array | number[]} bytes
+ * @param {Uint8Array} bytes
  * @return {string}
  */
-const from = (bytes) => {
-  /** @const {string[]} */
-  const octets = new Array(bytes.length);
-  for (let /** number */ i = 0; i < bytes.length; ++i)
-    octets[i] = FromUint8[bytes[i]];
-  return octets.join("");
-}
+const from = (bytes) => bytes.toHex();
 
 /**
  * @nosideeffects
@@ -91,12 +84,7 @@ const fromUint32ArrayBE = (words) => {
  * @param {string} str hex string
  * @return {Uint8Array} byte array
  */
-const toUint8Array = (str) => {
-  /** @const {Uint8Array} */
-  const bytes = new Uint8Array((str.length + 1) / 2);
-  intoBytes(bytes, str);
-  return bytes;
-}
+const toUint8Array = (str) => Uint8Array.fromHex(str.length & 1 ? "0" + str : str);
 
 /**
  * @param {Uint8Array | number[]} bytes

@@ -26,7 +26,7 @@ const intoBytesLE = (bytes, n) => {
 
 /**
  * @nosideeffects
- * @param {Uint8Array | number[]} bytes
+ * @param {Uint8Array} bytes
  * @return {bigint}
  */
 const fromBytesBE = (bytes) => BigInt("0x" + hex.from(bytes));

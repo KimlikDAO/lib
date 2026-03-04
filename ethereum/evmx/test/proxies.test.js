@@ -13,7 +13,7 @@ test("delegate call", () => {
 });
 
 test("upgradable Proxy generator", () => {
-  const erc1967 = hex.toUint8Array("0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc")
+  const erc1967 = hex.toUint8Array("360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc")
   /** 
    * @const
    * @type {OpData}

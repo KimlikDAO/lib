@@ -2,20 +2,13 @@ import hex from "./hex";
 
 /**
  * @nosideeffects
- * @param {Uint8Array | number[]} bytes
+ * @param {Uint8Array} bytes
  * @return {string}
  */
-const from = (bytes) => {
-  /** @type {string} */
-  let binary = "";
-  /** @const {number} */
-  const len = bytes.length;
-  for (let i = 0; i < len; ++i)
-    binary += String.fromCharCode(bytes[i]);
-  return btoa(binary);
-}
+const from = (bytes) => bytes.toBase64();
 
 /**
+ * TODO(KimlikDAO-bot): consider toString(8) route.
  * @nosideeffects
  * @param {bigint} n
  * @return {string}
@@ -34,30 +27,13 @@ const toBigInt = (base64) => BigInt('0x' + hex.from(toBytes(base64)));
  * @param {string} base64
  * @return {Uint8Array}
  */
-const toBytes = (base64) => {
-  /** @const {string} */
-  const decoded = atob(base64);
-  /** @const {number} */
-  const len = decoded.length;
-  /** @const {Uint8Array} */
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; ++i)
-    bytes[i] = decoded.charCodeAt(i);
-  return bytes;
-}
+const toBytes = (base64) => Uint8Array.fromBase64(base64);
 
 /**
- * @param {Uint8Array | number[]} bytes
+ * @param {Uint8Array} bytes
  * @param {string} base64
  */
-const intoBytes = (bytes, base64) => {
-  /** @const {string} */
-  const decoded = atob(base64);
-  /** @const {number} */
-  const len = decoded.length;
-  for (let i = 0; i < len; ++i)
-    bytes[i] = decoded.charCodeAt(i);
-}
+const intoBytes = (bytes, base64) => bytes.setFromBase64(base64);
 
 export default {
   fromBigInt,

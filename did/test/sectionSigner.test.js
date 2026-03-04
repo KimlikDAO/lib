@@ -24,7 +24,7 @@ test("sign section", () => {
     secp256k1: ["incorrect_sign"]
   })
   /** @const {string} */
-  const commitmentR = base64.from([1, 2, 3]);
+  const commitmentR = base64.from(Uint8Array.from([1, 2, 3]));
   /** @const {number} */
   const signatureTs = Date.now() / 1000 | 0;
   /** @const {string} */
@@ -82,7 +82,7 @@ test("humanID minaSchnorr signature", () => {
     secp256k1: ["incorrect_sign"]
   })
   /** @const {string} */
-  const commitmentR = base64.from([1, 2, 3]);
+  const commitmentR = base64.from(Uint8Array.from([1, 2, 3]));
   /** @const {number} */
   const signatureTs = Date.now() / 1000 | 0;
   /** @const {string} */
