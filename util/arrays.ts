@@ -16,7 +16,9 @@ const chunk = <T>(arr: T[], n: number): T[][] => {
   return result;
 };
 
-const partition = <T>(arr: T[], p: (element: T) => boolean): [T[], T[]] => {
+const partition = <T>(
+  arr: T[], p: (element: T) => boolean
+): [T[], T[]] => {
   const pos: T[] = [];
   const neg: T[] = [];
   for (const element of arr)

@@ -6,7 +6,7 @@ import { ExportStatement, ImportStatement } from "../util/modules";
 import { serializeWithStringKeys } from "../util/objects";
 import { resolveExtension } from "../util/resolver";
 import { Update, update } from "../util/textual";
-import { pathToNamespace } from "./declaration";
+import { pathToNamespace } from "./dts";
 import { transpileJsDoc } from "./jsdoc";
 
 const PACKAGE_EXTERNS = "node_modules/@kimlikdao/kdjs/externs/";

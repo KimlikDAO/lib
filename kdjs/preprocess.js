@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { combine, getDir } from "../util/paths";
-import { transpileDeclaration } from "./transpiler/declaration";
+import { transpileDts } from "./transpiler/dts";
 import { transpileJs } from "./transpiler/js";
 import { transpileTs } from "./transpiler/ts";
 import { ImportStatement } from "./util/modules";
@@ -44,7 +44,7 @@ const preprocessAndIsolate = async (params, transpileFn) => {
     /** @type {string} */
     let content = await readFile(file, "utf8");
     if (file.endsWith(".d.ts") || file.endsWith(".e.ts"))
-      content = transpileDeclaration(content, file);
+      content = transpileDts(content, file);
     else if (file.endsWith(".ts"))
       content = transpileTs(content);
     else if (!file.endsWith(".js")) {

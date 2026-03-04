@@ -2,12 +2,9 @@ import { generate } from "../generator/closureFromAst3";
 import { TsParser } from "../parser/tsParser";
 
 /**
- * @param {string} content TypeScript source. Must parse (e.g. const enums already replaced by bindings if needed).
- * @returns {string} kdjs-js: /** @enum *\/ const Name = { ... }; export { ... };
+ * @param {string} content
+ * @returns {string}
  */
-const transpileTs = (content) => {
-  const ast = TsParser.parse(content);
-  return generate(ast);
-};
+const transpileTs = (content) => generate(TsParser.parse(content));
 
 export { transpileTs };

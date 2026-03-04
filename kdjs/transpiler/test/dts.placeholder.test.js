@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { generatePlaceholder } from "../declaration";
+import { generatePlaceholder } from "../dts";
 
 describe("generatePlaceholder", () => {
   it("should handle named exports", () => {

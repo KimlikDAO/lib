@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { generatePlaceholder } from "../transpiler/declaration";
+import { generatePlaceholder } from "../transpiler/dts";
 import { transpileTs } from "../transpiler/ts";
 
 const kdjsPlugin = {

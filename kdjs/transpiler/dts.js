@@ -39,12 +39,12 @@ const collectTypes = (ast, importer) => {
 
   for (const node of ast.body)
     if (
-      node.type === "TSInterfaceDeclaration" ||
-      node.type === "TSTypeAliasDeclaration" ||
-      node.type === "TSEnumDeclaration"
+      node.type == "TSInterfaceDeclaration" ||
+      node.type == "TSTypeAliasDeclaration" ||
+      node.type == "TSEnumDeclaration"
     ) {
       typeMap.set(node.id.name, `${currentNamespace}.${node.id.name}`);
-    } else if (node.type === "ImportDeclaration") {
+    } else if (node.type == "ImportDeclaration") {
       const source = node.source.value;
       let sourcePath =
         source.startsWith("/") ? source.slice(1) : combine(importerPath, source);
@@ -53,10 +53,10 @@ const collectTypes = (ast, importer) => {
       if (sourcePath.endsWith("d.ts")) {
         const importNamespace = pathToNamespace(sourcePath);
         for (const specifier of node.specifiers) {
-          if (specifier.type === "ImportDefaultSpecifier") {
+          if (specifier.type == "ImportDefaultSpecifier") {
             // Default import: import name from "./path"
             typeMap.set(specifier.local.name, importNamespace);
-          } else if (specifier.type === "ImportSpecifier") {
+          } else if (specifier.type == "ImportSpecifier") {
             // Named import: import { name } from "./path"
             typeMap.set(
               specifier.local.name,
@@ -76,15 +76,15 @@ const collectTypes = (ast, importer) => {
  * @param {string} sourcePath The source path of the TypeScript declaration file
  * @return {string} The transpiled content
  */
-const transpileDeclaration = (content, sourcePath) => {
+const transpileDts = (content, sourcePath) => {
   const ast = TsParser.parse(content);
-  const namespace = pathToNamespace(sourcePath);
   const typeMap = collectTypes(ast, sourcePath);
+  const namespace = pathToNamespace(sourcePath);
 
   let output = "/** @externs */\n";
   for (const node of ast.body)
-    if (node.type === "ImportDeclaration")
-      output += `import "${node.source.value}";\n`; // add for dependency crawling
+    if (node.type == "ImportDeclaration")
+      output += `import "${node.source.value}"; // for dependency crawling\n`; 
 
   output += `/** @const */\nconst ${namespace} = {};\n\n`;
   for (const node of ast.body) {
@@ -99,73 +99,49 @@ const transpileDeclaration = (content, sourcePath) => {
   return output;
 };
 
+
 /**
  * @param {string} content
  * @return {string}
  */
 const generatePlaceholder = (content) => {
   const ast = TsParser.parse(content);
-
   const namedExports = new Set();
   let defaultExport = null;
 
-  // Walk the AST to find exports and declarations
   for (const node of ast.body) {
-    if (node.type === "ExportNamedDeclaration") {
-      // Handle export { x, y }
-      if (node.specifiers) {
-        for (const specifier of node.specifiers)
-          namedExports.add(specifier.exported.name);
-      }
-
-      // Handle export interface/type/class directly
-      if (node.declaration) {
-        if (node.declaration.id) {
-          namedExports.add(node.declaration.id.name);
-        }
-      }
-    }
-
-    // Handle export default
-    else if (node.type === "ExportDefaultDeclaration") {
-      if (node.declaration.type === "ObjectExpression") {
+    if (node.type == "ExportNamedDeclaration") {
+      if (node.specifiers)
+        for (const s of node.specifiers)
+          namedExports.add(s.exported.name);
+      if (node.declaration?.id?.name)
+        namedExports.add(node.declaration.id.name);
+    } else if (node.type == "ExportDefaultDeclaration") {
+      const d = node.declaration;
+      if (d.type == "ObjectExpression")
+        defaultExport = Object.fromEntries(
+          (d.properties || []).map(p => [p.key?.name, true]).filter(([k]) => k)
+        );
+      else if (d.name)
+        defaultExport = { [d.name]: true };
+      else
         defaultExport = {};
-        for (const prop of node.declaration.properties) {
-          if (prop.key && prop.key.name) {
-            defaultExport[prop.key.name] = true;
-          }
-        }
-      } else if (node.declaration.name) {
-        defaultExport = { [node.declaration.name]: true };
-      } else {
-        defaultExport = {};
-      }
-    }
-
-    // Collect interface declarations (they might be exported later)
-    else if (node.type === "TSInterfaceDeclaration")
-      namedExports.add(node.id.name);
-    // Collect type aliases (they might be exported later)
-    else if (node.type === "TSTypeAliasDeclaration")
+    } else if (node.type == "TSInterfaceDeclaration" || node.type == "TSTypeAliasDeclaration")
       namedExports.add(node.id.name);
   }
 
   let code = Array.from(namedExports)
     .map(name => `export const ${name} = {};`)
     .join("\n");
-
   if (defaultExport) {
-    const defaultExportProps = Object.keys(defaultExport);
-    if (defaultExportProps.length > 0)
-      code += `\nexport default { ${defaultExportProps.join(", ")} };`;
-    else
-      code += "\nexport default {};";
+    const keys = Object.keys(defaultExport);
+    code += keys.length ? `\nexport default { ${keys.join(", ")} };` : "\nexport default {};";
   }
   return code;
-}
+};
 
 export {
   generatePlaceholder,
   pathToNamespace,
-  transpileDeclaration
+  transpileDts
 };

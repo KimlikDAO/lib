@@ -8,6 +8,7 @@ const genJsDocType = (d) => d.id.typeAnnotation ||
 class Generator {
   indent = "";
   out = "";
+  constructor(typeMap) { this.typeMap = typeMap; }
 
   inc() { this.indent += "  "; }
   dec() { this.indent = this.indent.slice(0, -2); }
@@ -160,7 +161,8 @@ class Generator {
     }
   }
   Identifier(n, showType) {
-    this.put(n.name); if (showType && n.typeAnnotation) { this.put(": "); this.rec(n.typeAnnotation); }
+    this.put(this.typeMap?.get(n.name) ?? n.name);
+    if (showType && n.typeAnnotation) { this.put(": "); this.rec(n.typeAnnotation); }
   }
   ArrowFunctionExpression(n) {
     if (n.async) this.put("async ");
@@ -259,7 +261,7 @@ class Generator {
   }
   VariableDeclarator(n, kind) {
     if (kind) {
-      if (n.init.type.endsWith("FunctionExpression")) this.jsDoc(n.init);
+      if (n.init && n.init.type.endsWith("FunctionExpression")) this.jsDoc(n.init);
       else this.jsDocType(n.id, kind);
       this.put(kind + " "); this.rec(n.id);
       if (n.init) { this.put(" = "); this.rec(n.init); }
@@ -341,8 +343,8 @@ class Generator {
   }
 }
 
-const generate = (node) => {
-  const g = new Generator();
+const generate = (node, typeMap) => {
+  const g = new Generator(typeMap);
   g.rec(node);
   return g.out;
 }

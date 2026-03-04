@@ -1,5 +1,8 @@
 import { describe, expect, it, test } from "bun:test";
-import { pathToNamespace, transpileDeclaration as transpile } from "../declaration";
+import {
+  pathToNamespace,
+  transpileDts as transpile
+} from "../dts";
 
 test("pathToNamespace should convert file paths to namespace names", () => {
   expect(pathToNamespace("api/jsonrpc.d.ts")).toBe("namespace$$api$jsonrpc");
@@ -119,9 +122,10 @@ export { ApiClient };
 `;
 
   // Expected output with imports properly resolved
-  const expected = `/** @externs */
-import "../auth/auth.d.ts";
-import "../ethereum/provider.d.ts";
+  const expected = `
+/** @externs */
+import "../auth/auth.d.ts"; // for dependency crawling
+import "../ethereum/provider.d.ts"; // for dependency crawling
 /** @const */
 const namespace$$api$client = {};
 
@@ -140,7 +144,7 @@ namespace$$api$client.ApiClient = class {
    */
   sendTransaction(tx) {}
 }
-`;
+`.slice(1);
 
   const result = transpile(input, "api/client.d.ts");
   expect(result).toBe(expected);
@@ -160,8 +164,9 @@ export { ExtendedProvider };
 `;
 
   // Expected output with extension
-  const expected = `/** @externs */
-import "../api/provider.d.ts";
+  const expected = `
+/** @externs */
+import "../api/provider.d.ts"; // for dependency crawling
 /** @const */
 const namespace$$test$provider = {};
 
@@ -178,7 +183,7 @@ namespace$$test$provider.ExtendedProvider = class extends namespace$$api$provide
    */
   additionalMethod() {}
 }
-`;
+`.slice(1);
 
   const result = transpile(input, "test/provider.d.ts");
   expect(result).toBe(expected);
