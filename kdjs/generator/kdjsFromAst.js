@@ -205,7 +205,7 @@ class Generator {
       this.put("("); this.arr(n.value.params, ", "); this.put(") ");
       this.rec(n.value.body);
     } else {
-      this.rec(n.key); this.put(": "); this.rec(n.value);
+      this.rec(n.key); if (!n.shorthand) { this.put(": "); this.rec(n.value); }
     }
   }
   UnaryExpression(n) { this.put(n.operator); this.rec(n.argument); }
@@ -314,6 +314,7 @@ class Generator {
   }
   ArrayPattern(n) { this.put("["); this.arr(n.elements, ", "); this.put("]"); }
   ObjectPattern(n) { this.put("{ "); this.arr(n.properties, ", "); this.put(" }"); }
+  ContinueStatement(n) { this.put("continue"); if (n.label) { this.put(" "); this.rec(n.label); } }
   ExpressionStatement(n) { this.rec(n.expression); }
   ThrowStatement(n) { this.put("throw "); this.rec(n.argument); }
   IfStatement(n) {
