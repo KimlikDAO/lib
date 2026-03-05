@@ -18,9 +18,9 @@ it("should encrypt / decrypt small text on ChainGroup.EVM", () => {
       "Sign to encrypt this text",
       "promptsign-sha256-aes-ctr",
       signer,
-      signer.getAddress(ChainGroup.EVM)
+      signer.getAddress()
     ).then((unlockable) =>
-      decrypt(unlockable, signer, signer.getAddress(ChainGroup.EVM))))
+      decrypt(unlockable, signer, signer.getAddress())))
     .resolves.toBe(text);
 });
 
@@ -37,9 +37,9 @@ it("should encrypt / decrypt large text on ChainGroup.EVM", () => {
       "Sign to encrypt this long ah text",
       "promptsign-sha256-aes-ctr",
       signer,
-      signer.getAddress(ChainGroup.EVM)
+      signer.getAddress()
     ).then((unlockable) =>
-      decrypt(unlockable, signer, signer.getAddress(ChainGroup.EVM))))
+      decrypt(unlockable, signer, signer.getAddress())))
     .resolves.toBe(text);
 });
 

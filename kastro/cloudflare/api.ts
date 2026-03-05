@@ -1,5 +1,3 @@
-import "./api.d";
-
 interface Auth {
   accountId: string;
   token: string;
@@ -10,4 +8,4 @@ interface ApiResponse {}
 /** @const {string} */
 const ApiV4 = "https://api.cloudflare.com/client/v4";
 
-export { Auth, ApiV4 };
+export { Auth, ApiV4, ApiResponse };

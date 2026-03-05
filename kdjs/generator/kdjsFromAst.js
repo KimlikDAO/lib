@@ -3,8 +3,32 @@ import { Modifier } from "../types/modifier";
 
 const determineEnumType = () => "string";
 
+/**
+ * Predicate to decide whether we should generate a jsDocType for a
+ * VariableDeclaration
+ *
+ * @return {boolean}
+ */
 const genJsDocType = (d) => d.id.typeAnnotation ||
   d.init && d.init.type.endsWith("FunctionExpression");
+
+/**
+ * Given an interface or class body, partitions it to
+ * `{ methods, properties, constructor }`
+ */
+const partitionInterface = (body) => {
+  const methods = [];
+  const props = [];
+  let ctor = null;
+  for (const member of body)
+    if (member.type == "PropertyDefinition" || member.type == "TSPropertySignature")
+      props.push(member);
+    else if (member.type == "MethodDefinition" || member.type == "TSMethodSignature") {
+      if (member.kind == "constructor") ctor = member;
+      else methods.push(member);
+    }
+  return { ctor, props, methods };
+}
 
 class Generator {
   indent = "";
@@ -68,9 +92,6 @@ class Generator {
   TSParenthesizedType(n) { this.put("("); this.rec(n.typeAnnotation); this.put(")"); }
   TSTupleType(n) { this.rec(n.elementTypes[0]); this.put("[]"); } // TODO() throw if multiple types
   TSUnionType(n) { this.arr(n.types, " | "); }
-  TSPropertySignature(n) {
-    this.rec(n.key); if (n.optional) this.put("?"); this.put(": "); this.rec(n.typeAnnotation);
-  }
   TSQualifiedName(n) { this.rec(n.left); this.put("." + n.right.name); }
   TSTypeAnnotation(n) { this.rec(n.typeAnnotation); }
   TSTypeLiteral(n) {
@@ -113,10 +134,10 @@ class Generator {
   }
   TSInterfaceBody(n) {
     this.put("{"); this.inc();
-    const [properties, methods] = partition(n.body, (c) => c.type.charCodeAt(2) == 80); // 80 is "P".charCodeAt(0)
-    if (properties.length) {
+    const { props, methods } = partitionInterface(n.body);
+    if (props.length) {
       this.ret();
-      this.constructorFromProps(properties);
+      this.ctorFromProps(props);
     }
     this.arrLines(methods, "");
     this.dec(); this.ret(); this.put("}");
@@ -124,6 +145,9 @@ class Generator {
   TSMethodSignature(n) {
     this.jsDoc(n)
     this.rec(n.key); this.put("("); this.arr(n.parameters, ", "); this.put(") {}");
+  }
+  TSPropertySignature(n) {
+    this.rec(n.key); if (n.optional) this.put("?"); this.put(": "); this.rec(n.typeAnnotation);
   }
   TSParameterProperty(n) { this.rec(n.parameter); }
 
@@ -195,6 +219,7 @@ class Generator {
   ImportExpression(n) { this.put("import("); this.rec(n.source); this.put(")"); }
   AssignmentExpression(n) { this.rec(n.left); this.put(` ${n.operator} `); this.rec(n.right); }
   ThisExpression(n) { this.put("this"); }
+  Super(n) { this.put("super"); }
 
   // JS Statements
   EmptyStatement(n) { }
@@ -251,22 +276,19 @@ class Generator {
   }
   ClassBody(n) {
     this.put("{"); this.inc();
-    const [properties, methods] = partition(n.body, (c) => c.type.charCodeAt(0) == 80); // 80 is "P".charCodeAt(0)
-    if (properties.length) {
+    const { props, methods, ctor } = partitionInterface(n.body);
+    if (ctor || props.length) {
       this.ret();
-      this.constructorFromProps(properties);
+      ctor ? this.ctor(ctor, props) : this.ctorFromProps(props);
     }
     this.arrLines(methods, "");
     this.dec(); this.ret(); this.put("}");
   }
   MethodDefinition(n) {
-    this.jsDoc(n.value);
+    this.jsDoc(n.value, n.override);
     if (n.static) this.put("static "); if (n.value.async) this.put("async ");
     this.rec(n.key); this.put("("); this.arr(n.value.params, ", "); this.put(") ");
-    if (n.kind == "constructor")
-      this.constructorBody(n.value.params, n.value.body);
-    else
-      this.rec(n.value.body);
+    this.rec(n.value.body);
   }
   VariableDeclaration(n) {
     if ((n.modifiers & Modifier.Define)
@@ -327,7 +349,7 @@ class Generator {
     const tag = (!kind || kind == "let") ? "type" : kind;
     this.put(`/** @${tag} {`); this.rec(n.typeAnnotation); this.put("} */"); this.ret();
   }
-  jsDoc(n) {
+  jsDoc(n, override) {
     const params = n.params || n.parameters;
     const retType = n.returnType || n.typeAnnotation || { type: "TSVoidKeyword" };
     this.put("/**");
@@ -336,6 +358,7 @@ class Generator {
         this.ret();
         this.put(" * @template "); this.rec(param);
       }
+    if (override) { this.ret(); this.put(" * @override"); }
     for (const param of params) {
       const typeAnnotation = param.typeAnnotation || param.parameter.typeAnnotation;
       this.ret();
@@ -346,8 +369,34 @@ class Generator {
     this.put(" * @return {"); this.rec(retType); this.put("}"); this.ret();
     this.ret(" */");
   }
-  constructorFromProps(props) {
+  // Handles interfaces and classes without an explicit constructor
+  // In such cases, all props need to be written in constructor in kdjs-js
+  ctorFromProps(props) {
     this.put("constructor() {"); this.inc();
+    for (const prop of props) {
+      this.ret();
+      this.jsDocType(prop);
+      this.put("this."); this.rec(prop.key); this.put(";");
+    }
+    this.dec(); this.ret(); this.put("}");
+  }
+  // Handles classes with explicity constructor, and potentially
+  // `TSParameterProperty`'s and `Property`'s.
+  // TODO(KimlikDAO-bot): do this properly. we need prop deduping
+  ctor(ctor, props) {
+    const params = ctor.value.params;
+    const body = ctor.value.body.body;
+    this.jsDoc(ctor.value);
+    this.put("constructor("); this.arr(params, ", "); this.put(")");
+    this.put(" {"); this.inc();
+    this.arrLines(body, ";"); if (body.length) this.put(";");
+    for (const param of params)
+      if (param.type.charCodeAt(0) == 84) {
+        this.ret();
+        this.jsDocType(param.parameter, param.readonly ? "const" : "");
+        this.put("this."); this.rec(param.parameter);
+        this.put(" = "); this.rec(param.parameter); this.put(";");
+      }
     for (const prop of props) {
       this.ret();
       this.jsDocType(prop);
@@ -355,16 +404,6 @@ class Generator {
     }
     this.dec(); this.ret();
     this.put("}")
-  }
-  constructorBody(params, body) {
-    this.put("{"); this.inc();
-    for (const param of params)
-      if (param.type.charCodeAt(0) == 84) {
-        this.ret();
-        this.jsDocType(param.parameter, param.readonly ? "const" : "");
-        this.put("this."); this.rec(param.parameter); this.put(" = "); this.rec(param.parameter); this.put(";");
-      }
-    this.dec(); this.ret(); this.put("}")
   }
   blockLike(n, allowIf) {
     if (n.type == "BlockStatement" || (allowIf && n.type == "IfStatement")) {

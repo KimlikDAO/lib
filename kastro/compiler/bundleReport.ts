@@ -1,6 +1,5 @@
-import { AssetHash } from "./hash";
+import hash, { AssetHash } from "./hash";
 import { Target } from "./target";
-import hash from "./hash";
 
 interface BundleReport {
   hostUrl?: string;
@@ -8,9 +7,11 @@ interface BundleReport {
   piggybackAssets: Record<string, AssetHash>;
   hashedAssets: string[];
   bundleHash?: AssetHash;
-};
+}
 
-const getEtags = (bundleReport: BundleReport) => {
+const getEtags = (
+  bundleReport: BundleReport
+): Record<string, string> => {
   const namedAssets = bundleReport.namedAssets;
   const etags: Record<string, string> = {};
   for (const key in namedAssets) {
@@ -21,14 +22,12 @@ const getEtags = (bundleReport: BundleReport) => {
   return etags;
 };
 
-const fromTarget = (target: Target) => {
-  const bundleReport = JSON.parse(new TextDecoder().decode(target.content)) as BundleReport;
+const fromTarget = (target: Target): BundleReport => {
+  const bundleReport = JSON.parse(
+    new TextDecoder().decode(target.content),
+  ) as BundleReport;
   bundleReport.bundleHash = hash.toStr(target.contentHash);
   return bundleReport;
-}
-
-export {
-  BundleReport,
-  getEtags,
-  fromTarget,
 };
+
+export { BundleReport, fromTarget, getEtags };

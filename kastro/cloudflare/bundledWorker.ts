@@ -44,7 +44,7 @@ const Worker = {
         // Technically no vary header is needed for CompressedMimes, but
         // when left empty, Cloudflare inserts "Accept-Encoding"
         // anyway, so we don't distinguish this case.
-        "vary": path ? "accept-encoding" : "accept-encoding,cookie"
+        "vary": "accept-encoding" + (path ? "" : ",cookie")
       };
       if (maybeEtag)
         headers["etag"] = maybeEtag;

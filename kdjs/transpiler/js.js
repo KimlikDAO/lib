@@ -77,21 +77,28 @@ const transpileJs = (isEntry, file, content, files, globals, unlinkedImports) =>
     if (ups.length != 1)
       throw "@define should not have other types: " + comment.value;
     const constDeclIndex = content.indexOf("const", comment.end);
-    if (constDeclIndex == -1) return;
+    if (constDeclIndex == -1)
+      throw "@define should be followed by a const declaration: " + comment.value;
     const equalIndex = content.indexOf("=", constDeclIndex);
-    if (equalIndex == -1) return;
+    if (equalIndex == -1)
+      throw "@define should be followed by an assignment: " + comment.value;
 
+    // Replace the @define with @const since in kdjs-js we allow all
+    // JSON serializable types, whereas gcc-js allows number string or boolean.
+    updates.push({
+      beg: comment.start + defineIdx + 2,
+      end: comment.start + defineIdx + 10,
+      put: "@const "
+    });
     const symbol = content.substring(constDeclIndex + 5, equalIndex).trim();
     if (symbol in globals) {
+      // TODO(KimlikDAO-bot): This is quite fragile, but have no better options
+      // until we can fully parse jsdoc inside tsParser.
       const typeBeg = comment.value.indexOf("{", defineIdx) + 1;
       const typeEnd = comment.value.indexOf("}", typeBeg);
       const type = comment.value.slice(typeBeg, typeEnd).trim();
       const semicolonIndex = content.indexOf(';', equalIndex);
       updates.push({
-        beg: comment.start + defineIdx + 2,
-        end: comment.start + defineIdx + 10,
-        put: "@const "
-      }, {
         beg: comment.end,
         end: semicolonIndex,
         put: `\nconst ${symbol} = /** @type {${ups[0].put}} */(${JSON.stringify(globals[symbol])})`

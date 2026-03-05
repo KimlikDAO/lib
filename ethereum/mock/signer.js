@@ -1,4 +1,4 @@
-import { Signer } from "../../crosschain/signer";
+import { Signature, Signer } from "../../crosschain/signer";
 import { inverse } from "../../crypto/modular";
 import { G, Point, Q } from "../../crypto/secp256k1";
 import { keccak256Uint32, keccak256Uint32ToHex } from "../../crypto/sha3";
@@ -6,7 +6,7 @@ import bigints from "../../util/bigints";
 import hex from "../../util/hex";
 import abi from "../abi";
 import signature from "../signature";
-import { Signature, WideSignature } from "../signature.d";
+import { Signature as EthereumSignature, WideSignature } from "../signature.d";
 import { personalDigest } from "../signer";
 
 /**
@@ -77,7 +77,7 @@ const signWide = (digest, privKey) => signature.toWideFromUnpacked(signUnpacked(
 /**
  * @param {bigint} digest as bigint
  * @param {bigint} privKey as bigint
- * @return {Signature}
+ * @return {EthereumSignature}
  */
 const sign = (digest, privKey) => signature.fromUnpacked(signUnpacked(digest, privKey));
 
