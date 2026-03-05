@@ -222,6 +222,8 @@ function tsPlugin(options?: {
       importOrExportOuterKind: string | undefined = undefined;
       ecmaVersion: number;
       stashedVariableModifiers: number | undefined = undefined;
+      /** End position of the block comment that set stashedVariableModifiers (so we only attach to the immediately following declaration). */
+      stashedCommentEnd: number | undefined = undefined;
 
       constructor(options: Options, input: string, startPos?: number) {
         super(options, input, startPos);
@@ -302,8 +304,13 @@ function tsPlugin(options?: {
         }
         const result = super.finishNode(node, type);
         if (type === 'VariableDeclaration' && this.stashedVariableModifiers !== undefined) {
-          (result as { modifiers?: number }).modifiers = this.stashedVariableModifiers;
-          this.stashedVariableModifiers = undefined;
+          const immediatelyAfterComment =
+            this.stashedCommentEnd === undefined || node.start >= this.stashedCommentEnd;
+          if (immediatelyAfterComment) {
+            (result as { modifiers?: number }).modifiers = this.stashedVariableModifiers;
+            this.stashedVariableModifiers = undefined;
+            this.stashedCommentEnd = undefined;
+          }
         }
         if (type.startsWith("TS") || type === "ArrowFunctionExpression") propagateType(result);
         return result;
@@ -679,6 +686,7 @@ function tsPlugin(options?: {
           );
         }
         this.stashedVariableModifiers = modifiersFromJsDoc(this.input.slice(start + 2, end));
+        this.stashedCommentEnd = this.pos;
       }
 
       skipLineComment(startSkip) {
@@ -3389,8 +3397,11 @@ function tsPlugin(options?: {
         // ---start origin parseVarStatement
         this.next();
         super.parseVar(node, false, kind, allowMissingInitializer || isAmbientContext);
-        this.semicolon();
         const declaration = this.finishNode(node, 'VariableDeclaration');
+        this.semicolon();
+        // Extend declaration to include semicolon (we finished before semicolon so @define stash applies to the right declaration).
+        declaration.end = this.lastTokEnd;
+        if (this.options.locations && declaration.loc) declaration.loc.end = this.lastTokEndLoc;
         // ---end
 
         if (!isAmbientContext) return declaration;

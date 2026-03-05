@@ -87,17 +87,14 @@ const transpileJs = (isEntry, file, content, files, globals, unlinkedImports) =>
       const typeEnd = comment.value.indexOf("}", typeBeg);
       const type = comment.value.slice(typeBeg, typeEnd).trim();
       const semicolonIndex = content.indexOf(';', equalIndex);
-      const lineEndIndex = content.indexOf("\n", equalIndex);
-      const assignmentEnd = semicolonIndex !== -1
-        ? Math.min(semicolonIndex + 1, lineEndIndex) : lineEndIndex;
       updates.push({
         beg: comment.start + defineIdx + 2,
         end: comment.start + defineIdx + 10,
         put: "@const "
       }, {
         beg: comment.end,
-        end: assignmentEnd,
-        put: `\nconst ${symbol} = /** @type {${ups[0].put}} */(${JSON.stringify(globals[symbol])});`
+        end: semicolonIndex,
+        put: `\nconst ${symbol} = /** @type {${ups[0].put}} */(${JSON.stringify(globals[symbol])})`
       });
     }
   }

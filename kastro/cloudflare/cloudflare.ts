@@ -14,9 +14,8 @@ const deploy = (
       HOST_URL: bundleReport.hostUrl,
       ETAGS: getEtags(bundleReport)
     },
-    print: true,
-  }).then((target) => {
-    console.log(target);
+  }).then(({ content }) => {
+    console.log(new TextDecoder().decode(content))
   });
 }
 
