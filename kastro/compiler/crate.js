@@ -1,9 +1,8 @@
-import { file, plugin, write } from "bun";
+import { plugin } from "bun";
 import process from "node:process";
 import { LangCode } from "../../util/i18n";
 import { combine, getDir } from "../../util/paths";
-import { BundleReport } from "./bundleReport";
-import compiler from "./compiler";
+import bundle from "./bundle";
 import { ttfTarget, woff2Target } from "./font";
 import {
   inlineSvgTarget,
@@ -15,8 +14,7 @@ import {
 import { pageTarget } from "./page";
 import { scriptTarget } from "./script";
 import { styleSheetTarget } from "./styleSheet";
-import { registerTargetFunction } from "./target";
-import bundle from "./bundle";
+import { Target, registerTargetFunction } from "./target";
 
 /**
  * @param {string} _targetName
@@ -26,21 +24,21 @@ import bundle from "./bundle";
 const crateTarget = async (_targetName, props) => {
   if (!props.dynamicDeps) throw "Crate targets need to be dynamicProps";
   props.Lang = LangCode.EN;
-  const map = getPageTargets(props.crate, props);
+  const map = getPageTargets(props.data, props);
   const childTargets = [map["en"], map["mint"]];
 
   bundle.reset();
   if (await props.checkFreshFn(childTargets))
     return null;
-  /** @type {BundleReport} */
-  const aliases = props.crate.Aliases || {};
-  for (const key in aliases) {
-    const source = file(`build/bundle/${aliases[key]}`);
-    await write(`build/bundle/${key}`, source);
-  }
-  const bundleReport = bundle.getReport();
-  bundleReport.hostUrl = props.crate.HostUrl;
-  return JSON.stringify(bundleReport);
+
+  const aliases = props.data.Aliases || {};
+  for (const key in aliases)
+    await bundle.alias(key, aliases[key]);
+
+  return JSON.stringify({
+    hostUrl: props.data.HostUrl,
+    ...bundle.getReport()
+  });
 }
 
 /** 
@@ -179,25 +177,24 @@ const setupKastro = () => {
 const getLanguages = (crate) => crate.Languages || Object.keys(Object.values(crate.Page)[0]);
 
 /**
- * @param {Record<string, PageTarget>} map
+ * @param {Record<string, Target>} map
  * @param {Object} crate
- * @param {compiler.BuildMode} buildMode
- * @param {LangCode} lang
- * @return {Record<string, PageTarget>} Returns a map from routes to page props.
+ * @param {Props} props 
+ * @return {Record<string, Target>} Returns a map from routes to page props.
  */
-const addPageTargets = (map, { Page, CodebaseLang, Entry }, buildMode, lang) => {
+const addPageTargets = (map, { Page, CodebaseLang, Entry }, { BuildMode, Lang }) => {
   for (const name in Page) {
     const dirName = Entry == Page[name] ? name.toLowerCase() : Page[name][CodebaseLang];
     const pageProps = {
-      BuildMode: buildMode,
-      Lang: lang,
+      BuildMode,
+      Lang,
       CodebaseLang,
       Route: { ...Page[name] },
-      bundleName: Page[name][lang],
-      targetName: `/build/${dirName}/${name}-${lang}.html`,
+      bundleName: Page[name][Lang],
+      targetName: `/build/${dirName}/${name}-${Lang}.html`,
       alwaysBuild: true,
     };
-    delete pageProps.Route[lang];
+    delete pageProps.Route[Lang];
     map[`${pageProps.bundleName}`] = pageProps;
   }
 };
@@ -205,13 +202,13 @@ const addPageTargets = (map, { Page, CodebaseLang, Entry }, buildMode, lang) => 
 /**
  * @param {Object} crate
  * @param {Props} props
- * @return {Record<string, PageTarget>}
+ * @return {Record<string, Target>}
  */
-const getPageTargets = (crate, { BuildMode: buildMode, Lang: lang }) => {
+const getPageTargets = (crate, { BuildMode, Lang }) => {
   const map = {};
-  const langs = lang ? [lang] : getLanguages(crate);
+  const langs = Lang ? [Lang] : getLanguages(crate);
   for (const lang of langs)
-    addPageTargets(map, crate, buildMode, lang);
+    addPageTargets(map, crate, { BuildMode, Lang: lang });
   return map;
 }
 

@@ -5,7 +5,7 @@ import { parseTypePrefix } from "../types/parser";
  * @const {Set<string>}
  */
 const TAGS_WITH_TYPES = new Set([
-  "@type", "@const", "@typedef", "@private", "@param", "@return"
+  "@type", "@const", "@typedef", "@private", "@param", "@return", "@define"
 ]);
 
 /**
@@ -71,7 +71,6 @@ const transpileJsDoc = (comment, fileName) => {
       continue;
     }
   }
-
   return updates;
 };
 

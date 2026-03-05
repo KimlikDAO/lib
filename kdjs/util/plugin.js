@@ -6,13 +6,14 @@ const kdjsPlugin = {
   name: "kdjs",
   setup(build) {
     build.onLoad({ filter: /\.ts$/ }, (args) => {
-      const contents = readFileSync(args.path, "utf8");
-      if (args.path.includes("/node_modules/")
-        || args.path.includes("/kdjs/")
-        || args.path.includes("/kastro/kastro.ts"))
+      const path = args.path;
+      const contents = readFileSync(path, "utf8");
+      if (path.includes("/node_modules/")
+        || path.includes("/kdjs/")
+        || path.endsWith("/kastro/kastro.ts"))
         return { contents, loader: "ts" };
       return {
-        contents: args.path.endsWith(".d.ts")
+        contents: path.endsWith(".d.ts")
           ? generatePlaceholder(contents)
           : transpileTs(contents),
         loader: "js"

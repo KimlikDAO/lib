@@ -83,7 +83,12 @@ const populateChildTargets = (props) => {
  */
 const computeDepHash = (props) => {
   populateChildTargets(props);
-  const { childTargets = [], targetName: _, ...otherProps } = props;
+  const { 
+    childTargets = [],
+    targetName,
+    checkFreshFn,
+    ...otherProps
+  } = props;
   const acc = keccak256Uint8(Encoder.encode(JSON.stringify(otherProps)))
     .slice(0, 32); // Drop the excess buffer.
   return Promise.all(
@@ -104,7 +109,7 @@ const forceBuildTarget = (targetName, props) => {
     console.info("Building:", targetName);
   populateChildTargets(props);
   const targetFunc = getTargetFunction(targetName);
-  if (!targetFunc) console.error("targetFunc not found", targetName, targetFunc);
+  if (!targetFunc) console.error("targetFunc not found", targetName);
   return targetFunc(targetName, props);
 }
 

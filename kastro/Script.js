@@ -11,6 +11,8 @@ import { getGlobals } from "./transpiler/pageGlobals";
 const Script = (props) => {
   const [file,] = splitFullExt(props.src);
   const targetName = `/build/${file}-${props.Lang}.js`;
+  // Wait until sub Scripts export their hashed name, which happens after they
+  // are done compiling.
   return Promise.all([].concat(props.children ?? [])).then(() =>
     compiler.bundleTarget(targetName, {
       dynamicDeps: true,

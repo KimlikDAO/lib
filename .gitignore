@@ -4,11 +4,13 @@
 .vscode
 *.out.js
 *.out.jsx
+/a.js
+/a.ts
+/b.js
+/b.ts
 build
 bun.lock*
+kdjs/transformer
 node_modules*
 prompts.txt
 yarn.lock
-kdjs/transformer
-/a.js
-/a.ts

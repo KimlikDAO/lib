@@ -63,17 +63,18 @@ const piggyback = (piggybackUrl, bundleName) =>
   PiggybackAssets.set(bundleName, `${piggybackUrl}/${bundleName}`);
 
 /**
- * @param {string} bundleName
- * @param {string} hashedName
+ * @param {string} aliasedName
+ * @param {string} existingName
  * @return {Promise<void>}
  */
-const alias = (bundleName, hashedName) => {
-  NamedAssets.set(bundleName, hashedName);
-  const promises = [cp(`${BundleDir}/${hashedName}`, `${BundleDir}/${bundleName}`)];
-  if (!CompressedMimes[getExt(hashedName)])
+const alias = (aliasedName, existingName) => {
+  existingName = NamedAssets.get(existingName) || existingName; // Follow 1 step alias chains
+  NamedAssets.set(aliasedName, existingName);
+  const promises = [cp(`${BundleDir}/${existingName}`, `${BundleDir}/${aliasedName}`)];
+  if (!CompressedMimes[getExt(existingName)])
     promises.push(
-      cp(`${BundleDir}/${hashedName}.br`, `${BundleDir}/${bundleName}.br`),
-      cp(`${BundleDir}/${hashedName}.gz`, `${BundleDir}/${bundleName}.gz`)
+      cp(`${BundleDir}/${existingName}.br`, `${BundleDir}/${aliasedName}.br`),
+      cp(`${BundleDir}/${existingName}.gz`, `${BundleDir}/${aliasedName}.gz`)
     );
   return Promise.all(promises);
 }

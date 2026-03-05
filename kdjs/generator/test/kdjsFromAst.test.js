@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { TsParser } from "../../parser/tsParser";
-import { generate } from "../closureFromAst3";
+import { generate } from "../kdjsFromAst";
 
 describe("VariableDeclaration", () => {
   test("generate type string[] from parsed AST", () => {
@@ -503,5 +503,21 @@ class RemoteProvider {
 };
 
 export { Provider, RemoteProvider };
+`.slice(1));
+});
+
+test("while statement", () => {
+  const ast = TsParser.parse(`
+let i: number = 0;
+while (i < 3) {
+  i++;
+}
+`);
+  expect(generate(ast)).toBe(`
+/** @type {number} */
+let i = 0;
+while ((i < 3)) {
+  i++;
+};
 `.slice(1));
 });

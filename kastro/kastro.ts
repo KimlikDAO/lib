@@ -6,13 +6,14 @@ import { getPageTargets, setupKastro } from "./compiler/crate";
 import { Props } from "./props";
 import { CompressedMimes, Mimes } from "./workers/mimes";
 import { Target } from "./compiler/target";
+import { BundleReport, fromTarget } from "./compiler/bundleReport";
 
 const PAGE_CACHE_CONTROL: string = "no-cache";
 const STATIC_CACHE_CONTROL: string = "max-age=29000000,public,immutable,no-transform";
 
 const serveCrate = async (crateName: string, { BuildMode }: Props) => {
   setupKastro();
-  const map = getPageTargets(await import(crateName), BuildMode);
+  const map = getPageTargets(await import(crateName), { BuildMode });
   serve({
     async fetch(req) {
       const path = new URL(req.url).pathname.slice(1);
@@ -33,7 +34,7 @@ const serveCrate = async (crateName: string, { BuildMode }: Props) => {
       }
       const maybeTarget = map[resolvedPath];
       if (maybeTarget)
-        await compiler.bundleTarget(maybeTarget.targetName, maybeTarget);
+        await compiler.bundleTarget(maybeTarget.targetName!, maybeTarget);
       const filePath = `build/bundle/${resolvedPath + ext.slice(0, 3)}`;
       console.info("Serving:", filePath);
       const arrBuff = await file(filePath)
@@ -57,24 +58,25 @@ const serveCrate = async (crateName: string, { BuildMode }: Props) => {
 
 const buildCrate = (crateName: string, { BuildMode }: Props): Promise<Target> => {
   setupKastro();
-  return import(crateName).then((crate) => {
-    return compiler.buildTarget(`/build${crateName.slice(0, -3)}.c.json`, {
+  return import(crateName).then((crate) =>
+    compiler.buildTarget(`/build${crateName.slice(0, -3)}.c.json`, {
       dynamicDeps: true,
       BuildMode,
-      crate
-    }).then((target) => {
-      console.log(JSON.parse(new TextDecoder().decode(target.content)));
-      return target;
-    });
-  });
+      data: crate
+    })
+  );
 }
 
-const deployCrate = async (crateName: string, props: Props) => {
-  const [_auth, crateTarget] = await Promise.all([
-    import(`${process.cwd()}/.secrets.js`),
-    buildCrate(crateName, props)
+const deployCrate = async (
+  crateName: string,
+  { targetName = "cloudflare", ...props }: Props
+) => {
+  const [{ default: deployer }, crateTarget, config] = await Promise.all([
+    import(`@kimlikdao/lib/kastro/${targetName}/${targetName}`),
+    buildCrate(crateName, props),
+    import("/deployerConfig")
   ]);
-  throw `Not implemented ${crateTarget}`;
+  return deployer.deploy(fromTarget(crateTarget), config.default[targetName]);
 }
 
 const args = parseArgs((process as NodeJS.Process).argv.slice(2), "command");

@@ -147,23 +147,28 @@ class Generator {
   BinaryExpression(n) {
     this.put("("); this.rec(n.left); this.put(` ${n.operator} `); this.rec(n.right); this.put(")");
   }
-  CallExpression(n) { this.rec(n.callee); this.put("("); this.arr(n.arguments, ", "); this.put(")"); }
+  CallExpression(n, optChain) {
+    this.rec(n.callee); if (optChain) this.put("?.");
+    this.put("("); this.arr(n.arguments, ", "); this.put(")");
+  }
+  ChainExpression(n) { this.rec(n.expression, true); }
   ConditionalExpression(n) {
     this.put("("); this.rec(n.test); this.put(" ? ");
     this.rec(n.consequent); this.put(" : "); this.rec(n.alternate); this.put(")");
   }
-  MemberExpression(n) {
+  MemberExpression(n, optChain) {
     this.rec(n.object);
     if (n.computed) {
-      this.put("["); this.rec(n.property); this.put("]");
+      this.put(optChain ? "?.[" : "["); this.rec(n.property); this.put("]");
     } else {
-      this.put("."); this.rec(n.property);
+      this.put(optChain ? "?." : "."); this.rec(n.property);
     }
   }
   Identifier(n, showType) {
     this.put(this.typeMap?.get(n.name) ?? n.name);
     if (showType && n.typeAnnotation) { this.put(": "); this.rec(n.typeAnnotation); }
   }
+  FunctionExpression(n) { }
   ArrowFunctionExpression(n) {
     if (n.async) this.put("async ");
     this.put("("); this.arr(n.params, ", "); this.put(") => "); this.rec(n.body);
@@ -175,7 +180,17 @@ class Generator {
     this.inc(); this.arrLines(n.properties, ","); this.dec(); this.ret();
     this.put("}");
   }
-  Property(n) { this.rec(n.key); this.put(": "); this.rec(n.value); }
+  Property(n) {
+    if (n.method) {
+      this.jsDoc(n.value);
+      if (n.value.async) this.put("async "); this.rec(n.key);
+      this.put("("); this.arr(n.value.params, ", "); this.put(") ");
+      this.rec(n.value.body);
+    } else {
+      this.rec(n.key); this.put(": "); this.rec(n.value);
+    }
+  }
+  UnaryExpression(n) { this.put(n.operator); this.rec(n.argument); }
   UpdateExpression(n) {
     if (n.prefix) this.put(n.operator); this.rec(n.argument); if (!n.prefix) this.put(n.operator);
   }
@@ -183,6 +198,7 @@ class Generator {
     this.put("new "); this.rec(n.callee);
     this.put("("); this.arr(n.arguments, ", "); this.put(")");
   }
+  ImportExpression(n) { this.put("import("); this.rec(n.source); this.put(")"); }
   AssignmentExpression(n) { this.rec(n.left); this.put(` ${n.operator} `); this.rec(n.right); }
   ThisExpression(n) { this.put("this"); }
 
@@ -226,6 +242,7 @@ class Generator {
     this.rec(n.local);
     if (n.local.name != n.exported.name) { this.put(" as "); this.rec(n.exported); }
   }
+  ExportDefaultDeclaration(n) { this.put("export default "); this.rec(n.declaration); }
   ClassDeclaration(n) {
     if (n.implements) {
       this.ret("/**");
@@ -271,6 +288,7 @@ class Generator {
     }
   }
   ArrayPattern(n) { this.put("["); this.arr(n.elements, ", "); this.put("]"); }
+  ObjectPattern(n) { this.put("{ "); this.arr(n.properties, ", "); this.put(" }"); }
   ExpressionStatement(n) { this.rec(n.expression); }
   ThrowStatement(n) { this.put("throw "); this.rec(n.argument); }
   IfStatement(n) {
@@ -292,6 +310,7 @@ class Generator {
     this.blockLike(n.body);
   }
   ForInStatement(n) { this.ForOfStatement(n, " in "); }
+  WhileStatement(n) { this.put("while ("); this.rec(n.test); this.put(")"); this.blockLike(n.body); }
   ReturnStatement(n) { this.put("return "); this.rec(n.argument); }
   BlockStatement(n) {
     this.put("{");

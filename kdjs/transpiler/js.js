@@ -9,7 +9,7 @@ import { Update, update } from "../util/textual";
 import { pathToNamespace } from "./dts";
 import { transpileJsDoc } from "./jsdoc";
 
-const PACKAGE_EXTERNS = "node_modules/@kimlikdao/kdjs/externs/";
+const PACKAGE_EXTERNS = "node_modules/@kimlikdao/lib/kdjs/externs/";
 const DeclarationFile = /\.(d|e)\.(js|ts)$/;
 
 /**
@@ -70,11 +70,12 @@ const transpileJs = (isEntry, file, content, files, globals, unlinkedImports) =>
    */
   const processComment = (comment) => {
     const defineIdx = comment.value.indexOf("@define");
-    if (defineIdx == -1) {
-      const ups = transpileJsDoc(comment, file);
-      updates.push(...ups);
-      return;
-    };
+    const ups = transpileJsDoc(comment, file);
+    updates.push(...ups);
+    if (defineIdx == -1) return;
+
+    if (ups.length != 1)
+      throw "@define should not have other types: " + comment.value;
     const constDeclIndex = content.indexOf("const", comment.end);
     if (constDeclIndex == -1) return;
     const equalIndex = content.indexOf("=", constDeclIndex);
@@ -89,15 +90,14 @@ const transpileJs = (isEntry, file, content, files, globals, unlinkedImports) =>
       const lineEndIndex = content.indexOf("\n", equalIndex);
       const assignmentEnd = semicolonIndex !== -1
         ? Math.min(semicolonIndex + 1, lineEndIndex) : lineEndIndex;
-
       updates.push({
         beg: comment.start + defineIdx + 2,
-        end: comment.start + defineIdx + 11,
-        put: "@const {!"
+        end: comment.start + defineIdx + 10,
+        put: "@const "
       }, {
         beg: comment.end,
         end: assignmentEnd,
-        put: `\nconst ${symbol} = /** @type {!${type}} */(${JSON.stringify(globals[symbol])});`
+        put: `\nconst ${symbol} = /** @type {${ups[0].put}} */(${JSON.stringify(globals[symbol])});`
       });
     }
   }
@@ -142,7 +142,7 @@ const transpileJs = (isEntry, file, content, files, globals, unlinkedImports) =>
         updates.push({
           beg: node.start,
           end: node.end,
-          put: "; // imports from declaration files are removed for gcc"
+          put: "; // gcc-js: type only imports are removed"
         });
       else if (DeclarationFile.test(nextFile)) {
         if (!nextFile.startsWith(PACKAGE_EXTERNS) &&
@@ -155,18 +155,18 @@ const transpileJs = (isEntry, file, content, files, globals, unlinkedImports) =>
             } else if (specifier.type === "ImportSpecifier") {
               // Named import: import { name } from "./path"
               typeAliases.push(
-                `/** @const */\nconst ${specifier.local.name} = ${namespace}.${specifier.imported.name};`
+                `/** @const */\nconst ${specifier.local.name} = ${namespace}$${specifier.imported.name};`
               );
             } else if (specifier.type === "ImportNamespaceSpecifier") {
               // Namespace import: import * as ns from "./path"
-              typeAliases.push(`/** @const */\nconst ${specifier.local.name} = ${namespace};`);
+              typeAliases.push(`/** @const */\nconst ${specifier.local.name} = ${namespace}$$star;`);
             }
           }
         }
         updates.push({
           beg: node.start,
           end: node.end,
-          put: "; // type only import"
+          put: "; // gcc-js: type only imports are removed"
         });
       } else if (nextFile.endsWith(".jsx") && !sourceName.endsWith(".jsx"))
         updates.push({

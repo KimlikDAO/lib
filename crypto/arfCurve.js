@@ -182,4 +182,4 @@ const arfCurve = (P) => {
   }
 }
 
-export { arfCurve, Point };
+export { arfCurve };

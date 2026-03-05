@@ -1,7 +1,8 @@
 import { assertEq } from "../../testing/assert";
 import { compareImpls } from "../../testing/bench";
 import bigints from "../../util/bigints";
-import { arfCurve, Point as IPoint } from "../arfCurve";
+import { arfCurve } from "../arfCurve";
+import { Point as IPoint } from "../ellipticCurve";
 import { P } from "../secp256k1";
 
 /** @typedef {IPoint} Point */

@@ -1,19 +1,4 @@
-const enum Modifier {
-  Nullable = 1,
-  Optional = 2,
-
-  AlwaysInline = 16,
-  NoInline = 32,
-
-  // No mutation of external state. It can still read mutable external state.
-  // Example: `Math.random()`
-  NoSideEffects = 64,
-
-  // Given the same input, always returns the same output.
-  // Functionally, this means no reads of mutable external state.
-  Deterministic = 128,
-  Pure = Deterministic | NoSideEffects,
-}
+import { Modifier } from "./modifier";
 
 type Context = {
   toParam?: boolean;

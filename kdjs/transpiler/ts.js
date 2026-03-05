@@ -1,4 +1,4 @@
-import { generate } from "../generator/closureFromAst3";
+import { generate } from "../generator/kdjsFromAst";
 import { TsParser } from "../parser/tsParser";
 
 /**

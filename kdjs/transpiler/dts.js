@@ -5,11 +5,7 @@
  * @author KimlikDAO
  */
 import { combine, getDir } from "../../util/paths";
-import {
-  generateClassInterface,
-  generateEnum,
-  generateTypedef
-} from "../generator/closureFromAst";
+import { generate } from "../generator/kdjsFromAst";
 import { TsParser } from "../parser/tsParser";
 import { resolveExtension } from "../util/resolver";
 
@@ -22,10 +18,13 @@ import { resolveExtension } from "../util/resolver";
 const pathToNamespace = (filePath) => {
   if (filePath.endsWith(".ts") || filePath.endsWith(".js"))
     filePath = filePath.slice(0, -3);
-  return "namespace$$" + filePath.slice(0, -2).replaceAll("/", "$");
+  return "kdjs$$" + filePath.slice(0, -2).replaceAll("/", "$");
 }
 
 /**
+ * This type map will baked into the Literal nodes by {@link TsParser} in the
+ * future.
+ *
  * Collects type information from the AST, including imports and local definitions.
  *
  * @param {acorn.Program} ast The AST to process
@@ -43,7 +42,7 @@ const collectTypes = (ast, importer) => {
       node.type == "TSTypeAliasDeclaration" ||
       node.type == "TSEnumDeclaration"
     ) {
-      typeMap.set(node.id.name, `${currentNamespace}.${node.id.name}`);
+      typeMap.set(node.id.name, `${currentNamespace}$${node.id.name}`);
     } else if (node.type == "ImportDeclaration") {
       const source = node.source.value;
       let sourcePath =
@@ -52,18 +51,13 @@ const collectTypes = (ast, importer) => {
         sourcePath = resolveExtension(sourcePath);
       if (sourcePath.endsWith("d.ts")) {
         const importNamespace = pathToNamespace(sourcePath);
-        for (const specifier of node.specifiers) {
-          if (specifier.type == "ImportDefaultSpecifier") {
+        for (const specifier of node.specifiers)
+          if (specifier.type == "ImportDefaultSpecifier")
             // Default import: import name from "./path"
             typeMap.set(specifier.local.name, importNamespace);
-          } else if (specifier.type == "ImportSpecifier") {
+          else if (specifier.type == "ImportSpecifier")
             // Named import: import { name } from "./path"
-            typeMap.set(
-              specifier.local.name,
-              `${importNamespace}.${specifier.imported.name}`
-            );
-          }
-        }
+            typeMap.set(specifier.local.name, `${importNamespace}$${specifier.imported.name}`);
       }
     }
   return typeMap;
@@ -84,21 +78,15 @@ const transpileDts = (content, sourcePath) => {
   let output = "/** @externs */\n";
   for (const node of ast.body)
     if (node.type == "ImportDeclaration")
-      output += `import "${node.source.value}"; // for dependency crawling\n`; 
+      output += `import "${node.source.value}"; // kdjs-djs: imports are for dependency crawling\n`; 
 
-  output += `/** @const */\nconst ${namespace} = {};\n\n`;
-  for (const node of ast.body) {
-    if (node.type == "TSInterfaceDeclaration") {
-      output += generateClassInterface(node, typeMap);
-    } else if (node.type == "TSTypeAliasDeclaration") {
-      output += generateTypedef(node, typeMap);
-    } else if (node.type == "TSEnumDeclaration") {
-      output += generateEnum(node, typeMap);
-    }
-  }
+  for (const node of ast.body)
+    if (node.type == "TSInterfaceDeclaration"
+      || node.type == "TSTypeAliasDeclaration"
+      || node.type == "TSEnumDeclaration")
+      output += generate(node, typeMap) + ";\n";
   return output;
 };
-
 
 /**
  * @param {string} content

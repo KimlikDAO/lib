@@ -4,16 +4,16 @@ import { transpile } from "../transpiler/transpiler";
 
 /** @const {TargetFunction} */
 const scriptTarget = (_, { src: entry, ...props }) => {
-  const params = {
+  const isolateDir = props.Lang ? "kdjs-" + props.Lang : "kdjs";
+  return compile({
     entry,
-    isolateDir: `kdjs-${props.Lang}`,
+    isolateDir,
     globals: {
       ...filterGlobalProps(props),
       GEN: false
     },
     ...filterOutGlobalProps(props)
-  };
-  return compile(params, props.checkFreshFn, transpile);
+  }, props.checkFreshFn, transpile);
 }
 
 export { scriptTarget };

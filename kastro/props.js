@@ -12,7 +12,11 @@ import { LangCode } from "../util/i18n";
  *   piggyback?: string,
  *   alwaysBuild?: boolean,
  *   dynamicDeps?: boolean,
- *   crate?: unknown,
+ *   data?: unknown,
+ *   childTargets?: string[],
+ *   src?: string,
+ *   HOST_URL?: string,
+ *   ETAGS?: Record<string, string>,
  * }}
  */
 const Props = {};

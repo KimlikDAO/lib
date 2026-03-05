@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { arfCurve, Point as IPoint } from "../arfCurve";
-import { aX_bY } from "../ellipticCurve";
+import { arfCurve } from "../arfCurve";
+import { aX_bY, Point as IPoint } from "../ellipticCurve";
 import { pointFrom } from "../minaSchnorr";
 
 /** @const {bigint} */
@@ -14,7 +14,7 @@ const Q = 19n;
  *
  *  y² = x³ + 2
  *
- * @const {new (x: bigint, y: bigint, z?: bigint) => IPoint} */
+ * @type {new (x: bigint, y: bigint, z?: bigint) => IPoint} */
 const Point = arfCurve(P);
 /**
  * @const {new (x: bigint, y: bigint, z?: bigint) => IPoint} */
