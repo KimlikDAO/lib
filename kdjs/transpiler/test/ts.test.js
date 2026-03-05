@@ -464,13 +464,13 @@ type TransactionRequest = {
   expect(transpileTs(input)).toBe(`
 /**
  * @typedef {{
-  to?: Address,
-  from?: Address,
-  value?: number | bigint,
-  data?: string,
-  chainId?: string,
-  gas?: number
-}}
+ *   to?: Address,
+ *   from?: Address,
+ *   value?: number | bigint,
+ *   data?: string,
+ *   chainId?: string,
+ *   gas?: number
+ * }}
  */
 const TransactionRequest = {};
 `.slice(1));

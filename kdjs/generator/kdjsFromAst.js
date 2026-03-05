@@ -13,8 +13,13 @@ const genJsDocType = (d) => d.id.typeAnnotation ||
   d.init && d.init.type.endsWith("FunctionExpression");
 
 /**
- * Given an interface or class body, partitions it to
- * `{ methods, properties, constructor }`
+ * Given an interface or class body, partitions it as:
+ *
+ * @return {{
+ *   methods: Node[],
+ *   props: Node[],
+ *   ctor?: Node
+ * }}
  */
 const partitionInterface = (body) => {
   const methods = [];
@@ -39,6 +44,11 @@ class Generator {
   dec() { this.indent = this.indent.slice(0, -2); }
   ret(c) { this.out += (c ?? "") + "\n" + this.indent; }
   put(s) { this.out += s; }
+  doc() { this.indent += " * "; this.out += "/**";  }
+  cod() {
+    const ind = this.indent = this.indent.slice(0, -3);
+    this.out += "\n" + ind + " */\n" + ind;
+  }
   rec(n, ...rest) {
     if (n && typeof this[n.type] == "function")
       this[n.type](n, ...rest);
@@ -115,19 +125,19 @@ class Generator {
   }
   TSEnumMember(n) { this.rec(n.id); this.put(": "); this.rec(n.initializer); }
   TSTypeAliasDeclaration(n) {
-    this.ret("/**");
-    this.put(" * @typedef {"); this.rec(n.typeAnnotation); this.ret("}");
-    this.ret(" */");
+    this.doc(); this.ret();
+    this.put("@typedef {"); this.rec(n.typeAnnotation); this.put("}");
+    this.cod();
     this.put("const "); this.rec(n.id); this.put(" = {}");
   }
   TSInterfaceDeclaration(n) {
-    this.ret("/**");
-    this.ret(" * @interface");
+    this.doc(); this.ret();
+    this.put("@interface");
     if (n.extends && n.extends.length > 1)
       for (const iface of n.extends.slice(1)) {
-        this.put(" * @extends {"); this.rec(iface); this.ret("}")
+        this.ret(); this.put("@extends {"); this.rec(iface); this.put("}")
       }
-    this.ret(" */");
+    this.cod();
     this.put("class "); this.rec(n.id);
     if (n.extends) { this.put(" extends "); this.rec(n.extends[0]); }
     this.put(" "); this.rec(n.body);
@@ -264,11 +274,11 @@ class Generator {
   ExportDefaultDeclaration(n) { this.put("export default "); this.rec(n.declaration); }
   ClassDeclaration(n) {
     if (n.implements) {
-      this.ret("/**");
+      this.doc();
       for (const iface of n.implements) {
-        this.put(" * @implements {"); this.rec(iface); this.ret("}");
+        this.ret(); this.put("@implements {"); this.rec(iface); this.put("}");
       }
-      this.ret(" */");
+      this.cod();
     }
     this.put("class "); this.rec(n.id);
     if (n.superClass) { this.put(" extends "); this.rec(n.superClass); }
@@ -353,22 +363,21 @@ class Generator {
   jsDoc(n, override) {
     const params = n.params || n.parameters;
     const retType = n.returnType || n.typeAnnotation || { type: "TSVoidKeyword" };
-    this.put("/**");
+    this.doc();
     if (n.typeParameters)
       for (const param of n.typeParameters.params) {
-        this.ret();
-        this.put(" * @template "); this.rec(param);
+        this.ret(); this.put("@template "); this.rec(param);
       }
-    if (override) { this.ret(); this.put(" * @override"); }
+    if (override) { this.ret(); this.put("@override"); }
     for (const param of params) {
       const typeAnnotation = param.typeAnnotation || param.parameter.typeAnnotation;
       this.ret();
-      this.put(" * @param {"); this.rec(typeAnnotation);
+      this.put("@param {"); this.rec(typeAnnotation);
       if (param.optional) this.put("="); this.put("} "); this.rec(param);
     }
     this.ret();
-    this.put(" * @return {"); this.rec(retType); this.put("}"); this.ret();
-    this.ret(" */");
+    this.put("@return {"); this.rec(retType); this.put("}");
+    this.cod();
   }
   // Handles interfaces and classes without an explicit constructor
   // In such cases, all props need to be written in constructor in kdjs-js
