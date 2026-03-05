@@ -21,6 +21,13 @@ const pathToNamespace = (filePath) => {
   return "kdjs$$" + filePath.slice(0, -2).replaceAll("/", "$");
 }
 
+const EmittedNodes = {
+  ClassDeclaration: true,
+  TSInterfaceDeclaration: true,
+  TSTypeAliasDeclaration: true,
+  TSEnumDeclaration: true,
+};
+
 /**
  * This type map will baked into the Literal nodes by {@link TsParser} in the
  * future.
@@ -37,11 +44,7 @@ const collectTypes = (ast, importer) => {
   const currentNamespace = pathToNamespace(importer);
 
   for (const node of ast.body)
-    if (
-      node.type == "TSInterfaceDeclaration" ||
-      node.type == "TSTypeAliasDeclaration" ||
-      node.type == "TSEnumDeclaration"
-    ) {
+    if (EmittedNodes[node.type]) {
       typeMap.set(node.id.name, `${currentNamespace}$${node.id.name}`);
     } else if (node.type == "ImportDeclaration") {
       const source = node.source.value;
@@ -81,9 +84,7 @@ const transpileDts = (content, sourcePath) => {
       output += `import "${node.source.value}"; // kdjs-djs: imports are for dependency crawling\n`; 
 
   for (const node of ast.body)
-    if (node.type == "TSInterfaceDeclaration"
-      || node.type == "TSTypeAliasDeclaration"
-      || node.type == "TSEnumDeclaration")
+    if (EmittedNodes[node.type])
       output += generate(node, typeMap) + ";\n";
   return output;
 };

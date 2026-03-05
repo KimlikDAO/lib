@@ -15,8 +15,7 @@ import { LangCode } from "../util/i18n";
  *   data?: unknown,
  *   childTargets?: string[],
  *   src?: string,
- *   HOST_URL?: string,
- *   ETAGS?: Record<string, string>,
+ *   globals?: unknown
  * }}
  */
 const Props = {};

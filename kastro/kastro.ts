@@ -1,12 +1,12 @@
 import { file, serve } from "bun";
 import process from "node:process";
 import { parseArgs } from "../util/cli";
+import { fromTarget } from "./compiler/bundleReport";
 import compiler from "./compiler/compiler";
 import { getPageTargets, setupKastro } from "./compiler/crate";
+import { Target } from "./compiler/target";
 import { Props } from "./props";
 import { CompressedMimes, Mimes } from "./workers/mimes";
-import { Target } from "./compiler/target";
-import { BundleReport, fromTarget } from "./compiler/bundleReport";
 
 const PAGE_CACHE_CONTROL: string = "no-cache";
 const STATIC_CACHE_CONTROL: string = "max-age=29000000,public,immutable,no-transform";

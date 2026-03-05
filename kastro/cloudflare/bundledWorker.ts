@@ -1,56 +1,42 @@
 import { CompressedMimes, Mimes } from "../workers/mimes";
-import { ModuleWorker } from "./moduleWorker.d";
-import { CfRequest } from "./types.d";
+import { BundledWorkerEnv } from "./bundledWorker.d";
+import { CfRequest, ModuleWorker } from "./moduleWorker.d";
 
-/** @define {string} */
-const HOST_URL = "";
-/** @define {Record<string, string>} */
-const ETAGS = {};
-/** @const {string} */
+/** @define */
+const HOST_URL: string = "";
+/** @define */
+const ETAGS: Record<string, string> = {};
+
 const PAGE_CACHE_CONTROL = "max-age=100,public,no-transform";
-/** @const {string} */
 const STATIC_CACHE_CONTROL = "max-age=29000000,public,immutable,no-transform";
 
-/** @type {ModuleWorker} */
 const Worker = {
-  /**
-   * @override
-   * @param {CfRequest} req
-   * @return {Promise<Response> | Response}
-   */
-  fetch(req, env) {
-    /** @const {string} */
+  fetch(
+    req: CfRequest,
+    env: BundledWorkerEnv,
+  ): Promise<Response> | Response {
     const path = new URL(req.url).pathname.slice(1);
-    /** @const {number} */
     const dot = path.indexOf(".");
-    /** @const {string} */
     const suffix = path.slice(dot + 1);
-    /** @const {string} */
     const enc = req.cf.clientAcceptEncoding || "";
-    /** @const {string} */
     const ext = (dot != -1 && CompressedMimes[suffix])
       ? ""
       : enc.includes("br") ? ".br" : enc.includes("gz") ? ".gzip" : "";
-    /** @type {string} */
     let resolvedPath = path;
     if (!path) {
-      /** @const {string | null} */
       const cookie = req.headers.get("cookie")
-      /** @const {number} */
       const leq = cookie ? cookie.indexOf("l=") : -1;
       resolvedPath = (leq != -1)
-        ? /** @type {string} */(cookie).slice(leq + 2, leq + 4)
-        : req.headers.get("accept-language")
-          ?.includes("tr") ? "tr" : "en"
+        ? (cookie as string).slice(leq + 2, leq + 4)
+        : req.headers.get("accept-language")?.includes("tr")
+          ? "tr" : "en"
     }
-    /** @const {string | null} */
     const maybeEtag = ETAGS[resolvedPath];
     if (maybeEtag && req.headers.get("if-none-match") == maybeEtag)
       return new Response(null, { status: 304 });
 
-    const serve = (arrBuff) => {
-      /** @const {Record<string, string | number>} */
-      const headers = {
+    const serve = (arrBuff: ArrayBuffer): Response => {
+      const headers: Record<string, string | number> = {
         "cache-control": (dot == -1 || maybeEtag) ? PAGE_CACHE_CONTROL : STATIC_CACHE_CONTROL,
         "content-type": dot == -1 ? "text/html;charset=utf-8" : Mimes[suffix],
         "content-length": arrBuff.byteLength,
@@ -66,16 +52,16 @@ const Worker = {
         headers["content-encoding"] = ext.slice(1);
       if (suffix == "woff2" || suffix == "ttf")
         headers["access-control-allow-origin"] = "*";
-      return new Response(arrBuff, { headers, "encodeBody": "manual" });
+      return new Response(arrBuff, { headers, "encodeBody": "manual" } as ResponseInit);
     };
 
     const assetName = resolvedPath + ext.slice(0, 3);
     return import(assetName)
       .then(
         ({ default: arrBuff }) => serve(arrBuff),
-        () => env.KV.get(assetName, "arrayBuffer").then(serve))
+        () => env.K.get(assetName, "arrayBuffer").then(serve))
       .catch(() => Response.redirect(HOST_URL));
   },
-};
+} as ModuleWorker;
 
 export default Worker;

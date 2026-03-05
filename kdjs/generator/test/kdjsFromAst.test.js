@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { TsParser } from "../../parser/tsParser";
+import { Modifier } from "../../types/modifier";
 import { generate } from "../kdjsFromAst";
 
 describe("VariableDeclaration", () => {
@@ -34,6 +35,14 @@ describe("VariableDeclaration", () => {
   test("single declarator without type", () => {
     const ast = TsParser.parse('const x = 1;');
     expect(generate(ast.body[0])).toBe("const x = 1");
+  });
+
+  test("@define emits /** @define */ before const", () => {
+    const ast = TsParser.parse(`/** @define */
+const N: bigint = 100n;
+`);
+    expect(ast.body[0].modifiers).toBe(Modifier.Define);
+    expect(generate(ast.body[0])).toBe("/** @define {bigint} */\nconst N = 100n");
   });
 
   test("array destructuring", () => {

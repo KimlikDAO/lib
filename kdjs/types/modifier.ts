@@ -20,4 +20,14 @@ enum Modifier {
   Pure = 64 | 128,
 }
 
-export { Modifier };
+const modifiersFromJsDoc = (jsDoc: string): number => {
+  let modifiers = 0;
+  if (jsDoc.includes("@noinline")) modifiers |= Modifier.NoInline;
+  if (jsDoc.includes("@nosideeffects")) modifiers |= Modifier.NoSideEffects;
+  if (jsDoc.includes("@pure")) modifiers |= Modifier.Pure;
+  if (jsDoc.includes("@noinline")) modifiers |= Modifier.NoInline;
+  if (jsDoc.includes("@define")) modifiers |= Modifier.Define;
+  return modifiers;
+}
+
+export { Modifier, modifiersFromJsDoc };

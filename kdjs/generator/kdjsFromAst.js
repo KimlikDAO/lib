@@ -1,4 +1,5 @@
 import { partition } from "../../util/arrays";
+import { Modifier } from "../types/modifier";
 
 const determineEnumType = () => "string";
 
@@ -115,14 +116,7 @@ class Generator {
     const [properties, methods] = partition(n.body, (c) => c.type.charCodeAt(2) == 80); // 80 is "P".charCodeAt(0)
     if (properties.length) {
       this.ret();
-      this.put("constructor() {"); this.inc();
-      for (const property of properties) {
-        this.ret();
-        this.jsDocType(property);
-        this.put("this."); this.rec(property.key); this.put(";");
-      }
-      this.dec(); this.ret();
-      this.put("}")
+      this.constructorFromProps(properties);
     }
     this.arrLines(methods, "");
     this.dec(); this.ret(); this.put("}");
@@ -256,9 +250,14 @@ class Generator {
     this.put(" "); this.rec(n.body);
   }
   ClassBody(n) {
-    this.put("{");
-    this.inc(); this.arrLines(n.body, ""); this.dec(); this.ret();
-    this.put("}");
+    this.put("{"); this.inc();
+    const [properties, methods] = partition(n.body, (c) => c.type.charCodeAt(0) == 80); // 80 is "P".charCodeAt(0)
+    if (properties.length) {
+      this.ret();
+      this.constructorFromProps(properties);
+    }
+    this.arrLines(methods, "");
+    this.dec(); this.ret(); this.put("}");
   }
   MethodDefinition(n) {
     this.jsDoc(n.value);
@@ -270,16 +269,20 @@ class Generator {
       this.rec(n.value.body);
   }
   VariableDeclaration(n) {
+    if ((n.modifiers & Modifier.Define)
+      && (n.declarations.length != 1 || !n.declarations[0].id.typeAnnotation))
+      throw "A @define variable declaration must have a single typed declarator";
+
     const [typed, untyped] = partition(n.declarations, genJsDocType);
-    this.arrInner(typed, ";", n.kind);
+    this.arrInner(typed, ";", n.kind, n.modifiers);
     if (untyped.length) {
       this.put(n.kind + " "); this.arr(untyped, ", ");
     }
   }
-  VariableDeclarator(n, kind) {
+  VariableDeclarator(n, kind, modifiers) {
     if (kind) {
-      if (n.init && n.init.type.endsWith("FunctionExpression")) this.jsDoc(n.init);
-      else this.jsDocType(n.id, kind);
+      if (n.init && n.init.type.endsWith("FunctionExpression")) this.jsDoc(n.init, modifiers);
+      else this.jsDocType(n.id, modifiers & Modifier.Define ? "define" : kind);
       this.put(kind + " "); this.rec(n.id);
       if (n.init) { this.put(" = "); this.rec(n.init); }
     } else {
@@ -321,7 +324,7 @@ class Generator {
 
   // KDJS jsdoc
   jsDocType(n, kind) {
-    const tag = kind == "const" ? kind : "type";
+    const tag = (!kind || kind == "let") ? "type" : kind;
     this.put(`/** @${tag} {`); this.rec(n.typeAnnotation); this.put("} */"); this.ret();
   }
   jsDoc(n) {
@@ -342,6 +345,16 @@ class Generator {
     this.ret();
     this.put(" * @return {"); this.rec(retType); this.put("}"); this.ret();
     this.ret(" */");
+  }
+  constructorFromProps(props) {
+    this.put("constructor() {"); this.inc();
+    for (const prop of props) {
+      this.ret();
+      this.jsDocType(prop);
+      this.put("this."); this.rec(prop.key); this.put(";");
+    }
+    this.dec(); this.ret();
+    this.put("}")
   }
   constructorBody(params, body) {
     this.put("{"); this.inc();

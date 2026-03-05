@@ -15,12 +15,12 @@ const JsxParser = acorn.Parser.extend(
 );
 
 /** Replacer for JSON.stringify that drops typeExpression keys. */
-function omitTypeExpressionReplacer(key: string, value: any): any {
-	return key === "typeExpression" ? undefined : value;
+function omitExtraProps(key: string, value: any): any {
+	return (key == "typeExpression" || key == "modifiers") ? undefined : value;
 }
 
 function equalNode(node: any, snapshot: any) {
-	expect(JSON.parse(JSON.stringify(node, omitTypeExpressionReplacer))).toEqual(snapshot);
+	expect(JSON.parse(JSON.stringify(node, omitExtraProps))).toEqual(snapshot);
 }
 
 function parseDtsSource(input: string) {
@@ -75,5 +75,5 @@ export {
 	parseSource,
 	parseSourceShouldThrowError,
 	generateSource,
-	omitTypeExpressionReplacer
+	omitExtraProps as omitTypeExpressionReplacer
 };

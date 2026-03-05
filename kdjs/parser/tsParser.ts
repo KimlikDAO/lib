@@ -9,6 +9,7 @@ import { AcornParseClass } from "./middleware";
 import { checkKeyName, DestructuringErrors, isPrivateNameConflicted } from "./parseutil";
 import { TS_SCOPE_OTHER, TS_SCOPE_TS_MODULE } from "./scopeflags";
 import { generateAcornTypeScript } from "./tokenType";
+import { modifiersFromJsDoc } from "../types/modifier";
 import {
   Accessibility,
   LookaheadState,
@@ -220,6 +221,7 @@ function tsPlugin(options?: {
        * */
       importOrExportOuterKind: string | undefined = undefined;
       ecmaVersion: number;
+      stashedVariableModifiers: number | undefined = undefined;
 
       constructor(options: Options, input: string, startPos?: number) {
         super(options, input, startPos);
@@ -299,6 +301,10 @@ function tsPlugin(options?: {
           return node;
         }
         const result = super.finishNode(node, type);
+        if (type === 'VariableDeclaration' && this.stashedVariableModifiers !== undefined) {
+          (result as { modifiers?: number }).modifiers = this.stashedVariableModifiers;
+          this.stashedVariableModifiers = undefined;
+        }
         if (type.startsWith("TS") || type === "ArrowFunctionExpression") propagateType(result);
         return result;
       }
@@ -672,6 +678,7 @@ function tsPlugin(options?: {
             this.curPosition()
           );
         }
+        this.stashedVariableModifiers = modifiersFromJsDoc(this.input.slice(start + 2, end));
       }
 
       skipLineComment(startSkip) {

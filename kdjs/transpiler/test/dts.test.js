@@ -176,7 +176,7 @@ test("type alias (readonly T[])[] emits parenthesized readonly in typedef", () =
 
 test("moduleWorker.d.ts - log output", () => {
   const input = `
-interface CfRequest extends Request {
+class CfRequest extends Request {
   cf: { clientAcceptEncoding?: string }
 }
 
@@ -191,9 +191,6 @@ export { CfRequest, ModuleWorker, Env };
   const result = transpile(input, "moduleWorker.d.ts");
   expect(result).toBe(`
 /** @externs */
-/**
- * @interface
- */
 class kdjs$$moduleWorker$CfRequest extends Request {
   constructor() {
     /** @type {{
