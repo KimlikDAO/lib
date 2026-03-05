@@ -1,14 +1,11 @@
 import "./api.d";
 
-/**
- * @struct
- * @typedef {{
- *   accountId: string,
- *   zoneId: string,
- *   token: string
- * }}
- */
-const Auth = {};
+interface Auth {
+  accountId: string;
+  token: string;
+}
+
+interface ApiResponse {}
 
 /** @const {string} */
 const ApiV4 = "https://api.cloudflare.com/client/v4";
