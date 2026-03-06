@@ -81,7 +81,7 @@ class kdjs$$api$jsonrpc$Request {
     /** @type {number | string} */
     this.id;
   }
-};
+}
 /**
  * @interface
  */
@@ -96,7 +96,7 @@ class kdjs$$api$jsonrpc$Response {
     /** @type {number | string} */
     this.id;
   }
-};
+}
 `.slice(1))
 });
 
@@ -132,7 +132,7 @@ class kdjs$$api$client$ApiClient {
    * @return {Promise<string>}
    */
   sendTransaction(tx) {}
-};
+}
 `.slice(1));
 });
 
@@ -164,7 +164,7 @@ class kdjs$$test$provider$ExtendedProvider extends kdjs$$api$provider$BaseProvid
    * @return {void}
    */
   additionalMethod() {}
-};
+}
 `.slice(1));
 });
 
@@ -198,12 +198,12 @@ class kdjs$$moduleWorker$CfRequest extends Request {
     }} */
     this.cf;
   }
-};
+}
 /**
  * @interface
  */
 class kdjs$$moduleWorker$Env {
-};
+}
 /**
  * @interface
  */
@@ -214,6 +214,6 @@ class kdjs$$moduleWorker$ModuleWorker {
    * @return {Promise<Response> | Response}
    */
   fetch(req, env) {}
-};
+}
 `.slice(1));
 });

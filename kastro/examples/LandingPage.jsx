@@ -7,9 +7,7 @@ import Css from "./LandingPage.css";
  * @param {{ Lang: LangCode }} props
  */
 const LandingPage = ({ Lang }) => {
-  /** @const {HTMLButtonElement} */
   const Button = dom.button(Css.ButtonId);
-  /** @const {HTMLSpanElement} */
   const Text = dom.span(Css.TextId);
 
   return (

@@ -1,11 +1,8 @@
 import { ApiV4, Auth } from "./api";
-import { KvListKeysResponse, KvListKeysResult } from "./keyValues.d";
-
-const isPaginatedResult = (
-  result: KvListKeysResponse["result"]
-): result is KvListKeysResult => {
-  return result != null && typeof result === "object" && "keys" in result;
-}
+import {
+  KvListKeysResult,
+  KvListKeysResponse,
+} from "./keyValues.d";
 
 /**
  * Fetches all existing key names from a KV namespace (handles pagination).
@@ -16,26 +13,25 @@ const getExistingKeys = async (
 ): Promise<Set<string>> => {
   const keys = new Set<string>();
   let cursor: string | undefined;
+  const url = new URL(
+    `${ApiV4}/accounts/${auth.accountId}/storage/kv/namespaces/${namespaceId}/keys`);
   do {
-    const url = new URL(
-      `${ApiV4}/accounts/${auth.accountId}/storage/kv/namespaces/${namespaceId}/keys`
-    );
     url.searchParams.set("limit", "1000");
     if (cursor) url.searchParams.set("cursor", cursor);
 
-    const res = await fetch(url.toString(), {
+    const res = await fetch(url, {
       headers: { authorization: `Bearer ${auth.token}` }
     });
+    if (!res.ok) throw await res.text();
     const data = (await res.json()) as KvListKeysResponse;
-    if (!res.ok) throw new Error(JSON.stringify(data));
-
     const result = data.result;
-    if (isPaginatedResult(result)) {
-      for (const k of result.keys) keys.add(k.name);
-      if (result.list_complete) {
+    if (result != null && typeof result == "object" && "list_complete" in result) {
+      const r = result as KvListKeysResult;
+      for (const k of r.keys) keys.add(k.name);
+      if (r.list_complete) {
         cursor = void 0;
       } else {
-        cursor = result.cursor;
+        cursor = r.cursor;
       }
     } else if (Array.isArray(result)) {
       for (const item of result) keys.add(item.name);
@@ -48,31 +44,36 @@ const getExistingKeys = async (
 
 /**
  * Uploads only keys that do not already exist in the namespace.
- * Gets existing keys, diffs against the provided record, and PUTs each new key-value pair.
+ * Fetches existing keys, diffs against the provided record, and bulk-PUTs new key-value pairs.
  */
-const uploadNewKeys = async (
+const upload = async (
   auth: Auth,
   namespaceId: string,
   entries: Record<string, ArrayBuffer>
-): Promise<{ uploaded: string[] }> => {
+): Promise<void> => {
   const existing = await getExistingKeys(auth, namespaceId);
   const toUpload = Object.keys(entries).filter((key) => !existing.has(key));
-  const base = `${ApiV4}/accounts/${auth.accountId}/storage/kv/namespaces/${namespaceId}/values`;
+  if (toUpload.length == 0) return;
 
-  for (const key of toUpload) {
-    const value = entries[key];
-    const res = await fetch(`${base}/${encodeURIComponent(key)}`, {
-      method: "PUT",
-      headers: { authorization: `Bearer ${auth.token}` },
-      body: value
-    });
-    if (!res.ok) throw new Error(`KV put failed for ${key}: ${await res.text()}`);
-  }
-
-  return { uploaded: toUpload };
+  const url = `${ApiV4}/accounts/${auth.accountId}/storage/kv/namespaces/${namespaceId}/bulk`;
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: {
+      authorization: `Bearer ${auth.token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(
+      toUpload.map((key) => ({
+        key,
+        value: new Uint8Array(entries[key]).toBase64(),
+        base64: true
+      }))
+    )
+  });
+  if (!res.ok) throw `KV bulk put failed: ${await res.text()}`;
 }
 
 export default {
   getExistingKeys,
-  uploadNewKeys
+  upload
 };

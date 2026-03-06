@@ -85,7 +85,7 @@ const transpileDts = (content, sourcePath) => {
 
   for (const node of ast.body)
     if (EmittedNodes[node.type])
-      output += generate(node, typeMap) + ";\n";
+      output += generate(node, typeMap) + "\n";
   return output;
 };
 

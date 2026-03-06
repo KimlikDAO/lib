@@ -1,7 +1,8 @@
 
-interface Auth {
-  accountId: string;
-  apiToken: string;
+interface CloudflareDeployConfig {
+  workerName: string;
+  namespaceId: string;
+  zoneId: string;
 }
 
-export { Auth };
+export { CloudflareDeployConfig };

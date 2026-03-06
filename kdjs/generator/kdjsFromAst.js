@@ -44,7 +44,8 @@ class Generator {
   dec() { this.indent = this.indent.slice(0, -2); }
   ret(c) { this.out += (c ?? "") + "\n" + this.indent; }
   put(s) { this.out += s; }
-  doc() { this.indent += " * "; this.out += "/**";  }
+  del() { this.out = this.out.slice(0, -1); }
+  doc() { this.indent += " * "; this.out += "/**"; }
   cod() {
     const ind = this.indent = this.indent.slice(0, -3);
     this.out += "\n" + ind + " */\n" + ind;
@@ -69,10 +70,10 @@ class Generator {
       this.ret(); this.rec(x, ...rest);
     }
   }
-  arrInner(a, sep, ...rest) {
+  arrInner(a, ...rest) {
     let first = true;
     for (const x of a) {
-      if (first) first = false; else { this.put(sep); this.ret(); }
+      if (first) first = false; else this.ret();
       this.rec(x, ...rest);
     }
   }
@@ -121,14 +122,14 @@ class Generator {
     this.put(`/** @enum {${type}} */`); this.ret();
     this.put("const "); this.rec(n.id); this.put(" = {");
     this.inc(); this.arrLines(n.members, ","); this.dec(); this.ret();
-    this.put("}");
+    this.put("};");
   }
   TSEnumMember(n) { this.rec(n.id); this.put(": "); this.rec(n.initializer); }
   TSTypeAliasDeclaration(n) {
     this.doc(); this.ret();
     this.put("@typedef {"); this.rec(n.typeAnnotation); this.put("}");
     this.cod();
-    this.put("const "); this.rec(n.id); this.put(" = {}");
+    this.put("const "); this.rec(n.id); this.put(" = {};");
   }
   TSInterfaceDeclaration(n) {
     this.doc(); this.ret();
@@ -172,6 +173,7 @@ class Generator {
     }
     this.put("]");
   }
+  AwaitExpression(n) { this.put("await "); this.rec(n.argument); }
   BinaryExpression(n) {
     this.put("("); this.rec(n.left); this.put(` ${n.operator} `); this.rec(n.right); this.put(")");
   }
@@ -204,6 +206,7 @@ class Generator {
   LogicalExpression(n) { this.rec(n.left); this.put(` ${n.operator} `); this.rec(n.right); }
   SequenceExpression(n) { this.arr(n.expressions, ", "); }
   ObjectExpression(n) {
+    if (n.properties.length == 0) { this.put("{}"); return; }
     this.put("{");
     this.inc(); this.arrLines(n.properties, ","); this.dec(); this.ret();
     this.put("}");
@@ -217,6 +220,16 @@ class Generator {
     } else {
       this.rec(n.key); if (!n.shorthand) { this.put(": "); this.rec(n.value); }
     }
+  }
+  TemplateLiteral(n) {
+    this.put("`");
+    for (let i = 0; i < n.quasis.length; ++i) {
+      this.put(n.quasis[i].value.raw);
+      if (i < n.expressions.length) {
+        this.put("${"); this.rec(n.expressions[i]); this.put("}");
+      }
+    }
+    this.put("`");
   }
   UnaryExpression(n) { this.put(n.operator); this.rec(n.argument); }
   UpdateExpression(n) {
@@ -250,7 +263,7 @@ class Generator {
       if (i > 0) this.put(", ");
       this.put("{ "); this.arr(specifiers.slice(i), ", "); this.put(" }");
     }
-    this.put(" from "); this.rec(n.source);
+    this.put(" from "); this.rec(n.source); this.put(";");
   }
   ImportSpecifier(n) {
     if (n.imported.name != n.local.name) { this.rec(n.imported); this.put(" as "); }
@@ -260,11 +273,11 @@ class Generator {
   ExportNamedDeclaration(n) {
     this.ret();
     if (n.specifiers.length < 3) {
-      this.put("export { "); this.arr(n.specifiers, ", "); this.put(" }");
+      this.put("export { "); this.arr(n.specifiers, ", "); this.put(" };");
     } else {
       this.put("export {");
       this.inc(); this.arrLines(n.specifiers, ","); this.dec(); this.ret();
-      this.put("}");
+      this.put("};");
     }
   }
   ExportSpecifier(n) {
@@ -306,9 +319,10 @@ class Generator {
       throw "A @define variable declaration must have a single typed declarator";
 
     const [typed, untyped] = partition(n.declarations, genJsDocType);
-    this.arrInner(typed, ";", n.kind, n.modifiers);
+    this.arrInner(typed, n.kind, n.modifiers);
     if (untyped.length) {
-      this.put(n.kind + " "); this.arr(untyped, ", ");
+      if (typed.length) this.ret();
+      this.put(n.kind + " "); this.arr(untyped, ", "); this.put(";");
     }
   }
   VariableDeclarator(n, kind, modifiers) {
@@ -316,7 +330,7 @@ class Generator {
       if (n.init && n.init.type.endsWith("FunctionExpression")) this.jsDoc(n.init, modifiers);
       else this.jsDocType(n.id, modifiers & Modifier.Define ? "define" : kind);
       this.put(kind + " "); this.rec(n.id);
-      if (n.init) { this.put(" = "); this.rec(n.init); }
+      if (n.init) { this.put(" = "); this.rec(n.init); } this.put(";");
     } else {
       this.rec(n.id);
       if (n.init) { this.put(" = "); this.rec(n.init); }
@@ -324,36 +338,38 @@ class Generator {
   }
   ArrayPattern(n) { this.put("["); this.arr(n.elements, ", "); this.put("]"); }
   ObjectPattern(n) { this.put("{ "); this.arr(n.properties, ", "); this.put(" }"); }
-  ContinueStatement(n) { this.put("continue"); if (n.label) { this.put(" "); this.rec(n.label); } }
-  ExpressionStatement(n) { this.rec(n.expression); }
-  ThrowStatement(n) { this.put("throw "); this.rec(n.argument); }
+  AssignmentPattern(n) { this.rec(n.left); this.put(" = "); this.rec(n.right); }
+  ContinueStatement(n) { this.put("continue;"); if (n.label) { this.put(" "); this.rec(n.label); } }
+  ExpressionStatement(n) { this.rec(n.expression); this.put(";"); }
+  ThrowStatement(n) { this.put("throw "); this.rec(n.argument); this.put(";"); }
   IfStatement(n) {
     this.put("if ("); this.rec(n.test); this.put(")");
     this.blockLike(n.consequent);
     if (n.alternate) {
-      this.ret(";"); this.put("else");
-      this.blockLike(n.alternate, true);
+      if (n.consequent.type == "BlockStatement") this.put(" "); else this.ret();
+      this.put("else"); this.blockLike(n.alternate, true);
     }
   }
   ForStatement(n) {
     this.put("for (");
-    this.rec(n.init); this.put("; "); this.rec(n.test); this.put("; "); this.rec(n.update);
+    if (n.init) { this.rec(n.init); this.put(" "); } else this.put("; ");
+    this.rec(n.test); this.put("; "); this.rec(n.update);
     this.put(")");
     this.blockLike(n.body);
   }
   ForOfStatement(n, of = " of ") {
-    this.put("for ("); this.rec(n.left); this.put(of); this.rec(n.right); this.put(")");
+    this.put("for ("); this.rec(n.left); this.del(); this.put(of); this.rec(n.right); this.put(")");
     this.blockLike(n.body);
   }
   ForInStatement(n) { this.ForOfStatement(n, " in "); }
   WhileStatement(n) { this.put("while ("); this.rec(n.test); this.put(")"); this.blockLike(n.body); }
-  ReturnStatement(n) { this.put("return "); this.rec(n.argument); }
+  ReturnStatement(n) { this.put("return "); this.rec(n.argument); this.put(";"); }
   BlockStatement(n) {
     this.put("{");
-    this.inc(); this.arrLines(n.body, ";"); this.put(";"); this.dec(); this.ret();
+    this.inc(); this.arrLines(n.body, ""); this.dec(); this.ret();
     this.put("}");
   }
-  Program(n) { this.arrInner(n.body, ";"); this.ret(";"); }
+  Program(n) { this.arrInner(n.body); this.ret(); }
 
   // KDJS jsdoc
   jsDocType(n, kind) {
@@ -369,11 +385,16 @@ class Generator {
         this.ret(); this.put("@template "); this.rec(param);
       }
     if (override) { this.ret(); this.put("@override"); }
-    for (const param of params) {
+    for (let param of params) {
+      let isOptional = param.optional;
+      if (param.type == "AssignmentPattern") {
+        isOptional = true;
+        param = param.left;
+      }
       const typeAnnotation = param.typeAnnotation || param.parameter.typeAnnotation;
       this.ret();
       this.put("@param {"); this.rec(typeAnnotation);
-      if (param.optional) this.put("="); this.put("} "); this.rec(param);
+      if (isOptional) this.put("="); this.put("} "); this.rec(param);
     }
     this.ret();
     this.put("@return {"); this.rec(retType); this.put("}");
@@ -399,7 +420,7 @@ class Generator {
     this.jsDoc(ctor.value);
     this.put("constructor("); this.arr(params, ", "); this.put(")");
     this.put(" {"); this.inc();
-    this.arrLines(body, ";"); if (body.length) this.put(";");
+    this.arrLines(body, "");
     for (const param of params)
       if (param.type.charCodeAt(0) == 84) {
         this.ret();

@@ -9,32 +9,32 @@ describe("VariableDeclaration", () => {
     const decl = ast.body[0];
     const typeNode = decl;
     expect(generate(typeNode)).toBe(
-      "/** @type {number} */\nlet x = 1;\n/** @type {string} */\nlet y = \"1\""
+      "/** @type {number} */\nlet x = 1;\n/** @type {string} */\nlet y = \"1\";"
     );
   });
 
   test("all untyped declarators on one line", () => {
     const ast = TsParser.parse('const a = 1, b = 2;');
-    expect(generate(ast.body[0])).toBe("const a = 1, b = 2");
+    expect(generate(ast.body[0])).toBe("const a = 1, b = 2;");
   });
 
   test("mixed typed and untyped: typed one per line, untyped on one line", () => {
     const ast = TsParser.parse('const x: number = 1, y = 2;');
     expect(generate(ast.body[0])).toBe(
-      "/** @const {number} */\nconst x = 1const y = 2"
+      "/** @const {number} */\nconst x = 1;\nconst y = 2;"
     );
   });
 
   test("single declarator with type", () => {
     const ast = TsParser.parse('const x: number = 1;');
     expect(generate(ast.body[0])).toBe(
-      "/** @const {number} */\nconst x = 1"
+      "/** @const {number} */\nconst x = 1;"
     );
   });
 
   test("single declarator without type", () => {
     const ast = TsParser.parse('const x = 1;');
-    expect(generate(ast.body[0])).toBe("const x = 1");
+    expect(generate(ast.body[0])).toBe("const x = 1;");
   });
 
   test("@define emits /** @define */ before const", () => {
@@ -42,12 +42,12 @@ describe("VariableDeclaration", () => {
 const N: bigint = 100n;
 `);
     expect(ast.body[0].modifiers).toBe(Modifier.Define);
-    expect(generate(ast.body[0])).toBe("/** @define {bigint} */\nconst N = 100n");
+    expect(generate(ast.body[0])).toBe("/** @define {bigint} */\nconst N = 100n;");
   });
 
   test("array destructuring", () => {
     const ast = TsParser.parse("const [a,b,c,d] = g;");
-    expect(generate(ast.body[0])).toBe("const [a, b, c, d] = g");
+    expect(generate(ast.body[0])).toBe("const [a, b, c, d] = g;");
   });
 });
 
@@ -81,7 +81,7 @@ const ChainId = {
   MinaBerkeley: "mina:berkeley",
   MinaMainnet: "mina:mainnet",
   MinaTestnet: "mina:testnet"
-}`.slice(1));
+};`.slice(1));
   });
 });
 
@@ -89,7 +89,7 @@ describe("Arrays", () => {
   test("readonly array", () => {
     const ast = TsParser.parse("const ChainGroups: readonly ChainGroup[] = [ChainGroup.EVM, ChainGroup.MINA];");
     expect(generate(ast.body[0])).toBe(
-      "/** @const {readonly ChainGroup[]} */\nconst ChainGroups = [ChainGroup.EVM, ChainGroup.MINA]"
+      "/** @const {readonly ChainGroup[]} */\nconst ChainGroups = [ChainGroup.EVM, ChainGroup.MINA];"
     );
   });
 });
@@ -132,7 +132,7 @@ class Signer {
    * @return {Promise<Signature>}
    */
   signMessage(message, address) {}
-};
+}
 
 export { Signature, Signer };
 `.slice(1));
@@ -213,7 +213,7 @@ class WalletConnector extends Signer {
    * @return {Promise<unknown> | void}
    */
   switchChain(chainId) {}
-};
+}
 
 export { Provider, WalletConnector };
 `.slice(1));
@@ -298,7 +298,7 @@ class Point {
    * @return {Point}
    */
   copy() {}
-};
+}
 /**
  * @param {bigint} a
  * @param {Point} X
@@ -320,7 +320,7 @@ const aX_bY = (a, X, b, Y) => {
   for (let i = 1; (i < aBits.length); ++i) {
     R.double();
     R.increment(d[((aBits.charCodeAt(i) - 48) + (2 * (bBits.charCodeAt(i) - 48)))]);
-  };
+  }
   return R;
 };
 
@@ -447,7 +447,7 @@ class Provider {
    * @return {Promise<WideSignature>}
    */
   signData(address, typedData) {}
-};
+}
 /**
  * @implements {Provider}
  */
@@ -495,7 +495,7 @@ class RemoteProvider {
       if (receipt) {
         clearInterval(interval);
         then();
-      };
+      }
     }), 1000);
   }
   /**
@@ -509,7 +509,7 @@ class RemoteProvider {
       params: [address, JSON.stringify(typedData)]
     })));
   }
-};
+}
 
 export { Provider, RemoteProvider };
 `.slice(1));
@@ -527,6 +527,6 @@ while (i < 3) {
 let i = 0;
 while ((i < 3)) {
   i++;
-};
+}
 `.slice(1));
 });
