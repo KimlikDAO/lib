@@ -1,28 +1,19 @@
 import { pow7 } from "./modular";
 
-/**
- * @noinline
- * @const {bigint}
- */
+/** @noinline */
 const P = (1n << 254n) + 0x224698fc094cf91b992d30ed00000001n;
 
-/**
- * @param {bigint[]} vals
- * @return {bigint}
- */
-const poseidon = (vals) => {
+/** @pure */
+const poseidon = (vals: bigint[]): bigint => {
   const n = vals.length;
   let s0 = 0n;
   let s1 = 0n;
   let s2 = 0n;
-  /** @type {bigint} */
-  let t0;
-  /** @type {bigint} */
-  let t1;
-  /** @type {bigint} */
-  let t2;
+  let t0: bigint;
+  let t1: bigint;
+  let t2: bigint;
   if (n & 1) vals.push(0n);
-  for (let /** number */ i = 0; i < n; i += 2) {
+  for (let i = 0; i < n; i += 2) {
     s0 += vals[i]; s0 %= P;
     s1 += vals[i + 1]; s1 %= P;
     for (let j = 0; j < 55; ++j) {
@@ -50,11 +41,8 @@ const md20 = 0x174544357b687f65a9590c1df621818b5452d5d441597a94357f112316ef67cbn
 const md21 = 0x3ca9263dc1a19d17cfbf15b0166bb25f95dffc53212db207fcee35f02c2c4137n;
 const md22 = 0x3cf1fbef75d4ab63b7a812f80b7b0373b2dc21d269ba7c4c4d6581d50aae114cn;
 
-/**
- * @noinline
- * @const {bigint[]}
- */
-const rc0 = [
+/** @noinline */
+const rc0: readonly bigint[] = [
   0x2ec559cd1a1f2f6889fc8ae5f07757f202b364429677c8ff6603fd6d93659b47n,
   0x37c0281fda664cc2448d0e7dd77aaa04752250817a945abeea8cfaaf3ee39ba0n,
   0x21b7c2b35fd7710b06245711f26c0635d3e21de4db10dd3a7369f59f468d7be6n,
@@ -112,11 +100,8 @@ const rc0 = [
   0xe10c10cbbe1717a9441c6299c4fc087c222208bd4fa8f3be66d2075f623b513n,
 ];
 
-/**
- * @noinline
- * @const {bigint[]}
- */
-const rc1 = [
+/** @noinline */
+const rc1: readonly bigint[] = [
   0x2553b08c788551bfe064d91c17eb1edb8662283229757711b2b30895f0aa3badn,
   0x140488321291998b8582eaceeb3fa9ca3980eb64a453573c5aaa2910405936b6n,
   0x1803a068d25fef2ef652c8a4847aa18a29d1885e7bf77fd6a34d66536d09cad7n,
@@ -174,11 +159,8 @@ const rc1 = [
   0x1e8b254cbff2c92a83dff1728c81dd22a9570f590e497cb2d640042cb879a930n,
 ];
 
-/**
- * @noinline
- * @const {bigint[]}
- */
-const rc2 = [
+/** @noinline */
+const rc2: readonly bigint[] = [
   0x25a706fb0f35b260b6f28d61e082d36a8f161be1f4d9416371a7b65f2bfafe4en,
   0x3a73fe35b1bdd66b809aad5eab47b5c83b0146fd7fc632dfb49cd91ae1169378n,
   0x291de61c5e6268213772cf7e03c80c2e833eb77c58c46548d158a70fbbd9724bn,

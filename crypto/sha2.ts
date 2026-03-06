@@ -2,21 +2,14 @@
  * @author KimlikDAO
  */
 
-/**
- * Initial constants
- * @const {readonly number[]}
- */
-const IC = [
+// Initial constants
+const IC: readonly number[] = [
   0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
   0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
 ];
 
-/**
- * Round constants for each of the 64 rounds.
- *
- * @const {readonly number[]}
- */
-const RC = [
+// Round constants for each of the 64 rounds.
+const RC: readonly number[] = [
   0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
   0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
   0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
@@ -30,13 +23,11 @@ const RC = [
 /**
  * Given a Uint32Array of length at most 2^32 - 1, outputs the sha256
  * as a Uint32Array of length 8.
- *
- * @param {Uint32Array} words
- * @return {Uint32Array} hash as Uint32Array of length 8.
+ * @pure
  */
-const sha256Uint32 = (words) => {
+const sha256Uint32 = (words: Uint32Array): Uint32Array => {
   const n = words.length;
-  const s = new Uint32Array(/** @type {number[]} */(IC));
+  const s = new Uint32Array(IC as number[]);
   const t = new Uint32Array(64);
   let i = 0;
   for (const end = n - 15; i < end; i += 16) {
@@ -58,8 +49,7 @@ const sha256Uint32 = (words) => {
   return s;
 }
 
-/** @param {Uint32Array} t */
-const extend = (t) => {
+const extend = (t: Uint32Array): void => {
   for (let i = 16, t1, s0, s1; i < 64; ++i) {
     t1 = t[i - 15];
     s0 = ((t1 >>> 7) | (t1 << 25)) ^ ((t1 >>> 18) | (t1 << 14)) ^ (t1 >>> 3);
@@ -71,11 +61,8 @@ const extend = (t) => {
 
 /**
  * The sha256 compression function, implemented 1:1 without loop unrolling.
- *
- * @param {Uint32Array} s The 8 word working tape, which is also the final out.
- * @param {Uint32Array} t The 64 word working tape.
  */
-const g = (s, t) => {
+const g = (s: Uint32Array, t: Uint32Array): void => {
   extend(t);
   let [a, b, c, d, e, f, g, h] = s;
   for (let i = 0, s0, s1, t1, ch, maj; i < 64; ++i) {
@@ -93,12 +80,9 @@ const g = (s, t) => {
 
 /**
  * Computes HMAC-SHA256 for a key of length at most 16 words (64 bytes).
- *
- * @param {Uint32Array} key The key for HMAC
- * @param {Uint32Array} message The message to authenticate
- * @return {Uint32Array} The HMAC-SHA256 output as a Uint32Array of length 8
+ * @pure
  */
-const hmacUint32 = (key, message) => {
+const hmacUint32 = (key: Uint32Array, message: Uint32Array): Uint32Array => {
   const m = key.length;
   const inner = new Uint32Array(16 + message.length);
   const outer = new Uint32Array(16 + 8);

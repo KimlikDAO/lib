@@ -1,28 +1,17 @@
 import { pow5 } from "./modular";
 
-/**
- * @noinline
- * @const {bigint}
- */
+/** @noinline */
 const P = (1n << 254n) + 0x224698fc094cf91b992d30ed00000001n;
 
-/**
- * @param {bigint[]} vals
- * @return {bigint}
- */
-const poseidon = (vals) => {
+/** @pure */
+const poseidon = (vals: bigint[]): bigint => {
   const n = vals.length;
-  let s0 = 0n;
-  let s1 = 0n;
-  let s2 = 0n;
-  /** @type {bigint} */
-  let t0;
-  /** @type {bigint} */
-  let t1;
-  /** @type {bigint} */
-  let t2;
+  let s0 = 0n, s1 = 0n, s2 = 0n;
+  let t0: bigint;
+  let t1: bigint;
+  let t2: bigint;
   if (n & 1) vals.push(0n);
-  for (let /** number */ i = 0; i < n; i += 2) {
+  for (let i = 0; i < n; i += 2) {
     s0 += vals[i] + 0x2f9dadabbc991f8d691dc62fea5f8ae37b76efe5169a9b0cc92a4820ccb5378n; s0 %= P;
     s1 += vals[i + 1] + 0x1783bec6c3570a733c43953d9584b229a9737a3629f1d0dab0b78665580b88e5n; s1 %= P;
     s2 += 0x28c01df6666b04196cf02af0390756bba8ecfe80106e3f56377ead8957340c7bn; s2 %= P;
@@ -51,11 +40,8 @@ const md20 = 0x6c364440aa3b6cf17615d7114a87bdd15917ee6c2d6ec8451336adead4ab5a7n;
 const md21 = 0x250b797d72cab6bdcf47520851e6d9e069927ff59ca0038c81fab3c8f2ec2261n;
 const md22 = 0x2557460f3563ba3aa6c4a826ba8639377129acef2f2589b1302dcc8b61eea7bfn;
 
-/**
- * @noinline
- * @const {bigint[]}
- */
-const rc0 = [
+/** @noinline */
+const rc0: readonly bigint[] = [
   0xcd102badb124ebe9c7358494bd7fa35928b7c0954bbf25f00f95df0a63992b4n,
   0xd6f067838fca70a3a82d8f7ed72345b0d88d592e2ed2aa03fdeb28371bdad60n,
   0x1e6870fd342783ff94d630d4ae7abe1b7c989b533d123fe0290a2fe9afa8b58dn,
@@ -121,11 +107,8 @@ const rc0 = [
   0x1cbe945e02625d9af40f5a2945a311fc95246ae07cce8c0777265fbc01facaden,
 ];
 
-/**
- * @noinline
- * @const {bigint[]}
- */
-const rc1 = [
+/** @noinline */
+const rc1: readonly bigint[] = [
   0x20f1731eef7b4190a40dacf31757cc39bd16733e18d5f624741757bfd7a51d5n,
   0x3fb917be23bf82c2ba391b81704ee5a7aae2a9a7e8a75d4b5678f03b729c756fn,
   0x31841af166bee119a8ebe61e079a2b962ce00c71e02694847a61118c8634e0dan,
@@ -191,11 +174,8 @@ const rc1 = [
   0x10e279901e0b4a08f590e5a44b6667b3e608bc7d2411e9190c6538a916ea298n,
 ];
 
-/**
- * @noinline
- * @const {bigint[]}
- */
-const rc2 = [
+/** @noinline */
+const rc2: readonly bigint[] = [
   0x1e3339ede4ca0304d2fdadf84d097d0bdd370e0aeaa49d68db98fde08cdbdf52n,
   0x33c766ac8e43ad4f0001fe8aa2165058d1015a3bed8b2cf657a0d21951ec6995n,
   0x1ce218cbe1cd33d3bd3802dde999d1fb33b3806b1b222d1f488e655616f6d5afn,
