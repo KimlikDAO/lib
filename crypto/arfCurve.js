@@ -162,20 +162,16 @@ const arfCurve = (P) => {
      * @return {Point}
      */
     multiply(n) {
-      if (!n)
-        this.x = this.y = this.z = 0n;
-      else {
-        const nNibs = n.toString(4);
-        /** @const {readonly Point[]} */
-        const d = [
-          O, this.copy(),
-          this.copy().double(), this.copy().double().increment(this)
-        ];
-        ({ x: this.x, y: this.y, z: this.z } = d[nNibs.charCodeAt(0) - 48]);
-        for (let i = 1; i < nNibs.length; ++i) {
-          this.double(); this.double();
-          this.increment(d[nNibs.charCodeAt(i) - 48]);
-        }
+      const nNibs = n.toString(4);
+      /** @const {readonly Point[]} */
+      const d = [
+        O, this.copy(),
+        this.copy().double(), this.copy().double().increment(this)
+      ];
+      ({ x: this.x, y: this.y, z: this.z } = d[nNibs.charCodeAt(0) - 48]);
+      for (let i = 1; i < nNibs.length; ++i) {
+        this.double(); this.double();
+        this.increment(d[nNibs.charCodeAt(i) - 48]);
       }
       return this;
     }

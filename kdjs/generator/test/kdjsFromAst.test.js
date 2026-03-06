@@ -240,6 +240,8 @@ interface Point {
  * @pure
  */
 const aX_bY = (a: bigint, X: Point, b: bigint, Y: Point): Point => {
+  /**
+   */
   let aBits = a.toString(2);
   let bBits = b.toString(2);
   if (aBits.length > bBits.length)
@@ -517,13 +519,17 @@ export { Provider, RemoteProvider };
 
 test("while statement", () => {
   const ast = TsParser.parse(`
+/** @noinline */
 let i: number = 0;
 while (i < 3) {
   i++;
 }
 `);
   expect(generate(ast)).toBe(`
-/** @type {number} */
+/**
+ * @noinline
+ * @type {number}
+ */
 let i = 0;
 while ((i < 3)) {
   i++;

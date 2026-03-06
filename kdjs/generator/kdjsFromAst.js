@@ -314,10 +314,13 @@ class Generator {
     this.rec(n.value.body);
   }
   VariableDeclaration(n) {
-    if ((n.modifiers & Modifier.Define)
-      && (n.declarations.length != 1 || !n.declarations[0].id.typeAnnotation))
-      throw "A @define variable declaration must have a single typed declarator";
-
+    if (n.modifiers) {
+      if (n.declarations.length != 1)
+        throw "A declaration with jsdoc modifiers must have a single declarator";
+      if (n.modifiers & Modifier.Define && !n.declarations[0].id.typeAnnotation)
+        throw "A @define variable declaration must have an explicit type annotation";
+      this.rec(n.declarations[0], n.kind, n.modifiers); return;
+    }
     const [typed, untyped] = partition(n.declarations, genJsDocType);
     this.arrInner(typed, n.kind, n.modifiers);
     if (untyped.length) {
@@ -328,7 +331,7 @@ class Generator {
   VariableDeclarator(n, kind, modifiers) {
     if (kind) {
       if (n.init && n.init.type.endsWith("FunctionExpression")) this.jsDoc(n.init, modifiers);
-      else this.jsDocType(n.id, modifiers & Modifier.Define ? "define" : kind);
+      else this.jsDocType(n.id, kind, modifiers);
       this.put(kind + " "); this.rec(n.id);
       if (n.init) { this.put(" = "); this.rec(n.init); } this.put(";");
     } else {
@@ -372,9 +375,18 @@ class Generator {
   Program(n) { this.arrInner(n.body); this.ret(); }
 
   // KDJS jsdoc
-  jsDocType(n, kind) {
-    const tag = (!kind || kind == "let") ? "type" : kind;
-    this.put(`/** @${tag} {`); this.rec(n.typeAnnotation); this.put("} */"); this.ret();
+  jsDocType(n, kind, modifiers = 0) {
+    if (typeof kind == "boolean" && kind) kind = "const";
+    if (!kind || kind == "let") kind = "type";
+    if (modifiers & Modifier.Define) kind = "define";
+    if (modifiers <= Modifier.Define) {
+      this.put(`/** @${kind} {`); this.rec(n.typeAnnotation); this.put("} */"); this.ret();
+    } else {
+      this.doc();
+      if (modifiers & Modifier.NoInline) { this.ret(); this.put("@noinline"); }
+      if (n.typeAnnotation) { this.ret(); this.put(`@${kind} {`); this.rec(n.typeAnnotation); this.put("}"); }
+      this.cod();
+    }
   }
   jsDoc(n, override) {
     const params = n.params || n.parameters;
@@ -406,7 +418,7 @@ class Generator {
     this.put("constructor() {"); this.inc();
     for (const prop of props) {
       this.ret();
-      this.jsDocType(prop);
+      this.jsDocType(prop, prop.readonly);
       this.put("this."); this.rec(prop.key); this.put(";");
     }
     this.dec(); this.ret(); this.put("}");
@@ -424,13 +436,13 @@ class Generator {
     for (const param of params)
       if (param.type.charCodeAt(0) == 84) {
         this.ret();
-        this.jsDocType(param.parameter, param.readonly ? "const" : "");
+        this.jsDocType(param.parameter, param.readonly);
         this.put("this."); this.rec(param.parameter);
         this.put(" = "); this.rec(param.parameter); this.put(";");
       }
     for (const prop of props) {
       this.ret();
-      this.jsDocType(prop);
+      this.jsDocType(prop, prop.readonly);
       this.put("this."); this.rec(prop.key); this.put(";");
     }
     this.dec(); this.ret();

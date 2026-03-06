@@ -72,13 +72,13 @@ export default { Request, Response };
  */
 class kdjs$$api$jsonrpc$Request {
   constructor() {
-    /** @type {string} */
+    /** @const {string} */
     this.jsonrpc;
-    /** @type {string} */
+    /** @const {string} */
     this.method;
-    /** @type {unknown[]} */
+    /** @const {unknown[]} */
     this.params;
-    /** @type {number | string} */
+    /** @const {number | string} */
     this.id;
   }
 }
@@ -87,13 +87,13 @@ class kdjs$$api$jsonrpc$Request {
  */
 class kdjs$$api$jsonrpc$Response {
   constructor() {
-    /** @type {string} */
+    /** @const {string} */
     this.jsonrpc;
-    /** @type {unknown} */
+    /** @const {unknown} */
     this.result;
-    /** @type {unknown} */
+    /** @const {unknown} */
     this.error;
-    /** @type {number | string} */
+    /** @const {number | string} */
     this.id;
   }
 }

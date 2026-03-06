@@ -7,18 +7,11 @@ import { P } from "./minaPoseidon";
  * @noinline
  */
 const M = (1n << 255n) - 1n;
-/**
- * @noinline
- */
+/** @noinline */
 const MinusRmodP = 0x448d31f81299f237325a61da00000002n;
-/**
- * @noinline
- */
+/** @noinline */
 const InvRmodP = 0x3e389fe3c44f1aae196532ddf9134cb36f8dbd877a2ff940551ec21a74ed351n;
-/**
- * S = -1 / P mod R
- * @noinline
- */
+/** @noinline S = -1 / P mod R */
 const S = 0x7c713fc7889e355c32ca65bbf22699669c760bd82a13db2992d30ecffffffffn;
 
 type montint = bigint;
