@@ -92,5 +92,8 @@ switch (args["command"] as string) {
   case "build":
     buildCrate(crateName, { BuildMode }); break;
   case "deploy":
-    deployCrate(crateName, { BuildMode }); break;
+    deployCrate(crateName, { BuildMode: compiler.BuildMode.Release }); break;
+  case "reset":
+    import("./cloudflare/cloudflare")
+      .then(({ default: cloudflare }) => cloudflare.resetSecrets()); break;
 }

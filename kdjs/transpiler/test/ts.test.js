@@ -66,6 +66,21 @@ export {
 `.slice(1));
 });
 
+test("arrow function returns object expression", () => {
+  const input = `
+const f = (x: number) => ({ key: x });
+`;
+  expect(transpileTs(input)).toBe(`
+/**
+ * @param {number} x
+ * @return {void}
+ */
+const f = (x) => ({
+  key: x
+});
+`.slice(1));
+});
+
 test("crosschain walletConnector", () => {
   const input = `
 import { EIP1193Provider as EthereumProvider } from "../ethereum/provider.d";

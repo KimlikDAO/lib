@@ -201,15 +201,15 @@ class Generator {
   FunctionExpression(n) { }
   ArrowFunctionExpression(n) {
     if (n.async) this.put("async ");
-    this.put("("); this.arr(n.params, ", "); this.put(") => "); this.rec(n.body);
+    this.put("("); this.arr(n.params, ", "); this.put(") => "); this.rec(n.body, null, true)
   }
   LogicalExpression(n) { this.rec(n.left); this.put(` ${n.operator} `); this.rec(n.right); }
   SequenceExpression(n) { this.arr(n.expressions, ", "); }
-  ObjectExpression(n) {
-    if (n.properties.length == 0) { this.put("{}"); return; }
-    this.put("{");
-    this.inc(); this.arrLines(n.properties, ","); this.dec(); this.ret();
-    this.put("}");
+  ObjectExpression(n, _, wrapped) {
+    if (wrapped) this.put("("); this.put("{");
+    this.inc(); this.arrLines(n.properties, ","); this.dec();
+    if (n.properties.length) this.ret();
+    this.put("}"); if (wrapped) this.put(")");
   }
   Property(n) {
     if (n.method) {

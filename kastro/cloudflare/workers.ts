@@ -1,4 +1,5 @@
 import { ApiResponse, ApiV4, Auth } from "./api";
+import { CloudflareDeployConfig } from "./cloudflare";
 import { KvBinding } from "./keyValues.d";
 import { WorkerUploadMetadata } from "./workers.d";
 
@@ -35,7 +36,7 @@ const upload = (
 
 const bind = (
   auth: Auth,
-  name: string,
+  config: CloudflareDeployConfig,
   url: string
 ): Promise<ApiResponse> => {
   return fetch(`${ApiV4}/accounts/${auth.accountId}/workers/domains`, {
@@ -46,8 +47,9 @@ const bind = (
     },
     body: JSON.stringify({
       environment: "production",
-      hostname: url,
-      service: name
+      zone_id: config.zoneId,
+      hostname: url.slice("https://".length),
+      service: config.workerName
     })
   }).then(
     (res) => res.json() as ApiResponse
