@@ -240,8 +240,6 @@ interface Point {
  * @pure
  */
 const aX_bY = (a: bigint, X: Point, b: bigint, Y: Point): Point => {
-  /**
-   */
   let aBits = a.toString(2);
   let bBits = b.toString(2);
   if (aBits.length > bBits.length)
@@ -302,6 +300,8 @@ class Point {
   copy() {}
 }
 /**
+ * @nosideeffects
+ * @pureOrBreakMyCode
  * @param {bigint} a
  * @param {Point} X
  * @param {bigint} b

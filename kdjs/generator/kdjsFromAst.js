@@ -308,31 +308,36 @@ class Generator {
     this.dec(); this.ret(); this.put("}");
   }
   MethodDefinition(n) {
-    this.jsDoc(n.value, n.override);
+    this.jsDoc(n.value, n.override ? Modifier.Override : 0);
     if (n.static) this.put("static "); if (n.value.async) this.put("async ");
     this.rec(n.key); this.put("("); this.arr(n.value.params, ", "); this.put(") ");
     this.rec(n.value.body);
   }
   VariableDeclaration(n) {
-    if (n.modifiers) {
+    n.modifiers |= n.kind == "const" ? Modifier.Readonly : 0;
+    if (n.modifiers > Modifier.Readonly) {
       if (n.declarations.length != 1)
         throw "A declaration with jsdoc modifiers must have a single declarator";
       if (n.modifiers & Modifier.Define && !n.declarations[0].id.typeAnnotation)
         throw "A @define variable declaration must have an explicit type annotation";
-      this.rec(n.declarations[0], n.kind, n.modifiers); return;
+      this.rec(n.declarations[0], n.modifiers); return;
     }
     const [typed, untyped] = partition(n.declarations, genJsDocType);
-    this.arrInner(typed, n.kind, n.modifiers);
+    this.arrInner(typed, n.modifiers);
     if (untyped.length) {
       if (typed.length) this.ret();
       this.put(n.kind + " "); this.arr(untyped, ", "); this.put(";");
     }
   }
-  VariableDeclarator(n, kind, modifiers) {
-    if (kind) {
+  /**
+   * If modifiers is present, emitted as a VariableDeclaration otherwise,
+   * emitted as a VariableDeclarator.
+   */
+  VariableDeclarator(n, modifiers) {
+    if (modifiers != undefined) {
       if (n.init && n.init.type.endsWith("FunctionExpression")) this.jsDoc(n.init, modifiers);
-      else this.jsDocType(n.id, kind, modifiers);
-      this.put(kind + " "); this.rec(n.id);
+      else this.jsDocType(n.id, modifiers);
+      this.put((modifiers & Modifier.Readonly) ? "const " : "let "); this.rec(n.id);
       if (n.init) { this.put(" = "); this.rec(n.init); } this.put(";");
     } else {
       this.rec(n.id);
@@ -375,20 +380,19 @@ class Generator {
   Program(n) { this.arrInner(n.body); this.ret(); }
 
   // KDJS jsdoc
-  jsDocType(n, kind, modifiers = 0) {
-    if (typeof kind == "boolean" && kind) kind = "const";
-    if (!kind || kind == "let") kind = "type";
-    if (modifiers & Modifier.Define) kind = "define";
-    if (modifiers <= Modifier.Define) {
-      this.put(`/** @${kind} {`); this.rec(n.typeAnnotation); this.put("} */"); this.ret();
+  jsDocType(n, modifiers) {
+    const tag = (modifiers & Modifier.Define)
+      ? "define" : (modifiers & Modifier.Readonly) ? "const" : "type";
+    if (modifiers <= (Modifier.Define | Modifier.Readonly)) {
+      this.put(`/** @${tag} {`); this.rec(n.typeAnnotation); this.put("} */"); this.ret();
     } else {
       this.doc();
       if (modifiers & Modifier.NoInline) { this.ret(); this.put("@noinline"); }
-      if (n.typeAnnotation) { this.ret(); this.put(`@${kind} {`); this.rec(n.typeAnnotation); this.put("}"); }
+      if (n.typeAnnotation) { this.ret(); this.put(`@${tag} {`); this.rec(n.typeAnnotation); this.put("}"); }
       this.cod();
     }
   }
-  jsDoc(n, override) {
+  jsDoc(n, modifiers) {
     const params = n.params || n.parameters;
     const retType = n.returnType || n.typeAnnotation || { type: "TSVoidKeyword" };
     this.doc();
@@ -396,7 +400,10 @@ class Generator {
       for (const param of n.typeParameters.params) {
         this.ret(); this.put("@template "); this.rec(param);
       }
-    if (override) { this.ret(); this.put("@override"); }
+    if (modifiers & Modifier.Override) { this.ret(); this.put("@override"); }
+    if (modifiers & Modifier.NoInline) { this.ret(); this.put("@noinline"); }
+    if (modifiers & Modifier.NoSideEffects) { this.ret(); this.put("@nosideeffects"); }
+    if (modifiers & Modifier.Pure) { this.ret(); this.put("@pureOrBreakMyCode"); }
     for (let param of params) {
       let isOptional = param.optional;
       if (param.type == "AssignmentPattern") {
@@ -418,7 +425,7 @@ class Generator {
     this.put("constructor() {"); this.inc();
     for (const prop of props) {
       this.ret();
-      this.jsDocType(prop, prop.readonly);
+      this.jsDocType(prop, prop.readonly ? Modifier.Readonly : 0);
       this.put("this."); this.rec(prop.key); this.put(";");
     }
     this.dec(); this.ret(); this.put("}");
@@ -436,13 +443,13 @@ class Generator {
     for (const param of params)
       if (param.type.charCodeAt(0) == 84) {
         this.ret();
-        this.jsDocType(param.parameter, param.readonly);
+        this.jsDocType(param.parameter, param.readonly ? Modifier.Readonly : 0);
         this.put("this."); this.rec(param.parameter);
         this.put(" = "); this.rec(param.parameter); this.put(";");
       }
     for (const prop of props) {
       this.ret();
-      this.jsDocType(prop, prop.readonly);
+      this.jsDocType(prop, prop.readonly ? Modifier.Readonly : 0);
       this.put("this."); this.rec(prop.key); this.put(";");
     }
     this.dec(); this.ret();

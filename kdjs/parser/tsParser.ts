@@ -221,9 +221,8 @@ function tsPlugin(options?: {
        * */
       importOrExportOuterKind: string | undefined = undefined;
       ecmaVersion: number;
-      stashedVariableModifiers: number | undefined = undefined;
-      /** End position of the block comment that set stashedVariableModifiers (so we only attach to the immediately following declaration). */
-      stashedCommentEnd: number | undefined = undefined;
+      /** Stack of pending JSDoc modifiers; targetStart is set when we enter parseVarStatement for the declaration that follows the comment. */
+      pendingVariableModifiersStack: { modifiers: number; targetStart?: number }[] = [];
 
       constructor(options: Options, input: string, startPos?: number) {
         super(options, input, startPos);
@@ -303,13 +302,15 @@ function tsPlugin(options?: {
           return node;
         }
         const result = super.finishNode(node, type);
-        if (type === 'VariableDeclaration' && this.stashedVariableModifiers !== undefined) {
-          const immediatelyAfterComment =
-            this.stashedCommentEnd === undefined || node.start >= this.stashedCommentEnd;
-          if (immediatelyAfterComment) {
-            (result as { modifiers?: number }).modifiers = this.stashedVariableModifiers;
-            this.stashedVariableModifiers = undefined;
-            this.stashedCommentEnd = undefined;
+        if (type === 'VariableDeclaration') {
+          const pending = this.pendingVariableModifiersStack.find(
+            (p) => p.targetStart !== undefined && p.targetStart === node.start
+          );
+          if (pending !== undefined) {
+            (result as { modifiers?: number }).modifiers = pending.modifiers;
+            this.pendingVariableModifiersStack = this.pendingVariableModifiersStack.filter(
+              (p) => p.targetStart !== node.start
+            );
           }
         }
         if (type.startsWith("TS") || type === "ArrowFunctionExpression") propagateType(result);
@@ -685,8 +686,9 @@ function tsPlugin(options?: {
             this.curPosition()
           );
         }
-        this.stashedVariableModifiers = modifiersFromJsDoc(this.input.slice(start + 2, end));
-        this.stashedCommentEnd = this.pos;
+        this.pendingVariableModifiersStack.push({
+          modifiers: modifiersFromJsDoc(this.input.slice(start + 2, end))
+        });
       }
 
       skipLineComment(startSkip) {
@@ -3392,6 +3394,8 @@ function tsPlugin(options?: {
       }
 
       parseVarStatement(node, kind, allowMissingInitializer: boolean = false) {
+        const pending = this.pendingVariableModifiersStack.find((p) => p.targetStart === undefined);
+        if (pending !== undefined) pending.targetStart = node.start;
         const { isAmbientContext } = this;
 
         // ---start origin parseVarStatement

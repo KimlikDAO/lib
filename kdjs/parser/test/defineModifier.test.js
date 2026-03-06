@@ -29,3 +29,24 @@ const M: number = 200;
   expect(stmtM.declarations[0].init.value).toBe(200);
   expect(stmtM.modifiers).toBe(Modifier.Define);
 });
+
+test("modifier from JSDoc attaches to statement-level VariableDeclaration, not nested one", () => {
+  const ast = parseSource(`
+/** @pure */
+const triple = (x: bigint): bigint => {
+  /** @pure */
+  const double = (x: bigint): bigint => x + x;
+  const xx = double(x);
+  return xx + x;
+};
+`);
+  const stmt = ast.body[0];
+  expect(stmt.type).toBe("VariableDeclaration");
+  expect(stmt.declarations[0].id.name).toBe("triple");
+  expect(stmt.modifiers).toBe(Modifier.Pure);
+  const innerBlock = stmt.declarations[0].init.body.body;
+  const doubleDecl = innerBlock[0];
+  expect(doubleDecl.type).toBe("VariableDeclaration");
+  expect(doubleDecl.declarations[0].id.name).toBe("double");
+  expect(doubleDecl.modifiers).toBe(Modifier.Pure);
+});
