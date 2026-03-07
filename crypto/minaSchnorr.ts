@@ -1,10 +1,10 @@
+import { PureExpr } from "../kdjs/kdjs.d";
 import bigints from "../util/bigints";
 import { arfCurve } from "./arfCurve";
 import { Curve, Point as IPoint } from "./ellipticCurve";
 import { P, poseidon } from "./minaPoseidon";
 import { poseidon as poseidonLegacy } from "./minaPoseidonLegacy";
 import { tonelliShanks } from "./modular";
-import { PureExpr } from "../kdjs/kdjs.d";
 
 /** @noinline */
 const Q = P + 0x47afc1f319ba3400000000n;

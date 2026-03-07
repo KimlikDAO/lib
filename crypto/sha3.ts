@@ -2,25 +2,16 @@
  * @fileoverview A fast and tiny keccak256 implementation using `TypedArray`s.
  * @author KimlikDAO
  */
-import hex from '../util/hex';
 
-/**
- * Computes the keccak256 of an Uint32Array.
- *
- * @param {Uint32Array} words A typed array of `uint32`s to be hashed.
- * @return {Uint32Array} hash as a Uint32Arrray of length 8.
- */
-const keccak256Uint32 = (words) => {
-  /** @const {Uint32Array} */
+/** @pure */
+const keccak256Uint32 = (words: Uint32Array): Uint32Array => {
   const s = new Uint32Array(50);
-  /** @type {number} */
   let i = 0;
   for (const end = words.length - 33; i < end; i += 34) {
     for (let j = 0; j < 34; ++j)
       s[j] ^= words[i + j];
     f(s);
   }
-  /** @type {number} */
   let j = 0;
   for (; i < words.length; ++i, ++j)
     s[j] ^= words[i];
@@ -30,46 +21,28 @@ const keccak256Uint32 = (words) => {
   return s.subarray(0, 8);
 }
 
-/**
- * Outputs the keccak256 of a Uint32Array as a hex string.
- *
- * @param {Uint32Array} words A typed array of `u32`s to be hashed.
- * @return {string} hash as a hex string.
- */
-const keccak256Uint32ToHex = (words) => hex.from(
-  new Uint8Array(keccak256Uint32(words).buffer, 0, 32));
+/** @pure */
+const keccak256Uint32ToHex = (words: Uint32Array): string =>
+  new Uint8Array(keccak256Uint32(words).buffer, 0, 32).toHex();
 
-/**
- * @pureOrBreakMyCode
- * @nosideeffects
- * @param {string} str A string to be hashed.
- * @return {string} hex encoded hash.
- */
-const keccak256 = (str) => hex.from(keccak256Uint8(new TextEncoder().encode(str)));
+/** @pure */
+const keccak256 = (str: string): string =>
+  keccak256Uint8(new TextEncoder().encode(str)).toHex();
 
-/**
- * @param {Uint8Array} bytes A byte array to be hashed. Could be of any length.
- * @return {Uint8Array} hex encoded hash.
- */
-const keccak256Uint8 = (bytes) => {
-  /** @const {Uint32Array} */
+/** @pure */
+const keccak256Uint8 = (bytes: Uint8Array): Uint8Array => {
   const words = new Uint32Array(bytes.buffer, 0, bytes.length >> 2);
-  /** @const {Uint32Array} */
   const s = new Uint32Array(50);
-  /** @type {number} */
   let i = 0;
   for (const end = words.length - 33; i < end; i += 34) {
     for (let j = 0; j < 34; ++j)
       s[j] ^= words[i + j];
     f(s);
   }
-  /** @type {number} */
   let j = 0;
   for (; i < words.length; ++i, ++j)
     s[j] ^= words[i];
-  /** @const {number} */
   const mod = bytes.length & 3;
-  /** @const {number} */
   const loc = bytes.length & ~3;
   if (mod == 0) s[j] ^= 1;
   else if (mod == 1) s[j] ^= bytes[loc] | 256;
@@ -80,24 +53,20 @@ const keccak256Uint8 = (bytes) => {
   return new Uint8Array(s.buffer, 0, 32);
 }
 
-/**
- * @const {number[]}
- */
-const RC = [1, 0, 32898, 0, 32906, 2147483648, 2147516416, 2147483648, 32907, 0, 2147483649,
+const RC: readonly number[] = [
+  1, 0, 32898, 0, 32906, 2147483648, 2147516416, 2147483648, 32907, 0, 2147483649,
   0, 2147516545, 2147483648, 32777, 2147483648, 138, 0, 136, 0, 2147516425, 0,
   2147483658, 0, 2147516555, 0, 139, 2147483648, 32905, 2147483648, 32771,
   2147483648, 32770, 2147483648, 128, 2147483648, 32778, 0, 2147483658, 2147483648,
-  2147516545, 2147483648, 32896, 2147483648, 2147483649, 0, 2147516424, 2147483648];
+  2147516545, 2147483648, 32896, 2147483648, 2147483649, 0, 2147516424, 2147483648
+];
 
-/**
- * @param {Uint32Array | number[]} s
- */
-const f = (s) => {
+const f = (s: Uint32Array | number[]): void => {
   let h, l, c0, c1, c2, c3, c4, c5, c6, c7, c8, c9,
     b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15, b16, b17,
     b18, b19, b20, b21, b22, b23, b24, b25, b26, b27, b28, b29, b30, b31, b32, b33,
     b34, b35, b36, b37, b38, b39, b40, b41, b42, b43, b44, b45, b46, b47, b48, b49;
-  for (let /** number */ n = 0; n < 48; n += 2) {
+  for (let n = 0; n < 48; n += 2) {
     c0 = s[0] ^ s[10] ^ s[20] ^ s[30] ^ s[40];
     c1 = s[1] ^ s[11] ^ s[21] ^ s[31] ^ s[41];
     c2 = s[2] ^ s[12] ^ s[22] ^ s[32] ^ s[42];

@@ -6,11 +6,8 @@
 
 import { exp2 } from "./modular";
 
-/**
- * First 499 odd primes.
- *
- * @const {number[]} */
-const OddPrimes = [
+// First 499 odd primes.
+const OddPrimes: readonly number[] = [
   3, 5, 7, 11, 13, 17, 19, 23, 29,
   31, 37, 41, 43, 47, 53, 59, 61, 67, 71,
   73, 79, 83, 89, 97, 101, 103, 107, 109, 113,
@@ -26,14 +23,13 @@ const OddPrimes = [
 /**
  * Performs a single round of Miller-Rabin test to the base 2.
  *
- * @param {bigint} N
- * @param {bigint} d It should satisfy d.2^s = N
- * @param {number} s
- * @return {boolean}
+ * @param N The number to test.
+ * @param d It should satisfy d.2^s = N.
+ * @param s The number of rounds of the Miller-Rabin test.
+ * @pure
  */
-const millerRabinBase2 = (N, d, s) => {
+const millerRabinBase2 = (N: bigint, d: bigint, s: number): boolean => {
   if (N == 3n) return true;
-  /** @type {bigint} */
   let x = exp2(d, N);
   if (x == 1n || x == N - 1n) return true;
 
@@ -46,29 +42,19 @@ const millerRabinBase2 = (N, d, s) => {
 }
 
 /**
- * @param {string} seed Random seed for the non-smooth number generation.
- *                      A hex string of 64 characters.
- * @return {bigint}
+ * @param seed Random seed for the non-smooth number generation.
+ *             A hex string of 64 characters.
+ * @pure
  */
-const getNonsmooth = (seed) => {
-  /**
-   * The most significant 244 bits of the generated number are from the seed.
-   * The rest will be chosen by a search.
-   *
-   * @const {bigint}
-   */
+const getNonsmooth = (seed: string): bigint => {
+  // The most significant 244 bits of the generated number are from the seed.
+  // The rest will be chosen by a search.
   const h = BigInt(`0x${seed}000`);
 
-  /**
-   * Bit vector to keep the sieve results.
-   *
-   * `t[i] == 1` implies that `h.2^k + 2i + 1` is composite.
-   *
-   * @const {Uint8Array}
-   */
+  // Bit vector to keep the sieve results.
+  // `t[i] == 1` implies that `h.2^k + 2i + 1` is composite.
   const t = new Uint8Array(4096);
   for (const p of OddPrimes) {
-    /** @type {number} */
     let i = (p - Number(h % BigInt(p)) - 1) * ((p + 1) >> 1) % p;
     for (; i < 4096; i += p)
       t[i] = 1;
@@ -76,14 +62,10 @@ const getNonsmooth = (seed) => {
 
   for (let i = 1; i < 4096; ++i) {
     while (t[i]) ++i;
-    /** @type {number} */
     let s = 1;
-    /** @type {number} */
     let j = i;
     for (; (j & 1) == 0; j >>= 1) ++s;
-    /** @const {bigint} */
     const d = (h >> BigInt(s)) + BigInt(j);
-    /** @const {bigint} */
     const N = h + BigInt(2 * i + 1);
 
     if (millerRabinBase2(N, d, s))
