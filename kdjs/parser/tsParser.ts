@@ -301,8 +301,6 @@ function tsPlugin(options?: {
           return node;
         }
         const result = super.finishNode(node, type);
-        if (node.type != "VariableDeclaration")
-          delete node.modifiers;
         if (type.startsWith("TS") || type === "ArrowFunctionExpression") propagateType(result);
         return result;
       }

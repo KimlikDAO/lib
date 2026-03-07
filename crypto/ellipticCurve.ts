@@ -11,6 +11,8 @@ interface Point {
   copy(): Point;
 }
 
+type Curve = new (x: bigint, y: bigint, z?: bigint) => Point;
+
 /**
  * Computes aX + bY at the cost of a single scalar × point multiplication.
  *
@@ -48,4 +50,4 @@ const equal = (P: Point, Q: Point): boolean => {
   return P.x == Q.x && P.y == Q.y;
 }
 
-export { aX_bY, equal, Point };
+export { aX_bY, Curve, equal, Point };

@@ -12,7 +12,7 @@
 import { PureExpr } from "../kdjs/kdjs.d";
 import bigints from "../util/bigints";
 import { arfCurve } from "./arfCurve";
-import { Point as IPoint, aX_bY } from "./ellipticCurve";
+import { Curve, Point as IPoint, aX_bY } from "./ellipticCurve";
 import { inverse } from "./modular";
 
 /** @noinline */
@@ -20,7 +20,6 @@ const P = (1n << 256n) - (1n << 32n) - 977n;
 /** @noinline */
 const Q = P - 0x14551231950b75fc4402da1722fc9baeen;
 
-type Curve = new (x: bigint, y: bigint, z?: bigint) => IPoint;
 const Point: Curve = arfCurve(P);
 
 /** @pure */
@@ -133,10 +132,9 @@ const recoverSigner = (
 }
 
 export {
-  G, O, P, Q,
-  Point,
-  pointFrom,
+  G, O, P, Point, Q, pointFrom,
   recoverSigner,
   sign,
   verify
 };
+

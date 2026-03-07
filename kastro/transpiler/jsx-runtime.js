@@ -82,7 +82,7 @@ const jsx = (name, props = {}) => {
   }
 
   const normalizedChildren = [].concat(prop.children || []);
-  /** @const {function(): Promise<string>} */
+  /** @const {() => Promise<string>} */
   const renderChildren = () => Promise.all(
     normalizedChildren
       .flat()
@@ -106,7 +106,7 @@ const jsx = (name, props = {}) => {
           ? tagYaz(name, rest, false) + children.join("") + `</${name}>`
           : tagYaz(name, rest, true);
     });
-  /** @const {?Promise<string>} */
+  /** @const {Promise<string> | null} */
   const renderPromise = modifiesChildren ? null : renderChildren();
   prop.render = () => renderPromise || renderChildren();
   return prop;

@@ -12,6 +12,9 @@ const determineEnumType = () => "string";
 const genJsDocType = (d) => d.id.typeAnnotation ||
   d.init && d.init.type.endsWith("FunctionExpression");
 
+const wrapExpression = (expr) =>
+  expr?.type == "AssignmentExpression" && expr.left?.type == "ObjectPattern";
+
 /**
  * Given an interface or class body, partitions it as:
  *
@@ -253,6 +256,7 @@ class Generator {
     this.put("new "); this.rec(n.callee);
     this.put("("); this.arr(n.arguments, ", "); this.put(")");
   }
+  SpreadElement(n) { this.put("..."); this.rec(n.argument); }
   ImportExpression(n) { this.put("import("); this.rec(n.source); this.put(")"); }
   AssignmentExpression(n) { this.rec(n.left); this.put(` ${n.operator} `); this.rec(n.right); }
   ThisExpression(n) { this.put("this"); }
@@ -311,6 +315,11 @@ class Generator {
     if (n.superClass) { this.put(" extends "); this.rec(n.superClass); }
     this.put(" "); this.rec(n.body);
   }
+  ClassExpression(n) {
+    this.put("("); this.inc(); this.ret();
+    this.ClassDeclaration(n);
+    this.dec(); this.put(")");
+  }
   ClassBody(n) {
     this.put("{"); this.inc();
     const { props, methods, ctor } = partitionInterface(n.body);
@@ -322,7 +331,8 @@ class Generator {
     this.dec(); this.ret(); this.put("}");
   }
   MethodDefinition(n) {
-    this.jsDoc(n.value, n.override ? Modifier.Override : 0);
+    n.value.modifiers |= n.modifiers | (n.override ? Modifier.Override : 0);
+    this.jsDoc(n.value, n.value.modifiers);
     if (n.static) this.put("static "); if (n.value.async) this.put("async ");
     this.rec(n.key); this.put("("); this.arr(n.value.params, ", "); this.put(") ");
     this.rec(n.value.body);
@@ -362,7 +372,10 @@ class Generator {
   ObjectPattern(n) { this.put("{ "); this.arr(n.properties, ", "); this.put(" }"); }
   AssignmentPattern(n) { this.rec(n.left); this.put(" = "); this.rec(n.right); }
   ContinueStatement(n) { this.put("continue;"); if (n.label) { this.put(" "); this.rec(n.label); } }
-  ExpressionStatement(n) { this.rec(n.expression); this.put(";"); }
+  ExpressionStatement(n) {
+    const wrap = wrapExpression(n.expression);
+    if (wrap) this.put("("); this.rec(n.expression); if (wrap) this.put(")"); this.put(";");
+  }
   ThrowStatement(n) { this.put("throw "); this.rec(n.argument); this.put(";"); }
   IfStatement(n) {
     this.put("if ("); this.rec(n.test); this.put(")");
@@ -419,13 +432,14 @@ class Generator {
     if (modifiers & Modifier.Pure) { this.ret(); this.put("@pureOrBreakMyCode"); }
     for (let param of params) {
       let isOptional = param.optional;
+      if (param.type == "TSParameterProperty")
+        param = param.parameter;
       if (param.type == "AssignmentPattern") {
         isOptional = true;
         param = param.left;
       }
-      const typeAnnotation = param.typeAnnotation || param.parameter?.typeAnnotation;
       this.ret();
-      this.put("@param {"); this.rec(typeAnnotation);
+      this.put("@param {"); this.rec(param.typeAnnotation);
       if (isOptional) this.put("="); this.put("} "); this.rec(param);
     }
     this.ret();
@@ -453,12 +467,16 @@ class Generator {
     this.put("constructor("); this.arr(params, ", "); this.put(")");
     this.put(" {"); this.inc();
     this.arrLines(body, "");
-    for (const param of params)
-      if (param.type.charCodeAt(0) == 84) {
+    for (let param of params)
+      if (param.type == "TSParameterProperty") {
+        const modifiers = param.readonly ? Modifier.Readonly : 0;
+        param = param.parameter;
+        if (param.type == "AssignmentPattern")
+          param = param.left;
         this.ret();
-        this.jsDocType(param.parameter, param.readonly ? Modifier.Readonly : 0);
-        this.put("this."); this.rec(param.parameter);
-        this.put(" = "); this.rec(param.parameter); this.put(";");
+        this.jsDocType(param, modifiers);
+        this.put("this."); this.rec(param);
+        this.put(" = "); this.rec(param); this.put(";");
       }
     for (const prop of props) {
       this.ret();

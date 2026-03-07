@@ -548,3 +548,113 @@ describe("ForStatement", () => {
     expect(generate(ast)).toBe("for (let i = 0; (i < 10); i++) {\n}\n");
   });
 });
+
+test("arfCurve with return class (pure, param props, JSDoc)", () => {
+  const ast = TsParser.parse(`
+import { Curve, Point } from "./ellipticCurve";
+import { inverse } from "./modular";
+
+/**
+ * @pure
+ */
+const arfCurve = (P: bigint): Curve => {
+  /**
+   * @pure
+   */
+  const modP = (x: bigint): bigint => {
+    let res = x % P;
+    return res >= 0n ? res : res + P;
+  };
+  const O = { x: 0n, y: 0n, z: 0n } as Point;
+
+  return class CurvePoint implements Point {
+    constructor(public x: bigint, public y: bigint, public z: bigint = 1n) {}
+    /** @pure */
+    copy(): Point { return new CurvePoint(this.x, this.y, this.z); }
+    project(): Point {
+      if (this.z != 0n) {
+        const iz = inverse(this.z, P);
+        const iz2 = (iz * iz) % P;
+        const iz3 = (iz2 * iz) % P;
+        this.x = (this.x * iz2) % P;
+        this.y = (this.y * iz3) % P;
+        this.z = 1n;
+      }
+      return this;
+    }
+  }
+}
+
+export { arfCurve };
+`);
+  expect(generate(ast)).toBe(`import { Curve, Point } from "./ellipticCurve";
+import { inverse } from "./modular";
+/**
+ * @nosideeffects
+ * @pureOrBreakMyCode
+ * @param {bigint} P
+ * @return {Curve}
+ */
+const arfCurve = (P) => {
+  /**
+   * @nosideeffects
+   * @pureOrBreakMyCode
+   * @param {bigint} x
+   * @return {bigint}
+   */
+  const modP = (x) => {
+    let res = (x % P);
+    return ((res >= 0n) ? res : (res + P));
+  };
+  const O = /** @type {Point} */({
+    x: 0n,
+    y: 0n,
+    z: 0n
+  });
+  return (
+    /**
+     * @implements {Point}
+     */
+    class CurvePoint {
+      /**
+       * @param {bigint} x
+       * @param {bigint} y
+       * @param {bigint=} z
+       * @return {void}
+       */
+      constructor(x, y, z = 1n) {
+        /** @type {bigint} */
+        this.x = x;
+        /** @type {bigint} */
+        this.y = y;
+        /** @type {bigint} */
+        this.z = z;
+      }
+      /**
+       * @nosideeffects
+       * @pureOrBreakMyCode
+       * @return {Point}
+       */
+      copy() {
+        return new CurvePoint(this.x, this.y, this.z);
+      }
+      /**
+       * @return {Point}
+       */
+      project() {
+        if ((this.z != 0n)) {
+          const iz = inverse(this.z, P);
+          const iz2 = ((iz * iz) % P);
+          const iz3 = ((iz2 * iz) % P);
+          this.x = ((this.x * iz2) % P);
+          this.y = ((this.y * iz3) % P);
+          this.z = 1n;
+        }
+        return this;
+      }
+    });
+};
+
+export { arfCurve };
+`);
+});

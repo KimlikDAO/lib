@@ -12,17 +12,20 @@ enum Modifier {
   // -- Optimization hints and directives -- //
 
   // A VariableDeclaration whose init should be move to callsite.
-  AlwaysInline = 128,
-  NoInline = 256,
+  AlwaysInline = 1 << 7,
+  NoInline = 1 << 8,
 
   // No mutation of external state. It can still read mutable external state.
   // Example: `Math.random()`
-  NoSideEffects = 512,
+  NoSideEffects = 1 << 9,
 
   // Given the same input, always returns the same output.
   // Functionally, this means no reads of mutable external state.
-  Deterministic = 1024,
-  Pure = 512 | 1024,
+  Deterministic = 1 << 10,
+  Pure = 1 << 9 | 1 << 10,
+
+  ModifiesParametersOnly = 1 << 11,
+  ModifiesThisOnly = 1 << 12,
 }
 
 const modifiersFromJsDoc = (jsDoc: string): number => {

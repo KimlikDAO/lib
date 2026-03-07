@@ -1,86 +1,49 @@
-/**
- * An elliptic curve over a prime field given by the equation
- *
- *   y² = x³ + b.
- * 
- * @author KimlikDAO
- */
-import { Point } from "./ellipticCurve";
+import { Curve, Point } from "./ellipticCurve";
 import { inverse } from "./modular";
 
 /**
- * We work with a lifting of the Arf curve x² = y³ + b
+ * Returns an Arf curve over the base field 𝔽ₚ for a given prime P: an elliptic
+ * curve with equation y² = x³ + b for some b. For P ≡ 1 (mod 6) there are
+ * 6 isomorphism classes; which one you get is determined by the generator you
+ * choose (or equivalently the choice of b in the curve equation).
  *
- *   y² = x³ + b·z⁶
- *
- * over (F_P)^³. The projection onto the z = 1 plane gives the regular
- * Arf curve.
- *
- * For other values of z ∉ {0, 1}, the projected curve is isomorphic to the z=1 curve
- * through the map (x, y) ↦ (x/z², y/z³).
- *
- * @nosideeffects
- * @pureOrBreakMyCode
- * @param {bigint} P
- * @return {new (x: bigint, y: bigint, z?: bigint) => Point}
+ * Some popular choices:
+ * - secp256k1:
+ *   P = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F
+ *   y² = x³ + 7
+ * - Pallas:
+ *   P = 0x40000000000000000000000000000000224698fc094cf91b992d30ed00000001
+ *   y² = x³ + 5
+ * @pure
  */
-const arfCurve = (P) => {
+const arfCurve = (P: bigint): Curve => {
   /**
    * Unlike the % operation, modP always returns a positive number y such that
    *
    *   0 <= y < P  and  x = y (mod P).
    *
    * If positivity is not required, prefer the % operator.
-   *
-   * @param {bigint} x
-   * @return {bigint} y such that x = y (mod P) and 0 <= y < P.
+   * @pure
    */
-  const modP = (x) => {
+  const modP = (x: bigint): bigint => {
     let res = x % P;
     return res >= 0n ? res : res + P;
-  }
+  };
 
   /**
    * A fake point used in the multiplication subroutine. Always appears as RHS
    * so a bare object works.
-   *
-   * @const {Point} */
-  const O = /** @type {Point} */({ x: 0n, y: 0n, z: 0n });
+   */
+  const O = { x: 0n, y: 0n, z: 0n } as Point;
 
-  return /** @implements {Point} */ class CurvePoint {
-    /**
-     * @nosideeffects
-     * @param {bigint} x
-     * @param {bigint} y
-     * @param {bigint=} z
-     */
-    constructor(x, y, z) {
-      /** @type {bigint} */
-      this.x = x;
-      /** @type {bigint} */
-      this.y = y;
-      /** @type {bigint} */
-      this.z = z ?? 1n;
-    }
-
-    /**
-     * @nosideeffects
-     * @return {Point}
-     */
-    copy() {
-      return new CurvePoint(this.x, this.y, this.z);
-    }
-
-    /**
-     * @return {Point}
-     */
-    project() {
+  return class CurvePoint implements Point {
+    constructor(public x: bigint, public y: bigint, public z: bigint = 1n) {}
+    /** @pure */
+    copy(): Point { return new CurvePoint(this.x, this.y, this.z); }
+    project(): Point {
       if (this.z != 0n) {
-        /** @const {bigint} */
         const iz = inverse(this.z, P);
-        /** @const {bigint} */
         const iz2 = (iz * iz) % P;
-        /** @const {bigint} */
         const iz3 = (iz2 * iz) % P;
         this.x = (this.x * iz2) % P;
         this.y = (this.y * iz3) % P;
@@ -88,21 +51,11 @@ const arfCurve = (P) => {
       }
       return this;
     }
-
-    /**
-     * @return {Point}
-     */
-    negate() {
+    negate(): Point {
       this.y = P - this.y;
       return this;
     }
-
-    /**
-     * Multiplies the point by 2, in-place.
-     *
-     * @return {Point}
-     */
-    double() {
+    double(): Point {
       const { x, y } = this;
       const x2 = x * x % P;
       const y2 = y * y % P;
@@ -115,17 +68,9 @@ const arfCurve = (P) => {
       this.z *= y << 1n; this.z %= P;
       return this;
     }
-
-    /**
-     * Increments the point by `other`.
-     *
-     * @param {Point} other
-     * @return {Point}
-     */
-    increment(other) {
+    increment(other: Point): Point {
       const { x: x1, y: y1, z: z1 } = this;
       const { x: x2, y: y2, z: z2 } = other;
-
       const z1z1 = (z1 * z1) % P;
       const z2z2 = (z2 * z2) % P;
       const u1 = (x1 * z2z2) % P;
@@ -134,7 +79,6 @@ const arfCurve = (P) => {
       const s2 = (((y2 * z1) % P) * z1z1) % P;
       const h = (u2 - u1) % P;
       const r = (s2 - s1) % P;
-
       if (h == 0n) {
         if (r == 0n) {
           if (z2 == 0n) { }
@@ -153,18 +97,9 @@ const arfCurve = (P) => {
       }
       return this;
     }
-
-    /**
-     * Multiplies the point by the scalar `n` in-place.
-     * TODO(KimlikDAO-bot) consider method copying from the interface for `multiply`
-     *
-     * @param {bigint} n
-     * @return {Point}
-     */
-    multiply(n) {
+    multiply(n: bigint): Point {
       const nNibs = n.toString(4);
-      /** @const {readonly Point[]} */
-      const d = [
+      const d: readonly Point[] = [
         O, this.copy(),
         this.copy().double(), this.copy().double().increment(this)
       ];
