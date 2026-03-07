@@ -221,8 +221,7 @@ function tsPlugin(options?: {
        * */
       importOrExportOuterKind: string | undefined = undefined;
       ecmaVersion: number;
-      /** Stack of pending JSDoc modifiers; targetStart is set when we enter parseVarStatement for the declaration that follows the comment. */
-      pendingVariableModifiersStack: { modifiers: number; targetStart?: number }[] = [];
+      stashedModifiers: number;
 
       constructor(options: Options, input: string, startPos?: number) {
         super(options, input, startPos);
@@ -302,17 +301,8 @@ function tsPlugin(options?: {
           return node;
         }
         const result = super.finishNode(node, type);
-        if (type === 'VariableDeclaration') {
-          const pending = this.pendingVariableModifiersStack.find(
-            (p) => p.targetStart !== undefined && p.targetStart === node.start
-          );
-          if (pending !== undefined) {
-            (result as { modifiers?: number }).modifiers = pending.modifiers;
-            this.pendingVariableModifiersStack = this.pendingVariableModifiersStack.filter(
-              (p) => p.targetStart !== node.start
-            );
-          }
-        }
+        if (node.type != "VariableDeclaration")
+          delete node.modifiers;
         if (type.startsWith("TS") || type === "ArrowFunctionExpression") propagateType(result);
         return result;
       }
@@ -656,11 +646,18 @@ function tsPlugin(options?: {
         return this.finishToken(type, word);
       }
 
+      startNode() {
+        const node = super.startNode();
+        node.modifiers = this.stashedModifiers;
+        this.stashedModifiers = 0;
+        return node;
+      }
+
       skipBlockComment() {
         let startLoc;
         if (!this.isLookahead) startLoc = this.options.onComment && this.curPosition();
-        let start = this.pos,
-          end = this.input.indexOf('*/', (this.pos += 2));
+        let start = this.pos;
+        let end = this.input.indexOf('*/', (this.pos += 2));
         if (end === -1) this.raise(this.pos - 2, 'Unterminated comment');
         this.pos = end + 2;
         if (this.options.locations) {
@@ -673,22 +670,8 @@ function tsPlugin(options?: {
             pos = this.lineStart = nextBreak;
           }
         }
-
         if (this.isLookahead) return;
-
-        if (this.options.onComment) {
-          this.options.onComment(
-            true,
-            this.input.slice(start + 2, end),
-            start,
-            this.pos,
-            startLoc,
-            this.curPosition()
-          );
-        }
-        this.pendingVariableModifiersStack.push({
-          modifiers: modifiersFromJsDoc(this.input.slice(start + 2, end))
-        });
+        this.stashedModifiers = modifiersFromJsDoc(this.input.slice(start + 2, end));
       }
 
       skipLineComment(startSkip) {
@@ -3394,18 +3377,13 @@ function tsPlugin(options?: {
       }
 
       parseVarStatement(node, kind, allowMissingInitializer: boolean = false) {
-        const pending = this.pendingVariableModifiersStack.find((p) => p.targetStart === undefined);
-        if (pending !== undefined) pending.targetStart = node.start;
         const { isAmbientContext } = this;
 
         // ---start origin parseVarStatement
         this.next();
         super.parseVar(node, false, kind, allowMissingInitializer || isAmbientContext);
-        const declaration = this.finishNode(node, 'VariableDeclaration');
         this.semicolon();
-        // Extend declaration to include semicolon (we finished before semicolon so @define stash applies to the right declaration).
-        declaration.end = this.lastTokEnd;
-        if (this.options.locations && declaration.loc) declaration.loc.end = this.lastTokEndLoc;
+        const declaration = this.finishNode(node, 'VariableDeclaration');
         // ---end
 
         if (!isAmbientContext) return declaration;

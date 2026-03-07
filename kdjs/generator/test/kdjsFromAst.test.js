@@ -536,3 +536,15 @@ while ((i < 3)) {
 }
 `.slice(1));
 });
+
+describe("ForStatement", () => {
+  test("for with expression init (no VariableDeclaration) emits one semicolon before test", () => {
+    const ast = TsParser.parse("for (i = 0; i < 10; i++) {}");
+    expect(generate(ast)).toBe("for (i = 0; (i < 10); i++) {\n}\n");
+  });
+
+  test("for with VariableDeclaration init emits single semicolon before test", () => {
+    const ast = TsParser.parse("for (let i = 0; i < 10; i++) {}");
+    expect(generate(ast)).toBe("for (let i = 0; (i < 10); i++) {\n}\n");
+  });
+});

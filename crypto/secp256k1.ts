@@ -9,44 +9,29 @@
  *
  * @author KimlikDAO
  */
+import { PureExpr } from "../kdjs/kdjs.d";
 import bigints from "../util/bigints";
 import { arfCurve } from "./arfCurve";
 import { Point as IPoint, aX_bY } from "./ellipticCurve";
 import { inverse } from "./modular";
 
-/**
- * @noinline
- * @const {bigint}
- */
+/** @noinline */
 const P = (1n << 256n) - (1n << 32n) - 977n;
-/**
- * @noinline
- * @const {bigint}
- */
+/** @noinline */
 const Q = P - 0x14551231950b75fc4402da1722fc9baeen;
-/**
- * @typedef {IPoint} Point */
-/**
- * @type {new (x: bigint, y: bigint, z?: bigint) => IPoint}
- */
-const Point = arfCurve(P);
 
-/**
- * @param {bigint} b
- * @param {number} pow
- * @return {bigint}
- */
-const tower = (b, pow) => {
+type Curve = new (x: bigint, y: bigint, z?: bigint) => IPoint;
+const Point: Curve = arfCurve(P);
+
+/** @pure */
+const tower = (b: bigint, pow: number): bigint => {
   while (pow-- > 0)
     b = b * b % P;
   return b;
 }
 
-/**
- * @param {bigint} n
- * @return {bigint}
- */
-const sqrt = (n) => {
+/** @pure */
+const sqrt = (n: bigint): bigint => {
   const b2 = (((n * n) % P) * n) % P;
   const b3 = (b2 * b2 * n) % P;
   const b6 = (tower(b3, 3) * b3) % P;
@@ -66,67 +51,41 @@ const sqrt = (n) => {
 /**
  * If x^3 + 7 is a quadratic residue, returns the point (x, y, 1) with the
  * provided x and y having yParity; otherwise returns null.
- *
- * @param {bigint} x coordinate of the curve point.
- * @param {boolean} yParity whether the y coordinate is odd.
- * @return {Point | null}
+ * @pure
  */
-const pointFrom = (x, yParity) => {
-  /** @const {bigint} */
+const pointFrom = (x: bigint, yParity: boolean): IPoint | null => {
   const x2 = (x * x) % P;
-  /** @const {bigint} */
   const y2 = (x2 * x + 7n) % P
-  /** @const {bigint} */
   const y = sqrt(y2);
+  // Note when a boolean and bigint are compared, the boolean is
+  // cast to a bigint. Since y & 1n is 1n or 0n, this works out.
   return (y * y) % P == y2
-    ? new Point(x, (y & 1n) == yParity ? y : P - y)
+    ? new Point(x, (y & 1n) == (yParity as unknown as bigint) ? y : P - y)
     : null;
 }
 
-/**
- * @const {Point}
- * @noinline
- */
-const G = /** @pureOrBreakMyCode */(new Point(
+const G = new Point(
   0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798n,
   0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8n
-));
+) satisfies PureExpr;
 
-/**
- * The point at infinity. This point is on
- *
- *   y^2 = x^3 + 7z^6
- *
- * but has not projection onto the z = 1 plane, as expected.
- *
- * @const {Point}
- */
 const O = new Point(0n, 0n, 0n);
 
-/**
- * @param {bigint} digest
- * @param {bigint} privKey
- * @return {{
- *   r: bigint,
- *   s: bigint,
- *   yParity: boolean
- * }}
- */
-const sign = (digest, privKey) => {
+/** @pure */
+const sign = (digest: bigint, privKey: bigint): {
+  r: bigint,
+  s: bigint,
+  yParity: boolean
+} => {
   for (; ;) {
-    /** @const {bigint} */
-    const k = bigints.fromBytesBE(/** @type {Uint8Array} */(
-      crypto.getRandomValues(new Uint8Array(32))));
+    const k = bigints.fromBytesBE(
+      crypto.getRandomValues(new Uint8Array(32)) as Uint8Array);
     if (k <= 0 || Q <= k) continue; // probability ~2^{-128}, i.e., a near impossibility.
-    /** @const {Point} */
     const K = G.copy().multiply(k).project();
-    /** @const {bigint} */
     const r = K.x;
     if (r >= Q) continue; // probability ~2^{-128}, i.e., a near impossibility.
-    /** @type {bigint} */
     let s = (inverse(k, Q) * ((digest + r * privKey) % Q)) % Q;
     if (s == 0n) continue; // probability ~2^{-256}
-    /** @type {boolean} */
     let yParity = !!(K.y & 1n);
     if (s > (Q >> 1n)) {
       s = Q - s;
@@ -136,21 +95,17 @@ const sign = (digest, privKey) => {
   }
 }
 
-/**
- * @param {bigint} digest
- * @param {bigint} r
- * @param {bigint} s
- * @param {Point} pubKey
- * @return {boolean}
- */
-const verify = (digest, r, s, pubKey) => {
+/** @pure */
+const verify = (
+  digest: bigint,
+  r: bigint,
+  s: bigint,
+  pubKey: IPoint
+): boolean => {
   if (r <= 0n || Q <= r) return false;
   if (s <= 0n || Q <= s) return false;
-  /** @const {bigint} */
   const is = inverse(s, Q);
-  /** @const {Point} */
   const U = aX_bY(digest * is % Q, G.copy(), r * is % Q, pubKey.copy());
-  /** @const {bigint} */
   const z2 = (U.z * U.z) % P;
   if (!z2) return false;
   if ((r * z2) % P == U.x) return true;
@@ -161,19 +116,17 @@ const verify = (digest, r, s, pubKey) => {
 /**
  * Recovers the signer public key (a `Point`) for a given signed digest
  * if the signature is valid; otherwise returns `O`, the point at infinity.
- *
- * @param {bigint} digest
- * @param {bigint} r
- * @param {bigint} s
- * @param {boolean} yParity
- * @return {Point} the signer public key or O.
+ * @pure
  */
-const recoverSigner = (digest, r, s, yParity) => {
+const recoverSigner = (
+  digest: bigint,
+  r: bigint,
+  s: bigint,
+  yParity: boolean
+): IPoint => {
   if (r <= 0n || Q <= r) return O;
   if (s <= 0n || Q <= s) return O;
-  /** @const {bigint} */
   const ir = inverse(r, Q);
-  /** @const {Point | null} */
   const K = pointFrom(r, yParity);
   if (!K) return O;
   return aX_bY(Q - (digest * ir % Q), G.copy(), s * ir % Q, K).project();

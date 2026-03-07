@@ -9,7 +9,8 @@ const kdjsPlugin = {
       const path = args.path;
       const contents = readFileSync(path, "utf8");
       if (path.includes("/node_modules/")
-        || path.includes("/kdjs/")
+        || path.includes("/kdjs/parser")
+        || path.includes("/kdjs/types")
         || path.endsWith("/kastro/kastro.ts"))
         return { contents, loader: "ts" };
       return {

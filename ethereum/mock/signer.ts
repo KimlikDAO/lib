@@ -1,6 +1,6 @@
 import { Signature, Signer } from "../../crosschain/signer";
 import { inverse } from "../../crypto/modular";
-import { G, Point, Q } from "../../crypto/secp256k1";
+import { G, Q } from "../../crypto/secp256k1";
 import { keccak256Uint32, keccak256Uint32ToHex } from "../../crypto/sha3";
 import bigints from "../../util/bigints";
 import hex from "../../util/hex";
@@ -33,7 +33,7 @@ const signUnpacked = (digest: bigint, privKey: bigint): UnpackedSignature => {
   for (; ; ++buff[0]) {
     const k = BigInt("0x" + keccak256Uint32ToHex(buff));
     if (k <= 0 || Q <= k) continue;
-    const K: Point = G.copy().multiply(k).project();
+    const K = G.copy().multiply(k).project();
     const r = K.x;
     if (r >= Q) continue;
     let s = (inverse(k, Q) * ((digest + r * privKey) % Q)) % Q;

@@ -127,3 +127,12 @@ export const Signer = {};`);
   });
 });
 
+it("exports PureExpr", () => {
+  const input = `
+type PureExpr = any;
+
+export { PureExpr };
+
+  `;
+  expect(generatePlaceholder(input)).toBe("export const PureExpr = {};");
+});

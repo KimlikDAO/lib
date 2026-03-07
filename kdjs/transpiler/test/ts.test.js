@@ -875,3 +875,15 @@ export {
 };
 `.slice(1));
 });
+
+test("function type with optional parameters", () => {
+  const input = `
+type Curve = new (x: bigint, y: bigint, z?: bigint) => IPoint;
+`;
+  expect(transpileTs(input)).toBe(`
+/**
+ * @typedef {new (x: bigint, y: bigint, z?: bigint) => IPoint}
+ */
+const Curve = {};
+`.slice(1));
+});

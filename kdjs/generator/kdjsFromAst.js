@@ -44,6 +44,7 @@ class Generator {
   dec() { this.indent = this.indent.slice(0, -2); }
   ret(c) { this.out += (c ?? "") + "\n" + this.indent; }
   put(s) { this.out += s; }
+  ens(s) { if (!this.out.endsWith(s)) this.out += s; }
   del() { this.out = this.out.slice(0, -1); }
   doc() { this.indent += " * "; this.out += "/**"; }
   cod() {
@@ -96,8 +97,18 @@ class Generator {
     this.rec(n.expression);
     this.put(")");
   }
+  TSSatisfiesExpression(n) {
+    if (n.typeAnnotation?.typeName?.name == "PureExpr") {
+      this.put("/** @pureOrBreakMyCode */("); this.rec(n.expression); this.put(")");
+    } else
+      this.rec(n.expression);
+  }
+  TSNonNullExpression(n) { this.rec(n.expression); }
   TSFunctionType(n) {
     this.put("("); this.arr(n.parameters, ", ", true); this.put(") => "); this.rec(n.typeAnnotation);
+  }
+  TSConstructorType(n) {
+    this.put("new "); this.TSFunctionType(n);
   }
   TSLiteralType(n) { this.put(typeof n.literal.value); }
   TSParenthesizedType(n) { this.put("("); this.rec(n.typeAnnotation); this.put(")"); }
@@ -196,7 +207,10 @@ class Generator {
   }
   Identifier(n, showType) {
     this.put(this.typeMap?.get(n.name) ?? n.name);
-    if (showType && n.typeAnnotation) { this.put(": "); this.rec(n.typeAnnotation); }
+    if (showType && n.typeAnnotation) {
+      if (n.optional) this.put("?");
+      this.put(": "); this.rec(n.typeAnnotation);
+    }
   }
   FunctionExpression(n) { }
   ArrowFunctionExpression(n) {
@@ -359,8 +373,7 @@ class Generator {
     }
   }
   ForStatement(n) {
-    this.put("for (");
-    if (n.init) { this.rec(n.init); this.put(" "); } else this.put("; ");
+    this.put("for ("); this.rec(n.init); this.ens(";"); this.put(" ");
     this.rec(n.test); this.put("; "); this.rec(n.update);
     this.put(")");
     this.blockLike(n.body);
@@ -410,7 +423,7 @@ class Generator {
         isOptional = true;
         param = param.left;
       }
-      const typeAnnotation = param.typeAnnotation || param.parameter.typeAnnotation;
+      const typeAnnotation = param.typeAnnotation || param.parameter?.typeAnnotation;
       this.ret();
       this.put("@param {"); this.rec(typeAnnotation);
       if (isOptional) this.put("="); this.put("} "); this.rec(param);
