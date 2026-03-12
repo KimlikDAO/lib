@@ -55,7 +55,7 @@ const aX_bY = (a: bigint, X: Point, b: bigint, Y: Point): Point => {
   let bBits = b.toString(2);
   if (aBits.length > bBits.length)
     bBits = bBits.padStart(aBits.length, "0");
-  else if (bBits.length > aBits.length)
+  else
     aBits = aBits.padStart(bBits.length, "0");
   const O = X.copy().multiply(0n);
   const X_Y = X.copy().increment(Y);

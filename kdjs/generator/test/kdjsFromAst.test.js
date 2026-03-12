@@ -651,3 +651,24 @@ const FromUint8 = (/** @return {string[]} */ () => {
 })();
 `.slice(1));
 });
+
+test("Rest params are emitted as ...rest: T[]", () => {
+  const input = `
+const bench = <A, T>(
+  fns: Record<string, (...args: A[]) => T>,
+  expected: T
+): void => {
+}
+`;
+  expect(generate(TsParser.parse(input))).toBe(`
+/**
+ * @suppress {reportUnknownTypes}
+ * @template A, T
+ * @param {Record<string, (...args: A[]) => T>} fns
+ * @param {T} expected
+ * @return {void}
+ */
+const bench = (fns, expected) => {
+};
+`.slice(1));
+});

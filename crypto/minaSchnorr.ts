@@ -12,7 +12,7 @@ const Q = P + 0x47afc1f319ba3400000000n;
 const sqrt = (n: bigint): bigint | null => tonelliShanks(n, P, (P - 1n) >> 32n,
   0x2bce74deac30ebda362120830561f81aea322bf2b7bb7584bdad6fabd87ea32fn, 32n);
 
-const Pallas = Object.assign(arfCurve(P), {
+const Pallas: Curve = Object.assign(arfCurve(P), {
   /**
    * If x³ + 5 is a quadratic residue, returns the point (x, y, 1) with the
    * provided x and y satisfying y² = x³ + 5 with the given parity; otherwise
@@ -21,8 +21,7 @@ const Pallas = Object.assign(arfCurve(P), {
    * @pure
    */
   pointFrom({ x, yParity }: CompressedPoint): Point | null {
-    const x2 = (x * x) % P;
-    const y2 = (x2 * x + 5n) % P
+    const y2 = (x * x * x + 5n) % P
     const y = sqrt(y2);
     if (y == null) return null;
     return new Pallas(x, (y & 1n) == (yParity as unknown as bigint) ? y : P - y, 1n);
@@ -62,8 +61,7 @@ const signFields = (
   A?: AffinePoint
 ): { r: bigint, s: bigint } => {
   A ||= G.copy().multiply(privKey).proj();
-  let k = bigints.fromBytesBE(
-    crypto.getRandomValues(new Uint8Array(32)) as Uint8Array) % Q;
+  let k = bigints.random(32) % Q;
   const { x: r, y } = G.copy().multiply(k).proj();
   if (y & 1n) k = Q - k;
   const e = hashFields(fields, A, r);

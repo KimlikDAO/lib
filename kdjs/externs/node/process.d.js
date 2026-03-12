@@ -22,3 +22,6 @@ process.argv;
 
 /** @const {Record<string, string>} */
 process.env;
+
+/** @type {number} */
+process.exitCode;

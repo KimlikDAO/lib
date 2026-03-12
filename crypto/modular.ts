@@ -1,8 +1,8 @@
 /**
- * Modular inversion over F_P via the Euclidian algorithm.
+ * Modular inversion over 𝔽ₚ via the Euclidean algorithm.
  *
- * Requires that b < P and P is a prime.
- * Returns x such that bx + Py = 1 and 0 < x < P.
+ * Requires that b < P and P is a prime. Returns x such that bx + Py = 1 and
+ * 0 < x < P.
  * @pure
  */
 const inverse = (b: bigint, P: bigint): bigint => {
@@ -21,7 +21,7 @@ const inverse = (b: bigint, P: bigint): bigint => {
 }
 
 /**
- * Computes a^x (mod M) and outputs the least positive representation.
+ * Computes aˣ (mod M) and outputs the smallest positive representation.
  * The function is not constant time and should not be used in cases where
  * side-channel attacks are possible.
  * @pure
@@ -40,14 +40,14 @@ const exp = (a: bigint, x: bigint, M: bigint): bigint => {
 
 /** @pure */
 const pow5 = (b: bigint, M: bigint): bigint => {
-  const t = (b * b) % M;
-  return (b * t * t) % M;
+  const t = b * b % M;
+  return b * t * t % M;
 }
 
 /** @pure */
 const pow7 = (b: bigint, M: bigint): bigint => {
-  const t = (b * b * b) % M;
-  return (t * t * b) % M;
+  const t = b * b * b % M;
+  return t * t * b % M;
 }
 
 /**
@@ -81,7 +81,7 @@ const expTimesExp = (
   let yBits = y.toString(2);
   if (xBits.length > yBits.length)
     yBits = yBits.padStart(xBits.length, "0");
-  else if (yBits.length > xBits.length)
+  else
     xBits = xBits.padStart(yBits.length, "0");
   const d: readonly bigint[] = [1n, a, b, a * b % M];
   let r = d[(xBits.charCodeAt(0) - 48) + 2 * (yBits.charCodeAt(0) - 48)];
@@ -94,7 +94,7 @@ const expTimesExp = (
 
 /**
  * Tonelli-Shanks square root algorithm.
- * https://en.wikipedia.org/wiki/Tonelli–Shanks_algorithm
+ * @see https://en.wikipedia.org/wiki/Tonelli–Shanks_algorithm
  *
  * @param n
  * @param P the modulus

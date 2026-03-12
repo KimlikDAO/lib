@@ -289,6 +289,12 @@ class Generator {
     this.put("("); this.arr(n.arguments, ", "); this.put(")");
   }
   SpreadElement(n) { this.put("..."); this.rec(n.argument); }
+  RestElement(n, showTypes) {
+    this.put("..."); this.rec(n.argument);
+    if (showTypes == IdentifierTypes.Ts && n.typeAnnotation) {
+      this.put(": "); this.rec(n.typeAnnotation);
+    }
+  }
   ImportExpression(n) { this.put("import("); this.rec(n.source); this.put(")"); }
   AssignmentExpression(n) { this.rec(n.left); this.put(` ${n.operator} `); this.rec(n.right); }
   ThisExpression(n) { this.put("this"); }

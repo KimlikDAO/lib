@@ -46,7 +46,7 @@ const sqrt = (n: bigint): bigint | null => {
   return r * r % P == n ? r : null;
 };
 
-const Secp256k1 = Object.assign(arfCurve(P), {
+const Secp256k1: Curve = Object.assign(arfCurve(P), {
   /**
    * If x³ + 7 is a quadratic residue, returns the point (x, y, 1) with the
    * provided x and y satisfying y² = x³ + 7 with the given parity; otherwise
@@ -55,8 +55,7 @@ const Secp256k1 = Object.assign(arfCurve(P), {
    * @pure
    */
   pointFrom({ x, yParity }: CompressedPoint): Point | null {
-    const x2 = x * x % P;
-    const y2 = (x2 * x + 7n) % P
+    const y2 = (x * x * x + 7n) % P
     const y = sqrt(y2);
     if (y == null) return null;
     return new Secp256k1(x, (y & 1n) == (yParity as unknown as bigint) ? y : P - y, 1n);
@@ -76,8 +75,7 @@ const sign = (digest: bigint, privKey: bigint): {
   yParity: boolean
 } => {
   for (; ;) {
-    const k = bigints.fromBytesBE(
-      crypto.getRandomValues(new Uint8Array(32)) as Uint8Array);
+    const k = bigints.random(32);
     if (k <= 0 || Q <= k) continue;
     const { x: r, y } = G.copy().multiply(k).proj();
     if (r >= Q) continue;

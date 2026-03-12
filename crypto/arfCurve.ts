@@ -66,12 +66,12 @@ const arfCurve = (P: bigint): CurveFamily => {
     increment(other: Point): Point {
       const { x: x1, y: y1, z: z1 } = this;
       const { x: x2, y: y2, z: z2 } = other;
-      const z1z1 = (z1 * z1) % P;
-      const z2z2 = (z2 * z2) % P;
-      const u1 = (x1 * z2z2) % P;
-      const u2 = (x2 * z1z1) % P;
-      const s1 = (((y1 * z2) % P) * z2z2) % P;
-      const s2 = (((y2 * z1) % P) * z1z1) % P;
+      const z1z1 = z1 * z1 % P;
+      const z2z2 = z2 * z2 % P;
+      const u1 = x1 * z2z2 % P;
+      const u2 = x2 * z1z1 % P;
+      const s1 = y1 * z2 * z2z2 % P;
+      const s2 = y2 * z1 * z1z1 % P;
       const h = (u2 - u1) % P;
       const r = (s2 - s1) % P;
       if (h == 0n) {

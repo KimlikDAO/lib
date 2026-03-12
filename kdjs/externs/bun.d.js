@@ -30,3 +30,12 @@ class BunSecrets {
 
 /** @const {BunSecrets} */
 const secrets = /** @type {BunSecrets} */({});
+
+/**
+ * @template T
+ * @param {T} a
+ * @param {T} b
+ * @param {boolean=} strict
+ * @return {boolean}
+ */
+function deepEquals(a, b, strict) {}
