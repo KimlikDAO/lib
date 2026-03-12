@@ -12,6 +12,7 @@ type TransactionRequest = {
 
 const hex = (v: number | bigint): string => "0x" + v.toString(16);
 
+/** @pure */
 const serialize = (req: TransactionRequest): Transaction => {
   const out: any = {};
   if (req.data != null) out["data"] = req.data;

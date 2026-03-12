@@ -14,7 +14,7 @@ const stripModifiers = (typeStr: string): string =>
     ? typeStr.substring(1)
     : typeStr;
 
-const enum PrimitiveTypeName {
+enum PrimitiveTypeName {
   BigInt = "bigint",
   Boolean = "boolean",
   Null = "null",
@@ -24,16 +24,13 @@ const enum PrimitiveTypeName {
   Undefined = "undefined",
 }
 
-const enum TopTypeName {
+enum TopTypeName {
   Any = "?",
   Unknown = "*",
 }
 
 class Type {
-  modifiers: number;
-  constructor(modifiers?: number) {
-    this.modifiers = modifiers ?? 0;
-  }
+  constructor(public modifiers: number = 0) {}
   isNullable(): boolean { return !!(this.modifiers & Modifier.Nullable); }
   isOptional(): boolean { return !!(this.modifiers & Modifier.Optional); }
   toClosureExpr(_context?: Context): string { throw "Abstract method"; }
@@ -207,6 +204,7 @@ class InstanceType extends Type {
   override toClosureExpr({ toParam, bare, wrap }: Context = {}): string {
     const modifiers = bare ? 0 : this.modifiers;
     let expr = this.name;
+    if (expr == "RsaHashedImportParams") expr = "webCrypto." + expr;
     expr = (modifiers & Modifier.Nullable ? "?" : "!") + expr;
     if (modifiers & Modifier.Optional) {
       expr += toParam ? "=" : "|undefined";
@@ -244,7 +242,7 @@ class GenericType extends Type {
   override toClosureExpr({ toParam, bare, wrap }: Context = {}): string {
     const modifiers = bare ? 0 : this.modifiers;
 
-    const typeName = this.name === "Record" ? "Object" : this.name;
+    const typeName = this.name == "Record" ? "Object" : this.name;
     const typeParams = this.params.map((p) => p.toClosureExpr()).join(",");
     let expr = `${typeName}<${typeParams}>`;
     if (!(modifiers & Modifier.Nullable)) expr = "!" + expr;

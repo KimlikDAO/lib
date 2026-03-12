@@ -113,7 +113,7 @@ const transpileJs = (isEntry, file, content, files, globals, unlinkedImports) =>
     updates.push({
       beg: 0,
       end: 0,
-      put: "/** @externs */\n"
+      put: "/**\n * @fileoverview\n * @externs\n */\n"
     });
 
   simple(ast, /** @type {acorn.SimpleVisitor} */({

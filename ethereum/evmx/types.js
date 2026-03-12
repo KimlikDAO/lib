@@ -1,4 +1,4 @@
-import { assertEq } from "../../testing/assert";
+import { assertIs } from "../../testing/assert";
 import hex from "../../util/hex";
 import { Op, OpData, Ops, pushN } from "./opcodes";
 
@@ -53,7 +53,7 @@ const toOpData = (ops) => {
  */
 const address = (addr) => {
   if (addr.startsWith("0x")) addr = addr.slice(2);
-  assertEq(addr.length, 40);
+  assertIs(addr.length, 40);
   return hex.toUint8Array(addr);
 }
 

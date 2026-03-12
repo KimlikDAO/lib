@@ -6,9 +6,7 @@ const P = (1n << 254n) + 0x224698fc094cf91b992d30ed00000001n;
 /** @pure */
 const poseidon = (vals: bigint[]): bigint => {
   const n = vals.length;
-  let s0 = 0n;
-  let s1 = 0n;
-  let s2 = 0n;
+  let s0 = 0n, s1 = 0n, s2 = 0n;
   let t0: bigint;
   let t1: bigint;
   let t2: bigint;

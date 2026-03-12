@@ -1,7 +1,6 @@
-import { PureExpr } from "../kdjs/kdjs.d";
 import bigints from "../util/bigints";
 import { arfCurve } from "./arfCurve";
-import { Curve, Point as IPoint } from "./ellipticCurve";
+import { AffinePoint, CompressedPoint, Curve, Point } from "./ellipticCurve";
 import { P, poseidon } from "./minaPoseidon";
 import { poseidon as poseidonLegacy } from "./minaPoseidonLegacy";
 import { tonelliShanks } from "./modular";
@@ -9,95 +8,101 @@ import { tonelliShanks } from "./modular";
 /** @noinline */
 const Q = P + 0x47afc1f319ba3400000000n;
 
-const Point: Curve = arfCurve(P);
+/** @pure */
+const sqrt = (n: bigint): bigint | null => tonelliShanks(n, P, (P - 1n) >> 32n,
+  0x2bce74deac30ebda362120830561f81aea322bf2b7bb7584bdad6fabd87ea32fn, 32n);
+
+const Pallas = Object.assign(arfCurve(P), {
+  /**
+   * If x³ + 5 is a quadratic residue, returns the point (x, y, 1) with the
+   * provided x and y satisfying y² = x³ + 5 with the given parity; otherwise
+   * returns null.
+   *
+   * @pure
+   */
+  pointFrom({ x, yParity }: CompressedPoint): Point | null {
+    const x2 = (x * x) % P;
+    const y2 = (x2 * x + 5n) % P
+    const y = sqrt(y2);
+    if (y == null) return null;
+    return new Pallas(x, (y & 1n) == (yParity as unknown as bigint) ? y : P - y, 1n);
+  }
+}) as Curve;
 
 /** @noinline */
-const G = new Point(1n,
-  0x1b74b5a30a12937c53dfa9f06378ee548f655bd4333d477119cf7a23caed2abbn) satisfies PureExpr;
+const G: Point = Pallas.pointFromAffine({
+  x: 1n,
+  y: 0x1b74b5a30a12937c53dfa9f06378ee548f655bd4333d477119cf7a23caed2abbn
+});
 
 /** @pure */
-const sqrt = (n: bigint): bigint | null =>
-  tonelliShanks(n, P, (P - 1n) >> 32n, 0x2bce74deac30ebda362120830561f81aea322bf2b7bb7584bdad6fabd87ea32fn, 32n);
+const hashFields = (
+  fields: readonly bigint[],
+  { x, y }: AffinePoint,
+  r: bigint
+): bigint => poseidon([
+  0x2a2a2a2a2a2a2a65727574616e67695361646f43n,
+  0n,
+  ...fields,
+  x,
+  y,
+  r
+]);
 
 /**
- * If x^3 + 5 is a quadratic residue, returns the point (x, y, 1) with
- * y^2 = x^3 + 5 and y having yParity, otherwise returns null.
- * @pure
- */
-const pointFrom = (x: bigint, yParity: boolean): IPoint | null => {
-  const x2 = (x * x) % P;
-  const y2 = (x2 * x + 5n) % P
-  const y = sqrt(y2);
-  return y
-    ? new Point(x, (y & 1n) == (yParity as unknown as bigint) ? y : P - y)
-    : null;
-}
-
-/** @pure */
-const hashFields = (fields: readonly bigint[], X: IPoint, r: bigint): bigint =>
-  poseidon([
-    0x2a2a2a2a2a2a2a65727574616e67695361646f43n,
-    0n,
-    ...fields,
-    X.x,
-    X.y,
-    r
-  ]);
-
-/**
- * Signs the give `fields` with the provided `privKey`. If available, providing
- * the `pubKey` as a hint will prevent recomputing it.
+ * Signs the given `fields` with the provided `privKey`. If available,
+ * providing the public key as an affine point `A` as a hint will prevent
+ * recomputing it inside this function.
+ *
  * @pure
  */
 const signFields = (
   fields: readonly bigint[],
   privKey: bigint,
-  pubKey?: IPoint
-): {
-  r: bigint,
-  s: bigint
-} => {
-  pubKey ||= G.copy().multiply(privKey).project();
+  A?: AffinePoint
+): { r: bigint, s: bigint } => {
+  A ||= G.copy().multiply(privKey).proj();
   let k = bigints.fromBytesBE(
     crypto.getRandomValues(new Uint8Array(32)) as Uint8Array) % Q;
-  const K = G.copy().multiply(k).project();
-  if (K.y & 1n) k = Q - k;
-  const e = hashFields(fields, pubKey, K.x);
+  const { x: r, y } = G.copy().multiply(k).proj();
+  if (y & 1n) k = Q - k;
+  const e = hashFields(fields, A, r);
   const s = (k + e * privKey) % Q;
-  return { r: K.x, s };
+  return { r, s };
 }
 
-/**
- * The parameter `pubKey` is modified during the verification.
- * @pure
- */
+/** @pure */
 const verifyFields = (
   fields: readonly bigint[],
   r: bigint,
   s: bigint,
-  pubKey: IPoint
+  pubKey: CompressedPoint
 ): boolean => {
+  const H = Pallas.pointFrom(pubKey);
+  if (!H) return false;
   // Here we use the fact that Q > P and reinterpret the field element
   // as a scalar.
-  const ne = Q - hashFields(fields, pubKey, r);
-  // s.G = K + pubKey.e
-  const K = G.copy().multiply(s).increment(pubKey.multiply(ne)).project();
-  return (K.y & 1n) == 0n && K.x == r;
+  const ne = Q - hashFields(fields, H, r);
+  const neH = H.multiply(ne);
+  // s.G = K + e.H, so
+  // K = s.G - e.H
+  const { x, y } = G.copy().multiply(s).increment(neH).proj();
+  return (y & 1n) == 0n && x == r;
 }
 
 /** @pure */
-const hashMessage = (message: string, X: IPoint, r: bigint): bigint => {
+const hashMessage = (message: string, { x, y }: AffinePoint, r: bigint): bigint => {
   const fields: bigint[] = [
     0x74656e6e69614d65727574616e676953616e694dn,
     0n,
-    X.x,
-    X.y,
+    x,
+    y,
     r
   ];
   const encoder = new TextEncoder();
   const bits = Array.from(
     encoder.encode(message),
-    (c: number) => (c as number).toString(2).padStart(8, "0"))
+    (c) => (c as number).toString(2).padStart(8, "0"))
     .join("")
     .split("")
     .reverse()
@@ -109,49 +114,47 @@ const hashMessage = (message: string, X: IPoint, r: bigint): bigint => {
 
 /**
  * Signs the given `message` with the provided `privKey`. If available,
- * providing the `pubKey` as a hint will prevent recomputing it.
+ * providing the public key as an affine point `A` as a hint will prevent
+ * recomputing it inside this function.
+ *
  * @pure
  */
-const signMessage = (message: string, privKey: bigint, pubKey?: IPoint): {
+const signMessage = (message: string, privKey: bigint, A?: AffinePoint): {
   r: bigint,
   s: bigint
 } => {
-  pubKey ||= G.copy().multiply(privKey).project();
+  A ||= G.copy().multiply(privKey).proj();
   let k = bigints.fromBytesBE(
     crypto.getRandomValues(new Uint8Array(32)) as Uint8Array) % Q;
-  const K = G.copy().multiply(k).project();
-  if (K.y & 1n) k = Q - k;
-  const e = hashMessage(message, pubKey, K.x)
+  const { x: r, y } = G.copy().multiply(k).proj();
+  if (y & 1n) k = Q - k;
+  const e = hashMessage(message, A, r)
   const s = (k + e * privKey) % Q;
-  return { r: K.x, s };
+  return { r, s };
 }
 
-/**
- * The parameter `pubKey` is modified during the verification.
- * @pure
- */
+/** @pure */
 const verifyMessage = (
   message: string,
   r: bigint,
   s: bigint,
-  pubKey: IPoint
+  pubKey: CompressedPoint
 ): boolean => {
+  const H = Pallas.pointFrom(pubKey);
+  if (!H) return false;
   // Here we use the fact that Q > P and reinterpret the field element
   // as a scalar.
-  const ne = Q - hashMessage(message, pubKey, r);
-  // s.G = K + pubKey.e
-  const K = G.copy().multiply(s).increment(pubKey.multiply(ne)).project();
-  return (K.y & 1n) == 0n && K.x == r;
+  const ne = Q - hashMessage(message, H, r);
+  const neH = H.multiply(ne);
+  // s.G = K + e.H
+  const { x, y } = G.copy().multiply(s).increment(neH).proj();
+  return (y & 1n) == 0n && x == r;
 }
 
 export {
-  G,
+  G, P, Q, Pallas,
   hashFields,
   hashMessage,
-  P,
-  Point,
-  pointFrom,
-  Q,
   signFields,
   signMessage,
   verifyFields,

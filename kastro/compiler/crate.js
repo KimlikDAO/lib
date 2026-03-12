@@ -23,9 +23,9 @@ import { Target, registerTargetFunction } from "./target";
  */
 const crateTarget = async (_targetName, props) => {
   if (!props.dynamicDeps) throw "Crate targets need to be dynamicProps";
-  props.Lang = LangCode.EN;
   const map = getPageTargets(props.data, props);
-  const childTargets = [map["en"], map["mint"]];
+  console.log(map);
+  const childTargets = Object.values(map);
 
   bundle.reset();
   if (await props.checkFreshFn(childTargets))

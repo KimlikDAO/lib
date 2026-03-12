@@ -8,8 +8,8 @@ type UnpackedSignature = {
 };
 
 /**
- * @see https://eips.ethereum.org/EIPS/eip-2098
  * Converts a wide signature to a EIP2098 signature.
+ * @see https://eips.ethereum.org/EIPS/eip-2098
  */
 const fromWide = (sig: WideSignature): Signature => {
   const yParity = sig.slice(-2) == "1c";

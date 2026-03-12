@@ -21,7 +21,7 @@ import { VerifiableID } from "./verifiableID.d";
 interface Section {
   signatureTs: number;
 
-  commitment: string;
+  commitment?: string;
   /**
    * The blinding factor for the wallet commitment.
    *
@@ -111,5 +111,6 @@ export {
   HumanID,
   KütükBilgileri,
   PersonInfo,
-  TurkishAddressInfo,
+  Section,
+  TurkishAddressInfo
 };

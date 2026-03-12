@@ -1,4 +1,3 @@
-
 interface SwitchChainArgs {
   readonly networkID: string;
 }

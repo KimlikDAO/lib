@@ -37,7 +37,7 @@ const compileAndRunMatching = async (pattern, command, args) => {
 
   for await (const f of glob.scan(".")) {
     if (filter.test(f)) continue;
-    const output = `build/${f}`;
+    const output = `build/${f.replace(/\.(tsx?)$/i, ".js")}`;
     compileTasks.push(compileBN(() => compile({
       ...args,
       entry: f,
@@ -64,10 +64,10 @@ const ensureAllPassed = (allPassed) => process.exit(+!allPassed);
 
 const target = args["target"];
 const targetPattern = target == "bench"
-  ? "**/*.bench.js"
+  ? "**/*.bench.{js,ts}"
   : typeof target === "string"
-    ? (target.endsWith(".js") ? target : `${target}/` + "**/*.test.js")
-    : "**/*.test.js";
+    ? (target.endsWith(".js") || target.endsWith(".ts") ? target : `${target}/` + "**/*.test.{js,ts}")
+    : "**/*.test.{js,ts}";
 
 /** @const {string[]} */
 const filter = createMatcher(["build/", "node_modules/"]

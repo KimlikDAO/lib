@@ -23,7 +23,6 @@ Parameters:
   --nologs       : Strip all console.log() calls
   --define       : Values for @define annotated variables
   --isolateDir   : Directory name to write the isolated and preprocessed input files
-  --emit_shebang : Whether to place bun shebang sequence at the beginning of the output
   --globals      : A JSON encoded object to be used as globals
 `);
   process.exit(0);

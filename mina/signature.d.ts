@@ -5,4 +5,7 @@ interface SignerSignature {
   signature: Signature
 };
 
-export { Signature, SignerSignature };
+export {
+  Signature,
+  SignerSignature,
+};

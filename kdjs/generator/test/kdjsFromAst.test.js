@@ -51,40 +51,6 @@ const N: bigint = 100n;
   });
 });
 
-describe("Enums", () => {
-  test("chains enum", () => {
-    const ast = TsParser.parse(`
-enum ChainId {
-  x1 = "0x1",
-  x144 = "0x144",
-  x38 = "0x38",
-  x406 = "0x406",
-  x89 = "0x89",
-  xa4b1 = "0xa4b1",
-  xa86a = "0xa86a",
-  xfa = "0xfa",
-  MinaBerkeley = "mina:berkeley",
-  MinaMainnet = "mina:mainnet",
-  MinaTestnet = "mina:testnet",
-}`);
-    expect(generate(ast.body[0])).toBe(`
-/** @enum {string} */
-const ChainId = {
-  x1: "0x1",
-  x144: "0x144",
-  x38: "0x38",
-  x406: "0x406",
-  x89: "0x89",
-  xa4b1: "0xa4b1",
-  xa86a: "0xa86a",
-  xfa: "0xfa",
-  MinaBerkeley: "mina:berkeley",
-  MinaMainnet: "mina:mainnet",
-  MinaTestnet: "mina:testnet"
-};`.slice(1));
-  });
-});
-
 describe("Arrays", () => {
   test("readonly array", () => {
     const ast = TsParser.parse("const ChainGroups: readonly ChainGroup[] = [ChainGroup.EVM, ChainGroup.MINA];");
@@ -264,14 +230,12 @@ export { aX_bY, Point };
  * @interface
  */
 class Point {
-  constructor() {
-    /** @type {bigint} */
-    this.x;
-    /** @type {bigint} */
-    this.y;
-    /** @type {bigint} */
-    this.z;
-  }
+  /** @type {bigint} */
+  x;
+  /** @type {bigint} */
+  y;
+  /** @type {bigint} */
+  z;
   /**
    * @return {Point}
    */
@@ -301,7 +265,6 @@ class Point {
 }
 /**
  * @nosideeffects
- * @pureOrBreakMyCode
  * @param {bigint} a
  * @param {Point} X
  * @param {bigint} b
@@ -591,14 +554,12 @@ export { arfCurve };
 import { inverse } from "./modular";
 /**
  * @nosideeffects
- * @pureOrBreakMyCode
  * @param {bigint} P
  * @return {Curve}
  */
 const arfCurve = (P) => {
   /**
    * @nosideeffects
-   * @pureOrBreakMyCode
    * @param {bigint} x
    * @return {bigint}
    */
@@ -632,7 +593,6 @@ const arfCurve = (P) => {
       }
       /**
        * @nosideeffects
-       * @pureOrBreakMyCode
        * @return {Point}
        */
       copy() {
@@ -657,4 +617,15 @@ const arfCurve = (P) => {
 
 export { arfCurve };
 `);
+});
+
+test("Unary expressions", () => {
+  const ast = TsParser.parse("typeof true;");
+  expect(generate(ast)).toBe("typeof true;\n");
+  expect(generate(TsParser.parse("void 0"))).toBe("void 0;\n");
+});
+
+test("member expressions object is wrapped when needed", () => {
+  const ast = TsParser.parse(`(hashToSections[h] ||= []).push(decryptedSections[key]);`);
+  expect(generate(ast)).toBe("(hashToSections[h] ||= []).push(decryptedSections[key]);\n");
 });

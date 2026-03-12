@@ -1,11 +1,12 @@
 import { Signature as EthereumSignature } from "../ethereum/signature.d";
 import { SignerSignature as MinaSignature } from "../mina/signature.d";
+import { Address } from "./address";
 
 type Signature = MinaSignature | EthereumSignature;
 
 interface Signer {
-  deriveSecret(message: string, address: string): Promise<ArrayBuffer>;
-  signMessage(message: string, address: string): Promise<Signature>;
+  deriveSecret(message: string, address: Address): Promise<ArrayBuffer>;
+  signMessage(message: string, address: Address): Promise<Signature>;
 }
 
-export { Signature, Signer };
+export { Address, Signature, Signer };

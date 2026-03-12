@@ -14,3 +14,4 @@ kdjs/transformer
 node_modules*
 prompts.txt
 yarn.lock
+.cursor

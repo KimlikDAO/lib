@@ -1,12 +1,3 @@
-/**
- * @constructor
- * @struct
- * @param {{
- *   network: string
- * }} params
- */
-function Client(params) { }
-
 /** @const */
 const minaSigner = {};
 
@@ -19,10 +10,14 @@ const minaSigner = {};
 minaSigner.Signature;
 
 /**
+ * This corresponds to SignedLegacy<string> in mina-signer.ts.
+ * Due to this, the signature is json encoded, corresponding to `SignatureJson`
+ * in `mina/signer/src/types.ts`
+ *
  * @typedef {{
  *   signature: minaSigner.Signature,
- *   data: string,
- *   publicKey: string
+ *   publicKey: string,
+ *   data: string
  * }}
  */
 minaSigner.SignedMessage;
@@ -36,34 +31,36 @@ minaSigner.SignedMessage;
  */
 minaSigner.SignedFields;
 
-/**
- * @param {string} message
- * @param {string} privKey
- * @return {minaSigner.SignedMessage}
- */
-Client.prototype.signMessage = function (message, privKey) { }
-
-/**
- * @param {minaSigner.SignedMessage} signedMessage
- * @return {boolean}
-*/
-Client.prototype.verifyMessage = function (signedMessage) { }
-
-/**
- * @param {bigint[]} fields
- * @param {string} privKey
- * @return {minaSigner.SignedFields}
- */
-Client.prototype.signFields = function (fields, privKey) { }
-
-/**
- * @param {minaSigner.SignedFields} signedFields
- * @return {boolean}
- */
-Client.prototype.verifyFields = function (signedFields) { }
-
-/**
- * @param {string} privKey
- * @return {string}
-*/
-Client.prototype.derivePublicKey = function (privKey) { }
+class Client {
+  /**
+   * @param {{ network: string }} params
+   */
+  constructor(params) { }
+  /**
+   * @param {string} message
+   * @param {string} privKey
+   * @return {minaSigner.SignedMessage}
+   */
+  signMessage(message, privKey) { }
+  /**
+   * @param {minaSigner.SignedMessage} signedMessage
+   * @return {boolean}
+   */
+  verifyMessage(signedMessage) { }
+  /**
+   * @param {bigint[]} fields
+   * @param {string} privKey
+   * @return {minaSigner.SignedFields}
+   */
+  signFields(fields, privKey) { }
+  /**
+   * @param {minaSigner.SignedFields} signedFields
+   * @return {boolean}
+   */
+  verifyFields(signedFields) { }
+  /**
+   * @param {string} privKey
+   * @return {string}
+   */
+  derivePublicKey(privKey) { }
+}

@@ -2,7 +2,6 @@ import * as swc from "@swc/core";
 import { build, write } from "bun";
 import { compiler as ClosureCompiler } from "google-closure-compiler";
 import UglifyJS from "uglify-js";
-import { tweakPasses } from "./passes";
 import { postprocess } from "./postprocess";
 import { preprocessAndIsolate } from "./preprocess";
 import { ImportStatement } from "./util/modules";
@@ -10,6 +9,63 @@ import { kdjsPlugin } from "./util/plugin";
 
 /** @typedef {Record<string, unknown>} */
 const Params = {};
+
+const uglifyOptions = {
+  mangle: { toplevel: true },
+  toplevel: true,
+  compress: {
+    module: true,
+    toplevel: true,
+    passes: 10,
+    unsafe: true,
+    drop_console: false, // overridden per call from params["nologs"]
+  },
+  warnings: "verbose",
+};
+
+const swcMinifyOptions = {
+  module: true,
+  ecma: 2022,
+  sourceMap: false,
+  toplevel: true,
+  mangle: true,
+  compress: {
+    passes: 10,
+    pure_getters: true,
+    unsafe: true,
+    unsafe_proto: true,
+    reduce_vars: true,
+  },
+};
+
+/**
+ * Shared pipeline: UglifyJS -> tweakPasses -> SWC minify -> pick smaller ->
+ * print, write. Used for both GCC and Bun build output.
+ * @param {string} code Raw compiler output
+ * @param {Params} params
+ * @param {string} inputLabel Label for the input size log (e.g. "GCC", "bun build")
+ * @return {Promise<string>}
+ */
+const finishCompile = async (code, params, inputLabel) => {
+  console.log(`${inputLabel} size:\t${code.length}`);
+  const compress = { ...uglifyOptions.compress };
+  compress.drop_console = /** @type {boolean} */(params["nologs"]);
+  const uglified = UglifyJS.minify(code, { ...uglifyOptions, compress });
+  if (uglified.error)
+    throw uglified.error;
+  console.log(uglified.warnings, uglified.error);
+  const uglifiedCode = uglified.code;
+  const swcOutput = await swc.minify(uglifiedCode, swcMinifyOptions);
+  let result = uglifiedCode.length < swcOutput.code.length
+    ? uglifiedCode : swcOutput.code;
+  console.log(`Uglified size:\t${uglifiedCode.length}`);
+  console.log(`SWC size:     \t${swcOutput.code.length}`);
+  if (params["print"])
+    console.log("UglifyJS output:\n", uglifiedCode, "\nSWC output:\n", swcOutput.code);
+  if (params["output"])
+    await write(/** @type {string} */(params["output"]), result);
+  return result;
+};
 
 const compileWithBun = async (params) => {
   const result = await build({
@@ -25,12 +81,7 @@ const compileWithBun = async (params) => {
     throw `Bun build failed: ${messages}`;
   }
   const text = await result.outputs[0].text();
-  console.log(`bun build size:\t${text.length}`);
-  if (params["print"])
-    console.log("bun build output:\n", text);
-  return params["output"]
-    ? write(params["output"], text).then(() => text)
-    : text;
+  return finishCompile(text, params, "bun build");
 };
 
 /**
@@ -109,56 +160,9 @@ const compile = async (params, checkFreshFn, transpileFn) => {
       output = postprocess(output, unlinkedImports);
       if (params["printGccOutput"])
         console.log("GCC output\n", output);
-      const uglified = UglifyJS.minify(output, {
-        mangle: {
-          toplevel: true,
-        },
-        toplevel: true,
-        compress: {
-          // evaluate: "eager",
-          module: true,
-          toplevel: true,
-          passes: 4,
-          unsafe: true,
-          drop_console: /** @type {boolean} */(params["nologs"]),
-        },
-        warnings: "verbose",
-      });
-      console.log(`GCC size:     \t${output.length}`);
-      console.log(uglified.warnings, uglified.error);
-      /** @const {string} */
-      const uglifiedCode = tweakPasses(uglified.code);
-      const swcOutputPromise = swc.minify(uglifiedCode, {
-        module: true,
-        ecma: 2022,
-        sourceMap: false,
-        toplevel: true,
-        mangle: true,
-        compress: {
-          passes: 10,
-          pure_getters: true,
-          unsafe: true,
-          unsafe_proto: true,
-          reduce_vars: true,
-        }
-      });
-      resolve(Promise.all([uglifiedCode, swcOutputPromise]));
-    })
-  }).then(([uglifiedCode, swcOutput]) => {
-    console.log(`Uglified size:\t${uglifiedCode.length}`);
-    console.log(`SWC size:     \t${swcOutput.code.length}`);
-    /** @type {string} */
-    let code = uglifiedCode.length < swcOutput.code.length
-      ? uglifiedCode : swcOutput.code;
-    if (/** @type {boolean} */(params["emit_shebang"]))
-      code = "#!/usr/bin/env bun\n" + code;
-    if (params["print"])
-      console.log("UglifyJS output:\n", uglifiedCode, "\nSWC output:\n", swcOutput.code);
-    if (params["output"])
-      return write(/** @type {string} */(params["output"]), code)
-        .then(() => code)
-    return code;
-  })
+      finishCompile(output, params, "GCC").then(resolve, reject);
+    });
+  });
 }
 
 export { compile };

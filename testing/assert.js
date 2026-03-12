@@ -19,7 +19,7 @@ const updateCounters = (value) => value ? TrueAsserts += 1 : FalseAsserts += 1;
  */
 const assert = (value) => {
   updateCounters(value);
-  if (!value) console.error("Hata");
+  if (!value) console.error("Error");
   return value;
 }
 
@@ -29,16 +29,46 @@ const assert = (value) => {
  * @param {T} expected
  * @return {boolean}
  */
-const assertEq = (given, expected) => {
+const assertIs = (given, expected) => {
   /** @const {boolean} */
   const value = given == expected;
   updateCounters(value);
   if (!value) {
-    console.error(`Hata: beklenen ${expected}`);
-    console.error(`       verilen ${given}`);
+    console.error(`Error: expected ${expected}`);
+    console.error(`       received ${given}`);
   }
   return value;
 }
+
+/**
+ * Shallow equality for primitives and plain 1-level objects (same keys, values compared with ==).
+ *
+ * @template T
+ * @param {T} given
+ * @param {T} expected
+ * @return {boolean}
+ */
+const assertEq = (given, expected) => {
+  const value = (() => {
+    if (given == expected) return true;
+    if (typeof given != "object" || given == null || typeof expected != "object" || expected == null)
+      return false;
+    const gKeys = Object.keys(given);
+    const eKeys = Object.keys(expected);
+    if (gKeys.length != eKeys.length) return false;
+    for (const k of eKeys) {
+      if (!Object.prototype.hasOwnProperty.call(given, k) || given[k] != expected[k])
+        return false;
+    }
+    return true;
+  })();
+  updateCounters(value);
+  if (!value) {
+    console.error("Error: expected", expected);
+    console.error("       received", given);
+  }
+  return value;
+};
 
 /**
  * @template T
@@ -60,8 +90,8 @@ const assertArrayEq = (given, expected) => {
   }
   updateCounters(value);
   if (!value) {
-    console.error(`Hata: beklenen ${expected}`);
-    console.error(`       verilen ${given}`);
+    console.error(`Error: expected ${expected}`);
+    console.error(`       received ${given}`);
   }
   return value;
 }
@@ -80,7 +110,7 @@ const assertElemEq = (given, expected) => {
   updateCounters(value);
   if (!value) {
     given.forEach((e) => {
-      if (!expectSet.has(e)) console.log(`Hata: fazladan eleman ${e}`);
+      if (!expectSet.has(e)) console.log(`Error: extra element ${e}`);
     });
   }
   return value;
@@ -106,5 +136,6 @@ export {
   assert,
   assertArrayEq,
   assertElemEq,
-  assertEq
+  assertEq,
+  assertIs
 };

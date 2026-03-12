@@ -1,4 +1,4 @@
-import { assertEq } from "../../testing/assert";
+import { assertIs } from "../../testing/assert";
 import { exp, exp2, expTimesExp } from "../modular";
 
 /**
@@ -86,20 +86,20 @@ const testExpLocal = () => {
   /** @const {bigint} */
   const Q = 0xDAD19B08F618992D3A5367F0E730B97C6DD113B6A2A493C9EDB0B68DBB1AEC020FB2A64C9644397AB016ABA5B40FA22655060824D9F308984D6734E2439BA08Fn;
 
-  assertEq(expLocal(7n, 5n, 11n), 10n);
-  assertEq(expLocal(2n, 5n, 3n), 2n);
-  assertEq(expLocal(9n, 0n, 5n), 1n);
+  assertIs(expLocal(7n, 5n, 11n), 10n);
+  assertIs(expLocal(2n, 5n, 3n), 2n);
+  assertIs(expLocal(9n, 0n, 5n), 1n);
 
-  assertEq(expLocal(5n, Q - 1n, Q), 1n)
-  assertEq(expLocal(333n, Q - 1n, Q), 1n)
-  assertEq(expLocal(11n, Q - 1n, Q), 1n)
+  assertIs(expLocal(5n, Q - 1n, Q), 1n)
+  assertIs(expLocal(333n, Q - 1n, Q), 1n)
+  assertIs(expLocal(11n, Q - 1n, Q), 1n)
 
-  assertEq(expLocal(5n, P - 1n, P), 1n)
-  assertEq(expLocal(333n, P - 1n, P), 1n)
-  assertEq(expLocal(11n, P - 1n, P), 1n)
+  assertIs(expLocal(5n, P - 1n, P), 1n)
+  assertIs(expLocal(333n, P - 1n, P), 1n)
+  assertIs(expLocal(11n, P - 1n, P), 1n)
 
-  assertEq(expLocal(12n, 78n, 131n), 58n);
-  assertEq(expLocal(12n, 38n, 133n), 11n);
+  assertIs(expLocal(12n, 78n, 131n), 58n);
+  assertIs(expLocal(12n, 38n, 133n), 11n);
 }
 
 const benchExp = () => {
@@ -111,8 +111,8 @@ const benchExp = () => {
   console.time("1k exp()");
   {
     for (let i = 0; i < 1000; ++i) {
-      assertEq(exp(2n, Q - 1n, Q), 1n);
-      assertEq(exp(R, Q - 1n, Q), 1n);
+      assertIs(exp(2n, Q - 1n, Q), 1n);
+      assertIs(exp(R, Q - 1n, Q), 1n);
     }
   }
   console.timeEnd("1k exp()");
@@ -120,8 +120,8 @@ const benchExp = () => {
   console.time("1k expViaBigInt()");
   {
     for (let i = 0; i < 1000; ++i) {
-      assertEq(expViaBigInt(2n, Q - 1n, Q), 1n);
-      assertEq(expViaBigInt(R, Q - 1n, Q), 1n);
+      assertIs(expViaBigInt(2n, Q - 1n, Q), 1n);
+      assertIs(expViaBigInt(R, Q - 1n, Q), 1n);
     }
   }
   console.timeEnd("1k expViaBigInt()");
@@ -129,8 +129,8 @@ const benchExp = () => {
   console.time("1k expLTRBinary()");
   {
     for (let i = 0; i < 1000; ++i) {
-      assertEq(expLTRBinary(2n, Q - 1n, Q), 1n);
-      assertEq(expLTRBinary(R, Q - 1n, Q), 1n);
+      assertIs(expLTRBinary(2n, Q - 1n, Q), 1n);
+      assertIs(expLTRBinary(R, Q - 1n, Q), 1n);
     }
   }
   console.timeEnd("1k expLTRBinary()");
@@ -139,8 +139,8 @@ const benchExp = () => {
   console.time("1k expLTRBinary2()");
   {
     for (let i = 0; i < 1000; ++i) {
-      assertEq(expLTRBinary2(2n, Q - 1n, Q), 1n);
-      assertEq(expLTRBinary2(R, Q - 1n, Q), 1n);
+      assertIs(expLTRBinary2(2n, Q - 1n, Q), 1n);
+      assertIs(expLTRBinary2(R, Q - 1n, Q), 1n);
     }
   }
   console.timeEnd("1k expLTRBinary2()");
@@ -148,8 +148,8 @@ const benchExp = () => {
   console.time("1k exp()");
   {
     for (let i = 0; i < 1000; ++i) {
-      assertEq(exp(2n, Q - 1n, Q), 1n);
-      assertEq(exp(R, Q - 1n, Q), 1n);
+      assertIs(exp(2n, Q - 1n, Q), 1n);
+      assertIs(exp(R, Q - 1n, Q), 1n);
     }
   }
   console.timeEnd("1k exp()");
@@ -157,8 +157,8 @@ const benchExp = () => {
   console.time("1k expRTLBinary()");
   {
     for (let i = 0; i < 1000; ++i) {
-      assertEq(expRTLBinary(2n, Q - 1n, Q), 1n);
-      assertEq(expRTLBinary(R, Q - 1n, Q), 1n);
+      assertIs(expRTLBinary(2n, Q - 1n, Q), 1n);
+      assertIs(expRTLBinary(R, Q - 1n, Q), 1n);
     }
   }
   console.timeEnd("1k expRTLBinary()");
@@ -230,11 +230,11 @@ const expTimesExpW = (a, x, b, y, M) => {
 const testExpTimesExpLocal = () => {
   console.log("testExpTimesExpLocal()");
   const testExpTimesExpLocal = expTimesExpW;
-  assertEq(testExpTimesExpLocal(2n, 2n, 3n, 1n, 100n), 12n);
-  assertEq(testExpTimesExpLocal(12n, 38n, 9n, 17n, 133n), 16n);
-  assertEq(testExpTimesExpLocal(12n, 38n, 19n, 17n, 133n), 19n);
-  assertEq(testExpTimesExpLocal(12n, 38n, 55n, 17n, 133n), 80n);
-  assertEq(testExpTimesExpLocal(12n, 38n, 55n, 11231237n, 12938120389123n), 3120026537850n);
+  assertIs(testExpTimesExpLocal(2n, 2n, 3n, 1n, 100n), 12n);
+  assertIs(testExpTimesExpLocal(12n, 38n, 9n, 17n, 133n), 16n);
+  assertIs(testExpTimesExpLocal(12n, 38n, 19n, 17n, 133n), 19n);
+  assertIs(testExpTimesExpLocal(12n, 38n, 55n, 17n, 133n), 80n);
+  assertIs(testExpTimesExpLocal(12n, 38n, 55n, 11231237n, 12938120389123n), 3120026537850n);
 }
 
 const benchExpTimesExp = () => {
@@ -249,7 +249,7 @@ const benchExpTimesExp = () => {
     /** @const {bigint} */
     const r1 = exp(123n, Q - 1n, Q);
     const r2 = exp(15129n, M, Q);
-    assertEq(r1 * r2 % Q, 1n);
+    assertIs(r1 * r2 % Q, 1n);
   }
 
   console.timeEnd("1k with two exp() round1");
@@ -259,25 +259,25 @@ const benchExpTimesExp = () => {
     /** @const {bigint} */
     const r1 = exp(123n, Q - 1n, Q);
     const r2 = exp(15129n, M, Q);
-    assertEq(r1 * r2 % Q, 1n);
+    assertIs(r1 * r2 % Q, 1n);
   }
 
   console.timeEnd("1k with two exp()");
 
   console.time("1k with expTimesExpViaBigIntMask()");
   for (let i = 0; i < 1000; ++i) {
-    assertEq(expTimesExpViaBigIntMask(123n, Q - 1n, 15129n, M, Q), 1n);
+    assertIs(expTimesExpViaBigIntMask(123n, Q - 1n, 15129n, M, Q), 1n);
   }
   console.timeEnd("1k with expTimesExpViaBigIntMask()");
 
   console.time("1k with expTimesExpW()");
   for (let i = 0; i < 1000; ++i)
-    assertEq(expTimesExpW(123n, Q - 1n, 15129n, M, Q), 1n);
+    assertIs(expTimesExpW(123n, Q - 1n, 15129n, M, Q), 1n);
   console.timeEnd("1k with expTimesExpW()");
 
   console.time("1k with expTimesExp()");
   for (let i = 0; i < 1000; ++i)
-    assertEq(expTimesExp(123n, Q - 1n, 15129n, M, Q), 1n);
+    assertIs(expTimesExp(123n, Q - 1n, 15129n, M, Q), 1n);
   console.timeEnd("1k with expTimesExp()");
 }
 
@@ -287,12 +287,12 @@ const benchExp2 = () => {
 
   console.time("1k 512-bit exp()");
   for (let i = 0; i < 1000; ++i)
-    assertEq(exp(2n, Q - 1n, Q), 1n);
+    assertIs(exp(2n, Q - 1n, Q), 1n);
   console.timeEnd("1k 512-bit exp()");
 
   console.time("1k 512-bit exp2()");
   for (let i = 0; i < 1000; ++i)
-    assertEq(exp2(Q - 1n, Q), 1n);
+    assertIs(exp2(Q - 1n, Q), 1n);
   console.timeEnd("1k 512-bit exp2()");
 
   /** @const {bigint} */
@@ -300,12 +300,12 @@ const benchExp2 = () => {
 
   console.time("1k 1024-bit exp()");
   for (let i = 0; i < 1000; ++i)
-    assertEq(exp(2n, QQ - 1n, QQ), 1n);
+    assertIs(exp(2n, QQ - 1n, QQ), 1n);
   console.timeEnd("1k 1024-bit exp()");
 
   console.time("1k 1024-bit exp2()");
   for (let i = 0; i < 1000; ++i)
-    assertEq(exp2(QQ - 1n, QQ), 1n);
+    assertIs(exp2(QQ - 1n, QQ), 1n);
   console.timeEnd("1k 1024-bit exp2()");
 }
 

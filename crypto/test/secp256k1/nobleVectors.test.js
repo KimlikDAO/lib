@@ -11,7 +11,7 @@ describe("Noble crypto test vectors", () => {
         .map((line) => line.split(":"))
 
       for (const [priv, xHex, yHex] of tuples) {
-        const { x, y } = G.copy().multiply(BigInt(priv)).project();
+        const { x, y } = G.copy().multiply(BigInt(priv)).proj();
         expect(x).toBe(BigInt("0x" + xHex));
         expect(y).toBe(BigInt("0x" + yHex));
       }

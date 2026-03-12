@@ -10,7 +10,7 @@ import { Signature as EthereumSignature, WideSignature } from "../signature.d";
 import { personalDigest } from "../signer";
 
 const addr = (privKey: bigint): string => {
-  const { x, y } = G.copy().multiply(privKey).project();
+  const { x, y } = G.copy().multiply(privKey).proj();
   const buff = hex.toUint8Array(abi.uint256(x) + abi.uint256(y));
   return "0x" + hex.from(new Uint8Array(
     keccak256Uint32(new Uint32Array(buff.buffer)).buffer, 12, 20));
@@ -33,12 +33,11 @@ const signUnpacked = (digest: bigint, privKey: bigint): UnpackedSignature => {
   for (; ; ++buff[0]) {
     const k = BigInt("0x" + keccak256Uint32ToHex(buff));
     if (k <= 0 || Q <= k) continue;
-    const K = G.copy().multiply(k).project();
-    const r = K.x;
+    const { x: r, y } = G.copy().multiply(k).proj();
     if (r >= Q) continue;
     let s = (inverse(k, Q) * ((digest + r * privKey) % Q)) % Q;
     if (s == 0n) continue;
-    let yParity = !!(K.y & 1n);
+    let yParity = !!(y & 1n);
     if (s > (Q >> 1n)) {
       s = Q - s;
       yParity = !yParity;
@@ -55,7 +54,6 @@ const sign = (digest: bigint, privKey: bigint): EthereumSignature =>
 
 class MockSigner implements Signer {
   constructor(readonly privKey: bigint) { }
-
   /**
    * Returns a deterministic but non RFC-6979 compliant signature if the
    * provided address is the signer's address; returns `Promise.reject()`
@@ -67,17 +65,15 @@ class MockSigner implements Signer {
     const digest = BigInt("0x" + personalDigest(message));
     return Promise.resolve("0x" + sign(digest, this.privKey));
   }
-
   getAddress(): string {
     return addr(this.privKey);
   }
-
   deriveSecret(message: string, address: string): Promise<ArrayBuffer> {
     if (address.toLowerCase() != addr(this.privKey))
       return Promise.reject();
     const digest = BigInt("0x" + personalDigest(message));
     return crypto.subtle.digest("SHA-256",
-      hex.toUint8Array(signWide(digest, this.privKey).slice(2)));
+      hex.toUint8Array(signWide(digest, this.privKey).slice(2)) as Uint8Array<ArrayBuffer>);
   }
 }
 

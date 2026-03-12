@@ -1,5 +1,5 @@
-import { ChainId } from "../../crosschain/chains";
 import abi from "../abi";
+import { ChainId } from "../chains";
 import { Provider as IProvider, RemoteProvider } from "../provider";
 import { Tokens } from "./tokens";
 
@@ -221,7 +221,7 @@ const createWithRevokersWithTokenPayment = (chainId, address, cid, revokeThresho
 const priceIn = (chainId, token) => {
   if (chainId == "0x38" && token == 0)
     return Promise.resolve([5000, 3400]);
-  const fiyat = {
+  const price = {
     "0x1": [600, 1 * MILLION, 1 * MILLION, 19 * MILLION, 1 * MILLION],
     "0xa86a": [50_000, 1 * MILLION, 1 * MILLION, 19 * MILLION, 1 * MILLION],
     "0x89": [800_000, 1 * MILLION, 1 * MILLION, 19 * MILLION, 1 * MILLION],
@@ -231,7 +231,7 @@ const priceIn = (chainId, token) => {
     "0x144": [600, 1 * MILLION, 1 * MILLION, 19 * MILLION, 0],
   }
   return Promise.resolve([
-    fiyat[chainId][token] * 1.5, fiyat[chainId][token]
+    price[chainId][token] * 1.5, price[chainId][token]
   ]);
 }
 
@@ -246,9 +246,6 @@ const estimateNetworkFee = (chainId) => {
     "0x89": 400,
     "0xa4b1": 200,
     "0x38": 400,
-    "0x406": 100,
-    "0xfa": 200,
-    "0x144": 200
   }
   return Promise.resolve(placeholder[chainId]);
 }

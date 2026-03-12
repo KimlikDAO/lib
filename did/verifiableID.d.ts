@@ -32,7 +32,7 @@ interface VerifiableID {
    *
    * The `x` value is then fed into the VDF to obtain the `id`.
    */
-  x: string;
+  x?: string;
   /**
    * Wesolowski proof π parameter as a base64 encoded number.
    *
@@ -42,11 +42,11 @@ interface VerifiableID {
    *
    * where id is VerifiableID.id.
    */
-  wesolowskiP: string;
+  wesolowskiP?: string;
   /**
    * Wesolowski proof l parameter as a base64 encoded number.
    */
-  wesolowskiL: string;
+  wesolowskiL?: string;
 }
 
 export { VerifiableID };

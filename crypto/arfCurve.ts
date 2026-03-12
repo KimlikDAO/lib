@@ -1,55 +1,50 @@
-import { Curve, Point } from "./ellipticCurve";
+import { AffinePoint, CurveFamily, Point } from "./ellipticCurve";
 import { inverse } from "./modular";
 
 /**
- * Returns an Arf curve over the base field 𝔽ₚ for a given prime P: an elliptic
- * curve with equation y² = x³ + b for some b. For P ≡ 1 (mod 6) there are
- * 6 isomorphism classes; which one you get is determined by the generator you
- * choose (or equivalently the choice of b in the curve equation).
+ * Returns an Arf curve family over the base field 𝔽ₚ for a given prime P: an
+ * elliptic curve with equation y² = x³ + b for some b. For P ≡ 1 (mod 6) there
+ * are 6 isomorphism classes; to specify one, one needs to implement the
+ * `pointFrom(x, yParity)` method of the `Curve` interface, which fixes `b` and
+ * hence the `Curve`. Note that a curve does not fix a generator; that is
+ * specified outside the `Curve`.
  *
  * Some popular choices:
  * - secp256k1:
- *   P = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F
+ *   P = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F,
  *   y² = x³ + 7
  * - Pallas:
- *   P = 0x40000000000000000000000000000000224698FC094CF91B992D30ED00000001
+ *   P = 0x40000000000000000000000000000000224698FC094CF91B992D30ED00000001,
  *   y² = x³ + 5
  * @pure
  */
-const arfCurve = (P: bigint): Curve => {
+const arfCurve = (P: bigint): CurveFamily => {
   /**
-   * Unlike the % operation, modP always returns a positive number y such that
-   *
-   *   0 <= y < P  and  x = y (mod P).
-   *
+   * Returns a non-negative number t such that 0 ≤ t < P and x ≡ t (mod P).
    * If positivity is not required, prefer the % operator.
    * @pure
    */
   const modP = (x: bigint): bigint => {
-    let res = x % P;
-    return res >= 0n ? res : res + P;
+    let t = x % P;
+    return t >= 0n ? t : t + P;
   };
-
-  /**
-   * A fake point used in the multiplication subroutine. Always appears as RHS
-   * so a bare object works.
-   */
-  const O = { x: 0n, y: 0n, z: 0n } as Point;
-
-  return class CurvePoint implements Point {
-    constructor(public x: bigint, public y: bigint, public z: bigint = 1n) {}
+  return class ArfFamilyPoint implements Point {
+    constructor(public x: bigint, public y: bigint, public z: bigint) { }
     /** @pure */
-    copy(): Point { return new CurvePoint(this.x, this.y, this.z); }
-    project(): Point {
-      if (this.z != 0n) {
-        const iz = inverse(this.z, P);
-        const iz2 = (iz * iz) % P;
-        const iz3 = (iz2 * iz) % P;
-        this.x = (this.x * iz2) % P;
-        this.y = (this.y * iz3) % P;
-        this.z = 1n;
-      }
-      return this;
+    static pointFromAffine({ x, y }: AffinePoint): Point {
+      return new ArfFamilyPoint(x, y, 1n);
+    };
+    /** @pure */
+    copy(): Point { return new ArfFamilyPoint(this.x, this.y, this.z); }
+    /** @pure */
+    proj(): AffinePoint {
+      if (this.z == 0n) return { x: 0n, y: 0n };
+      const iz = inverse(this.z, P);
+      const iz2 = iz * iz % P;
+      const iz3 = iz2 * iz % P;
+      const x = this.x * iz2 % P;
+      const y = this.y * iz3 % P;
+      return { x, y };
     }
     negate(): Point {
       this.y = P - this.y;
@@ -87,9 +82,9 @@ const arfCurve = (P: bigint): Curve => {
         } else
           this.x = this.y = this.z = 0n;
       } else {
-        const h2 = (h * h) % P;
-        const h3 = (h * h2) % P;
-        const v = (u1 * h2) % P;
+        const h2 = h * h % P;
+        const h3 = h * h2 % P;
+        const v = u1 * h2 % P;
         const X = modP(r * r - h3 - 2n * v);
         this.y = modP(r * (v - X) - s1 * h3);
         this.z = modP(z1 * z2 * h);
@@ -97,11 +92,14 @@ const arfCurve = (P: bigint): Curve => {
       }
       return this;
     }
+    static readonly O: ArfFamilyPoint = new ArfFamilyPoint(0n, 0n, 0n);
     multiply(n: bigint): Point {
       const nNibs = n.toString(4);
-      const d: readonly Point[] = [
-        O, this.copy(),
-        this.copy().double(), this.copy().double().increment(this)
+      const d: readonly ArfFamilyPoint[] = [
+        ArfFamilyPoint.O,
+        this.copy(),
+        this.copy().double(),
+        this.copy().double().increment(this)
       ];
       ({ x: this.x, y: this.y, z: this.z } = d[nNibs.charCodeAt(0) - 48]);
       for (let i = 1; i < nNibs.length; ++i) {
@@ -110,7 +108,7 @@ const arfCurve = (P: bigint): Curve => {
       }
       return this;
     }
-  }
+  } as CurveFamily;
 }
 
 export { arfCurve };

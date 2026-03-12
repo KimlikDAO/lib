@@ -12,7 +12,7 @@ const parseArgs = (
   defaultArgKey: string,
   shortArgMap: Record<string, string> = {}
 ): CliArgs => {
-  let key = defaultArgKey;
+  let key: string = defaultArgKey;
   let values: string[] = [];
   const params: CliArgs = {};
 

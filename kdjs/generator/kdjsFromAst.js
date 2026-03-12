@@ -1,11 +1,18 @@
 import { partition } from "../../util/arrays";
+import { determineEnumType } from "./enums";
 import { Modifier } from "../types/modifier";
+import { partitionBody } from "./interfaces";
 
-const determineEnumType = () => "string";
+/** @enum {number} */
+const IdentifierTypes = {
+  None: 0,
+  JsDoc: 1,
+  Ts: 2
+};
 
 /**
  * Predicate to decide whether we should generate a jsDocType for a
- * VariableDeclaration
+ * VariableDeclaration.
  *
  * @return {boolean}
  */
@@ -15,28 +22,30 @@ const genJsDocType = (d) => d.id.typeAnnotation ||
 const wrapExpression = (expr) =>
   expr?.type == "AssignmentExpression" && expr.left?.type == "ObjectPattern";
 
+/** True when this expression must be wrapped in () when used as the object of a MemberExpression. */
+const needsParensForMemberObject = (node) =>
+  node?.type == "AssignmentExpression" || node?.type == "SequenceExpression";
+
 /**
- * Given an interface or class body, partitions it as:
+ * Derives a TS keyword type node from a literal expression.
  *
- * @return {{
- *   methods: Node[],
- *   props: Node[],
- *   ctor?: Node
- * }}
+ * Returns undefined if the argument is not a Literal or if we don't want to
+ * infer a type from it.
+ *
+ * @param {unknown} n
+ * @return {unknown|undefined}
  */
-const partitionInterface = (body) => {
-  const methods = [];
-  const props = [];
-  let ctor = null;
-  for (const member of body)
-    if (member.type == "PropertyDefinition" || member.type == "TSPropertySignature")
-      props.push(member);
-    else if (member.type == "MethodDefinition" || member.type == "TSMethodSignature") {
-      if (member.kind == "constructor") ctor = member;
-      else methods.push(member);
-    }
-  return { ctor, props, methods };
-}
+const typeFromLiteral = (n) => {
+  if (!n || n.type != "Literal") return;
+  const v = n.value;
+  if (v === null) return { type: "TSNullKeyword" };
+  switch (typeof v) {
+    case "string": return { type: "TSStringKeyword" };
+    case "number": return { type: "TSNumberKeyword" };
+    case "boolean": return { type: "TSBooleanKeyword" };
+    case "bigint": return { type: "TSBigIntKeyword" };
+  }
+};
 
 class Generator {
   indent = "";
@@ -108,7 +117,8 @@ class Generator {
   }
   TSNonNullExpression(n) { this.rec(n.expression); }
   TSFunctionType(n) {
-    this.put("("); this.arr(n.parameters, ", ", true); this.put(") => "); this.rec(n.typeAnnotation);
+    this.put("("); this.arr(n.parameters, ", ", IdentifierTypes.Ts); this.put(") => ");
+    this.rec(n.typeAnnotation);
   }
   TSConstructorType(n) {
     this.put("new "); this.TSFunctionType(n);
@@ -125,6 +135,7 @@ class Generator {
     this.put("}");
   }
   TSTypeOperator(n) { this.put(n.operator + " "); this.rec(n.typeAnnotation); }
+  TSTypeQuery(n) { this.put("typeof "); this.rec(n.exprName); }
   TSTypeParameter(n) { this.put(n.name); }
   TSTypeParameterInstantiation(n) { this.put("<"); this.arr(n.params, ", "); this.put(">"); }
   TSTypeReference(n) { this.rec(n.typeName); this.rec(n.typeArguments); }
@@ -158,21 +169,21 @@ class Generator {
     this.put(" "); this.rec(n.body);
   }
   TSInterfaceBody(n) {
+    if (this.typeMap) { this.DJSInterfaceBody(n); return; }
     this.put("{"); this.inc();
-    const { props, methods } = partitionInterface(n.body);
-    if (props.length) {
-      this.ret();
-      this.ctorFromProps(props);
-    }
-    this.arrLines(methods, "");
+    this.arrLines(n.body, "", /* inInterface */ true);
     this.dec(); this.ret(); this.put("}");
   }
   TSMethodSignature(n) {
-    this.jsDoc(n)
+    this.jsDoc(n, n.modifiers);
     this.rec(n.key); this.put("("); this.arr(n.parameters, ", "); this.put(") {}");
   }
-  TSPropertySignature(n) {
-    this.rec(n.key); if (n.optional) this.put("?"); this.put(": "); this.rec(n.typeAnnotation);
+  TSPropertySignature(n, inInterface) {
+    if (inInterface) {
+      this.jsDocType(n, 0); this.rec(n.key); this.put(";");
+    } else {
+      this.rec(n.key); if (n.optional) this.put("?"); this.put(": "); this.rec(n.typeAnnotation);
+    }
   }
   TSParameterProperty(n) { this.rec(n.parameter); }
 
@@ -201,24 +212,35 @@ class Generator {
     this.rec(n.consequent); this.put(" : "); this.rec(n.alternate); this.put(")");
   }
   MemberExpression(n, optChain) {
-    this.rec(n.object);
+    if (needsParensForMemberObject(n.object)) {
+      this.put("("); this.rec(n.object); this.put(")");
+    } else
+      this.rec(n.object);
     if (n.computed) {
       this.put(optChain ? "?.[" : "["); this.rec(n.property); this.put("]");
     } else {
       this.put(optChain ? "?." : "."); this.rec(n.property);
     }
   }
-  Identifier(n, showType) {
-    this.put(this.typeMap?.get(n.name) ?? n.name);
-    if (showType && n.typeAnnotation) {
+  Identifier(n, showTypes) {
+    if (showTypes == IdentifierTypes.Ts && n.typeAnnotation) {
+      this.put(this.typeMap?.get(n.name) ?? n.name);
       if (n.optional) this.put("?");
       this.put(": "); this.rec(n.typeAnnotation);
-    }
+    } else if (showTypes == IdentifierTypes.JsDoc && n.typeAnnotation) {
+      this.put("/** @type {"); this.rec(n.typeAnnotation); this.put("} */ ");
+      this.put(this.typeMap?.get(n.name) ?? n.name);
+    } else
+      this.put(this.typeMap?.get(n.name) ?? n.name);
   }
   FunctionExpression(n) { }
-  ArrowFunctionExpression(n) {
+  ArrowFunctionExpression(n, showTypes) {
+    // By default, show types in the inlineJsDoc format
+    // If we've already printed the types in the jsDoc format, omit them.
+    if (showTypes == undefined) showTypes = IdentifierTypes.JsDoc;
     if (n.async) this.put("async ");
-    this.put("("); this.arr(n.params, ", "); this.put(") => "); this.rec(n.body, null, true)
+    this.put("("); this.arr(n.params, ", ", showTypes); this.put(") => ");
+    this.rec(n.body, null, /* wrapped */ true)
   }
   LogicalExpression(n) { this.rec(n.left); this.put(` ${n.operator} `); this.rec(n.right); }
   SequenceExpression(n) { this.arr(n.expressions, ", "); }
@@ -235,7 +257,8 @@ class Generator {
       this.put("("); this.arr(n.value.params, ", "); this.put(") ");
       this.rec(n.value.body);
     } else {
-      this.rec(n.key); if (!n.shorthand) { this.put(": "); this.rec(n.value); }
+      if (n.computed) this.put("[");this.rec(n.key); if (n.computed) this.put("]");
+      if (!n.shorthand) { this.put(": "); this.rec(n.value); }
     }
   }
   TemplateLiteral(n) {
@@ -248,7 +271,7 @@ class Generator {
     }
     this.put("`");
   }
-  UnaryExpression(n) { this.put(n.operator); this.rec(n.argument); }
+  UnaryExpression(n) { this.put(n.operator); if (n.operator.length > 1) this.put(" "); this.rec(n.argument); }
   UpdateExpression(n) {
     if (n.prefix) this.put(n.operator); this.rec(n.argument); if (!n.prefix) this.put(n.operator);
   }
@@ -321,21 +344,23 @@ class Generator {
     this.dec(); this.put(")");
   }
   ClassBody(n) {
+    if (this.typeMap) { this.DJSClassBody(n); return; }
     this.put("{"); this.inc();
-    const { props, methods, ctor } = partitionInterface(n.body);
-    if (ctor || props.length) {
-      this.ret();
-      ctor ? this.ctor(ctor, props) : this.ctorFromProps(props);
-    }
-    this.arrLines(methods, "");
+    this.arrLines(n.body, "");
     this.dec(); this.ret(); this.put("}");
   }
   MethodDefinition(n) {
+    if (n.kind == "constructor") { this.ConstructorDefinition(n); return }
     n.value.modifiers |= n.modifiers | (n.override ? Modifier.Override : 0);
     this.jsDoc(n.value, n.value.modifiers);
     if (n.static) this.put("static "); if (n.value.async) this.put("async ");
     this.rec(n.key); this.put("("); this.arr(n.value.params, ", "); this.put(") ");
     this.rec(n.value.body);
+  }
+  PropertyDefinition(n) {
+    this.jsDocType(n, n.modifiers);
+    if (n.static) this.put("static "); this.rec(n.key);
+    if (n.value) { this.put(" = "); this.rec(n.value); } this.put(";");
   }
   VariableDeclaration(n) {
     n.modifiers |= n.kind == "const" ? Modifier.Readonly : 0;
@@ -359,10 +384,11 @@ class Generator {
    */
   VariableDeclarator(n, modifiers) {
     if (modifiers != undefined) {
-      if (n.init && n.init.type.endsWith("FunctionExpression")) this.jsDoc(n.init, modifiers);
-      else this.jsDocType(n.id, modifiers);
+      const isFunctionDecl = n.init && n.init.type.endsWith("FunctionExpression");
+      if (isFunctionDecl) this.jsDoc(n.init, modifiers); else this.jsDocType(n.id, modifiers);
       this.put((modifiers & Modifier.Readonly) ? "const " : "let "); this.rec(n.id);
-      if (n.init) { this.put(" = "); this.rec(n.init); } this.put(";");
+      if (n.init) { this.put(" = "); this.rec(n.init, isFunctionDecl ? IdentifierTypes.None : undefined); }
+      this.put(";");
     } else {
       this.rec(n.id);
       if (n.init) { this.put(" = "); this.rec(n.init); }
@@ -371,7 +397,8 @@ class Generator {
   ArrayPattern(n) { this.put("["); this.arr(n.elements, ", "); this.put("]"); }
   ObjectPattern(n) { this.put("{ "); this.arr(n.properties, ", "); this.put(" }"); }
   AssignmentPattern(n) { this.rec(n.left); this.put(" = "); this.rec(n.right); }
-  ContinueStatement(n) { this.put("continue;"); if (n.label) { this.put(" "); this.rec(n.label); } }
+  ContinueStatement(n) { this.put("continue"); if (n.label) { this.put(" "); this.rec(n.label); } this.put(";"); }
+  BreakStatement(n) { this.put("break"); if (n.label) { this.put(" "); this.rec(n.label); } this.put(";"); }
   ExpressionStatement(n) {
     const wrap = wrapExpression(n.expression);
     if (wrap) this.put("("); this.rec(n.expression); if (wrap) this.put(")"); this.put(";");
@@ -398,12 +425,41 @@ class Generator {
   ForInStatement(n) { this.ForOfStatement(n, " in "); }
   WhileStatement(n) { this.put("while ("); this.rec(n.test); this.put(")"); this.blockLike(n.body); }
   ReturnStatement(n) { this.put("return "); this.rec(n.argument); this.put(";"); }
+  SwitchStatement(n) {
+    this.put("switch ("); this.rec(n.discriminant); this.put(") {");
+    this.inc(); this.arrLines(n.cases, ""); this.dec();
+    this.ret(); this.put("}");
+  }
+  TryStatement(n) {
+    this.put("try "); this.rec(n.block);
+    if (n.handler) this.rec(n.handler);
+    if (n.finalizer) this.rec(n.finalizer);
+  }
+  CatchClause(n) {
+    this.put(" catch ");
+    if (n.param) { this.put("("); this.rec(n.param); this.put(") "); }
+    this.rec(n.body);
+  }
+  SwitchCase(n) {
+    if (n.test) { this.put("case "); this.rec(n.test); } else this.put("default");
+    this.put(":");
+    this.inc(); this.arrLines(n.consequent, ""); this.dec();
+  }
   BlockStatement(n) {
     this.put("{");
     this.inc(); this.arrLines(n.body, ""); this.dec(); this.ret();
     this.put("}");
   }
   Program(n) { this.arrInner(n.body); this.ret(); }
+
+  // Helpers
+  blockLike(n, allowIf) {
+    if (n.type == "BlockStatement" || (allowIf && n.type == "IfStatement")) {
+      this.put(" "); this.rec(n);
+    } else {
+      this.inc(); this.ret(); this.rec(n); this.dec();
+    }
+  }
 
   // KDJS jsdoc
   jsDocType(n, modifiers) {
@@ -422,62 +478,76 @@ class Generator {
     const params = n.params || n.parameters;
     const retType = n.returnType || n.typeAnnotation || { type: "TSVoidKeyword" };
     this.doc();
-    if (n.typeParameters)
-      for (const param of n.typeParameters.params) {
-        this.ret(); this.put("@template "); this.rec(param);
-      }
+    if (n.typeParameters) {
+      // Inside the templated function, the template parameter is treated as
+      // unknown, as there is no template narrowing in gcc.
+      this.ret(); this.put("@suppress {reportUnknownTypes}");
+      this.ret(); this.put("@template ")
+      this.arr(n.typeParameters.params, ", ");
+    }
     if (modifiers & Modifier.Override) { this.ret(); this.put("@override"); }
     if (modifiers & Modifier.NoInline) { this.ret(); this.put("@noinline"); }
     if (modifiers & Modifier.NoSideEffects) { this.ret(); this.put("@nosideeffects"); }
-    if (modifiers & Modifier.Pure) { this.ret(); this.put("@pureOrBreakMyCode"); }
+    let i = 0;
     for (let param of params) {
       let isOptional = param.optional;
       if (param.type == "TSParameterProperty")
         param = param.parameter;
       if (param.type == "AssignmentPattern") {
+        param.left.typeAnnotation ||= typeFromLiteral(param.right);
         isOptional = true;
         param = param.left;
       }
       this.ret();
       this.put("@param {"); this.rec(param.typeAnnotation);
-      if (isOptional) this.put("="); this.put("} "); this.rec(param);
+      if (isOptional) this.put("="); this.put("} ");
+      if (param.type == "Identifier") { this.rec(param); } else { this.put(`arg${i++}`); }
     }
     this.ret();
     this.put("@return {"); this.rec(retType); this.put("}");
     this.cod();
   }
-  // Handles interfaces and classes without an explicit constructor
-  // In such cases, all props need to be written in constructor in kdjs-js
-  ctorFromProps(props) {
-    this.put("constructor() {"); this.inc();
-    for (const prop of props) {
-      this.ret();
-      this.jsDocType(prop, prop.readonly ? Modifier.Readonly : 0);
-      this.put("this."); this.rec(prop.key); this.put(";");
-    }
+  DJSInterfaceBody(n) {
+    const { instanceProps, other } = partitionBody(n.body);
+    this.put("{"); this.inc();
+    this.ConstructorDefinition(null, instanceProps);
+    this.arrLines(other, "", true);
+    this.dec(); this.ret(); this.put("}");
+  }
+  DJSClassBody(n) {
+    const { ctor, instanceProps, other } = partitionBody(n.body);
+    this.put("{"); this.inc();
+    this.ConstructorDefinition(ctor, instanceProps);
+    this.arrLines(other, "");
     this.dec(); this.ret(); this.put("}");
   }
   // Handles classes with explicity constructor, and potentially
   // `TSParameterProperty`'s and `Property`'s.
   // TODO(KimlikDAO-bot): do this properly. we need prop deduping
-  ctor(ctor, props) {
-    const params = ctor.value.params;
-    const body = ctor.value.body.body;
-    this.jsDoc(ctor.value);
-    this.put("constructor("); this.arr(params, ", "); this.put(")");
-    this.put(" {"); this.inc();
-    this.arrLines(body, "");
-    for (let param of params)
-      if (param.type == "TSParameterProperty") {
-        const modifiers = param.readonly ? Modifier.Readonly : 0;
-        param = param.parameter;
-        if (param.type == "AssignmentPattern")
-          param = param.left;
-        this.ret();
-        this.jsDocType(param, modifiers);
-        this.put("this."); this.rec(param);
-        this.put(" = "); this.rec(param); this.put(";");
-      }
+  ConstructorDefinition(n, props = []) {
+    if (!n && !props.length) return;
+    if (n) {
+      const params = n.value.params;
+      const body = n.value.body.body;
+      this.jsDoc(n.value);
+      this.put("constructor("); this.arr(params, ", "); this.put(")");
+      this.put(" {"); this.inc();
+      this.arrLines(body, "");
+      for (let param of params)
+        if (param.type == "TSParameterProperty") {
+          const modifiers = param.readonly ? Modifier.Readonly : 0;
+          param = param.parameter;
+          if (param.type == "AssignmentPattern")
+            param = param.left;
+          this.ret();
+          this.jsDocType(param, modifiers);
+          this.put("this."); this.rec(param);
+          this.put(" = "); this.rec(param); this.put(";");
+        }
+    } else {
+      this.ret();
+      this.put("constructor() {"); this.inc();
+    }
     for (const prop of props) {
       this.ret();
       this.jsDocType(prop, prop.readonly ? Modifier.Readonly : 0);
@@ -485,13 +555,6 @@ class Generator {
     }
     this.dec(); this.ret();
     this.put("}")
-  }
-  blockLike(n, allowIf) {
-    if (n.type == "BlockStatement" || (allowIf && n.type == "IfStatement")) {
-      this.put(" "); this.rec(n);
-    } else {
-      this.inc(); this.ret(); this.rec(n); this.dec();
-    }
   }
 }
 

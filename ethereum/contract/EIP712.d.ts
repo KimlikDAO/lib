@@ -3,7 +3,7 @@ type EIP712TypeProperty = {
   readonly type: string;
 }
 
-type EIP712Type = "EIP712Domain" | "Permit" | "PermitBatch";
+type EIP712Type = "EIP712Domain" | "Permit" | "PermitBatch" | "Person" | "Mail";
 
 type EIP712DomainData = {
   readonly name: string;
@@ -12,7 +12,7 @@ type EIP712DomainData = {
   readonly verifyingContract: string;
 }
 
-type EIP712TypeRegistry = Record<EIP712Type, EIP712TypeProperty[]>;
+type EIP712TypeRegistry = Record<string, EIP712TypeProperty[]>;
 
 interface EIP712TypedData {
   readonly types: EIP712TypeRegistry;

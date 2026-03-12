@@ -15,8 +15,11 @@ enum Modifier {
   AlwaysInline = 1 << 7,
   NoInline = 1 << 8,
 
-  // No mutation of external state. It can still read mutable external state.
-  // Example: `Math.random()`
+  /**
+   * No mutation of observable external state. It can still read mutable
+   * external state or mutate external state that is not observable.
+   * Example: {@link Math.random()}
+   */
   NoSideEffects = 1 << 9,
 
   // Given the same input, always returns the same output.

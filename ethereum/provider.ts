@@ -16,7 +16,6 @@ class RemoteProvider implements Provider {
   constructor(
     readonly request: (params: RequestArguments) => Promise<unknown>
   ) { }
-
   read(txRequest: TransactionRequest): Promise<string> {
     const tx = serialize(txRequest);
     return this.request({
@@ -24,7 +23,6 @@ class RemoteProvider implements Provider {
       params: [tx, "latest"]
     } as RequestArguments) as Promise<string>;
   }
-
   write(txRequest: TransactionRequest): Promise<TransactionHash> {
     const tx = serialize(txRequest);
     return this.request({
@@ -32,7 +30,6 @@ class RemoteProvider implements Provider {
       params: [tx]
     } as RequestArguments) as Promise<TransactionHash>;
   }
-
   whenWritten(txHash: TransactionHash, then: () => void): void {
     const interval = setInterval(() =>
       this.request({
@@ -47,7 +44,6 @@ class RemoteProvider implements Provider {
       }),
       1000);
   }
-
   signData(address: Address, typedData: EIP712TypedData): Promise<WideSignature> {
     return this.request({
       method: "eth_signTypedData_v4",

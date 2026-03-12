@@ -252,7 +252,6 @@ class RemoteProvider implements Provider {
       }),
       1000);
   }
-
   signData(address: Address, typedData: EIP712TypedData): Promise<WideSignature> {
     return this.request({
       method: "eth_signTypedData_v4",
@@ -522,6 +521,7 @@ export { chunk, partition, shuffle };
 `;
   expect(transpileTs(input)).toBe(`
 /**
+ * @suppress {reportUnknownTypes}
  * @template T
  * @param {T[]} arr
  * @return {T[]}
@@ -534,6 +534,7 @@ const shuffle = (arr) => {
   return arr;
 };
 /**
+ * @suppress {reportUnknownTypes}
  * @template T
  * @param {T[]} arr
  * @param {number} n
@@ -549,6 +550,7 @@ const chunk = (arr, n) => {
   return result;
 };
 /**
+ * @suppress {reportUnknownTypes}
  * @template T
  * @param {T[]} arr
  * @param {(element: T) => boolean} p

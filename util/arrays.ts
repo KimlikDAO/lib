@@ -7,7 +7,10 @@ const shuffle = <T>(arr: T[]): T[] => {
   return arr;
 };
 
-/** Splits an array into chunks of size n. */
+/** 
+ * Splits an array into chunks of size n.
+ * @pure
+ */
 const chunk = <T>(arr: T[], n: number): T[][] => {
   if (n <= 0) throw 0;
   const result: T[][] = [];
@@ -16,8 +19,9 @@ const chunk = <T>(arr: T[], n: number): T[][] => {
   return result;
 };
 
+/** @pure */
 const partition = <T>(
-  arr: T[], p: (element: T) => boolean
+  arr: readonly T[], p: (element: T) => boolean
 ): [T[], T[]] => {
   const pos: T[] = [];
   const neg: T[] = [];

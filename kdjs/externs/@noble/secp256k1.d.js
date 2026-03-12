@@ -2,33 +2,21 @@
  * @author KimlikDAO
  */
 
-/**
- * @constructor
- * @struct
- */
-function ProjectivePoint() { }
+/** @interface */
+class NoblePoint {
+  /** @return {NoblePoint} */
+  double() { }
+  /**
+   * @param {NoblePoint} other
+   * @return {NoblePoint}
+   */
+  add(other) { }
+  /** @return {{ x: bigint, y: bigint }} */
+  toAffine() { }
+}
 
-/** @const {ProjectivePoint} */
-ProjectivePoint.BASE;
-
-/**
- * @return {ProjectivePoint}
- */
-ProjectivePoint.prototype.double = function () { }
-
-/**
- * @param {ProjectivePoint} other
- * @return {ProjectivePoint}
- */
-ProjectivePoint.prototype.add = function (other) { }
-
-/**
- * @return {{
- *   x: bigint,
- *   y: bigint
- * }}
- */
-ProjectivePoint.prototype.toAffine = function () { }
+/** @const {NoblePoint} */
+NoblePoint.BASE;
 
 /**
  * @param {Uint8Array} digest

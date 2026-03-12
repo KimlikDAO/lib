@@ -3,15 +3,47 @@ interface Point {
   y: bigint;
   z: bigint;
 
-  project(): Point;
   negate(): Point;
   double(): Point;
   increment(other: Point): Point;
   multiply(n: bigint): Point;
+  /** @pure */
+  proj(): AffinePoint;
+  /** @pure */
   copy(): Point;
 }
 
-type Curve = new (x: bigint, y: bigint, z?: bigint) => Point;
+type AffinePoint = { x: bigint, y: bigint };
+
+type CompressedPoint = { x: bigint, yParity: boolean };
+
+type CurveFamily = typeof CurveFamilyPoint;
+
+type Curve = typeof CurvePoint;
+
+class CurveFamilyPoint implements Point {
+  constructor(public x: bigint, public y: bigint, public z: bigint) { }
+  negate(): Point { return this; }
+  double(): Point { return this; }
+  increment(_other: Point): Point { return this; }
+  multiply(_n: bigint): Point { return this; }
+  /** @pure */
+  proj(): AffinePoint { return { x: this.x, y: this.y }; }
+  /** @pure */
+  copy(): Point { return new CurveFamilyPoint(this.x, this.y, this.z); }
+  /** @pure */
+  static pointFromAffine({ x, y }: AffinePoint): Point {
+    return new CurveFamilyPoint(x, y, 1n);
+  };
+}
+
+class CurvePoint extends CurveFamilyPoint {
+  /** @pure */
+  static pointFrom(_C: CompressedPoint): Point | null { return null };
+}
+
+/** @pure */
+const compressPoint = ({ x, y }: AffinePoint): CompressedPoint => ({ x, yParity: !!(y & 1n) });
 
 /**
  * Computes aX + bY at the cost of a single scalar × point multiplication.
@@ -25,8 +57,6 @@ const aX_bY = (a: bigint, X: Point, b: bigint, Y: Point): Point => {
     bBits = bBits.padStart(aBits.length, "0");
   else if (bBits.length > aBits.length)
     aBits = aBits.padStart(bBits.length, "0");
-  // Get the point at infinity this way since we don't have an
-  // explicit implementation exporting `O` yet.
   const O = X.copy().multiply(0n);
   const X_Y = X.copy().increment(Y);
   const d: readonly Point[] = [O, X, Y, X_Y];
@@ -38,16 +68,12 @@ const aX_bY = (a: bigint, X: Point, b: bigint, Y: Point): Point => {
   return R;
 }
 
-/**
- * Used mostly for testing, prefer more efficient alternatives.
- *
- * @pure Marked pure because the caller should not rely on the project() side
- * effects.
- */
-const equal = (P: Point, Q: Point): boolean => {
-  Q.project();
-  P.project();
-  return P.x == Q.x && P.y == Q.y;
-}
-
-export { aX_bY, Curve, equal, Point };
+export {
+  AffinePoint,
+  CompressedPoint,
+  Curve,
+  CurveFamily,
+  Point,
+  aX_bY,
+  compressPoint
+};

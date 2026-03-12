@@ -1,4 +1,4 @@
-import { assertEq, assertArrayEq } from "./assert";
+import { assertArrayEq, assertIs } from "./assert";
 
 /**
  * @param {((args: unknown[]) => T)[]} fs
@@ -10,7 +10,7 @@ import { assertEq, assertArrayEq } from "./assert";
 const compareImpls = (fs, repeat, args, expected) => {
   for (const f of fs) {
     console.time(f["name"]);
-    for (let i = 0; i < repeat; ++i) assertEq(f.apply(null, args), expected);
+    for (let i = 0; i < repeat; ++i) assertIs(f.apply(null, args), expected);
     console.timeEnd(f["name"]);
   }
 }

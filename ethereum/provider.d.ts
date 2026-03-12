@@ -56,6 +56,13 @@ interface WatchAssetParam {
   };
 }
 
+interface GetLogsParam {
+  readonly fromBlock: "latest" | "earliest" | "pending" | number;
+  readonly toBlock: "latest" | "earliest" | "pending" | number;
+  readonly address: string;
+  readonly topics: string[];
+}
+
 interface EIP6963ProviderInfo {
   readonly uuid: string;
   readonly name: string;
