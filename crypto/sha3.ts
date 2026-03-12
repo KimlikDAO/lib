@@ -61,6 +61,7 @@ const RC: readonly number[] = [
   2147516545, 2147483648, 32896, 2147483648, 2147483649, 0, 2147516424, 2147483648
 ];
 
+/** @modifies {arguments} */
 const f = (s: Uint32Array | number[]): void => {
   let h, l, c0, c1, c2, c3, c4, c5, c6, c7, c8, c9,
     b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15, b16, b17,

@@ -19,16 +19,16 @@ const encode = (buff: Uint8Array): string => {
 const decode = (data: string): Uint8Array => base58.toBytes(data);
 
 /**
- * Parses a private key from Mina encoded base58 string. It does not validate
- * the checksum.
+ * Parses a private key from Mina encoded base58 string.
+ *
  * @pure
  */
 const parsePrivateKey = (privateKey: string): bigint =>
-  bigints.fromBytesLE(base58.toBytes(privateKey).subarray(2, 34));
+  bigints.fromBytesLE(decode(privateKey).subarray(2, 34));
 
 /**
  * Given a buffer of length `n`, fills the last 4 bytes with the checksum.
- * @modifiesParamsOnly
+ * @modifies {arguments}
  */
 const addChecksum = (buff: Uint8Array) => {
   const n = buff.length - 4;
@@ -59,8 +59,8 @@ const addChecksum = (buff: Uint8Array) => {
   buff[n + 0] = (v >> 24) & 255;
 }
 
-export { 
+export {
   encode,
   decode,
   parsePrivateKey,
- };
+};

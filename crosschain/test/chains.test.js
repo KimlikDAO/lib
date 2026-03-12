@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { ChainId as EthereumChainId } from "../../ethereum/chains";
-import { ChainId as MinaChainId } from "../../mina/chains";
 import {
   ChainGroup,
   ChainGroups,
+  EthereumChainId,
+  MinaChainId,
   chainIdToGroup
 } from "../chains";
 
@@ -17,8 +17,8 @@ describe("chains", () => {
   });
 
   test("chainIdToGroup correctly identifies Mina chains", () => {
-    expect(chainIdToGroup(MinaChainId.MinaMainnet)).toBe(ChainGroup.MINA);
-    expect(chainIdToGroup(MinaChainId.MinaTestnet)).toBe(ChainGroup.MINA);
+    expect(chainIdToGroup(MinaChainId.Mainnet)).toBe(ChainGroup.MINA);
+    expect(chainIdToGroup(MinaChainId.Testnet)).toBe(ChainGroup.MINA);
   });
 
   test("ChainGroups contains all chain groups", () => {

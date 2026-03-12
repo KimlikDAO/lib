@@ -1,6 +1,6 @@
 enum ChainId {
-  MinaMainnet = "mina:mainnet",
-  MinaTestnet = "mina:devnet",
+  Mainnet = "mina:mainnet",
+  Testnet = "mina:devnet",
 }
 
 export { ChainId };

@@ -22,5 +22,7 @@ export {
   ChainGroup,
   ChainGroups,
   ChainId,
+  EthereumChainId,
+  MinaChainId,
   chainIdToGroup
 };

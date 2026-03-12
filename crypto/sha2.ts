@@ -52,7 +52,7 @@ const sha256Uint32 = (words: Uint32Array): Uint32Array => {
 /**
  * Extends the first 16 words into the remaining 48 words w[16..63] of the
  * message schedule array.
- * @modifiesParamsOnly
+ * @modifies {arguments}
  */
 const extend = (t: Uint32Array): void => {
   for (let i = 16, t1, s0, s1; i < 64; ++i) {
@@ -66,7 +66,7 @@ const extend = (t: Uint32Array): void => {
 
 /**
  * The sha256 compression function, implemented 1:1 without loop unrolling.
- * @modifiesParamsOnly
+ * @modifies {arguments}
  */
 const g = (s: Uint32Array, t: Uint32Array): void => {
   extend(t);

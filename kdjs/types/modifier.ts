@@ -27,7 +27,7 @@ enum Modifier {
   Deterministic = 1 << 10,
   Pure = 1 << 9 | 1 << 10,
 
-  ModifiesParametersOnly = 1 << 11,
+  ModifiesArgumentsOnly = 1 << 11,
   ModifiesThisOnly = 1 << 12,
 }
 
@@ -38,6 +38,7 @@ const modifiersFromJsDoc = (jsDoc: string): number => {
   if (jsDoc.includes("@pure")) modifiers |= Modifier.Pure;
   if (jsDoc.includes("@noinline")) modifiers |= Modifier.NoInline;
   if (jsDoc.includes("@define")) modifiers |= Modifier.Define;
+  if (jsDoc.includes("@modifies {arguments}")) modifiers |= Modifier.ModifiesArgumentsOnly;
   return modifiers;
 }
 
