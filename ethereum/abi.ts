@@ -39,7 +39,7 @@ const isNonzero = (value: string): boolean => !isZero(value);
 
 /**
  * We need the PureExpr marker here since repeat is not inferred to be pure due
- * to polyfills of the gcc backend.s
+ * to polyfills of the gcc backend.
  * @see https://github.com/google/closure-compiler/issues/4018
  */
 const Uint256Max = "f".repeat(64) satisfies PureExpr;

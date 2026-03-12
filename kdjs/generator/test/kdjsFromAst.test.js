@@ -629,3 +629,25 @@ test("member expressions object is wrapped when needed", () => {
   const ast = TsParser.parse(`(hashToSections[h] ||= []).push(decryptedSections[key]);`);
   expect(generate(ast)).toBe("(hashToSections[h] ||= []).push(decryptedSections[key]);\n");
 });
+
+test("IIFE arrow function gets parens so call is correct", () => {
+  const ast = TsParser.parse(`
+const FromUint8: readonly string[] = (
+  (): string[] => {
+    const arr: string[] = Array(256);
+    for (let i = 0; i < 256; ++i)
+      arr[i] = FromUint4[i >> 4] + FromUint4[i & 15];
+    return arr;
+  })();
+   `);
+  expect(generate(ast)).toBe(`
+/** @const {readonly string[]} */
+const FromUint8 = (/** @return {string[]} */ () => {
+  /** @const {string[]} */
+  const arr = Array(256);
+  for (let i = 0; (i < 256); ++i)
+    arr[i] = (FromUint4[(i >> 4)] + FromUint4[(i & 15)]);
+  return arr;
+})();
+`.slice(1));
+});

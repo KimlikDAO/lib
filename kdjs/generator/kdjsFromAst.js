@@ -203,8 +203,14 @@ class Generator {
     this.put("("); this.rec(n.left); this.put(` ${n.operator} `); this.rec(n.right); this.put(")");
   }
   CallExpression(n, optChain) {
+    const wrap = n.callee.type == "ArrowFunctionExpression";
+    if (wrap) this.put("(");
     this.rec(n.callee); if (optChain) this.put("?.");
+    if (wrap) this.put(")");
     this.put("("); this.arr(n.arguments, ", "); this.put(")");
+  }
+  ParenthesizedExpression(n) {
+    this.put("("); this.rec(n.expression); this.put(")");
   }
   ChainExpression(n) { this.rec(n.expression, true); }
   ConditionalExpression(n) {
@@ -238,6 +244,9 @@ class Generator {
     // By default, show types in the inlineJsDoc format
     // If we've already printed the types in the jsDoc format, omit them.
     if (showTypes == undefined) showTypes = IdentifierTypes.JsDoc;
+    if (showTypes == IdentifierTypes.JsDoc && n.returnType) {
+      this.put("/** @return {"); this.rec(n.returnType); this.put("} */ ");
+    }
     if (n.async) this.put("async ");
     this.put("("); this.arr(n.params, ", ", showTypes); this.put(") => ");
     this.rec(n.body, null, /* wrapped */ true)
