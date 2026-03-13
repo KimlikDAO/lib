@@ -22,7 +22,7 @@ test("our implementation is the fastest one", () => {
     console.time("1k keccak256_orig");
     let c = 0;
     for (let i = 0; i < 1000; ++i)
-      c += parseInt(keccak256_orig("z".repeat(i))[0], 16);
+      c += parseInt(keccak256_orig("zsss".repeat(i))[0], 16);
     console.log(c);
     console.timeEnd("1k keccak256_orig");
   }
@@ -30,7 +30,7 @@ test("our implementation is the fastest one", () => {
     console.time("1k keccak256");
     let c = 0;
     for (let i = 0; i < 1000; ++i)
-      c += parseInt(keccak256("z".repeat(i))[0], 16);
+      c += parseInt(keccak256("zsss".repeat(i))[0], 16);
     console.log(c);
     console.timeEnd("1k keccak256");
   }

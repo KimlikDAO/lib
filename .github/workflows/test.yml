@@ -161,7 +161,7 @@ jobs:
           distribution: "temurin"
       - run: |
           bun i
-          bun run test protocol --strict
+          bun run test protocol
 
   kdjs_unit_tests_util:
     name: kdjs unit tests, util

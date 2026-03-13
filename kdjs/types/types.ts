@@ -203,8 +203,7 @@ class InstanceType extends Type {
 
   override toClosureExpr({ toParam, bare, wrap }: Context = {}): string {
     const modifiers = bare ? 0 : this.modifiers;
-    let expr = this.name;
-    if (expr == "RsaHashedImportParams") expr = "webCrypto." + expr;
+    let expr = NameMap[this.name] ?? this.name;
     expr = (modifiers & Modifier.Nullable ? "?" : "!") + expr;
     if (modifiers & Modifier.Optional) {
       expr += toParam ? "=" : "|undefined";
@@ -225,6 +224,12 @@ class InstanceType extends Type {
   }
 }
 
+const NameMap: Record<string, string> = {
+  "Record": "Object",
+  "PromiseSettledResult": "Promise.AllSettledResultElement",
+  "RsaHashedImportParams": "webCrypto.RsaHashedImportParams",
+};
+
 /**
  * A type which takes other types as parameter. In google closure, these are
  * defined through the at-template keyword.
@@ -242,7 +247,7 @@ class GenericType extends Type {
   override toClosureExpr({ toParam, bare, wrap }: Context = {}): string {
     const modifiers = bare ? 0 : this.modifiers;
 
-    const typeName = this.name == "Record" ? "Object" : this.name;
+    const typeName = NameMap[this.name] ?? this.name;
     const typeParams = this.params.map((p) => p.toClosureExpr()).join(",");
     let expr = `${typeName}<${typeParams}>`;
     if (!(modifiers & Modifier.Nullable)) expr = "!" + expr;

@@ -5,7 +5,7 @@
 import { assertIs } from "../../testing/assert";
 import bigints from "../../util/bigints";
 import { arfCurve } from "../arfCurve";
-import { Curve, Point } from "../ellipticCurve";
+import { CompressedPoint, Curve, Point } from "../ellipticCurve";
 import { P, Q, sqrt } from "../secp256k1";
 
 const R = (1n << 256n) - 0x1f90dcfcda9f17c1ec7159037a804b86cn;
@@ -21,7 +21,7 @@ assertIs(2n * 2n * 3n * 20412485227n
  * So this curve mentioned in the article is not interesting or suprising.
  */
 const Purve = Object.assign(arfCurve(P), {
-  pointFrom(x: bigint, _: boolean): Point | null {
+  pointFrom({ x, yParity }: CompressedPoint): Point | null {
     const y2 = (x * x * x + 1n) % P;
     const y = sqrt(y2);
     if (y == null) return null;
@@ -34,8 +34,7 @@ const Purve = Object.assign(arfCurve(P), {
  */
 const random = (): Point => {
   for (; ;) {
-    const x = bigints.fromBytesBE(
-      crypto.getRandomValues(new Uint8Array(32)) as Uint8Array) % P;
+    const x = bigints.random(32) % P;
     const y2 = (x * x * x + 1n) % P;
     const y = sqrt(y2);
     if (y != null)

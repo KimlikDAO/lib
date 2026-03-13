@@ -1,6 +1,4 @@
-
-/** @const {string[]} */
-const SeedNodes = [
+const SeedNodes: readonly string[] = [
   "node.kimlikdao.org",
   "kdao-node.blinkbridge.xyz",
   "kdao-node.yenibank.com",

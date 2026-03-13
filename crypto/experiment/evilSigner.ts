@@ -3,7 +3,10 @@ import { inverse } from "../modular";
 import { G, Q } from "../secp256k1";
 import { sha256Uint32 } from "../sha2";
 
-const hmac = (key: Uint8Array, message: Uint8Array): Promise<Uint8Array> => crypto.subtle
+const hmac = (
+  key: BufferSource,
+  message: BufferSource
+): Promise<Uint8Array<ArrayBuffer>> => crypto.subtle
   .importKey(
     "raw",
     key,

@@ -89,8 +89,7 @@ const computeDepHash = (props) => {
     checkFreshFn,
     ...otherProps
   } = props;
-  const acc = keccak256Uint8(Encoder.encode(JSON.stringify(otherProps)))
-    .slice(0, 32); // Drop the excess buffer.
+  const acc = keccak256Uint8(Encoder.encode(JSON.stringify(otherProps)));
   return Promise.all(
     childTargets.map((childTarget) => childTarget
       .then(({ contentHash }) => hash.combine(acc, contentHash)))

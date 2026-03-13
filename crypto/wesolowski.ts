@@ -16,11 +16,8 @@ const N = 0xe0b7782dbd6c9fc269cc5259ca7be1b451c9fbbc20293434852f6f3e8603460932b6
  * @pure
  */
 const generateChallenge = (gArr: Uint32Array, yArr: Uint32Array): bigint => {
-  /**
-   * We use the fact that gArr comes with a buffer of >= 40 uint32's of which
-   * only the first 8 are used.
-   */
-  const buff = new Uint32Array(gArr.buffer, 0, 40);
+  const buff = new Uint32Array(40);
+  buff.set(gArr, 0);
   buff.set(yArr, 8);
   return getNonsmooth(keccak256Uint32ToHex(buff).slice(3));
 }

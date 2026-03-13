@@ -337,7 +337,7 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
         /** @const {string} */
         const ext = getExt(source, "js");
         /** @const {boolean} */
-        const isWorkerComponent = source.startsWith("kastro:") && ext == "js";
+        const isWorkerComponent = source.startsWith("kastro:") && (ext == "js" || ext == "ts");
         /** @const {boolean} */
         const isAsset = ext == "svg" || ext == "png" || ext == "webp"
           || ext == "ttf" || ext == "woff2"

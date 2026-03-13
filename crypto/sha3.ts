@@ -1,11 +1,10 @@
 /**
- * @fileoverview A fast and tiny keccak256 implementation using `TypedArray`s.
  * @author KimlikDAO
  */
 
 /** @pure */
 const keccak256Uint32 = (words: Uint32Array): Uint32Array => {
-  const s = new Uint32Array(50);
+  const s = Array(50);
   let i = 0;
   for (const end = words.length - 33; i < end; i += 34) {
     for (let j = 0; j < 34; ++j)
@@ -18,7 +17,7 @@ const keccak256Uint32 = (words: Uint32Array): Uint32Array => {
   s[j] ^= 1;
   s[33] ^= 1 << 31;
   f(s);
-  return s.subarray(0, 8);
+  return new Uint32Array(s.slice(0, 8));
 }
 
 /** @pure */
@@ -32,7 +31,7 @@ const keccak256 = (str: string): string =>
 /** @pure */
 const keccak256Uint8 = (bytes: Uint8Array): Uint8Array => {
   const words = new Uint32Array(bytes.buffer, 0, bytes.length >> 2);
-  const s = new Uint32Array(50);
+  const s = Array(50);
   let i = 0;
   for (const end = words.length - 33; i < end; i += 34) {
     for (let j = 0; j < 34; ++j)
@@ -50,7 +49,14 @@ const keccak256Uint8 = (bytes: Uint8Array): Uint8Array => {
   else s[j] ^= bytes[loc] | bytes[loc + 1] << 8 | bytes[loc + 2] << 16 | (1 << 24);
   s[33] ^= 1 << 31;
   f(s);
-  return new Uint8Array(s.buffer, 0, 32);
+  const out = new Uint8Array(32);
+  for (let i = 0, j = 0; i < 32; i += 4, ++j) {
+    out[i + 0] = (s[j] & 0xff);
+    out[i + 1] = (s[j] >>> 8) & 0xff;
+    out[i + 2] = (s[j] >>> 16) & 0xff;
+    out[i + 3] = (s[j] >>> 24) & 0xff;
+  }
+  return out;
 }
 
 const RC: readonly number[] = [
@@ -62,7 +68,7 @@ const RC: readonly number[] = [
 ];
 
 /** @modifies {arguments} */
-const f = (s: Uint32Array | number[]): void => {
+const f = (s: number[] | Uint32Array): void => {
   let h, l, c0, c1, c2, c3, c4, c5, c6, c7, c8, c9,
     b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15, b16, b17,
     b18, b19, b20, b21, b22, b23, b24, b25, b26, b27, b28, b29, b30, b31, b32, b33,

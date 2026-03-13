@@ -122,8 +122,7 @@ const signMessage = (message: string, privKey: bigint, A?: AffinePoint): {
   s: bigint
 } => {
   A ||= G.copy().multiply(privKey).proj();
-  let k = bigints.fromBytesBE(
-    crypto.getRandomValues(new Uint8Array(32)) as Uint8Array) % Q;
+  let k = bigints.random(32) % Q;
   const { x: r, y } = G.copy().multiply(k).proj();
   if (y & 1n) k = Q - k;
   const e = hashMessage(message, A, r)

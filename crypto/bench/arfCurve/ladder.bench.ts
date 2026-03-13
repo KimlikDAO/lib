@@ -1,69 +1,48 @@
-import { assertEq } from "../../../testing/assert";
+import { bench } from "../../../testing/bench";
+import bigints from "../../../util/bigints";
 import { Point } from "../../ellipticCurve";
 import { G, Q, Secp256k1 } from "../../secp256k1";
 
 const O: Point = new Secp256k1(0n, 0n, 0n);
 
-const multiplyBitIntMask = (R: Point, n: bigint): Point => {
-  let d = R.copy();
-  R.x = R.y = R.z = 0n;
-  while (n > 0n) {
-    if (n & 1n) R.increment(d);
-    d.double();
-    n >>= 1n;
+const multiplyBitIntMask = (R: Point, k: bigint): Point => {
+  const A = O.copy();
+  while (k > 0n) {
+    if (k & 1n) A.increment(R);
+    R.double();
+    k >>= 1n;
   }
+  return A;
+};
+
+const ladderBigInt = (k: bigint): Point => {
+  const R = multiplyBitIntMask(G.copy(), k);
+  const S = multiplyBitIntMask(G.copy(), Q - k);
+  R.increment(S);
   return R;
-}
+};
 
-const testMultiply = () => {
-  for (let i = 0; i < 500; ++i) {
-    const k = BigInt(i) + 8098234098230498234n;
-    const R = multiplyBitIntMask(G.copy(), k);
-    const S = multiplyBitIntMask(G.copy(), Q - k);
-    R.increment(S);
+const ladderString = (k: bigint): Point => {
+  const R = G.copy().multiply(k);
+  const S = G.copy().multiply(Q - k);
+  R.increment(S);
+  return R;
+};
 
-    assertEq(R, O);
-  }
-}
+const kMid = bigints.random(32) % Q;
+const kRand1 = bigints.random(32) % Q;
+const kRand2 = bigints.random(32) % Q;
 
-testMultiply();
-
-const benchMultiplyBeginEnd = () => {
-  console.time("multiply(small) (1k multiply's)");
-  for (let i = 0; i < 1000; ++i) {
-    const k = BigInt(i);
-    const R = G.copy().multiply(k);
-    const S = G.copy().multiply(Q - k);
-    R.increment(S);
-
-    assertEq(R, O);
-  }
-  console.timeEnd("multiply(small) (1k multiply's)");
-}
-
-const benchMultiplyMiddle = () => {
-  const delta = Q / 2n;
-  console.time("multiplyBigIntMask(N/2) (1k multiply's)");
-  for (let i = 0; i < 1000; ++i) {
-    const k = BigInt(i) + delta;
-    const R = multiplyBitIntMask(G.copy(), k);
-    const S = multiplyBitIntMask(G.copy(), Q - k);
-    R.increment(S);
-
-    assertEq(R, O);
-  }
-  console.timeEnd("multiplyBigIntMask(N/2) (1k multiply's)");
-
-  console.time("multiply(N/2) (1k multiply's)");
-  for (let i = 0; i < 1000; ++i) {
-    const k = BigInt(i) + delta;
-    const R = G.copy().multiply(k);
-    const S = G.copy().multiply(Q - k);
-    R.increment(S);
-
-    assertEq(R, O);
-  }
-  console.timeEnd("multiply(N/2) (1k multiply's)");
-}
-benchMultiplyBeginEnd();
-benchMultiplyMiddle();
+bench("Scalar ladder: bigint (bit) vs string (base-4 multiply)", {
+  "ladder bigint (bit mask)": ladderBigInt,
+  "ladder string (multiply / base-4)": ladderString,
+}, {
+  repeat: 30,
+  dataset: [
+    { args: [999n], expected: O },
+    { args: [Q / 2n], expected: O },
+    { args: [kMid], expected: O },
+    { args: [kRand1], expected: O },
+    { args: [kRand2], expected: O },
+  ],
+});

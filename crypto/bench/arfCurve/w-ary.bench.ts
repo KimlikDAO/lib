@@ -55,8 +55,7 @@ const multiply8 = (P: Point, n: bigint): Point => {
   return P;
 }
 
-const k = bigints.fromBytesBE(
-  crypto.getRandomValues(new Uint8Array(32)) as Uint8Array) % P;
+const k = bigints.random(32) % P;
 
 const pr_kG = G.copy().multiply(k).proj();
 

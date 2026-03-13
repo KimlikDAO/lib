@@ -1,8 +1,9 @@
-import { assertEq } from "../../../testing/assert";
-import { compareImpls } from "../../../testing/bench";
+import { bench } from "../../../testing/bench";
 import { arfCurve } from "../../arfCurve";
 import { Point } from "../../ellipticCurve";
-import { P } from "../../secp256k1";
+import { P, Q } from "../../secp256k1";
+import { exp2 } from "../../modular";
+import { AffinePoint } from "../../ellipticCurve";
 
 /** @pure */
 const modP = (x: bigint): bigint => {
@@ -10,10 +11,7 @@ const modP = (x: bigint): bigint => {
   return res >= 0n ? res : res + P;
 }
 
-/**
- * Here is an incorrect "optimization".
- */
-const double = (R: Point): Point => {
+const doubleInc = (R: Point): Point => {
   const { x, y, z } = R;
   const a = (x * x) % P;
   const b = (y * y) % P;
@@ -111,37 +109,33 @@ const G: Point = SecpFamily.pointFromAffine({
   x: 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798n,
   y: 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8n
 });
+const A = G.copy().multiply(exp2(10000n, Q)).proj();
 
-{
-  const A = G.copy();
-  const B = G.copy();
-  const C = G.copy();
-  const D = G.copy();
-  const E = G.copy();
-  const F = G.copy();
-  for (let i = 0; i < 1000; ++i) {
-    double(A);
-    doubleRight(B);
-    doubleGPT(C);
-    doubleRight2(D);
-    doubleRightShift(E);
-    doubleRightShift2(F);
-    assertEq(A, B);
-    assertEq(B, C);
-    assertEq(C, D);
-    assertEq(D, E);
-    assertEq(E, F);
+const makeFunc = (f: ((R: Point) => Point) | null): () => AffinePoint => {
+  if (!f) return (): AffinePoint => {
+    const H = G.copy();
+    for (let i = 0; i < 10000; ++i) H.double();
+    return H.proj();
   }
-}
+  return (): AffinePoint => {
+    const H = G.copy();
+    for (let i = 0; i < 10000; ++i) f(H);
+    return H.proj();
+  };
+};
 
-const e = () => { const A = G.copy(); for (let i = 0; i < 10000; ++i) double(A); };
-const eRight = () => { const A = G.copy(); for (let i = 0; i < 10000; ++i) doubleRight(A); };
-const eGPT = () => { const A = G.copy(); for (let i = 0; i < 10000; ++i) doubleGPT(A); };
-const eRight2 = () => { const A = G.copy(); for (let i = 0; i < 10000; ++i) doubleRight2(A); };
-const eRightShift = () => { const A = G.copy(); for (let i = 0; i < 10000; ++i) doubleRightShift(A); };
-const eRightShift2 = () => { const A = G.copy(); for (let i = 0; i < 10000; ++i) doubleRightShift2(A); };
-
-compareImpls([
-  e, eRight, eGPT, eRight2, eRightShift, eRightShift2,
-  e, eRight, eGPT, eRight2, eRightShift, eRightShift2,
-], 10, [], null);
+bench("Compare various double() formulas", {
+  "double() (current implementation)": makeFunc(null),
+  "doubleInc()": makeFunc(doubleInc),
+  "doubleRight()": makeFunc(doubleRight),
+  "doubleRight2()": makeFunc(doubleRight2),
+  "doubleRightShift()": makeFunc(doubleRightShift),
+  "doubleRightShift2()": makeFunc(doubleRightShift2),
+  "doubleGPT()": makeFunc(doubleGPT),
+}, {
+  repeat: 10,
+  dataset: [{
+    args: [],
+    expected: A,
+  }],
+});

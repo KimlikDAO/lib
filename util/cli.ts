@@ -20,10 +20,10 @@ const parseArgs = (
   for (const arg of args) {
     if (arg.startsWith("-")) {
       params[key] = values.length
-        ? (values.length == 1 ? values[0] : values) as string | string[]
+        ? (values.length == 1 ? values[0] : values)
         : true;
-      key = arg.startsWith("--") ? arg.slice(2) : shortArgMap[arg];
-      values = [];
+      key = arg.startsWith("--") ? arg.slice(2) : shortArgMap[arg] as string;
+      values = [] as string[];
     } else
       values.push(arg)
   }

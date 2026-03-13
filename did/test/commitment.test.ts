@@ -67,7 +67,7 @@ test("commit() == commitDouble()[0] on EVM", () => {
   const commitment = commitDouble(ChainGroup.EVM, evmAddr, random);
   expect(base64.from(commitment.subarray(0, 32)))
     .toBe(commit(ChainGroup.EVM, evmAddr, base64.from(random.subarray(0, 32))));
-  expect(base64.from(commitment.subarray(32)))
+  expect(base64.from(commitment.subarray(32, 64)))
     .toBe(commit(ChainGroup.EVM, evmAddr, base64.from(random.subarray(32))));
 });
 
@@ -78,6 +78,6 @@ test("commit() == commitDouble()[0] on MINA", () => {
   const commitment = commitDouble(ChainGroup.MINA, minaAddr, random);
   expect(base64.from(commitment.subarray(0, 32)))
     .toBe(commit(ChainGroup.MINA, minaAddr, base64.from(random.subarray(0, 32))));
-  expect(base64.from(commitment.subarray(32)))
+  expect(base64.from(commitment.subarray(32, 64)))
     .toBe(commit(ChainGroup.MINA, minaAddr, base64.from(random.subarray(32))));
 });

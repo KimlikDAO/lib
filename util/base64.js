@@ -25,7 +25,7 @@ const toBigInt = (base64) => BigInt('0x' + hex.from(toBytes(base64)));
 /**
  * @nosideeffects
  * @param {string} base64
- * @return {Uint8Array}
+ * @return {Uint8Array<ArrayBuffer>}
  */
 const toBytes = (base64) => Uint8Array.fromBase64(base64);
 

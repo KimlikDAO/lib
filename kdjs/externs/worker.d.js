@@ -7,7 +7,7 @@
 const close = function () { };
 
 /**
- * @param {MessageEvent<unknown>} msg
+ * @param {MessageEvent<any>} msg
  * @return {void}
  */
 let onmessage = function (msg) { };

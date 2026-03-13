@@ -73,7 +73,7 @@ class MockSigner implements Signer {
       return Promise.reject();
     const digest = BigInt("0x" + personalDigest(message));
     return crypto.subtle.digest("SHA-256",
-      hex.toUint8Array(signWide(digest, this.privKey).slice(2)) as Uint8Array<ArrayBuffer>);
+      hex.toUint8Array(signWide(digest, this.privKey).slice(2)));
   }
 }
 

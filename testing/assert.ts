@@ -4,10 +4,11 @@ import { Clear, Green, Red } from "../util/cli";
 
 console.time("test");
 
-let TrueAsserts = 0;
-let FalseAsserts = 0;
+let TrueAsserts: number = 0;
+let FalseAsserts: number = 0;
 
-const updateCounters = (value: boolean) => value ? TrueAsserts += 1 : FalseAsserts += 1;
+const updateCounters = (value: boolean): number => value
+  ? TrueAsserts += 1 : FalseAsserts += 1;
 
 const assert = (value: boolean): boolean => {
   updateCounters(value);

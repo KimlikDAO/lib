@@ -20,9 +20,9 @@ const decrypt = async (
   const key = await crypto.subtle.importKey("raw", secret, "AES-CTR", false, ["decrypt"]);
   const decrypted = await crypto.subtle.decrypt({
     name: "AES-CTR",
-    counter: base64.toBytes(unlockable.nonce) as Uint8Array<ArrayBuffer>,
+    counter: base64.toBytes(unlockable.nonce),
     length: 64
-  }, key, base64.toBytes(unlockable.ciphertext) as Uint8Array<ArrayBuffer>);
+  }, key, base64.toBytes(unlockable.ciphertext));
   const decoded = new TextDecoder().decode(decrypted);
   return decoded.slice(0, decoded.indexOf("\0"));
 }

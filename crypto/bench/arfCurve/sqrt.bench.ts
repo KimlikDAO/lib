@@ -1,8 +1,9 @@
-import { assertIs } from "../../../testing/assert";
+import { bench } from "../../../testing/bench";
 
 /** @noinline */
 const P = (1n << 256n) - (1n << 32n) - 977n;
 
+/** @pure */
 const sqrt1 = (n: bigint): bigint => {
   const tower = (b: bigint, pow: number): bigint => {
     while (pow-- > 0)
@@ -25,6 +26,7 @@ const sqrt1 = (n: bigint): bigint => {
   return tower(t2, 2);
 }
 
+/** @pure */
 const sqrt2 = (n: bigint): bigint => {
   let r = 1n;
   for (let e = (P + 1n) / 4n; e > 0n; e >>= 1n) { // powMod: modular exponentiation.
@@ -34,22 +36,13 @@ const sqrt2 = (n: bigint): bigint => {
   return r;
 }
 
-const benchSqrt = () => {
-  let a1 = 0n;
-  {
-    console.time("sqrt1");
-    for (let i = 100n; i < 10000n; ++i)
-      a1 += sqrt1(i);
-    console.timeEnd("sqrt1");
-  }
-  let a2 = 0n;
-  {
-    console.time("sqrt2");
-    for (let i = 100n; i < 10000n; ++i)
-      a2 += sqrt2(i);
-    console.timeEnd("sqrt2");
-  }
-  assertIs(a1, a2);
-}
-
-benchSqrt();
+bench("sqrt() benches", {
+  "custom tower formula": sqrt1,
+  "powMod": sqrt2,
+}, {
+  repeat: 10,
+  dataset: [{
+    args: [100n],
+    expected: 115792089237316195423570985008687907853269984665640564039457584007908834671653n,
+  }],
+});

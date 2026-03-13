@@ -32,13 +32,14 @@ const commit = (
 }
 
 /**
- * Given a random array of length 2x32 Uint8Array, outputs
+ * Given a random array of length 2x32 Uint8Array, outputs a 72 bytes
+ * Uint8Array with the following layout:
  * 
- *   commitment and commitmentAnon
+ *   32 bytes commitment
+ *   32 bytes commitmentAnon
+ *    8 bytes padding for pow nonce
  *
- * as a length 2x32 Uint8Array.
- * 
- * TODO(KimlikDAO-bot): work over Uint32Arrays.
+ * @pure
  */
 const commitDouble = (
   chainGroup: ChainGroup,
@@ -51,15 +52,14 @@ const commitDouble = (
       const buff = new Uint8Array(32 + 20);
       hex.intoBytes(buff.subarray(32), ownerAddress.slice(2));
       buff.set(random.subarray(0, 32));
-      const commitment = new Uint8Array(
-        keccak256Uint32(new Uint32Array(buff.buffer)).buffer, 0, 64);
+      const commitment = new Uint32Array(18);
+      commitment.set(keccak256Uint32(new Uint32Array(buff.buffer)), 0);
       buff.set(random.subarray(32, 64));
-      commitment.set(new Uint8Array(
-        keccak256Uint32(new Uint32Array(buff.buffer)).buffer, 0, 32), 32);
-      return commitment;
+      commitment.set(keccak256Uint32(new Uint32Array(buff.buffer)), 8);
+      return new Uint8Array(commitment.buffer, 0, 72);
     }
     case ChainGroup.MINA:
-      const commitment = new Uint8Array(64);
+      const commitment = new Uint8Array(72);
       const { x, yParity } = address.toPublicKey(ownerAddress);
       const h = yParity ? x + 1n : x;
       bigints.intoBytesLE(

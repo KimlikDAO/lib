@@ -15,7 +15,7 @@ const KIMLIKDAO_VERIFIABLE_ID_ITERATIONS = 1 << 20;
 /** @pure */
 const prepareGenerateKey = (privateKey: string): Promise<CryptoKey> => crypto.subtle.importKey(
   "pkcs8",
-  base64.toBytes(privateKey) as Uint8Array<ArrayBuffer>, {
+  base64.toBytes(privateKey), {
     name: "RSASSA-PKCS1-v1_5",
     hash: "SHA-256"
   } as RsaHashedImportParams, false, ["sign"]
@@ -55,7 +55,7 @@ const verify = (
   if (generateChallenge(g, y) != l)
     return Promise.resolve(false);
   return crypto.subtle.importKey(
-    "spki", base64.toBytes(publicKey) as Uint8Array<ArrayBuffer>, {
+    "spki", base64.toBytes(publicKey), {
       name: "RSASSA-PKCS1-v1_5",
       hash: "SHA-256"
     } as RsaHashedImportParams, false, ["verify"]

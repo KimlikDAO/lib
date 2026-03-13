@@ -29,7 +29,7 @@ const toBinary = (hexStr: string): string =>
 const from = (bytes: Uint8Array): string => bytes.toHex();
 
 /** @pure */
-const toUint8Array = (str: string): Uint8Array =>
+const toUint8Array = (str: string): Uint8Array<ArrayBuffer> =>
   Uint8Array.fromHex(str.length & 1 ? "0" + str : str);
 
 /** @pure */

@@ -101,6 +101,7 @@ class Generator {
   TSNullKeyword() { this.put("null"); }
   TSUndefinedKeyword() { this.put("undefined"); }
   TSObjectKeyword() { this.put("Object"); }
+  TSNeverKeyword() { this.put("void"); }
 
   // TS Type expressions
   TSArrayType(n) { this.rec(n.elementType); this.put("[]"); }

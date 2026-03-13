@@ -1,12 +1,10 @@
 /**
- * @nosideeffects
- * @param {Uint32Array} arr
- * @return {Uint8Array}
+ * @author KimlikDAO
  */
-const fromUint32ArrayBE = (arr) => {
-  /** @const {number} */
+
+/** @pure */
+const fromUint32ArrayBE = (arr: Uint32Array): Uint8Array => {
   const n = arr.length * 4;
-  /** @const {Uint8Array} */
   const bytes = new Uint8Array(n);
   for (let i = 0, j = 0; j < n; ++i, j += 4) {
     const word = arr[i];
@@ -18,15 +16,9 @@ const fromUint32ArrayBE = (arr) => {
   return bytes;
 };
 
-/**
- * @nosideeffects
- * @param {Uint8Array} bytes
- * @return {Uint32Array}
- */
-const toUint32ArrayBE = (bytes) => {
-  /** @const {number} */
+/** @pure */
+const toUint32ArrayBE = (bytes: Uint8Array): Uint32Array => {
   const n = bytes.length;
-  /** @const {Uint32Array} */
   const arr = new Uint32Array((n + 3) / 4);
   for (let i = 0, j = 0; j < n; ++i, j += 4)
     arr[i] = (bytes[j + 0] << 24)
