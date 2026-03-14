@@ -4,11 +4,10 @@ import { G } from "../../secp256k1";
 
 describe("Noble crypto test vectors", () => {
   it("should match the results pointwise", () => readFile("crypto/test/secp256k1/nobleVectors.txt", "utf8")
-    .then((/** @type {string} */ vectors) => {
-      /** @const {number[][]} */
+    .then((vectors: string) => {
       const tuples = vectors.split("\n")
         .filter((line) => line)
-        .map((line) => line.split(":"))
+        .map((line) => line.split(":")) as unknown as readonly [string, string, string][]
 
       for (const [priv, xHex, yHex] of tuples) {
         const { x, y } = G.copy().multiply(BigInt(priv)).proj();

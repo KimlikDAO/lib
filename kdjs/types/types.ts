@@ -246,6 +246,7 @@ class GenericType extends Type {
 
   override toClosureExpr({ toParam, bare, wrap }: Context = {}): string {
     const modifiers = bare ? 0 : this.modifiers;
+    if (this.name == "Partial") return this.params[0].toClosureExpr({ wrap: true });
 
     const typeName = NameMap[this.name] ?? this.name;
     const typeParams = this.params.map((p) => p.toClosureExpr()).join(",");

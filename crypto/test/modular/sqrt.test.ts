@@ -2,14 +2,10 @@ import { describe, expect, test } from "bun:test";
 import { sqrt, tonelliShanks } from "../../modular";
 
 describe("tonelliShanks()", () => {
-  /** @const {bigint} */
   const P = (1n << 254n) + 0x224698fc094cf91b992d30ed00000001n;
-  /** @const {bigint} */
   const c = 0x2bce74deac30ebda362120830561f81aea322bf2b7bb7584bdad6fabd87ea32fn;
-  /** @const {(n: bigint) => (bigint | null)} */
-  const sqrt = (n) => tonelliShanks(n, P, (P - 1n) >> 32n, c, 32n);
-  /** @param {bigint} n */
-  const check = (n) => {
+  const sqrt = (n: bigint): bigint | null => tonelliShanks(n, P, (P - 1n) >> 32n, c, 32n);
+  const check = (n: bigint) => {
     const r = sqrt(n);
     if (r) expect(r * r % P).toBe(n); else expect("f").fail("Non-quadratic residue");
   }
@@ -21,10 +17,8 @@ describe("tonelliShanks()", () => {
 });
 
 describe("P = 101", () => {
-  /** @const {bigint} */
   const P = 101n;
-  /** @param {bigint} n */
-  const check = (n) => {
+  const check = (n: bigint) => {
     const r = sqrt(n, P);
     if (r !== null) expect(r * r % P).toBe(n);
     else expect("f").fail("Non-quadratic residue");

@@ -1,4 +1,4 @@
-import { test, it, expect } from "bun:test";
+import { expect, test } from "bun:test";
 import { keccak256Uint32 } from "../sha3";
 import { evaluate, generateChallenge, reconstructY } from "../wesolowski";
 

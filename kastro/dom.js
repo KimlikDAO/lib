@@ -1,4 +1,4 @@
-import { LangCode } from "../util/i18n";
+import { LangCode, localize } from "../util/i18n";
 
 /** @define {boolean} */
 const GEN = true;
@@ -289,6 +289,7 @@ export default {
   slideCard,
   // Render
   i18n,
+  localize,
   renderCurrency,
   renderPhone,
   // Scheduling

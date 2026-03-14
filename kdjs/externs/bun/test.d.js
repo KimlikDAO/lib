@@ -49,69 +49,79 @@ const expect = function (actual) { }
  */
 const afterAll = function (callback) { }
 
-/**
- * @template T
- * @constructor
- * @param {T} actual
- */
-function Matcher(actual) { }
+/** @template T */
+class Matcher {
+  /** @param {T} actual */
+  constructor(actual) {
+    /** @const {Matcher<T>} */
+    this.not;
+  }
 
-/** @const {Matcher<T>} */
-Matcher.prototype.not;
+  /**
+   * @param {T} expected
+   * @return {void}
+   */
+  toBe(expected) { }
 
-/**
- * @param {T} expected
- */
-Matcher.prototype.toBe = function (expected) { }
+  /**
+   * @param {T} expected
+   * @return {void}
+   */
+  toEqual(expected) { }
 
-/**
- * @param {T} expected
- */
-Matcher.prototype.toEqual = function (expected) { }
+  /**
+   * @param {T} threshold
+   * @return {void}
+   */
+  toBeLessThan(threshold) { }
 
-/**
- * @param {T} threshold
- */
-Matcher.prototype.toBeLessThan = function (threshold) { }
+  /**
+   * @param {T} threshold
+   * @return {void}
+   */
+  toBeGreaterThan(threshold) { }
 
-/**
- * @param {T} threshold
- */
-Matcher.prototype.toBeGreaterThan = function (threshold) { }
+  /** @return {void} */
+  toBeFalse() { }
 
-/** @return {void} */
-Matcher.prototype.toBeFalse = function () { }
+  /** @return {void} */
+  toBeFalsy() { }
 
-/** @return {void} */
-Matcher.prototype.toBeFalsy = function () { }
+  /** @return {void} */
+  toBeNull() { }
 
-/** @return {void} */
-Matcher.prototype.toBeNull = function () { }
+  /** @return {void} */
+  toBeTrue() { }
 
-/** @return {void} */
-Matcher.prototype.toBeTrue = function () { }
+  /** @return {void} */
+  toBeTruthy() { }
 
-/** @return {void} */
-Matcher.prototype.toBeTruthy = function () { }
+  /**
+   * @param {T} expected
+   * @return {void}
+   */
+  toContain(expected) { }
 
-/** @return {void} */
-Matcher.prototype.toThrow = function () { }
+  /** @return {void} */
+  toThrow() { }
 
-/** @param {unknown} type */
-Matcher.prototype.toBeInstanceOf = function (type) { }
+  /**
+   * @param {unknown} type
+   * @return {void}
+   */
+  toBeInstanceOf(type) { }
 
-/** @param {string=} message */
-Matcher.prototype.fail = function (message) { }
+  /** @param {string=} message */
+  fail(message) { }
+}
 
-/**
- * @template T
- * @constructor
- * @param {Promise<T>} actual
- */
-function PromiseMatcher(actual) { }
-
-/** @const {Matcher<T>} */
-PromiseMatcher.prototype.resolves;
-
-/** @const {Matcher<unknown>} */
-PromiseMatcher.prototype.rejects;
+/** @template T */
+class PromiseMatcher {
+  /** @param {Promise<T>} actual */
+  constructor(actual) {
+    /** @const {Matcher<T>} */
+    this.resolves;
+    /** @const {Matcher<unknown>} */
+    this.rejects;
+  }
+}

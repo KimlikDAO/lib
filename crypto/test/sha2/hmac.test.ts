@@ -6,11 +6,8 @@ describe("HMAC-SHA256", () => {
   test("Compare against Web Crypto API", async () => {
     for (let i = 0; i < 100; ++i) {
       const n = 4 * ((Math.random() * 100) | 0 + 2);
-      const key = /** @type {Uint8Array} */(
-        crypto.getRandomValues(new Uint8Array(32)));
-      const data = /** @type {Uint8Array} */(
-        crypto.getRandomValues(new Uint8Array(n)));
-      /** @const {webCrypto.CryptoKey} */
+      const key = crypto.getRandomValues(new Uint8Array(32)) as Uint8Array<ArrayBuffer>;
+      const data = crypto.getRandomValues(new Uint8Array(n)) as Uint8Array<ArrayBuffer>;
       const cryptoKey = await crypto.subtle.importKey(
         "raw",
         key,
@@ -18,7 +15,6 @@ describe("HMAC-SHA256", () => {
         false,
         ["sign"]
       );
-      /** @const {ArrayBuffer} */
       const expected = await crypto.subtle.sign(
         "HMAC",
         cryptoKey,

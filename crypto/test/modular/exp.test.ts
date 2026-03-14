@@ -1,15 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import { exp, exp2, expTimesExp } from "../../modular";
 
-/**
- * Prime used in the secp256k1 curve.
- *
- * @const {bigint}
- */
 const P = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2Fn;
 
 describe("Tests for `exp()`", () => {
-  /** @const {bigint} */
   const Q = 0xDAD19B08F618992D3A5367F0E730B97C6DD113B6A2A493C9EDB0B68DBB1AEC020FB2A64C9644397AB016ABA5B40FA22655060824D9F308984D6734E2439BA08Fn;
 
   test("smoke tests", () => {

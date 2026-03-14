@@ -1,4 +1,7 @@
-/** Shufles the array uniformly at random */
+/**
+ * Shufles the array uniformly at random in place.
+ * @modifies {arguments}
+ */
 const shuffle = <T>(arr: T[]): T[] => {
   for (let i = arr.length - 1; i > 0; --i) {
     const j = (Math.random() * (i + 1)) | 0;

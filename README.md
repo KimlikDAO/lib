@@ -5,7 +5,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![KimlikDAO](https://img.shields.io/badge/Kimlik-DAO-blue)](https://kimlikdao.org)
 
-kimlikdao-js is a repository containing JavaScript modules essential to KimlikDAO projects.
+kimlikdao-js is a repository containing TypeScript and JavaScript modules essential to KimlikDAO projects.
+Both our js and ts modules are fully typed using ts type expressions and compiles using [`kdjs`](./kdjs), our
+ts/js compiler with type aware optimizations.
 
 ## 🗂️ Features
 
@@ -16,10 +18,10 @@ kimlikdao-js is a repository containing JavaScript modules essential to KimlikDA
   - React-like .jsx components at zero runtime cost
   - Import css, fonts or images using es6 imports and receive a component
 
-⚙️ [`kdjs`](./kdjs): KimlikDAO JavaScript compiler
+⚙️ [`kdjs`](./kdjs): KimlikDAO TypeScript / JavaScript compiler
 
-  - Fully typed, extending the google closure compiler's type system
-  - Type information is used for aggressive optimizations which are not possible otherwise
+  - A ts/js compiler fully using type information to guide optimizations.
+  - Type information is used for aggressive optimizations which wouldn't be possible otherwise.
 
 🗝️ [`crypto`](./crypto): Cryptographic functions and libraries
 
@@ -90,7 +92,7 @@ bun run test crypto # compiled, --fast param available
 
 You can run a benchmark either directly as a regular es6 module
 ```shell
-bun run crypto/bench/arfCurve.bench.js
+bun run crypto/bench/arfCurve/ladder.bench.ts
 ```
 or compile all of them and benchmark the compiled modules:
 ```shell

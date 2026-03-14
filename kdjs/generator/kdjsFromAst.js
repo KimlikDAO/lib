@@ -47,6 +47,27 @@ const typeFromLiteral = (n) => {
   }
 };
 
+/**
+ * Rest parameters are typed as T[], readonly T[], Array<T>, or ReadonlyArray<T>.
+ * JSDoc @param {...T} needs the element type T only.
+ *
+ * @param {object|undefined} n TS type node (e.g. TSTypeAnnotation.typeAnnotation)
+ * @return {object|undefined} element type, or undefined if not a known array form
+ */
+const unwrapArrayElementType = (n) => {
+  if (!n) return;
+  if (n.type == "TSArrayType")
+    return n.elementType;
+  if (n.type == "TSTypeOperator" && n.operator == "readonly")
+    return unwrapArrayElementType(n.typeAnnotation);
+  if (n.type == "TSTypeReference" && n.typeArguments?.params?.length) {
+    const id = n.typeName?.name
+      ?? (n.typeName?.type == "Identifier" ? n.typeName.name : null);
+    if (id == "ReadonlyArray" || id == "Array")
+      return n.typeArguments.params[0];
+  }
+};
+
 class Generator {
   indent = "";
   out = "";
@@ -507,6 +528,8 @@ class Generator {
     let i = 0;
     for (let param of params) {
       let isOptional = param.optional;
+      let isRest = false;
+      let typeAnnotation = null;
       if (param.type == "TSParameterProperty")
         param = param.parameter;
       if (param.type == "AssignmentPattern") {
@@ -514,8 +537,16 @@ class Generator {
         isOptional = true;
         param = param.left;
       }
+      if (param.type == "RestElement") {
+        isRest = true;
+        const inner = param.typeAnnotation?.typeAnnotation;
+        typeAnnotation = unwrapArrayElementType(inner) ?? inner;
+        param = param.argument;
+      }
       this.ret();
-      this.put("@param {"); this.rec(param.typeAnnotation);
+      this.put("@param {");
+      if (isRest) this.put("...");
+      this.rec(typeAnnotation ?? param.typeAnnotation);
       if (isOptional) this.put("="); this.put("} ");
       if (param.type == "Identifier") { this.rec(param); } else { this.put(`arg${i++}`); }
     }

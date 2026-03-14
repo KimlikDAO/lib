@@ -65,7 +65,7 @@ describe("keccak256Uint32() tests", () => {
 test("keccak256Uint32ToHex() and keccak256Uint32() consistency", () => {
   const input = Uint32Array.from("123123123123");
   expect(hex.toUint8Array(keccak256Uint32ToHex(input)))
-    .toEqual(new Uint8Array(keccak256Uint32(input).buffer, 0, 32));
+    .toEqual(new Uint8Array(keccak256Uint32(input).buffer as ArrayBuffer, 0, 32));
 });
 
 test("keccak256Uint32() and keccak256Uint8() consistentcy", () => {

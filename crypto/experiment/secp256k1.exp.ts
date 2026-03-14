@@ -15,7 +15,7 @@ assertIs(2n * 2n * 3n * 20412485227n
   * 0x47d1ce07a20a6fb9d527970739c33bc403bdc1c5f20caaf815571a5n, R);
 
 /**
- * This is the b=1 class of the Arf Curve family for {@link P}.
+ * This is the b = 1 class of the Arf Curve family for {@link P}.
  * For {@link P}, of the 6 isomorphism classes, only 1 leads to prime order,
  * corresponding to the b=7 equivalence class.
  * So this curve mentioned in the article is not interesting or suprising.
@@ -25,7 +25,7 @@ const Purve = Object.assign(arfCurve(P), {
     const y2 = (x * x * x + 1n) % P;
     const y = sqrt(y2);
     if (y == null) return null;
-    return new Purve(x, y, 1n);
+    return new Purve(x, (y & 1n) == (yParity as unknown as bigint) ? y : P - y, 1n);
   }
 }) as Curve;
 

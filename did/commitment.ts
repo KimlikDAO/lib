@@ -6,6 +6,7 @@ import address from "../mina/address";
 import base64 from "../util/base64";
 import bigints from "../util/bigints";
 import hex from "../util/hex";
+import { HumanID, Section } from "./section.d";
 
 const commit = (
   chainGroup: ChainGroup,
@@ -35,9 +36,9 @@ const commit = (
  * Given a random array of length 2x32 Uint8Array, outputs a 72 bytes
  * Uint8Array with the following layout:
  * 
- *   32 bytes commitment
- *   32 bytes commitmentAnon
- *    8 bytes padding for pow nonce
+ *   32 bytes {@link Section.commitment}
+ *   32 bytes {@link HumanID.commitment}
+ *    8 bytes {@link Uint8Array(8)} padding for pow nonce
  *
  * @pure
  */

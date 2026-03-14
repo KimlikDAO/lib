@@ -5,7 +5,7 @@ import process from "node:process";
  * @param {string=} path
  * @return {Promise<unknown>}
  */
-const importCode = (code, path) => import(
+const importCode = (code, path = "") => import(
   URL.createObjectURL(new File([code], path, { type: "application/javascript+module" })));
 
 /**
@@ -14,7 +14,7 @@ const importCode = (code, path) => import(
  * @return {string}
  */
 const fileFromError = (error, depth = 1) => {
-  const lines = error.stack.split('\n');
+  const lines = (error.stack ?? "").split('\n');
 
   const line = lines[depth];
   if (!line) return "";

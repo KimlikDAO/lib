@@ -39,11 +39,11 @@ const bench = <A, T>(
   for (const name of names) times[name] = 0;
   for (const data of options.dataset) {
     const { args, expected } = data;
-    const shuffled = shuffle(names);
-    for (const name of shuffled) {
+    shuffle(names);
+    for (const name of names) {
       const fn = fns[name];
       const t0 = performance.now();
-      for (let i = 0; i < options.repeat; ++i)
+      for (let i = 0, r = options.repeat; i < r; ++i)
         assertEq(fn(...args), expected);
       times[name] += performance.now() - t0;
     }

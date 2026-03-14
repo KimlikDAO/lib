@@ -19,7 +19,6 @@ const PrimitiveNames = new Set(Object.values(PrimitiveTypeName));
 /** @type {Map<string, string>} */
 const TopTypeNames = new Map([
   ["any", TopTypeName.Any],
-  ["never", TopTypeName.Never],
   ["unknown", TopTypeName.Unknown]
 ]);
 

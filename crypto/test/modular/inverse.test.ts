@@ -3,8 +3,6 @@ import { inverse } from "../../modular";
 
 /**
  * Prime used in the secp256k1 curve.
- *
- * @const {bigint}
  */
 const P = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2Fn;
 
@@ -40,7 +38,7 @@ test("(1/x) * (1/x) * (1/x) == 1/x^3", () => {
 });
 
 test("inverse of the identity and zero", () => {
-  for (let /** @type {bigint} */ p of [3n, 5n, 7n, 11n, P]) {
+  for (const p of [3n, 5n, 7n, 11n, P] as readonly bigint[]) {
     expect(inverse(1n, p)).toBe(1n)
     expect(inverse(0n, p)).toBe(0n)
     expect(inverse(p - 1n, p)).toBe(p - 1n);
