@@ -34,8 +34,6 @@ ts/js compiler with type aware optimizations.
 
 ### Other goodies
 
-🔌 `api`: Definitions of standard protocols (e.g., jsonrpc, oauth2)
-
 🧬 `crosschain`: Definitions and structures valid across all blockchains
 
 💎 `ethereum`: Tools for interacting with Ethereum nodes

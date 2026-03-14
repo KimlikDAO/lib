@@ -1,5 +1,5 @@
 import { expect, it } from "bun:test";
-import abi from "../../ethereum/abi";
+import abi from "../../../ethereum/abi";
 import jsonrpc from "../jsonrpc";
 
 /** @const {string} */
