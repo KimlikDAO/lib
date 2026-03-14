@@ -6,7 +6,7 @@
 [![KimlikDAO](https://img.shields.io/badge/Kimlik-DAO-blue)](https://kimlikdao.org)
 
 kimlikdao-js is a repository containing TypeScript and JavaScript modules essential to KimlikDAO projects.
-Both our js and ts modules are fully typed using ts type expressions and compiles using [`kdjs`](./kdjs), our
+Both our js and ts modules are fully typed using ts type expressions and compiled using [`kdjs`](./kdjs), our
 ts/js compiler with type aware optimizations.
 
 ## 🗂️ Features
@@ -21,7 +21,9 @@ ts/js compiler with type aware optimizations.
 ⚙️ [`kdjs`](./kdjs): KimlikDAO TypeScript / JavaScript compiler
 
   - A ts/js compiler fully using type information to guide optimizations.
-  - Type information is used for aggressive optimizations which wouldn't be possible otherwise.
+  - Seamless js/ts interop for the type system
+  - Uses the [Google Closure Compiler](https://github.com/google/closure-compiler),
+    as a backend with additional passes.
 
 🗝️ [`crypto`](./crypto): Cryptographic functions and libraries
 

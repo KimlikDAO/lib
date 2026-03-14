@@ -10,6 +10,7 @@ type UnpackedSignature = {
 /**
  * Converts a wide signature to a EIP2098 signature.
  * @see https://eips.ethereum.org/EIPS/eip-2098
+ * @pure
  */
 const fromWide = (sig: WideSignature): Signature => {
   const yParity = sig.slice(-2) == "1c";
@@ -21,15 +22,18 @@ const fromWide = (sig: WideSignature): Signature => {
   return s;
 };
 
+/** @pure */
 const fromUnpacked = (sig: UnpackedSignature): Signature =>
   abi.uint256(sig.r) + abi.uint256(sig.yParity ? sig.s + (1n << 255n) : sig.s);
 
+/** @pure */
 const toWideFromUnpacked = (sig: UnpackedSignature): WideSignature =>
   "0x" + abi.uint256(sig.r) + abi.uint256(sig.s) + (27 + +sig.yParity).toString(16);
 
 /**
- * @see https://eips.ethereum.org/EIPS/eip-2098
  * Converts a compact EIP2098 signature to wide format.
+ * @see https://eips.ethereum.org/EIPS/eip-2098
+ * @pure
  */
 const toWide = (sig: Signature): WideSignature => {
   const highNibble = parseInt(sig[64], 16);

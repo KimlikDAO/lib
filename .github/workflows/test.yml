@@ -175,7 +175,7 @@ jobs:
           distribution: "temurin"
       - run: |
           bun i
-          bun run test util
+          bun run test util --strict
 
   compile_kdjs_with_kdjs:
     name: Compile `kdjs` with `kdjs`

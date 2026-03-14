@@ -1,19 +1,20 @@
 /**
- * BCP-style language tags we ship. Adding a member means every {@link I18nString}
- * must include that key—compile time + kdjs keep translations complete.
+ * BCP-style language tags we ship. Adding a member means every
+ * {@link I18nString} must include that key—compile time + kdjs keep
+ * translations complete.
  */
 enum LangCode {
   EN = "en",
   TR = "tr",
 }
 
-const Langs: readonly LangCode[] = [LangCode.EN, LangCode.TR];
+const Langs = Object.values(LangCode) as readonly LangCode[];
 
 /**
  * Represents one user-visible string in every supported language.
  *
- * When resolved with a compile time constant {@link LangCode}, kdjs will turn a
- * I18nString into a string literal.
+ * When resolved with a compile time constant {@link LangCode}, kdjs will turn
+ * a I18nString into a string literal.
  * @example
  * ```ts
  * const Label = { [LangCode.EN]: "A", [LangCode.TR]: "B" };
@@ -42,14 +43,16 @@ type I18nStrings = Record<LangCode, readonly string[]>;
 type Localizable = Record<LangCode, string> | string;
 
 /**
- * Picks the string for one language: object → that lang’s value; string → unchanged.
+ * Given `LangCode`, resolves the Localizable to a string.
  * @pure
  */
 const localize = (l: Localizable, lang: LangCode): string =>
   typeof l == "string" ? l : l[lang];
 
 /**
- * Builds an {@link I18nString} from static template pieces and {@link Localizable} holes.
+ * Builds an {@link I18nString} from static template pieces and
+ * {@link Localizable} holes.
+ *
  * @pure
  */
 const i18n = (
