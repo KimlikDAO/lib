@@ -1,6 +1,5 @@
 import bigints from "../../../util/bigints";
-import { assertEq } from "../../../util/testing/assert";
-import { compareImpls } from "../../../util/testing/bench";
+import { bench } from "../../../util/testing/bench";
 import { arfCurve } from "../../arfCurve";
 import { Point } from "../../ellipticCurve";
 import { P } from "../../secp256k1";
@@ -59,7 +58,15 @@ const k = bigints.random(32) % P;
 
 const pr_kG = G.copy().multiply(k).proj();
 
-const m2 = () => { const r = multiply2(G.copy(), k).proj(); assertEq(r, pr_kG); };
-const m4 = () => { const r = multiply4(G.copy(), k).proj(); assertEq(r, pr_kG); };
-const m8 = () => { const r = multiply8(G.copy(), k).proj(); assertEq(r, pr_kG); };
-compareImpls([m8, m2, m4, m8, m2, m4], 1000, [], null);
+const m2 = (n: bigint) => multiply2(G.copy(), n).proj();
+const m4 = (n: bigint) => multiply4(G.copy(), n).proj();
+const m8 = (n: bigint) => multiply8(G.copy(), n).proj();
+
+bench("w-ary scalar multiplication", {
+  "base-2 (bit-by-bit)": m2,
+  "base-4 (2-bit window)": m4,
+  "base-8 (3-bit window)": m8,
+}, {
+  repeat: 1000,
+  dataset: [{ args: [k], expected: pr_kG }],
+});
