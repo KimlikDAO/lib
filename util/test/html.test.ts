@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { htmlTag } from "../html";
+import { htmlTag } from "../markup/html";
 
 test("htmlTag empty tag", () => {
   expect(htmlTag("tag", {}, false)).toBe("<tag>");

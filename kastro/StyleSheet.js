@@ -1,5 +1,5 @@
 import { keccak256Uint8 } from "../crypto/sha3";
-import { htmlTag } from "../util/html";
+import { htmlTag } from "../util/markup/html";
 import { fileFromError } from "../util/reflection";
 import compiler from "./compiler/compiler";
 import hash from "./compiler/hash";

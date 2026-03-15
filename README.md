@@ -27,8 +27,8 @@ ts/js compiler with type aware optimizations.
 
 🗝️ [`crypto`](./crypto): Cryptographic functions and libraries
 
-  - [`arfCurve`](./crypto/arfCurve.js): An efficient Arf Curve ($y^2 = x^3 + b$) class factory
-  - [`wesolowski`](./crypto/wesolowski.js): Our Wesolowski VDF implementation
+  - [`arfCurve`](./crypto/arfCurve.ts): An efficient Arf Curve ($y^2 = x^3 + b$) class factory
+  - [`wesolowski`](./crypto/wesolowski.ts): Our Wesolowski VDF implementation
 
 🪪 [`did`](./did): Definitions of DID and KPass by KimlikDAO
 

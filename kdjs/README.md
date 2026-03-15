@@ -1,44 +1,71 @@
-# `kdjs`: KimlikDAO JavaScript compiler
+# `kdjs`: KimlikDAO JavaScript/TypeScript compiler
 
-`kdjs` is a javascript compiler with advanced optimization and minification
-capabilities.
-It primarily builds upon the Google Closure Compiler (GCC) however it has many custom optimization
-passes and a more powerful module system.
+`kdjs` is a JavaScript/TypeScript compiler with advanced optimization and minification.
+It uses the Google Closure Compiler (GCC) in the main pipeline and adds custom optimization
+passes and a more powerful module system (e.g. ES module `export` / unlinked `import` generation,
+which GCC does not support on its own).
 
-For instance, `kdjs` it is able to generate es6 modules with `export`s and unlinked `import`s, which
-is not possible with GCC.
+## TypeScript-first
 
-`kdjs` expects your code to be fully annotated using the Google Closure
-Compiler type annotations. Just like in GCC, your type annotations can be
-either in a `.js` file or an externs file, which in `kdjs` has to end with the
-extension `.d.js`. In `.d.js` files explicit `@externs` annotations are not
-needed.
+`kdjs` compiles **TypeScript** and is TS-focused. Your entry file can be `entry.ts` or `entry.js`;
+imports are resolved with TypeScript preferred (`.ts` before `.js`). TypeScript sources are
+transpiled to JS before being fed to the rest of the pipeline.
 
-You can run `kdjs` directly
+## JSDoc in JavaScript: TypeScript-style types
+
+JavaScript files can still be fully typed via **JSDoc**, but `kdjs` does *not* use
+Google Closure–style type annotations. Those are very verbose (e.g. `{!Array<!Array<!User>>}`).
+Instead, JSDoc uses **TypeScript-style type syntax** inside the `{ }`:
+
+- `{User[][]}` instead of `{!Array<!Array<!User>>}`
+- `{Map<string, number>}`, `{() => void}`, `{x: string, y?: number}`, etc.
+
+The same type language is used for both `.ts` and JSDoc in `.js`, and is translated to
+GCC-compatible annotations internally where needed.
+
+## Types and values in the same space
+
+To make TypeScript and JSDoc interop seamless, **types and runtime values live in the same
+namespace** in `kdjs`. There is no language-level separation: a declaration file (e.g. `.d.js`
+or `.d.ts`) can export both types and values, and the same import can refer to either.
+
+Type-only references are represented as empty type-marker objects in the compiled graph. It is
+**the optimizer’s job** to remove them. The compiler treats eliminating these markers **the same
+as any other empty or dead object**—no special case. That keeps the design uniform and lets
+advanced optimization passes handle type erasure like any other dead-code elimination.
+
+## Declaration files
+
+Type (and value) declarations live in files that end with **`.d.js`** or **`.d.ts`**. For
+packages, `kdjs` looks for externs under `node_modules/@kimlikdao/lib/kdjs/externs/` with the
+`.d.js` extension. In `.d.js` files you do not need an explicit `@externs` annotation; it is
+injected when missing.
+
+## Running kdjs
+
+Direct run:
 
 ```shell
-bun kdjs/kdjs.js entry.js
+bun kdjs/kdjs.js entry.ts
 ```
 
-or install it system wide
+or install globally:
 
 ```shell
 cd kdjs
 npm i -g .
 ```
 
-When you run `kdjs` with a supplied entry file like so
+Then:
 
 ```shell
-$ kdjs entry.js
+kdjs entry.ts
 ```
 
-it will automatically crawl all the imported files from the entry.js and
-include the externs files for libraries that it recognizes.
+`kdjs` crawls all imports from the entry file and pulls in the corresponding declaration files
+for libraries it knows about.
 
-```shell
-$ kdjs
-
+```text
 kdjs 0.0.2
 
 Usage: kdjs entry.js [parameters]
@@ -52,6 +79,5 @@ Parameters:
   --nologs       : Strip all console.log() calls
   --define       : Values for @define annotated variables
   --isolateDir   : Directory name to write the isolated and preprocessed input files
-  --emit_shebang : Whether to place bun shebang sequence at the beginning of the output
   --globals      : A JSON encoded object to be used as globals
 ```

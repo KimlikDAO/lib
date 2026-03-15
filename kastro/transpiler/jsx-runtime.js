@@ -1,4 +1,4 @@
-import { htmlTag, VoidElementTag } from "../../util/html";
+import { htmlTag, VoidElementTag } from "../../util/markup/html";
 import { LangCode } from "../../util/i18n";
 import { getGlobals } from "./pageGlobals";
 

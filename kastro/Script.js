@@ -1,4 +1,4 @@
-import { htmlTag } from "../util/html";
+import { htmlTag } from "../util/markup/html";
 import { splitFullExt } from "../util/paths";
 import compiler from "./compiler/compiler";
 import { Props } from "./props";

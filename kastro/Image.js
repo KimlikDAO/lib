@@ -1,5 +1,5 @@
 import { SAXParser } from "sax";
-import { htmlTag } from "../util/html";
+import { htmlTag } from "../util/markup/html";
 import { getExt } from "../util/paths";
 import compiler from "./compiler/compiler";
 import { Props, removeGlobalProps } from "./props";

@@ -1,4 +1,4 @@
-import { htmlTag } from "../util/html";
+import { htmlTag } from "../util/markup/html";
 import { LangCode } from "../util/i18n";
 import compiler from "./compiler/compiler";
 import { addStyleSheet } from "./StyleSheet";
