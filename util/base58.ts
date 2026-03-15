@@ -1,30 +1,19 @@
-/**
- * @const {string}
- * @noinline
- */
-const Base58Chars = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+/** @noinline */
+const Base58Chars =
+  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
-/**
- * @const {number[]}
- */
-const Base58Map = Array(256);
+const Base58Map: number[] = new Array(256);
 for (let i = 0; i < Base58Chars.length; ++i)
   Base58Map[Base58Chars.charCodeAt(i)] = i;
 
-/**
- * @nosideeffects
- * @param {Uint8Array|number[]} bytes
- * @return {string}
- */
-const from = (bytes) => {
-  /** @const {number[]} */
-  const codes = [];
+/** @pure */
+const from = (bytes: Uint8Array | number[]): string => {
+  const codes: number[] = [];
 
   for (const byte of bytes) {
-    /** @type {number} */
     let carry = byte;
     for (let j = 0; j < codes.length; ++j) {
-      carry += Base58Map[codes[j]] << 8;
+      carry += Base58Map[codes[j]!]! << 8;
       codes[j] = Base58Chars.charCodeAt(carry % 58);
       carry = (carry / 58) | 0;
     }
@@ -33,25 +22,21 @@ const from = (bytes) => {
       carry = (carry / 58) | 0;
     }
   }
-  for (const byte of bytes)
-    if (byte) break; else codes.push(49);
+  for (const byte of bytes) {
+    if (byte) break;
+    codes.push(49);
+  }
   return String.fromCharCode(...codes.reverse());
-}
+};
 
-/**
- * @nosideeffects
- * @param {string} str
- * @return {Uint8Array}
- */
-const toBytes = (str) => {
-  /** @const {number} */
+/** @pure */
+const toBytes = (str: string): Uint8Array<ArrayBuffer> => {
   const n = str.length;
-  /** @const {number[]} */
-  const bytes = [];
+  const bytes: number[] = [];
   for (let i = 0; i < n; ++i) {
-    let carry = Base58Map[str.charCodeAt(i)];
+    let carry = Base58Map[str.charCodeAt(i)]!;
     for (let j = 0; j < bytes.length; ++j) {
-      carry += bytes[j] * 58;
+      carry += bytes[j]! * 58;
       bytes[j] = carry & 255;
       carry >>= 8;
     }
@@ -62,7 +47,7 @@ const toBytes = (str) => {
   }
   for (let q = 0; q < n && str.charCodeAt(q) == 49; q++) bytes.push(0);
   return new Uint8Array(bytes.reverse());
-}
+};
 
 export default {
   from,

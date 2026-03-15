@@ -7,9 +7,8 @@
   "type": "module",
   "scripts": {
     "postinstall": "mkdir -p ./node_modules/@kimlikdao/lib && ln -sfn ../../../kastro ./node_modules/@kimlikdao/lib/kastro && ln -sfn ../../../kdjs ./node_modules/@kimlikdao/lib/kdjs",
-    "test": "bun testing/runner.js",
-    "bench": "bun testing/runner.js bench",
-    "test:compiled": "bun testing/runner.js test",
+    "test": "bun util/testing/runner.js",
+    "bench": "bun util/testing/runner.js bench",
     "kdjs": "bun kdjs/kdjs.js",
     "clear": "rm -rf build && clear"
   },

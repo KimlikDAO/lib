@@ -2,7 +2,7 @@
  * Full-string Keccak: conformance.test compares these two pipelines.
  * Orig fuses UTF-8 + blocks + Uint32Array s; ours uses TextEncoder + keccak256Uint8(Array s).
  */
-import { bench } from "../../../testing/bench";
+import { bench } from "../../../util/testing/bench";
 import { keccak256 } from "../../sha3";
 import { keccak256 as keccak256_orig } from "../../test/sha3/sha3_orig";
 

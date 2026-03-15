@@ -2,7 +2,7 @@
  * Isolates only the Keccak-f round function on scratch tape.
  * Same words XORed into s then f(s) repeated — no TextEncoder, no output packing.
  */
-import { bench } from "../../../testing/bench";
+import { bench } from "../../../util/testing/bench";
 import { f } from "../../sha3";
 
 const REPEAT = 200;

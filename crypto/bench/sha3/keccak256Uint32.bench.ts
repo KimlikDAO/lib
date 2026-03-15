@@ -1,4 +1,4 @@
-import { bench } from "../../../testing/bench";
+import { bench } from "../../../util/testing/bench";
 import { f, keccak256Uint32 } from "../../sha3";
 
 /** @pure */

@@ -1,6 +1,6 @@
-import { assertEq } from "../../../testing/assert";
-import { compareImpls } from "../../../testing/bench";
 import bigints from "../../../util/bigints";
+import { assertEq } from "../../../util/testing/assert";
+import { compareImpls } from "../../../util/testing/bench";
 import { arfCurve } from "../../arfCurve";
 import { Point } from "../../ellipticCurve";
 import { P } from "../../secp256k1";

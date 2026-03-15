@@ -2,7 +2,7 @@
  * Same Uint8 input and logic as keccak256Uint8; only scratch tape type differs.
  * Separates: (1) alloc per call (2) output path Array manual bytes vs Uint8Array(s.buffer)
  */
-import { bench } from "../../../testing/bench";
+import { bench } from "../../../util/testing/bench";
 import { f } from "../../sha3";
 
 const Encoder = new TextEncoder();

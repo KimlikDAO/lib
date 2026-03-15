@@ -1,5 +1,5 @@
 import { keccak256Uint8 } from "../crypto/sha3";
-import { tagYaz } from "../util/html";
+import { htmlTag } from "../util/html";
 import { fileFromError } from "../util/reflection";
 import compiler from "./compiler/compiler";
 import hash from "./compiler/hash";
@@ -76,8 +76,8 @@ const makeStyleSheets = () => {
         childTargets: PageCss.asTargets()
       })
     ]).then(([sharedBundleName, pageBundleName]) =>
-      tagYaz("link", { rel: "stylesheet", href: sharedBundleName }, true) +
-      tagYaz("link", { rel: "stylesheet", href: pageBundleName }, true)
+      htmlTag("link", { rel: "stylesheet", href: sharedBundleName }, true) +
+      htmlTag("link", { rel: "stylesheet", href: pageBundleName }, true)
     );
   }
 

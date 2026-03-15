@@ -11,7 +11,7 @@
 interface EncryptedData {
   readonly version: string;
   readonly nonce: string;
-  readonly ephemPublicKey: string;
+  readonly ephemPublicKey?: string;
   readonly ciphertext: string;
 }
 

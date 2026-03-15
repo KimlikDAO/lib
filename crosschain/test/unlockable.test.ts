@@ -1,16 +1,12 @@
 import { describe, expect, it } from "bun:test";
 import { EthersSigner } from "../../ethereum/mock/ethersSigner";
-import { ChainGroup } from "../chains";
 import { MockSigner } from "../mock/signer";
 import { decrypt, encrypt } from "../unlockable";
 import { Unlockable } from "../unlockable.d";
 
-it("should encrypt / decrypt small text on ChainGroup.EVM", () => {
-  /** @const {bigint} */
-  const privKey = 0x1337ACCn;
-  /** @const {MockSigner} */
+it("encrypt / decrypt small text on ChainGroup.EVM", () => {
+  const privKey = 0x1337accn;
   const signer = new MockSigner(privKey);
-  /** @const {string} */
   const text = "Text to encrypt";
   expect(
     encrypt(
@@ -18,18 +14,15 @@ it("should encrypt / decrypt small text on ChainGroup.EVM", () => {
       "Sign to encrypt this text",
       "promptsign-sha256-aes-ctr",
       signer,
-      signer.getAddress()
+      signer.getAddress(),
     ).then((unlockable) =>
       decrypt(unlockable, signer, signer.getAddress())))
     .resolves.toBe(text);
 });
 
-it("should encrypt / decrypt large text on ChainGroup.EVM", () => {
-  /** @const {bigint} */
-  const privKey = 0x1337ADD3n;
-  /** @const {MockSigner} */
+it("encrypt / decrypt large text on ChainGroup.EVM", () => {
+  const privKey = 0x1337add3n;
   const signer = new MockSigner(privKey);
-  /** @const {string} */
   const text = "Text to encrypt".repeat(1000);
   expect(
     encrypt(
@@ -44,12 +37,10 @@ it("should encrypt / decrypt large text on ChainGroup.EVM", () => {
 });
 
 describe("Golden tests", () => {
-  /** @const {EthersSigner} */
   const signer = new EthersSigner(1337n);
 
-  it("should decrypt golden text 1", () => {
-    /** @const {Unlockable} */
-    const unlockable = /** @type {Unlockable} */ ({
+  it("decrypt golden text 1", () => {
+    const unlockable = {
       version: "promptsign-sha256-aes-ctr",
       nonce: "0+65lpD4UK01Ljy90sdYCA==",
       ciphertext: "y4GV2MBVZml0uT69UIdOKv0DEolaTgTaSOyhtz5DvWcIGB/KrjFNCxuaA" +
@@ -59,8 +50,8 @@ describe("Golden tests", () => {
         "Fm0C8ck1KMfEzhAaDUJCCI+jEhb4c2SbDoN8VS+lKO5C2AdotIC6tEDZYyricXxwafK" +
         "7jA6GqFII2YjRX+SQ==",
       userPrompt: "Golden prompt"
-    });
-    expect(decrypt(unlockable, signer, signer.getAddress()))
-      .resolves.toBe("Golden text");
+    } as Unlockable;
+    expect(decrypt(unlockable, signer, signer.getAddress())).resolves
+      .toBe("Golden text");
   });
 });

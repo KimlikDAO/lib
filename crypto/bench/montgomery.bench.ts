@@ -1,4 +1,4 @@
-import { bench } from "../../testing/bench";
+import { bench } from "../../util/testing/bench";
 import { poseidon } from "../minaPoseidon";
 import { mont, mul, P, unmont } from "../montgomery";
 

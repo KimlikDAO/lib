@@ -320,6 +320,7 @@ class Generator {
   ImportExpression(n) { this.put("import("); this.rec(n.source); this.put(")"); }
   AssignmentExpression(n) { this.rec(n.left); this.put(` ${n.operator} `); this.rec(n.right); }
   ThisExpression(n) { this.put("this"); }
+  TaggedTemplateExpression(n) { this.rec(n.tag); this.rec(n.quasi); }
   Super(n) { this.put("super"); }
 
   // JS Statements
@@ -389,6 +390,7 @@ class Generator {
   MethodDefinition(n) {
     if (n.kind == "constructor") { this.ConstructorDefinition(n); return }
     n.value.modifiers |= n.modifiers | (n.override ? Modifier.Override : 0);
+    n.value.typeParameters ||= n.typeParameters;
     this.jsDoc(n.value, n.value.modifiers);
     if (n.static) this.put("static "); if (n.value.async) this.put("async ");
     this.rec(n.key); this.put("("); this.arr(n.value.params, ", "); this.put(") ");
@@ -456,7 +458,8 @@ class Generator {
     this.blockLike(n.body);
   }
   ForOfStatement(n, of = " of ") {
-    this.put("for ("); this.rec(n.left); this.del(); this.put(of); this.rec(n.right); this.put(")");
+    this.put("for "); if (n.await) this.put("await ");
+    this.put("("); this.rec(n.left); this.del(); this.put(of); this.rec(n.right); this.put(")");
     this.blockLike(n.body);
   }
   ForInStatement(n) { this.ForOfStatement(n, " in "); }
@@ -513,7 +516,7 @@ class Generator {
   }
   jsDoc(n, modifiers) {
     const params = n.params || n.parameters;
-    const retType = n.returnType || n.typeAnnotation || { type: "TSVoidKeyword" };
+    const retType = n.returnType || n.typeAnnotation;
     this.doc();
     if (n.typeParameters) {
       // Inside the templated function, the template parameter is treated as
@@ -550,8 +553,7 @@ class Generator {
       if (isOptional) this.put("="); this.put("} ");
       if (param.type == "Identifier") { this.rec(param); } else { this.put(`arg${i++}`); }
     }
-    this.ret();
-    this.put("@return {"); this.rec(retType); this.put("}");
+    if (retType) { this.ret(); this.put("@return {"); this.rec(retType); this.put("}"); }
     this.cod();
   }
   DJSInterfaceBody(n) {

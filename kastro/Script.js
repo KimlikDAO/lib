@@ -1,4 +1,4 @@
-import { tagYaz } from "../util/html";
+import { htmlTag } from "../util/html";
 import { splitFullExt } from "../util/paths";
 import compiler from "./compiler/compiler";
 import { Props } from "./props";
@@ -19,7 +19,7 @@ const Script = (props) => {
       childTargets: ["/" + props.src], // Used in BuildMode.Dev only
       ...props,
     }).then((bundleName) =>
-      tagYaz("script", { type: "module", src: bundleName }, false) + "</script>"
+      htmlTag("script", { type: "module", src: bundleName }, false) + "</script>"
     )
   );
 }

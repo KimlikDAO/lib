@@ -419,7 +419,6 @@ class Provider {
 class RemoteProvider {
   /**
    * @param {(params: RequestArguments) => Promise<unknown>} request
-   * @return {void}
    */
   constructor(request) {
     /** @const {(params: RequestArguments) => Promise<unknown>} */
@@ -581,7 +580,6 @@ const arfCurve = (P) => {
        * @param {bigint} x
        * @param {bigint} y
        * @param {bigint=} z
-       * @return {void}
        */
       constructor(x, y, z = 1n) {
         /** @type {bigint} */

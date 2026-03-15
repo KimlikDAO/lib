@@ -73,7 +73,6 @@ const f = (x: number) => ({ key: x });
   expect(transpileTs(input)).toBe(`
 /**
  * @param {number} x
- * @return {void}
  */
 const f = (x) => ({
   key: x
@@ -302,7 +301,6 @@ class Provider {
 class RemoteProvider {
   /**
    * @param {(params: RequestArguments) => Promise<unknown>} request
-   * @return {void}
    */
   constructor(request) {
     /** @const {(params: RequestArguments) => Promise<unknown>} */
@@ -628,7 +626,6 @@ import { Signature, Signer } from "../signer";
 class MockSigner extends EvmSigner {
   /**
    * @param {bigint} privKey
-   * @return {void}
    */
   constructor(privKey) {
     super(privKey);
@@ -832,7 +829,6 @@ const sign = (digest, privKey) => signature.fromUnpacked(signUnpacked(digest, pr
 class MockSigner {
   /**
    * @param {bigint} privKey
-   * @return {void}
    */
   constructor(privKey) {
     /** @const {bigint} */
@@ -887,5 +883,57 @@ type Curve = new (x: bigint, y: bigint, z?: bigint) => IPoint;
  * @typedef {new (x: bigint, y: bigint, z?: bigint) => IPoint}
  */
 const Curve = {};
+`.slice(1));
+});
+
+test("generic methods", () => {
+  const input = `
+class Throttle {
+  private readonly queue: Task[] = [];
+  private slots: number;
+
+  constructor(maxConcurrent: number) {
+    this.slots = maxConcurrent;
+  }
+
+  add<T>(promise: () => Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.queue.push({
+        promise,
+        resolve: resolve as (val: unknown | PromiseLike<unknown>) => void,
+        reject,
+      });
+    }) as Promise<T>;
+  }
+};`;
+  expect(transpileTs(input)).toBe(`
+class Throttle {
+  /** @type {Task[]} */
+  queue = [];
+  /** @type {number} */
+  slots;
+  /**
+   * @param {number} maxConcurrent
+   */
+  constructor(maxConcurrent) {
+    this.slots = maxConcurrent;
+  }
+  /**
+   * @suppress {reportUnknownTypes}
+   * @template T
+   * @param {() => Promise<T>} promise
+   * @return {Promise<T>}
+   */
+  add(promise) {
+    return /** @type {Promise<T>} */(new Promise((resolve, reject) => {
+      this.queue.push({
+        promise,
+        resolve: /** @type {(val: unknown | PromiseLike<unknown>) => void} */(resolve),
+        reject
+      });
+    }));
+  }
+}
+
 `.slice(1));
 });

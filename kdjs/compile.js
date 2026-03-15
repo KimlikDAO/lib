@@ -90,7 +90,7 @@ const compileWithBun = async (params) => {
  * On error, rejects with the error.
  *
  * @param {Params} params
- * @param {(string[]) => Promise<boolean>=} checkFreshFn
+ * @param {(deps: string[]) => Promise<boolean>=} checkFreshFn
  * @param {(content: string, file: string, isEntry: boolean=) => string | null=} transpileFn
  * @return {Promise<string | void>}
  */

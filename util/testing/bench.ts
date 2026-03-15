@@ -1,4 +1,4 @@
-import { shuffle } from "../util/arrays";
+import { shuffle } from "../arrays";
 import { assertEq, assertIs } from "./assert";
 
 const compareImpls = <A, T>(

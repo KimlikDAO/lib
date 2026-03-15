@@ -1,4 +1,4 @@
-import { bench } from "../../../testing/bench";
+import { bench } from "../../../util/testing/bench";
 
 /** @noinline */
 const P = (1n << 256n) - (1n << 32n) - 977n;

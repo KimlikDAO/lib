@@ -1,5 +1,5 @@
 import { SAXParser } from "sax";
-import { tagYaz } from "../util/html";
+import { htmlTag } from "../util/html";
 import { getExt } from "../util/paths";
 import compiler from "./compiler/compiler";
 import { Props, removeGlobalProps } from "./props";
@@ -15,7 +15,7 @@ const makeImageElement = (bundleName, { inSvg, piggyback, childTargets, ...props
     props.src = bundleName;
     delete props.href;
   }
-  return tagYaz(inSvg ? "image" : "img", props, true);
+  return htmlTag(inSvg ? "image" : "img", props, true);
 }
 
 const makeTargetName = (parentTarget, suffix) => {
@@ -43,7 +43,7 @@ const InlineSvgImage = ({ src, childTargets, bundleWidth, bundleHeight, ...props
     parser.onopentag = ({ name, attributes }) => {
       if (name == "svg")
         Object.assign(attributes, props);
-      result += tagYaz(name, attributes, false);
+      result += htmlTag(name, attributes, false);
     };
     parser.ontext = (text) => {
       result += text;
@@ -101,8 +101,8 @@ const Favicon = ({ src, raster, BuildMode, ...props }) => {
       childTargets: [`/${src}`]
     })
   ]).then(([svgBundled, pngBundled]) =>
-    tagYaz("link", { rel: "icon", href: svgBundled, type: "image/svg+xml" }) +
-    tagYaz("link", { rel: "icon", href: pngBundled, type: "image/png", sizes: `${raster}x${raster}` })
+    htmlTag("link", { rel: "icon", href: svgBundled, type: "image/svg+xml" }) +
+    htmlTag("link", { rel: "icon", href: pngBundled, type: "image/png", sizes: `${raster}x${raster}` })
   )
 };
 

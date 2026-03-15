@@ -1,4 +1,4 @@
-import { bench } from "../../../testing/bench";
+import { bench } from "../../../util/testing/bench";
 import { exp, exp2 } from "../../modular";
 
 const Q = 0xDAD19B08F618992D3A5367F0E730B97C6DD113B6A2A493C9EDB0B68DBB1AEC020FB2A64C9644397AB016ABA5B40FA22655060824D9F308984D6734E2439BA08Fn;

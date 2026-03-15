@@ -1,9 +1,8 @@
-import { bench } from "../../../testing/bench";
+import { bench } from "../../../util/testing/bench";
 import { arfCurve } from "../../arfCurve";
-import { Point } from "../../ellipticCurve";
-import { P, Q } from "../../secp256k1";
+import { AffinePoint, Point } from "../../ellipticCurve";
 import { exp2 } from "../../modular";
-import { AffinePoint } from "../../ellipticCurve";
+import { P, Q } from "../../secp256k1";
 
 /** @pure */
 const modP = (x: bigint): bigint => {

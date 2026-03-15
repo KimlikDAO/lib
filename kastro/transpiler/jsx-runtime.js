@@ -1,4 +1,4 @@
-import { KapalıTag, tagYaz } from "../../util/html";
+import { htmlTag, VoidElementTag } from "../../util/html";
 import { LangCode } from "../../util/i18n";
 import { getGlobals } from "./pageGlobals";
 
@@ -102,9 +102,9 @@ const jsx = (name, props = {}) => {
       resolveElementProps(rest);
       return name == Fragment
         ? children.join("")
-        : (children.length || !KapalıTag[name])
-          ? tagYaz(name, rest, false) + children.join("") + `</${name}>`
-          : tagYaz(name, rest, true);
+        : (children.length || !VoidElementTag[name])
+          ? htmlTag(name, rest, false) + children.join("") + `</${name}>`
+          : htmlTag(name, rest, true);
     });
   /** @const {Promise<string> | null} */
   const renderPromise = modifiesChildren ? null : renderChildren();

@@ -1,4 +1,4 @@
-import { tagYaz } from "../util/html";
+import { htmlTag } from "../util/html";
 import { LangCode } from "../util/i18n";
 import compiler from "./compiler/compiler";
 import { addStyleSheet } from "./StyleSheet";
@@ -61,7 +61,7 @@ const Font = ({ Lang, BuildMode, SharedCss, PageCss, shared, href, name, weight 
           font-display: block;
         }`
       });
-      return tagYaz("link", {
+      return htmlTag("link", {
         rel: "preload", href: woff2Bundled, as: "font", type: "font/woff2", crossorigin: true
       });
     })

@@ -1,5 +1,5 @@
-import { assert } from "../../testing/assert";
 import hex from "../../util/hex";
+import { assert } from "../../util/testing/assert";
 import { getNonsmooth, millerRabinBase2 } from "../primes";
 import { keccak256Uint8 } from "../sha3";
 

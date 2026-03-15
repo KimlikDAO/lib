@@ -42,8 +42,6 @@ ts/js compiler with type aware optimizations.
 
 📡 `protocol`: KimlikDAO protocol definitions and node interfaces
 
-🧪 `testing`: Testing utils and runners
-
 🧰 `util`: Conversion tools and external definitions
 
 ## 👩‍💻 Development

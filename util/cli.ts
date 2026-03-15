@@ -30,6 +30,11 @@ const parseArgs = (
   return params;
 }
 
+const asList = (args: CliArgs, key: string): string[] => {
+  const value = args[key];
+  return value == undefined ? [] : typeof value == "string" ? [value] : value as string[];
+}
+
 const getSecret = async (
   service: string,
   key: string
@@ -49,6 +54,7 @@ export {
   CliArgs,
   Green,
   Red,
+  asList,
   getSecret,
   parseArgs
 };

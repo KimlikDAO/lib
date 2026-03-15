@@ -2,8 +2,8 @@
  * Some experiments with the curves mentioned in
  * @see https://hackmd.io/@dJO3Nbl4RTirkR2uDM6eOA/Bk0NvC8Vo
  */
-import { assertIs } from "../../testing/assert";
 import bigints from "../../util/bigints";
+import { assertIs } from "../../util/testing/assert";
 import { arfCurve } from "../arfCurve";
 import { CompressedPoint, Curve, Point } from "../ellipticCurve";
 import { P, Q, sqrt } from "../secp256k1";

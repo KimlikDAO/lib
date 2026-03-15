@@ -15,7 +15,7 @@ const shuffle = <T>(arr: T[]): T[] => {
  * @pure
  */
 const chunk = <T>(arr: T[], n: number): T[][] => {
-  if (n <= 0) throw 0;
+  if (n <= 0) return [];
   const result: T[][] = [];
   for (let i = 0; i < arr.length; i += n)
     result.push(arr.slice(i, i + n));
