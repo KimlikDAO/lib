@@ -1,3 +1,10 @@
+/**
+ * Lightweight test harness assertions for benchmarks and one-off test scripts.
+ *
+ * Prefer `bun:test` for regular unit/integration tests. These helpers are
+ * test-only (not runtime assertions): they track pass/fail counts and print a
+ * summary at process exit.
+ */
 import { deepEquals } from "bun";
 import process from "node:process";
 import { Clear, Green, Red } from "../cli";

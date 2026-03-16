@@ -201,8 +201,7 @@ const KPass: IKPass = {
     token: number,
   ): Promise<TransactionHash> {
     const tokenContract = Tokens[chainId][token];
-    if (tokenContract == null)
-      throw "KPass.createWithRevokersWithTokenPayment: token not available on chain";
+    if (tokenContract == null) throw 0;
     const tokenSerialized =
       abi.uint96(0) + abi.packedAddress(tokenContract.contract);
     const data =

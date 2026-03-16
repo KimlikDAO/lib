@@ -91,9 +91,7 @@ const weierstrassCurve = (P: bigint, a: bigint): CurveFamily => {
       }
       return this;
     }
-
-    static readonly O: WeierstrassFamilyPoint = new WeierstrassFamilyPoint(0n, 0n, 0n);
-
+    static readonly O: Point = new WeierstrassFamilyPoint(0n, 0n, 0n);
     multiply(n: bigint): Point {
       const nNibs = n.toString(4);
       const d: readonly WeierstrassFamilyPoint[] = [

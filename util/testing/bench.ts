@@ -1,33 +1,5 @@
 import { shuffle } from "../arrays";
-import { assertEq, assertIs } from "./assert";
-
-const compareImpls = <A, T>(
-  fs: ((...args: A[]) => T)[],
-  repeat: number,
-  args: A[],
-  expected: T
-): void => {
-  for (const f of fs) {
-    console.time(f["name"]);
-    for (let i = 0; i < repeat; ++i)
-      assertIs(f(...args), expected);
-    console.timeEnd(f["name"]);
-  }
-}
-
-const compareImplsArray = <A, T>(
-  fs: ((...args: A[]) => T)[],
-  repeat: number,
-  args: A[],
-  expected: T
-): void => {
-  for (const f of fs) {
-    console.time(f["name"]);
-    for (let i = 0; i < repeat; ++i)
-      assertEq(f(...args), expected);
-    console.timeEnd(f["name"]);
-  }
-}
+import { assertEq } from "./assert";
 
 const bench = <A, T>(
   description: string,
@@ -61,4 +33,4 @@ const bench = <A, T>(
   }
 }
 
-export { bench, compareImpls, compareImplsArray };
+export { bench };

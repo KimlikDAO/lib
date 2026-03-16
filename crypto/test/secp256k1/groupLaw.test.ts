@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { Point } from "../../ellipticCurve";
 import { G, Q, Secp256k1 } from "../../secp256k1";
 
-const O: Point = new Secp256k1(0n, 0n, 0n);
+const O: Point = Secp256k1.O;
 
 const equal = (P: Point, Q: Point): boolean => {
   const A = P.proj();

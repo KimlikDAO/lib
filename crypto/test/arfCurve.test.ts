@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
+import bigints from "../../util/bigints";
 import { arfCurve } from "../arfCurve";
-import { aX_bY } from "../ellipticCurve";
-import { P, Pallas } from "../minaSchnorr";
+import { CurveFamily, Point } from "../ellipticCurve";
 
 describe("Purve, Qurve curves", () => {
   const P = 13n;
@@ -17,35 +17,78 @@ describe("Purve, Qurve curves", () => {
 
   const Gp = Purve.pointFromAffine({ x: 1n, y: 4n });
   const Gq = Qurve.pointFromAffine({ x: 4n, y: 3n });
-  const Op = new Purve(0n, 0n, 0n);
-  const Oq = new Qurve(0n, 0n, 0n);
 
   test("the scalar field of Purve is the base field of Qurve", () => {
-    expect(Gp.copy().multiply(Q)).toEqual(Op);
+    expect(Gp.copy().multiply(Q)).toEqual(Purve.O);
   });
 
   test("the scalar field of Qurve is the base field of Purve", () => {
-    expect(Gq.copy().multiply(P)).toEqual(Oq);
+    expect(Gq.copy().multiply(P)).toEqual(Qurve.O);
   });
 });
 
-describe("Efficient aX + bY tests", () => {
-  /**
-   * A point on the curve (-1)^3 + 5 = 2^2.
-   */
-  const X = Pallas.pointFromAffine({ x: P - 1n, y: 2n });
+describe("group laws", () => {
+  const P = 0x24240D8241D5445106C8442084001384E0000013n;
+  const Bn158: CurveFamily = arfCurve(P);
+  const G: Point = Bn158.pointFromAffine({
+    x: P - 1n, // y² = x³ + 17
+    y: 4n      // 4² = -1³ + 17
+  });
+  const O: Point = Bn158.O;
+  const A = G.copy().multiply(bigints.random(20));
+  const B = G.copy().multiply(bigints.random(20));
+  const C = G.copy().multiply(bigints.random(20));
 
-  /**
-   * Another point on the curve.
-   */
-  const Y = Pallas.pointFrom({ x: P - 2n, yParity: false }) || X;
+  describe("identity element", () => {
+    test("A + O = A", () => {
+      expect(A.copy().increment(O).proj()).toEqual(A.proj());
+    });
+    test("O + A = A", () => {
+      expect(O.copy().increment(A).proj()).toEqual(A.proj());
+    });
+    test("O + O = O", () => {
+      expect(O.copy().increment(O).proj()).toEqual(O.proj());
+    });
+  });
 
-  test("with basic examples", () => {
-    const a = 12312313n;
-    const b = 8458345683n;
-    for (let i = 0n; i < 10n; ++i)
-      for (let j = 0n; j < 10n; ++j)
-        expect(aX_bY(a + i, X.copy(), b + j, Y.copy()).proj())
-          .toEqual(X.copy().multiply(a + i).increment(Y.copy().multiply(b + j)).proj());
-  })
+  describe("inverse element", () => {
+    test("A + (-A) = O", () => {
+      expect(A.copy().increment(A.negate()).proj()).toEqual(O.proj());
+    });
+    test("(-A) + A = O", () => {
+      expect(A.copy().negate().increment(A).proj()).toEqual(O.proj());
+    });
+  });
+
+  describe("associativity", () => {
+    test("(A + B) + C = A + (B + C)", () => {
+      expect(A.copy().increment(B).copy().increment(C).proj())
+        .toEqual(A.copy().increment(B.copy().increment(C)).proj());
+    });
+    test("A + (B + C) = (A + B) + C", () => {
+      expect(A.copy().increment(B.copy().increment(C)).proj())
+        .toEqual(A.copy().increment(B).copy().increment(C).proj());
+    });
+  });
+
+  describe("commutativity", () => {
+    test("A + B = B + A", () => {
+      expect(A.copy().increment(B).proj())
+        .toEqual(B.copy().increment(A).proj());
+    });
+  });
+
+  describe("distributivity", () => {
+    test("a(A + B) = aA + aB", () => {
+      const a = bigints.random(20);
+      expect(A.copy().increment(B).copy().multiply(a).proj())
+        .toEqual(A.copy().multiply(a).increment(B.copy().multiply(a)).proj());
+    });
+    test("(a + b)A = aA + bA", () => {
+      const a = bigints.random(20);
+      const b = bigints.random(20);
+      expect(A.copy().multiply(a + b).proj())
+        .toEqual(A.copy().multiply(a).increment(A.copy().multiply(b)).proj());
+    });
+  });
 });

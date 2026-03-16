@@ -48,11 +48,11 @@ const parsePrivateKey = (privateKey: string): bigint =>
  * @pure
  */
 const checksum = (buff: Uint8Array): number => {
-  const n = buff.length - 4;
+  const m = buff.length - 4;
   const s = new Uint32Array(IC as number[]);
   const t = new Uint32Array(64);
   let j = 0;
-  for (let end = n + 3, i = 0; i < end; i += 4) {
+  for (let end = m + 3, i = 0; i < end; i += 4) {
     t[j] = (buff[i + 0] << 24) | (buff[i + 1] << 16) | (buff[i + 2] << 8) | buff[i + 3];
     if (j > 14) {
       sha256F(s, t);
@@ -60,7 +60,7 @@ const checksum = (buff: Uint8Array): number => {
     } else ++j;
   }
   t.fill(0, j, 15);
-  t[15] = n << 3;
+  t[15] = m << 3;
   sha256F(s, t);
   t.set(s);
   t.fill(0, 9, 15);

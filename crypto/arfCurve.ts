@@ -25,7 +25,7 @@ const arfCurve = (P: bigint): CurveFamily => {
    * @pure
    */
   const modP = (x: bigint): bigint => {
-    let t = x % P;
+    const t = x % P;
     return t >= 0n ? t : t + P;
   };
   return class ArfFamilyPoint implements Point {
@@ -92,7 +92,7 @@ const arfCurve = (P: bigint): CurveFamily => {
       }
       return this;
     }
-    static readonly O: ArfFamilyPoint = new ArfFamilyPoint(0n, 0n, 0n);
+    static readonly O: Point = new ArfFamilyPoint(0n, 0n, 0n);
     multiply(n: bigint): Point {
       const nNibs = n.toString(4);
       const d: readonly ArfFamilyPoint[] = [

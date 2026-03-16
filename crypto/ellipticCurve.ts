@@ -23,6 +23,7 @@ type Curve = typeof CurvePoint;
 
 class CurveFamilyPoint implements Point {
   constructor(public x: bigint, public y: bigint, public z: bigint) { }
+  static readonly O: Point = new CurveFamilyPoint(0n, 0n, 0n);
   negate(): Point { return this; }
   double(): Point { return this; }
   increment(_other: Point): Point { return this; }
