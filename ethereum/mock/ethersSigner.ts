@@ -5,52 +5,27 @@ import { Address } from "../address.d";
 import signature from "../signature";
 import { Signature } from "../signature.d";
 
-/** @const {TextEncoder} */
 const Encoder = new TextEncoder();
 
 /**
  * An implementation of {@link Signer} using ethers.js for testing purposes.
- *
- * @implements {Signer}
  */
-class EthersSigner {
-  /**
-   * @param {bigint} privKey
-   */
-  constructor(privKey) {
-    /** @const {Wallet} */
+class EthersSigner implements Signer {
+  private readonly wallet: Wallet;
+
+  constructor(privKey: bigint) {
     this.wallet = new Wallet("0x" + abi.uint256(privKey));
   }
-
-  /**
-   * @override
-   *
-   * @param {string} message
-   * @param {string} address
-   * @return {Promise<Signature>}
-   */
-  signMessage(message, address) {
+  signMessage(message: string, address: Address): Promise<Signature> {
     if (this.wallet.address.toLowerCase() != address.toLowerCase())
       return Promise.reject();
     return this.wallet.signMessage(message)
       .then((sig) => signature.fromWide(sig));
   }
-
-  /**
-   * @return {Address}
-   */
-  getAddress() {
+  getAddress(): Address {
     return this.wallet.address;
   }
-
-  /**
-   * @override
-   *
-   * @param {string} message
-   * @param {string} address
-   * @return {Promise<ArrayBuffer>}
-   */
-  deriveSecret(message, address) {
+  deriveSecret(message: string, address: Address): Promise<ArrayBuffer> {
     if (this.wallet.address.toLowerCase() != address.toLowerCase())
       return Promise.reject();
     return this.wallet.signMessage(message)

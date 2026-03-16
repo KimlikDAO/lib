@@ -24,7 +24,7 @@ const callMulti = (
   url: string,
   method: string,
   paramsList: unknown[][]
-): Promise<unknown[]> => {
+): Promise<any[]> => {
   const body = JSON.stringify(
     paramsList.map((params, idx) => ({
       jsonrpc: "2.0",

@@ -789,7 +789,7 @@ const signUnpacked = (digest, privKey) => {
   const buff = new Uint32Array(bytes.buffer);
   for (; ; ++buff[0]) {
     const k = BigInt(("0x" + keccak256Uint32ToHex(buff)));
-    if ((k <= 0) || (Q <= k))
+    if (((k <= 0) || (Q <= k)))
       continue;
     /** @const {Point} */
     const K = G.copy().multiply(k).project();

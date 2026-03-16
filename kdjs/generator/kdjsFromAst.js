@@ -273,7 +273,9 @@ class Generator {
     this.put("("); this.arr(n.params, ", ", showTypes); this.put(") => ");
     this.rec(n.body, null, /* wrapped */ true)
   }
-  LogicalExpression(n) { this.rec(n.left); this.put(` ${n.operator} `); this.rec(n.right); }
+  LogicalExpression(n) {
+    this.put("("); this.rec(n.left); this.put(` ${n.operator} `); this.rec(n.right); this.put(")");
+  }
   SequenceExpression(n) { this.arr(n.expressions, ", "); }
   ObjectExpression(n, _, wrapped) {
     if (wrapped) this.put("("); this.put("{");

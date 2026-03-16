@@ -6,7 +6,6 @@ test("fileFromError",
   /** @suppress {reportUnknownTypes} */
   () => {
     const error = new Error();
-    console.log(fileFromError(error));
     expect(fileFromError(error))
       .toBe(import.meta.path.slice(process.cwd().length + 1));
   }
