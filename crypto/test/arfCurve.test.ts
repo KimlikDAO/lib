@@ -53,7 +53,7 @@ describe("group laws", () => {
 
   describe("inverse element", () => {
     test("A + (-A) = O", () => {
-      expect(A.copy().increment(A.negate()).proj()).toEqual(O.proj());
+      expect(A.copy().increment(A.copy().negate()).proj()).toEqual(O.proj());
     });
     test("(-A) + A = O", () => {
       expect(A.copy().negate().increment(A).proj()).toEqual(O.proj());

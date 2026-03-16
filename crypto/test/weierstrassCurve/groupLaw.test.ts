@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import bigints from "../../../util/bigints";
 import { Point } from "../../ellipticCurve";
-import { G, Secp256k1 } from "../../secp256k1";
+import { G, Q, Secp192r1 } from "./secp192r1";
 
-const O: Point = Secp256k1.O.copy();
+const O: Point = Secp192r1.O;
 const A = G.copy().multiply(bigints.random(24));
 const B = G.copy().multiply(bigints.random(24));
 const C = G.copy().multiply(bigints.random(24));
@@ -22,7 +22,7 @@ describe("identity element", () => {
 
 describe("inverse element", () => {
   test("A + (-A) = O", () => {
-    expect(A.copy().increment(A.negate()).proj()).toEqual(O.proj());
+    expect(A.copy().increment(A.copy().negate()).proj()).toEqual(O.proj());
   });
   test("(-A) + A = O", () => {
     expect(A.copy().negate().increment(A).proj()).toEqual(O.proj());
@@ -58,5 +58,11 @@ describe("distributivity", () => {
     const b = bigints.random(24);
     expect(A.copy().multiply(a + b).proj())
       .toEqual(A.copy().multiply(a).increment(A.copy().multiply(b)).proj());
+  });
+  test("aA + (Q-a)A = O", () => {
+    const a = bigints.random(24);
+    const A = G.copy().multiply(a);
+    A.increment(G.copy().multiply(Q - a));
+    expect(A.proj()).toEqual(O.proj());
   });
 });

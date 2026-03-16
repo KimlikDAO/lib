@@ -43,3 +43,19 @@ describe("P = 101", () => {
       check(i * i % P);
   });
 });
+
+describe("P = 3 (mod 4)", () => {
+  test("quadratic non-residues return null", () => {
+    const P = 103n;
+    let a = 1n;
+    for (; a < P; ++a) {
+      const res = a * a % P;
+      const non = P - res;
+      const b = sqrt(res, P);
+      if (b == null) break;
+      expect(b * b % P).toBe(res);
+      expect(sqrt(non, P)).toBeNull();
+    }
+    expect(a).toBe(P);
+  });
+});

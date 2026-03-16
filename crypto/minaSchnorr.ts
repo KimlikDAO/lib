@@ -18,11 +18,12 @@ const Pallas: Curve = Object.assign(arfCurve(P), {
    * provided x and y satisfying y² = x³ + 5 with the given parity; otherwise
    * returns null.
    *
+   * x must be in [0, P)
+   *
    * @pure
    */
   pointFrom({ x, yParity }: CompressedPoint): Point | null {
-    const y2 = (x * x * x + 5n) % P
-    const y = sqrt(y2);
+    const y = sqrt(x * x * x + 5n);
     if (y == null) return null;
     return new Pallas(x, (y & 1n) == (yParity as unknown as bigint) ? y : P - y, 1n);
   }

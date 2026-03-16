@@ -1,101 +1,176 @@
-import { AffinePoint, CurveFamily, Point } from "./ellipticCurve";
-import { inverse } from "./modular";
+import { AffinePoint, CompressedPoint, Curve, Point } from "./ellipticCurve";
+import { exp, inverse, tonelliShanks } from "./modular";
 
 /**
- * Returns a short-Weierstrass curve family over 𝔽ₚ with equation
- * y² = x³ + ax + b for a fixed (P, a) and varying b.
+ * Returns an elliptic curve over the field 𝔽ₚ with equation y² = x³ + ax + b.
  *
- * Fixing b (thus selecting a concrete curve from the family) is done by
- * implementing `pointFrom({ x, yParity })` on an object extending
- * this family and implementing the `Curve` interface.
+ * A function `sqrt` can be provided to compute square roots in 𝔽ₚ. If not
+ * provided, Tonelli-Shanks parameters for the given P will be computed at
+ * construction time and `sqrt(x)` needed for `pointFrom()` calls will be
+ * computed using the Tonelli-Shanks algorithm with these parameters.
  *
+ * This implementation uses the Renes Costello and Batina homogenous lifting of
+ * the y² = x³ + ax + b curve:
+ *
+ *   zy² = x³ + axz² + bz³ ,
+ *
+ * where the z=1 projection gives the original curve. This lifting lends itself
+ * to complete addition and doubling laws.
+ * @see https://eprint.iacr.org/2015/1060.pdf
+ *
+ * Combined with our base-4 multiplication ladder, this should make the
+ * implementation as close to constant-time as possible.
+ *
+ * @param P - The prime modulus of the base field 𝔽ₚ.
+ * @param a - The coefficient of the x term.
+ * @param b - The coefficient of the x³ term.
+ * @param sqrt - The function to compute square roots in 𝔽ₚ.
+ * @returns The elliptic curve.
  * @pure
  */
-const weierstrassCurve = (P: bigint, a: bigint): CurveFamily => {
+const weierstrassCurve = (
+  P: bigint, a: bigint, b: bigint,
+  sqrt?: (x: bigint) => bigint | null
+): Curve => {
+  if (!sqrt) {
+    let R = P >> 1n;
+    let M = 1n;
+    for (; (R & 1n) == 0n; R >>= 1n) ++M;
+    let c = 1n;
+    if (M != 1n) {
+      let z = 2n;
+      while (exp(z, P >> 1n, P) == 1n) ++z;
+      c = exp(z, R, P);
+    }
+    sqrt = (x: bigint): bigint | null => tonelliShanks(x, P, R, c, M);
+  }
   /**
    * Returns a non-negative number t such that 0 ≤ t < P and x ≡ t (mod P).
    * If positivity is not required, prefer the % operator.
    * @pure
    */
   const modP = (x: bigint): bigint => {
-    let t = x % P;
+    const t = x % P;
     return t >= 0n ? t : t + P;
   };
-  return class WeierstrassFamilyPoint implements Point {
+  a = modP(a);
+  const b3 = modP(3n * b);
+  return class WeierstrassPoint implements Point {
+    /** Provided x, y and z must all be in [0, P) */
     constructor(public x: bigint, public y: bigint, public z: bigint) { }
     /** @pure */
     static pointFromAffine({ x, y }: AffinePoint): Point {
-      return new WeierstrassFamilyPoint(x, y, 1n);
+      return new WeierstrassPoint(modP(x), modP(y), 1n);
     };
+    /** @pure x must be in [0, P) */
+    static pointFrom({ x, yParity }: CompressedPoint): Point | null {
+      const y = sqrt(x * (x * x + a) + b);
+      if (y == null) return null;
+      return new WeierstrassPoint(x, (y & 1n) == (yParity as unknown as bigint) ? y : P - y, 1n);
+    }
     /** @pure */
-    copy(): Point { return new WeierstrassFamilyPoint(this.x, this.y, this.z); }
+    copy(): Point { return new WeierstrassPoint(this.x, this.y, this.z); }
     /** @pure */
     proj(): AffinePoint {
       if (this.z == 0n) return { x: 0n, y: 0n };
       const iz = inverse(this.z, P);
-      const iz2 = iz * iz % P;
-      const iz3 = iz2 * iz % P;
-      const x = this.x * iz2 % P;
-      const y = this.y * iz3 % P;
-      return { x, y };
+      return { x: this.x * iz % P, y: this.y * iz % P };
     }
     negate(): Point {
       this.y = P - this.y;
       return this;
     }
     double(): Point {
-      if (this.z == 0n || this.y == 0n) {
-        this.x = this.y = this.z = 0n;
-        return this;
-      }
-      const { x, y, z } = this;
-      const x2 = x * x % P;
-      const y2 = y * y % P;
-      const y4 = y2 * y2 % P;
-      const z2 = z * z % P;
-      const z4 = z2 * z2 % P;
-      const _4xy2 = (4n * x % P) * y2 % P;
-      const M = modP(3n * x2 + a * z4);
-      const X = modP(M * M - (_4xy2 << 1n));
-      this.y = modP(M * (_4xy2 - X) - (y4 << 3n));
-      this.z = modP((y << 1n) * z);
-      this.x = X;
+      const { x: x1, y: y1, z: z1 } = this;
+      let x3: bigint;
+      let y3: bigint;
+      let z3: bigint;
+      let t0 = x1 * x1 % P;
+      let t1 = y1 * y1 % P;
+      let t2 = z1 * z1 % P;
+      let t3 = x1 * y1 % P;
+      t3 = (t3 + t3) % P;
+      z3 = (x1 * z1) % P;
+      z3 = (z3 + z3) % P;
+      x3 = a * z3 % P;
+      y3 = b3 * t2 % P;
+      y3 = (x3 + y3) % P;
+      x3 = modP(t1 - y3);
+      y3 = (t1 + y3) % P;
+      y3 = x3 * y3 % P;
+      x3 = t3 * x3 % P;
+      z3 = b3 * z3 % P;
+      t2 = a * t2 % P;
+      t3 = modP(t0 - t2);
+      t3 = a * t3 % P;
+      t3 = (t3 + z3) % P;
+      z3 = (t0 + t0) % P;
+      t0 = (z3 + t0) % P;
+      t0 = (t0 + t2) % P;
+      t0 = t0 * t3 % P;
+      this.y = (y3 + t0) % P;
+      t2 = y1 * z1 % P;
+      t2 = (t2 + t2) % P;
+      t0 = t2 * t3 % P;
+      this.x = modP(x3 - t0);
+      z3 = t2 * t1 % P;
+      z3 = (z3 + z3) % P;
+      this.z = (z3 + z3) % P;
       return this;
     }
     increment(other: Point): Point {
       const { x: x1, y: y1, z: z1 } = this;
       const { x: x2, y: y2, z: z2 } = other;
-      const z1z1 = z1 * z1 % P;
-      const z2z2 = z2 * z2 % P;
-      const u1 = x1 * z2z2 % P;
-      const u2 = x2 * z1z1 % P;
-      const s1 = y1 * z2 * z2z2 % P;
-      const s2 = y2 * z1 * z1z1 % P;
-      const h = (u2 - u1) % P;
-      const r = (s2 - s1) % P;
-      if (h == 0n) {
-        if (r == 0n) {
-          if (z2 == 0n) { }
-          else if (z1 == 0n) { this.x = x2; this.y = y2; this.z = z2; }
-          else this.double();
-        } else
-          this.x = this.y = this.z = 0n;
-      } else {
-        const h2 = h * h % P;
-        const h3 = h * h2 % P;
-        const v = u1 * h2 % P;
-        const X = modP(r * r - h3 - 2n * v);
-        this.y = modP(r * (v - X) - s1 * h3);
-        this.z = modP(z1 * z2 * h);
-        this.x = X;
-      }
+      let x3: bigint;
+      let y3: bigint;
+      let z3: bigint;
+      let t0 = x1 * x2 % P;
+      let t1 = y1 * y2 % P;
+      let t2 = z1 * z2 % P;
+      let t3 = (x1 + y1) % P;
+      let t4 = (x2 + y2) % P;
+      t3 = t3 * t4 % P;
+      t4 = (t0 + t1) % P;
+      t3 = modP(t3 - t4);
+      t4 = (x1 + z1) % P;
+      let t5 = (x2 + z2) % P;
+      t4 = t4 * t5 % P;
+      t5 = (t0 + t2) % P;
+      t4 = modP(t4 - t5);
+      t5 = (y1 + z1) % P;
+      x3 = (y2 + z2) % P;
+      t5 = t5 * x3 % P;
+      x3 = (t1 + t2) % P;
+      t5 = modP(t5 - x3);
+      z3 = a * t4 % P;
+      x3 = b3 * t2 % P;
+      z3 = (x3 + z3) % P;
+      x3 = modP(t1 - z3);
+      z3 = (t1 + z3) % P;
+      y3 = x3 * z3 % P;
+      t1 = (t0 + t0) % P;
+      t1 = (t1 + t0) % P;
+      t2 = a * t2 % P;
+      t4 = b3 * t4 % P;
+      t1 = (t1 + t2) % P;
+      t2 = modP(t0 - t2);
+      t2 = a * t2 % P;
+      t4 = (t4 + t2) % P;
+      t0 = t1 * t4 % P;
+      this.y = (y3 + t0) % P;
+      t0 = t5 * t4 % P;
+      x3 = t3 * x3 % P;
+      this.x = modP(x3 - t0);
+      t0 = t3 * t1 % P;
+      z3 = t5 * z3 % P;
+      this.z = (z3 + t0) % P;
       return this;
     }
-    static readonly O: Point = new WeierstrassFamilyPoint(0n, 0n, 0n);
+    static readonly O: Point = new WeierstrassPoint(0n, 0n, 0n);
     multiply(n: bigint): Point {
       const nNibs = n.toString(4);
-      const d: readonly WeierstrassFamilyPoint[] = [
-        WeierstrassFamilyPoint.O,
+      const d: readonly Point[] = [
+        WeierstrassPoint.O,
         this.copy(),
         this.copy().double(),
         this.copy().double().increment(this)
@@ -107,7 +182,7 @@ const weierstrassCurve = (P: bigint, a: bigint): CurveFamily => {
       }
       return this;
     }
-  } as CurveFamily;
+  } as Curve;
 }
 
 export { weierstrassCurve };

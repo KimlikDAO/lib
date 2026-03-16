@@ -111,6 +111,7 @@ const tonelliShanks = (
   c: bigint,
   M: bigint
 ): bigint | null => {
+  n %= P;
   if (n == 0n) return 0n;
   let t = exp(n, Q >> 1n, P);
   let R = t * n % P;
@@ -134,13 +135,15 @@ const tonelliShanks = (
  */
 const sqrt = (n: bigint, P: bigint): bigint | null => {
   let Q = P >> 1n;
-  if ((Q & 1n) == 1n)
-    return exp(n, (Q >> 1n) + 1n, P);
-  let M = 2n;
-  for (Q >>= 1n; (Q & 1n) == 0n; Q >>= 1n) ++M;
-  let z = 2n;
-  while (exp(z, P >> 1n, P) == 1n) ++z;
-  return tonelliShanks(n, P, Q, exp(z, Q, P), M);
+  let M = 1n;
+  for (; (Q & 1n) == 0n; Q >>= 1n) ++M;
+  let c = 1n;
+  if (M != 1n) {
+    let z = 2n;
+    while (exp(z, P >> 1n, P) == 1n) ++z;
+    c = exp(z, Q, P);
+  }
+  return tonelliShanks(n, P, Q, c, M);
 }
 
 export {
