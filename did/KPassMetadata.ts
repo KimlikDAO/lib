@@ -1,73 +1,48 @@
 import { ChainId } from "../crosschain/chains";
 import { ERC721MetaData } from "../ethereum/contract/ERC721.d";
-import KPass from "../ethereum/KPassLite";
-import dom from "../kastro/dom";
+import KPass from "../ethereum/contract/KPass";
 import hex from "../util/hex";
-import { I18nString } from "../util/i18n";
+import { I18nString, LangCode } from "../util/i18n";
 import { SectionGroup } from "./KPass";
 
-/**
- * @const {string}
- * @noinline
- */
+/** @noinline */
 const KIMLIKDAO_URL = "https://kimlikdao.org";
 
-/**
- * @param {string[]} sections
- * @return {string}
- */
-const userPrompt = (sections) => {
-  /** @const {string} */
+const userPrompt = (sections: string[]): I18nString => {
   const sectionText = sections.join(",\n  ");
-  /**
-   * @const
-   * @type {I18nString} */
-  const prompt = {
-    tr: `KPass Erişim İsteği:
+  return {
+    [LangCode.EN]: `KPass Access Request:
+-------------------------------------------------
+When you sign this message, the connected app will have access to
+
+  ${sectionText}
+
+section${sections.length == 1 ? "" : "s"} of your KPass. Only sign this message if you would like to share this information.\n\n\n`,
+    [LangCode.TR]: `KPass Erişim İsteği:
 -------------------------------------------------
 Bu mesajı imzaladığınızda, bağlı uygulama KPass’inizin
 
   ${sectionText}
 
 bölüm${sections.length == 1 ? "ü" : "leri"}ne erişebilecek. Bu mesajı sadece bu bilgileri paylaşmak istiyorsanız imzalayın.\n\n\n`,
-    en: `KPass Access Request:
--------------------------------------------------
-When you sign this message, the connected app will have access to
-
-  ${sectionText}
-
-section${sections.length == 1 ? "" : "s"} of your KPass. Only sign this message if you would like to share this information.\n\n\n`
-  };
-  return dom.i18n(prompt);
+  } as I18nString;
 }
 
-/**
- * @param {string[]} sections
- * @param {ChainId} chainId
- * @return {SectionGroup}
- */
-const sectionGroup = (sections, chainId) => /** @type {SectionGroup} */({
+const sectionGroup = (sections: string[], chainId: ChainId): SectionGroup => ({
   sectionNames: sections,
   userPrompt: userPrompt(sections)
-    + "Nonce: " + hex.from(/** @type {Uint8Array} */(crypto.getRandomValues(new Uint8Array(8))))
+    + "Nonce: " + hex.from(crypto.getRandomValues(new Uint8Array(8)) as Uint8Array)
     + "\nChainId: " + chainId
-    + "\nNFT: " + KPass.getAddress(chainId)
-});
+    + "\nNFT: " + KPass.contract
+} as SectionGroup);
 
-/**
- * @param {ChainId} chainId
- * @return {{
- *   metadata: ERC721MetaData,
- *   sections: SectionGroup[]
- * }}
- */
-const metadataAndSections = (chainId) => ({
-  metadata: /** @type {ERC721MetaData} */({
+const metadataAndSections = (chainId: ChainId): { metadata: ERC721MetaData, sections: SectionGroup[] } => ({
+  metadata: {
     name: "KPass",
     description: "KPass",
     image: KIMLIKDAO_URL + "/KPASS.svg",
     external_url: KIMLIKDAO_URL,
-  }),
+  } as ERC721MetaData,
   sections: [
     sectionGroup(["personInfo", "contactInfo", "addressInfo", "kütükBilgileri"], chainId),
     sectionGroup(["contactInfo", "humanID"], chainId),
@@ -76,8 +51,7 @@ const metadataAndSections = (chainId) => ({
   ]
 });
 
-/** @const {Record<string, string>} */
-const VerificationKeys = {
+const VerificationKeys: Record<string, string> = {
   "exposureReport":
     "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAx6RG1FTAvyuNi4Hd5+o6muaVPgF12CN97J50" +
     "YHpHkcEfe3zYMnun/OT1o4fkPidoTgh7PbTOiPvsu6yTVenCjV3PCuwUoKniPCjq0sPMCOgQNTAsOjFg" +

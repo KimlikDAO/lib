@@ -12,9 +12,9 @@ interface ERC721MetaData {
   readonly description: string;
   readonly image: string;
   readonly external_url: string;
-  readonly animation_url: string;
-  readonly background_color: string;
-  readonly youtube_url: string;
+  readonly animation_url?: string;
+  readonly background_color?: string;
+  readonly youtube_url?: string;
 };
 
 interface ERC721Unlockable extends ERC721MetaData {
