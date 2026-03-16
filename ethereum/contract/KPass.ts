@@ -1,16 +1,16 @@
 import abi from "../abi";
+import { Address } from "../address.d";
 import { ChainId } from "../chains";
 import { Provider, RemoteProvider } from "../provider";
 import { TransactionHash } from "../transaction.d";
-import { Tokens } from "./tokens";
-import { Address } from "../address.d";
-import { FixedAddressNFT } from "./ERC721";
 import { Revokable } from "./DID";
+import { SoulboundNFT } from "./ERC721";
+import { Tokens } from "./tokens";
 
 const MILLION = 1_000_000;
 const TRILLION = 10n ** 12n;
 
-interface IKPass extends FixedAddressNFT, Revokable {
+interface IKPass extends SoulboundNFT, Revokable {
   createWithRevokers(
     chainId: ChainId,
     address: Address,

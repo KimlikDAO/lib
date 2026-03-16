@@ -13,8 +13,8 @@ const fromUnpacked = ({ r, s }: UnpackedSignature): Signature => {
   const buff = new Uint8Array(70);
   buff[0] = 154;
   buff[1] = 1;
-  bigints.intoBytesLE(buff.subarray(2), r);
-  bigints.intoBytesLE(buff.subarray(34), s);
+  bigints.intoBytesLE(buff, r, 2);
+  bigints.intoBytesLE(buff, s, 34);
   return encode(buff);
 }
 

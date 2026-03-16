@@ -4,55 +4,55 @@ import bigints from "../bigints";
 describe("intoBytesBE", () => {
   it("writes at correct index", () => {
     const buff = new Uint8Array(8);
-    bigints.intoBytesBE(buff, 8, 1234567890n);
+    bigints.intoBytesBE(buff, 1234567890n, 8);
     expect(buff).toEqual(new Uint8Array([0, 0, 0, 0, 73, 150, 2, 210]));
   });
 
   it("big-endian widths", () => {
     const buff32 = new Uint8Array(4);
-    bigints.intoBytesBE(buff32, 4, 0x12345678n);
+    bigints.intoBytesBE(buff32, 0x12345678n, 4);
     expect(buff32).toEqual(new Uint8Array([0x12, 0x34, 0x56, 0x78]));
 
     const buff16 = new Uint8Array(2);
-    bigints.intoBytesBE(buff16, 2, 0xabcdn);
+    bigints.intoBytesBE(buff16, 0xabcdn, 2);
     expect(buff16).toEqual(new Uint8Array([0xab, 0xcd]));
 
     const buff64 = new Uint8Array(8);
-    bigints.intoBytesBE(buff64, 8, 0x123456789abcdef0n);
+    bigints.intoBytesBE(buff64, 0x123456789abcdef0n, 8);
     expect(buff64).toEqual(
       new Uint8Array([0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0]),
     );
 
     const buff24 = new Uint8Array(3);
-    bigints.intoBytesBE(buff24, 3, 0x123456n);
+    bigints.intoBytesBE(buff24, 0x123456n, 3);
     expect(buff24).toEqual(new Uint8Array([0x12, 0x34, 0x56]));
   });
 
   it("edge cases", () => {
     const buff0 = new Uint8Array(1);
-    bigints.intoBytesBE(buff0, 1, 0n);
+    bigints.intoBytesBE(buff0, 0n, 1);
     expect(buff0).toEqual(new Uint8Array([0]));
 
     const buff255 = new Uint8Array(1);
-    bigints.intoBytesBE(buff255, 1, 255n);
+    bigints.intoBytesBE(buff255, 255n, 1);
     expect(buff255).toEqual(new Uint8Array([255]));
 
     const buffSmall = new Uint8Array(4);
-    bigints.intoBytesBE(buffSmall, 4, 0x12n);
+    bigints.intoBytesBE(buffSmall, 0x12n, 4);
     expect(buffSmall).toEqual(new Uint8Array([0, 0, 0, 0x12]));
   });
 
   it("leading zeros", () => {
     const a = new Uint8Array(2);
-    bigints.intoBytesBE(a, 2, 0x0012n);
+    bigints.intoBytesBE(a, 0x0012n, 2);
     expect(a).toEqual(new Uint8Array([0x00, 0x12]));
 
     const b = new Uint8Array(3);
-    bigints.intoBytesBE(b, 3, 0x000789n);
+    bigints.intoBytesBE(b, 0x000789n, 3);
     expect(b).toEqual(new Uint8Array([0x00, 0x07, 0x89]));
 
     const c = new Uint8Array(4);
-    bigints.intoBytesBE(c, 4, 0x00000042n);
+    bigints.intoBytesBE(c, 0x00000042n, 4);
     expect(c).toEqual(new Uint8Array([0x00, 0x00, 0x00, 0x42]));
   });
 });
@@ -160,7 +160,7 @@ describe("round trip", () => {
   it("BE round trip", () => {
     for (const value of beValues) {
       const bytes = new Uint8Array(Math.ceil(value.toString(16).length / 2));
-      bigints.intoBytesBE(bytes, bytes.length, value);
+      bigints.intoBytesBE(bytes, value, bytes.length);
       expect(bigints.fromBytesBE(bytes)).toBe(value);
     }
   });

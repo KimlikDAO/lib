@@ -44,7 +44,7 @@ const sign = async (
   let buff = new Uint8Array(97);
   buff.fill(1, 0, 32);
   buff.set(digest, 65);
-  bigints.intoBytesBE(buff, 65, privKey);
+  bigints.intoBytesBE(buff, privKey, 65);
   let kk = await hmac(new Uint8Array(32), buff); // RFC6979 d
   let vv = await hmac(kk, buff.subarray(0, 32)); // RFC6979 e
 
@@ -65,7 +65,7 @@ const sign = async (
     const { x: r, y } = G.copy().multiply(k).proj();
     if (r >= Q) continue;
     if (revealedBit) {
-      SaltedBuff.fill(0, 32, bigints.intoBytesBE(SaltedBuff, 64, r));
+      SaltedBuff.fill(0, 32, bigints.intoBytesBE(SaltedBuff, r, 64));
       if (!(sha256Uint32(new Uint32Array(SaltedBuff.buffer))[0] & 1)) continue;
     }
     let s = inverse(k, Q) * (d + r * privKey) % Q;

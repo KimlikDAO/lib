@@ -9,7 +9,7 @@ import { ERC20 } from "./ERC20";
 
 /**
  * 3x256 bit packed permit data.
- * 96 bits: deadline
+ *  96 bits: deadline
  * 160 bits: {@link PackedAddress}
  * 512 bits: {@link Signature}
  */
@@ -41,7 +41,6 @@ class ERC20Permit extends ERC20 {
     duration: number
   ): Promise<PermitData> {
     const deadline = ((Date.now() / 1000 | 0) + duration).toString(16);
-
     return provider
       .signData(owner, {
         types: {

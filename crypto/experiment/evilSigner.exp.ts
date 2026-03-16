@@ -11,7 +11,7 @@ const recoverPrivateKey = (signatures: SignedMessage[]): bigint => {
   const bits = Array(256).fill(true);
   for (const { r, digest } of signatures) {
     const revealedIdx = digest[0];
-    SaltedBuff.fill(0, 32, bigints.intoBytesBE(SaltedBuff, 64, r));
+    SaltedBuff.fill(0, 32, bigints.intoBytesBE(SaltedBuff, r, 64));
     bits[revealedIdx] &= sha256Uint32(new Uint32Array(SaltedBuff.buffer))[0] & 1;
   }
 

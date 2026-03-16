@@ -16,7 +16,7 @@ const hashExposureReport = (exposureReport: ExposureReport): string => {
    */
   const buff = new Uint8Array(64);
   new TextEncoder().encodeInto(KIMLIKDAO_HASH_PREFIX, buff);
-  bigints.intoBytesBE(buff, 32, exposureReport.signatureTs);
+  bigints.intoBytesBE(buff, exposureReport.signatureTs, 32);
   hex.intoBytes(buff.subarray(32), exposureReport.id);
   return keccak256Uint32ToHex(new Uint32Array(buff.buffer));
 };
@@ -32,7 +32,7 @@ const hashHumanID = (humanID: HumanID): string => {
    */
   const buff = new Uint8Array(96);
   new TextEncoder().encodeInto(KIMLIKDAO_HASH_PREFIX, buff);
-  bigints.intoBytesBE(buff, 32, humanID.signatureTs);
+  bigints.intoBytesBE(buff, humanID.signatureTs, 32);
   base64.intoBytes(buff.subarray(32), humanID.commitment as string);
   hex.intoBytes(buff.subarray(64), humanID.id);
   return keccak256Uint32ToHex(new Uint32Array(buff.buffer));

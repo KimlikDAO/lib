@@ -67,8 +67,8 @@ const commitDouble = (
         commitment,
         poseidon([bigints.fromBytesLE(random.subarray(0, 32)), h]));
       bigints.intoBytesLE(
-        commitment.subarray(32),
-        poseidon([bigints.fromBytesLE(random.subarray(32)), h]));
+        commitment,
+        poseidon([bigints.fromBytesLE(random.subarray(32)), h]), 32);
       return commitment;
   }
 }

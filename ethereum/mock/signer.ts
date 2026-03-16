@@ -26,8 +26,8 @@ const addr = (privKey: bigint): string => {
  */
 const signUnpacked = (digest: bigint, privKey: bigint): UnpackedSignature => {
   const bytes = new Uint8Array(64);
-  bigints.intoBytesBE(bytes, 32, digest);
-  bigints.intoBytesBE(bytes, 64, privKey);
+  bigints.intoBytesBE(bytes, digest, 32);
+  bigints.intoBytesBE(bytes, privKey, 64);
   const buff = new Uint32Array(bytes.buffer);
 
   for (; ; ++buff[0]) {

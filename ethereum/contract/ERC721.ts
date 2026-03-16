@@ -2,7 +2,7 @@ import { Address } from "../address.d";
 import { ChainId } from "../chains";
 import { Provider } from "../provider";
 
-interface FixedAddressNFT {
+interface SoulboundNFT {
   contract: Address;
   provider: Provider;
 
@@ -10,4 +10,4 @@ interface FixedAddressNFT {
   handleOf(chainId: ChainId, address: Address): Promise<string>;
 }
 
-export { FixedAddressNFT };
+export { SoulboundNFT };

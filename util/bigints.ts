@@ -1,18 +1,57 @@
 import hex from "./hex";
 
-/** @modifies {arguments} */
-const intoBytesBE = (bytes: Uint8Array | number[], idx: number, n: bigint | number): number => {
+/**
+ * Writes `n` as bytes in little-endian value order into `bytes`, but fills the
+ * destination from right to left (decreasing indices), starting just before
+ * `start`.
+ *
+ * This is convenient when reserving a fixed-width suffix in a buffer while
+ * keeping the numeric representation little-endian.
+ *
+ * @example
+ * ```ts
+ * const out = new Uint8Array(6);
+ * // n = 0x123456 -> LE bytes [0x56, 0x34, 0x12]
+ * const first = intoBytesBE(out, 0x123456n, 5);
+ * // out is now [0, 0, 0x12, 0x34, 0x56, 0]
+ * // first === 2 (index of first written byte)
+ * ```
+ * @modifies {arguments}
+ */
+const intoBytesBE = (
+  bytes: Uint8Array | number[],
+  n: bigint | number,
+  start: number
+): number => {
   const str = (n as bigint).toString(16);
-  --idx;
-  for (let i = str.length; i > 0; --idx, i -= 2)
-    bytes[idx] = parseInt(str.substring(i - 2, i), 16);
-  return idx + 1;
+  let j = start - 1;
+  for (let i = str.length; i > 0; --j, i -= 2)
+    bytes[j] = parseInt(str.substring(i - 2, i), 16);
+  return j + 1;
 };
 
-/** @modifies {arguments} */
-const intoBytesLE = (bytes: Uint8Array | number[], n: bigint | number): void => {
+/**
+ * Writes `n` as bytes in little-endian value order into `bytes`, filling from
+ * left to right (increasing indices), starting at `start`.
+ *
+ * Useful when appending LE integers directly into protocol buffers.
+ *
+ * @example
+ * ```ts
+ * const out = new Uint8Array(6);
+ * // n = 0x123456 -> LE bytes [0x56, 0x34, 0x12]
+ * intoBytesLE(out, 0x123456n, 1);
+ * // out is now [0, 0x56, 0x34, 0x12, 0, 0]
+ * ```
+ * @modifies {arguments}
+ */
+const intoBytesLE = (
+  bytes: Uint8Array | number[],
+  n: bigint | number,
+  start = 0
+): void => {
   const str = (n as bigint).toString(16);
-  for (let i = str.length, j = 0; i > 0; i -= 2, ++j)
+  for (let i = str.length, j = start; i > 0; i -= 2, ++j)
     bytes[j] = parseInt(str.substring(i - 2, i), 16);
 };
 

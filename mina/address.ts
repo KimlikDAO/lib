@@ -12,7 +12,7 @@ const fromPublicKey = ({ x, yParity }: CompressedPoint): Address => {
   const buff = new Uint8Array(40);
   buff[0] = 203;
   buff[1] = buff[2] = 1;
-  bigints.intoBytesLE(buff.subarray(3), x);
+  bigints.intoBytesLE(buff, x, 3);
   buff[35] = +yParity;
   return encode(buff);
 }

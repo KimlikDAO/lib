@@ -14,8 +14,8 @@ const Decoder = new TextDecoder() satisfies PureExpr;
  */
 const fromPoint = ({ x, y }: { x: bigint, y: bigint }): Address => {
   const bytes = new Uint8Array(64);
-  bigints.intoBytesBE(bytes, 32, x);
-  bigints.intoBytesBE(bytes, 64, y);
+  bigints.intoBytesBE(bytes, x, 32);
+  bigints.intoBytesBE(bytes, y, 64);
   const hash = new Uint8Array(
     keccak256Uint32(new Uint32Array(bytes.buffer)).buffer, 12, 20);
   return "0x" + hash.toHex();
