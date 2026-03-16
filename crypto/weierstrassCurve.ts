@@ -1,13 +1,13 @@
 import { AffinePoint, CompressedPoint, Curve, Point } from "./ellipticCurve";
-import { exp, inverse, tonelliShanks } from "./modular";
+import { inverse, prepareSqrt } from "./modular";
 
 /**
  * Returns an elliptic curve over the field 𝔽ₚ with equation y² = x³ + ax + b.
  *
  * A function `sqrt` can be provided to compute square roots in 𝔽ₚ. If not
  * provided, Tonelli-Shanks parameters for the given P will be computed at
- * construction time and `sqrt(x)` needed for `pointFrom()` calls will be
- * computed using the Tonelli-Shanks algorithm with these parameters.
+ * construction time and `sqrt(x)` (needed for `pointFrom()`) will be calculated
+ * using the Tonelli-Shanks algorithm with these parameters.
  *
  * This implementation uses the Renes Costello and Batina homogenous lifting of
  * the y² = x³ + ax + b curve:
@@ -30,20 +30,8 @@ import { exp, inverse, tonelliShanks } from "./modular";
  */
 const weierstrassCurve = (
   P: bigint, a: bigint, b: bigint,
-  sqrt?: (x: bigint) => bigint | null
+  sqrt: (x: bigint) => bigint | null = prepareSqrt(P)
 ): Curve => {
-  if (!sqrt) {
-    let R = P >> 1n;
-    let M = 1n;
-    for (; (R & 1n) == 0n; R >>= 1n) ++M;
-    let c = 1n;
-    if (M != 1n) {
-      let z = 2n;
-      while (exp(z, P >> 1n, P) == 1n) ++z;
-      c = exp(z, R, P);
-    }
-    sqrt = (x: bigint): bigint | null => tonelliShanks(x, P, R, c, M);
-  }
   /**
    * Returns a non-negative number t such that 0 ≤ t < P and x ≡ t (mod P).
    * If positivity is not required, prefer the % operator.

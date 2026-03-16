@@ -129,8 +129,12 @@ const tonelliShanks = (
 }
 
 /**
- * If P is fixed, prefer the {@link tonelliShanks()} function with precomputed
- * values of M, Q and c.
+ * Computes a square root of n modulo P. If multiple square root computations
+ * will be made for a fixed P, prefer the {@link prepareSqrt()} to create a
+ * square root function for that P.
+ *
+ * If P is a compile-time constant, one can even compute the Tonelli-Shanks
+ * parameters and call {@link tonelliShanks()} directly with those values.
  * @pure
  */
 const sqrt = (n: bigint, P: bigint): bigint | null => {
@@ -146,10 +150,31 @@ const sqrt = (n: bigint, P: bigint): bigint | null => {
   return tonelliShanks(n, P, Q, c, M);
 }
 
+/**
+ * Prepares the modular square root function for a given modulus P.
+ *
+ * If P is a compile-time constant, one can even precompute the Tonelli-Shanks
+ * parameters and call {@link tonelliShanks()} directly with those values.
+ * @pure
+ */
+const prepareSqrt = (P: bigint): (x: bigint) => bigint | null => {
+  let Q = P >> 1n;
+  let M = 1n;
+  for (; (Q & 1n) == 0n; Q >>= 1n) ++M;
+  let ct = 1n;
+  if (M != 1n) {
+    let z = 2n;
+    while (exp(z, P >> 1n, P) == 1n) ++z;
+    ct = exp(z, Q, P);
+  }
+  const c = ct;
+  return (x: bigint): bigint | null => tonelliShanks(x, P, Q, c, M);
+}
+
 export {
   exp, exp2, expTimesExp,
   inverse,
   pow5, pow7,
-  sqrt,
+  prepareSqrt, sqrt,
   tonelliShanks
 };
