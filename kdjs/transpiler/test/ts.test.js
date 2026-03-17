@@ -937,3 +937,28 @@ class Throttle {
 
 `.slice(1));
 });
+
+test("optional chaining on method call", () => {
+  const input = `
+const lang = a?.includes("tr");
+`;
+  const result = transpileTs(input);
+  expect(result).toContain('a?.includes("tr")');
+  expect(result).not.toContain('.includes?.("tr")');
+});
+
+test("default value in object destructuring", () => {
+  const input = `
+const f = ({ targetName = "cloudflare" }) => props;
+`;
+  const result = transpileTs(input);
+  expect(result).toContain('targetName = "cloudflare"');
+});
+
+test("rename with default in object destructuring", () => {
+  const input = `
+const f = ({ a: b = 1 }) => b;
+`;
+  const result = transpileTs(input);
+  expect(result).toContain("a: b = 1");
+});

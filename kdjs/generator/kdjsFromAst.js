@@ -224,30 +224,31 @@ class Generator {
   BinaryExpression(n) {
     this.put("("); this.rec(n.left); this.put(` ${n.operator} `); this.rec(n.right); this.put(")");
   }
-  CallExpression(n, optChain) {
+  CallExpression(n) {
     const wrap = n.callee.type == "ArrowFunctionExpression";
     if (wrap) this.put("(");
-    this.rec(n.callee); if (optChain) this.put("?.");
+    this.rec(n.callee);
+    if (n.optional) this.put("?.");
     if (wrap) this.put(")");
     this.put("("); this.arr(n.arguments, ", "); this.put(")");
   }
   ParenthesizedExpression(n) {
     this.put("("); this.rec(n.expression); this.put(")");
   }
-  ChainExpression(n) { this.rec(n.expression, true); }
+  ChainExpression(n) { this.rec(n.expression); }
   ConditionalExpression(n) {
     this.put("("); this.rec(n.test); this.put(" ? ");
     this.rec(n.consequent); this.put(" : "); this.rec(n.alternate); this.put(")");
   }
-  MemberExpression(n, optChain) {
+  MemberExpression(n) {
     if (needsParensForMemberObject(n.object)) {
       this.put("("); this.rec(n.object); this.put(")");
     } else
       this.rec(n.object);
     if (n.computed) {
-      this.put(optChain ? "?.[" : "["); this.rec(n.property); this.put("]");
+      this.put(n.optional ? "?.[" : "["); this.rec(n.property); this.put("]");
     } else {
-      this.put(optChain ? "?." : "."); this.rec(n.property);
+      this.put(n.optional ? "?." : "."); this.rec(n.property);
     }
   }
   Identifier(n, showTypes) {
@@ -289,10 +290,11 @@ class Generator {
       if (n.value.async) this.put("async "); this.rec(n.key);
       this.put("("); this.arr(n.value.params, ", "); this.put(") ");
       this.rec(n.value.body);
-    } else {
-      if (n.computed) this.put("[");this.rec(n.key); if (n.computed) this.put("]");
-      if (!n.shorthand) { this.put(": "); this.rec(n.value); }
-    }
+    } else if (!n.shorthand) {
+      if (n.computed) this.put("["); this.rec(n.key); if (n.computed) this.put("]");
+      this.put(": "); this.rec(n.value);
+    } else
+      this.rec(n.value);
   }
   TemplateLiteral(n) {
     this.put("`");
