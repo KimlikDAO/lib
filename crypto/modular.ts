@@ -47,7 +47,7 @@ const pow5 = (b: bigint, M: bigint): bigint => {
 /** @pure */
 const pow7 = (b: bigint, M: bigint): bigint => {
   const t = b * b * b % M;
-  return t * t * b % M;
+  return b * t * t % M;
 }
 
 /**

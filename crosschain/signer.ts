@@ -9,4 +9,4 @@ interface Signer {
   signMessage(message: string, address: Address): Promise<Signature>;
 }
 
-export { Address, Signature, Signer };
+export { Signature, Signer };

@@ -30,15 +30,17 @@ const Purve = Object.assign(arfCurve(P), {
 }) as Curve;
 
 /**
- * Returns a random even point.
+ * Returns a random point uniformly supported on some size (Q-1)/2 subset of
+ * the curve points.
  */
 const random = (): Point => {
   for (; ;) {
-    const x = bigints.random(32) % P;
+    const x = bigints.random(256);
+    if (x >= P) continue;
     const y2 = (x * x * x + 1n) % P;
     const y = sqrt(y2);
-    if (y != null)
-      return Purve.pointFromAffine({ x, y });
+    if (y == null) continue;
+    return Purve.pointFromAffine({ x, y });
   }
 }
 

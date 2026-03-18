@@ -37,7 +37,7 @@ const signer = async (privKey: bigint): Promise<SignedMessage[]> => {
   return signatures;
 };
 
-const privKey = bigints.fromBytesBE(crypto.getRandomValues(new Uint8Array(32)));
+const privKey = bigints.random(256);
 
 signer(privKey).then((signatures) => {
   const recoveredPrivKey = recoverPrivateKey(signatures);

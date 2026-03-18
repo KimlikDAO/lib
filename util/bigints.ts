@@ -62,8 +62,8 @@ const fromBytesBE = (bytes: Uint8Array): bigint => BigInt("0x" + hex.from(bytes)
 const fromBytesLE = (bytes: Uint8Array | number[]): bigint => BigInt("0x" + hex.fromBytesLE(bytes));
 
 /** @nosideeffects */
-const random = (size: number): bigint =>
-  BigInt("0x" + hex.from(crypto.getRandomValues(new Uint8Array(size)) as Uint8Array));
+const random = (bits: number): bigint => BigInt("0x" +
+  hex.from(crypto.getRandomValues(new Uint8Array((bits + 7) / 8 | 0)) as Uint8Array));
 
 export default {
   intoBytesBE,

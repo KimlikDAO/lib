@@ -29,9 +29,9 @@ const ladderString = (k: bigint): Point => {
   return R;
 };
 
-const kMid = bigints.random(32) % Q;
-const kRand1 = bigints.random(32) % Q;
-const kRand2 = bigints.random(32) % Q;
+const kMid = bigints.random(256) % Q;
+const kRand1 = bigints.random(256) % Q;
+const kRand2 = bigints.random(256) % Q;
 
 bench("Scalar ladder: bigint (bit) vs string (base-4 multiply)", {
   "ladder bigint (bit mask)": ladderBigInt,

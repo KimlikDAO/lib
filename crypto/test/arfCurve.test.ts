@@ -35,9 +35,9 @@ describe("group laws", () => {
     y: 4n      // 4² = -1³ + 17
   });
   const O: Point = Bn158.O;
-  const A = G.copy().multiply(bigints.random(20));
-  const B = G.copy().multiply(bigints.random(20));
-  const C = G.copy().multiply(bigints.random(20));
+  const A = G.copy().multiply(bigints.random(158));
+  const B = G.copy().multiply(bigints.random(158));
+  const C = G.copy().multiply(bigints.random(158));
 
   describe("identity element", () => {
     test("A + O = A", () => {
@@ -80,13 +80,13 @@ describe("group laws", () => {
 
   describe("distributivity", () => {
     test("a(A + B) = aA + aB", () => {
-      const a = bigints.random(20);
+      const a = bigints.random(158);
       expect(A.copy().increment(B).copy().multiply(a).proj())
         .toEqual(A.copy().multiply(a).increment(B.copy().multiply(a)).proj());
     });
     test("(a + b)A = aA + bA", () => {
-      const a = bigints.random(20);
-      const b = bigints.random(20);
+      const a = bigints.random(158);
+      const b = bigints.random(158);
       expect(A.copy().multiply(a + b).proj())
         .toEqual(A.copy().multiply(a).increment(A.copy().multiply(b)).proj());
     });

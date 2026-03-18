@@ -57,7 +57,7 @@ const Secp256k1: Curve = Object.assign(arfCurve(P), {
   pointFrom({ x, yParity }: CompressedPoint): Point | null {
     const y2 = (x * x * x + 7n) % P
     const y = sqrt(y2);
-    if (y == null) return null;
+    if (!y) return null; // -7 is not a cubic residue, hence no point (x, 0)
     return new Secp256k1(x, (y & 1n) == (yParity as unknown as bigint) ? y : P - y, 1n);
   }
 }) as Curve;
@@ -75,7 +75,7 @@ const sign = (digest: bigint, privKey: bigint): {
   yParity: boolean
 } => {
   for (; ;) {
-    const k = bigints.random(32);
+    const k = bigints.random(256);
     if (k <= 0 || Q <= k) continue;
     const { x: r, y } = G.copy().multiply(k).proj();
     if (r >= Q) continue;

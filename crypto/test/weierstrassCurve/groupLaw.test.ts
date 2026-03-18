@@ -4,9 +4,9 @@ import { Point } from "../../ellipticCurve";
 import { G, Q, Secp192r1 } from "./secp192r1";
 
 const O: Point = Secp192r1.O;
-const A = G.copy().multiply(bigints.random(24));
-const B = G.copy().multiply(bigints.random(24));
-const C = G.copy().multiply(bigints.random(24));
+const A = G.copy().multiply(bigints.random(192));
+const B = G.copy().multiply(bigints.random(192));
+const C = G.copy().multiply(bigints.random(192));
 
 describe("identity element", () => {
   test("A + O = A", () => {
@@ -49,20 +49,20 @@ describe("commutativity", () => {
 
 describe("distributivity", () => {
   test("a(A + B) = aA + aB", () => {
-    const a = bigints.random(24);
+    const a = bigints.random(192);
     const aA_aB = A.copy().multiply(a).increment(B.copy().multiply(a));
     expect(A.copy().increment(B).copy().multiply(a).proj())
       .toEqual(aA_aB.proj());
   });
   test("(a + b)A = aA + bA", () => {
-    const a = bigints.random(24);
-    const b = bigints.random(24);
+    const a = bigints.random(192);
+    const b = bigints.random(192);
     const Aa_Ab = A.copy().multiply(a).increment(A.copy().multiply(b));
     expect(A.copy().multiply(a + b).proj())
       .toEqual(Aa_Ab.proj());
   });
   test("aA + (Q-a)A = O", () => {
-    const a = bigints.random(24);
+    const a = bigints.random(192);
     const A = G.copy().multiply(a);
     A.increment(G.copy().multiply(Q - a));
     expect(A.proj()).toEqual(O.proj());

@@ -24,7 +24,7 @@ const Pallas: Curve = Object.assign(arfCurve(P), {
    */
   pointFrom({ x, yParity }: CompressedPoint): Point | null {
     const y = sqrt(x * x * x + 5n);
-    if (y == null) return null;
+    if (!y) return null; // -5 is not a cubic residue, hence no point (x, 0)
     return new Pallas(x, (y & 1n) == (yParity as unknown as bigint) ? y : P - y, 1n);
   }
 }) as Curve;
@@ -62,7 +62,7 @@ const signFields = (
   A?: AffinePoint
 ): { r: bigint, s: bigint } => {
   A ||= G.copy().multiply(privKey).proj();
-  let k = bigints.random(32) % Q;
+  let k = bigints.random(256) % Q;
   const { x: r, y } = G.copy().multiply(k).proj();
   if (y & 1n) k = Q - k;
   const e = hashFields(fields, A, r);
@@ -123,7 +123,7 @@ const signMessage = (message: string, privKey: bigint, A?: AffinePoint): {
   s: bigint
 } => {
   A ||= G.copy().multiply(privKey).proj();
-  let k = bigints.random(32) % Q;
+  let k = bigints.random(256) % Q;
   const { x: r, y } = G.copy().multiply(k).proj();
   if (y & 1n) k = Q - k;
   const e = hashMessage(message, A, r)
