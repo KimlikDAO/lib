@@ -31,12 +31,12 @@ describe("inverse element", () => {
 
 describe("associativity", () => {
   test("(A + B) + C = A + (B + C)", () => {
-    expect(A.copy().increment(B).copy().increment(C).proj())
+    expect(A.copy().increment(B).increment(C).proj())
       .toEqual(A.copy().increment(B.copy().increment(C)).proj());
   });
   test("A + (B + C) = (A + B) + C", () => {
     expect(A.copy().increment(B.copy().increment(C)).proj())
-      .toEqual(A.copy().increment(B).copy().increment(C).proj());
+      .toEqual(A.copy().increment(B).increment(C).proj());
   });
 });
 
@@ -50,14 +50,16 @@ describe("commutativity", () => {
 describe("distributivity", () => {
   test("a(A + B) = aA + aB", () => {
     const a = bigints.random(24);
+    const aA_aB = A.copy().multiply(a).increment(B.copy().multiply(a));
     expect(A.copy().increment(B).copy().multiply(a).proj())
-      .toEqual(A.copy().multiply(a).increment(B.copy().multiply(a)).proj());
+      .toEqual(aA_aB.proj());
   });
   test("(a + b)A = aA + bA", () => {
     const a = bigints.random(24);
     const b = bigints.random(24);
+    const Aa_Ab = A.copy().multiply(a).increment(A.copy().multiply(b));
     expect(A.copy().multiply(a + b).proj())
-      .toEqual(A.copy().multiply(a).increment(A.copy().multiply(b)).proj());
+      .toEqual(Aa_Ab.proj());
   });
   test("aA + (Q-a)A = O", () => {
     const a = bigints.random(24);

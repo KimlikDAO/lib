@@ -18,13 +18,14 @@ import { inverse, prepareSqrt } from "./modular";
  * to complete addition and doubling laws.
  * @see https://eprint.iacr.org/2015/1060.pdf
  *
- * Combined with our base-4 multiplication ladder, this should make the
+ * Combined with our base-8 multiplication ladder, this should make the
  * implementation as close to constant-time as possible.
  *
  * @param P - The prime modulus of the base field 𝔽ₚ.
- * @param a - The coefficient of the x term.
- * @param b - The coefficient of the x³ term.
- * @param sqrt - The function to compute square roots in 𝔽ₚ.
+ * @param a - The coefficient of the x term, must be in (-P, P).
+ * @param b - The coefficient of the x³ term, must be in (-P, P).
+ * @param [sqrt] - The function to compute square roots in 𝔽ₚ. If omitted,
+ *                 a default Tonelli-Shanks sqrt function is used.
  * @returns The elliptic curve.
  * @pure
  */
@@ -41,14 +42,15 @@ const weierstrassCurve = (
     const t = x % P;
     return t >= 0n ? t : t + P;
   };
-  a = modP(a);
-  const b3 = modP(3n * b);
+  if (a < 0n) a += P;
+  if (b < 0n) b += P;
+  const b3 = 3n * b % P;
   return class WeierstrassPoint implements Point {
     /** Provided x, y and z must all be in [0, P) */
     constructor(public x: bigint, public y: bigint, public z: bigint) { }
-    /** @pure */
+    /** @pure x, y must be in [0, P) */
     static pointFromAffine({ x, y }: AffinePoint): Point {
-      return new WeierstrassPoint(modP(x), modP(y), 1n);
+      return new WeierstrassPoint(x, y, 1n);
     };
     /** @pure x must be in [0, P) */
     static pointFrom({ x, yParity }: CompressedPoint): Point | null {
@@ -154,18 +156,27 @@ const weierstrassCurve = (
       this.z = (z3 + t0) % P;
       return this;
     }
-    static readonly O: Point = new WeierstrassPoint(0n, 0n, 0n);
+    static readonly O: Point = new WeierstrassPoint(0n, 1n, 0n);
     multiply(n: bigint): Point {
-      const nNibs = n.toString(4);
+      const nNibs = n.toString(8);
+      const D = this.copy().double();
+      const T = D.copy().increment(this);
+      const Q = D.copy().double();
       const d: readonly Point[] = [
-        WeierstrassPoint.O,
-        this.copy(),
-        this.copy().double(),
-        this.copy().double().increment(this)
+        WeierstrassPoint.O, // 0
+        this.copy(), // 1
+        D, // 2
+        T, // 3
+        Q, // 4
+        T.copy().increment(D), // 5
+        T.copy().double(), // 6
+        Q.copy().increment(T), // 7
       ];
       ({ x: this.x, y: this.y, z: this.z } = d[nNibs.charCodeAt(0) - 48]);
       for (let i = 1; i < nNibs.length; ++i) {
-        this.double(); this.double();
+        this.double();
+        this.double();
+        this.double();
         this.increment(d[nNibs.charCodeAt(i) - 48]);
       }
       return this;
