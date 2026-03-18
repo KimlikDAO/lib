@@ -11,7 +11,7 @@ jobs:
     name: bun unit tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
       - run: |
           bun i
@@ -21,7 +21,7 @@ jobs:
     name: kdjs fast unit tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
       - run: |
           bun i
@@ -31,9 +31,9 @@ jobs:
     name: kdjs unit tests, crosschain
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v5
         with:
           java-version: "21"
           distribution: "temurin"
@@ -45,9 +45,9 @@ jobs:
     name: kdjs unit tests, crypto
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v5
         with:
           java-version: "21"
           distribution: "temurin"
@@ -59,9 +59,9 @@ jobs:
     name: kdjs unit tests, did
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v5
         with:
           java-version: "21"
           distribution: "temurin"
@@ -73,9 +73,9 @@ jobs:
     name: kdjs unit tests, ethereum
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v5
         with:
           java-version: "21"
           distribution: "temurin"
@@ -87,9 +87,9 @@ jobs:
     name: kdjs unit tests, kastro
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v5
         with:
           java-version: "21"
           distribution: "temurin"
@@ -102,9 +102,9 @@ jobs:
     runs-on: ubuntu-latest
     if: false # Temporarily disabled
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v5
         with:
           java-version: "21"
           distribution: "temurin"
@@ -116,9 +116,9 @@ jobs:
     name: kdjs unit tests, mina
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v5
         with:
           java-version: "21"
           distribution: "temurin"
@@ -130,9 +130,9 @@ jobs:
     name: kdjs unit tests, protocol
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v5
         with:
           java-version: "21"
           distribution: "temurin"
@@ -144,9 +144,9 @@ jobs:
     name: kdjs unit tests, util
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v5
         with:
           java-version: "21"
           distribution: "temurin"
@@ -159,9 +159,9 @@ jobs:
     runs-on: ubuntu-latest
     if: false # Temporarily disabled
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v5
         with:
           java-version: "21"
           distribution: "temurin"
