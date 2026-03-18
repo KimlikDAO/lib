@@ -62,21 +62,19 @@ const compileAndRunMatching = async (
 
 const ensureAllPassed = (allPassed: boolean) => process.exit(+!allPassed);
 
-const target = args["target"];
-const include =
-  target == "bench"
-    ? "**/*.bench.{js,ts}"
-    : typeof target == "string"
-      ? target.endsWith(".js") || target.endsWith(".ts")
-        ? target
-        : `${target}/` + "**/*.test.{js,ts}"
-      : "**/*.test.{js,ts}";
+const getIncludes = (target: string[]) => {
+  const [mode, pattern] = target;
+  if (!pattern) return `**/*.${mode}.{js,ts}`;
+  if (!pattern.endsWith(".js") && !pattern.endsWith(".ts"))
+    return `${pattern}/**/*.${mode}.{js,ts}`;
+  return pattern;
+};
 
+const include = getIncludes(args["target"] as string[]);
 const exclude: RegExp = createMatcher(
   ["build/", "node_modules/"].concat(asList(args, "filter")),
 );
-
-const command = include.includes("bench") ? "bun" : "bun test";
+const command = include.includes(".bench.") ? "bun" : "bun test";
 
 console.info(`Target: ${include} (filtering: ${exclude})`);
 compileAndRunMatching(include, exclude, command, args).then(ensureAllPassed);

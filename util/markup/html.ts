@@ -21,14 +21,14 @@ const VoidElementTag: Record<string, boolean> = {
 
 const htmlTag = (
   tagName: string,
-  props: Record<string, string | number | boolean>,
+  props: Record<string, string | number | boolean | null>,
   selfClosing: boolean,
 ): string => {
   let html = "<" + tagName;
   for (const attr in props) {
     const val = props[attr];
     if (val || val === 0)
-      html += val == true
+      html += val === true
         ? " " + attr : ` ${attr}="${props[attr]}"`;
   }
   return html + (selfClosing ? "/>" : ">");

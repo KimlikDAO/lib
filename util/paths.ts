@@ -15,6 +15,12 @@ const replaceExt = (fileName: string, ext: string): string => {
 };
 
 /** @pure */
+const getFullExt = (fileName: string): string => {
+  const nameIdx = fileName.lastIndexOf("/");
+  return fileName.slice(fileName.indexOf(".", nameIdx));
+};
+
+/** @pure */
 const splitFullExt = (fileName: string): [string, string] => {
   const slash = fileName.lastIndexOf("/");
   const dot = fileName.indexOf(".", slash);
@@ -43,6 +49,7 @@ export {
   combine,
   getDir,
   getExt,
+  getFullExt,
   replaceExt,
   splitFullExt,
 };
