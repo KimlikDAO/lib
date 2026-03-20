@@ -5,12 +5,13 @@ import { parseArgs } from "../util/cli";
 import { replaceExt } from "../util/paths";
 import { compile } from "./compile";
 
-const params = parseArgs(process.argv.slice(2), "entry", {
+const args = parseArgs(process.argv.slice(2), "entry", {
   "-o": "output",
   "-d": "exports",
 });
 
-if (typeof params["entry"] != "string") {
+const entry = args.asStringOr("entry", "");
+if (!entry) {
   console.log(`kdts 0.0.3
 
 Usage: kdts entry.js [parameters]
@@ -29,6 +30,5 @@ Parameters:
   process.exit(0);
 }
 
-params["output"] ||= replaceExt(params["entry"] as string, ".out.js");
-
-compile(params);
+args.setIfMissing("output", replaceExt(entry, ".out.js"));
+compile(args);

@@ -17,10 +17,10 @@ process.cwd = () => { };
  */
 process.on = (eventType, handler) => { }
 
-/** @const {string[]} */
+/** @type {string[]} */
 process.argv;
 
-/** @const {Record<string, string>} */
+/** @type {Record<string, string>} */
 process.env;
 
 /** @type {number} */

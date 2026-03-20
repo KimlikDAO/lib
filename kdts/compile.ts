@@ -1,16 +1,13 @@
 import * as swc from "@swc/core";
 import { build, write } from "bun";
-import { compiler as ClosureCompiler } from "google-closure-compiler";
-import UglifyJS from "uglify-js";
+import { compiler as ClosureCompiler, CompileOptions } from "google-closure-compiler";
+import UglifyJS, { CompressOptions, MinifyOptions } from "uglify-js";
+import { CliArgs } from "../util/cli";
 import { postprocess } from "./postprocess";
-import { preprocessAndIsolate } from "./preprocess";
-import { ImportStatement } from "./util/modules";
+import { preprocessAndIsolate, TranspileFn } from "./preprocess";
 import { kdtsPlugin } from "./util/plugin";
 
-/** @typedef {Record<string, unknown>} */
-const Params = {};
-
-const uglifyOptions = {
+const UglifyOptions: MinifyOptions = {
   mangle: { toplevel: true },
   toplevel: true,
   compress: {
@@ -23,7 +20,7 @@ const uglifyOptions = {
   warnings: "verbose",
 };
 
-const swcMinifyOptions = {
+const SwcMinifyOptions = {
   module: true,
   ecma: 2022,
   sourceMap: false,
@@ -41,35 +38,37 @@ const swcMinifyOptions = {
 /**
  * Shared pipeline: UglifyJS -> tweakPasses -> SWC minify -> pick smaller ->
  * print, write. Used for both GCC and Bun build output.
- * @param {string} code Raw compiler output
- * @param {Params} params
- * @param {string} inputLabel Label for the input size log (e.g. "GCC", "bun build")
- * @return {Promise<string>}
  */
-const finishCompile = async (code, params, inputLabel) => {
+const finishCompile = async (
+  code: string,
+  args: CliArgs,
+  inputLabel: string
+): Promise<string> => {
   console.log(`${inputLabel} size:\t${code.length}`);
-  const compress = { ...uglifyOptions.compress };
-  compress.drop_console = /** @type {boolean} */(params["nologs"]);
-  const uglified = UglifyJS.minify(code, { ...uglifyOptions, compress });
+  if (args.isTrue("nologs"))
+    (UglifyOptions.compress as CompressOptions).drop_console = true;
+  const uglified = UglifyJS.minify(code, UglifyOptions);
   if (uglified.error)
     throw uglified.error;
   console.log(uglified.warnings, uglified.error);
   const uglifiedCode = uglified.code;
-  const swcOutput = await swc.minify(uglifiedCode, swcMinifyOptions);
+  const swcOutput = await swc.minify(uglifiedCode, SwcMinifyOptions);
   let result = uglifiedCode.length < swcOutput.code.length
     ? uglifiedCode : swcOutput.code;
+
   console.log(`Uglified size:\t${uglifiedCode.length}`);
   console.log(`SWC size:     \t${swcOutput.code.length}`);
-  if (params["print"])
+  if (args.isTrue("print"))
     console.log("UglifyJS output:\n", uglifiedCode, "\nSWC output:\n", swcOutput.code);
-  if (params["output"])
-    await write(/** @type {string} */(params["output"]), result);
+  const output = args.asStringOr("output", "");
+  if (output)
+    await write(output, result);
   return result;
 };
 
-const compileWithBun = async (params) => {
+const compileWithBun = async (args: CliArgs) => {
   const result = await build({
-    entrypoints: [params["entry"]],
+    entrypoints: [args.asStringOr("entry", "")],
     format: "esm",
     target: "bun",
     packages: "external",
@@ -81,51 +80,51 @@ const compileWithBun = async (params) => {
     throw `Bun build failed: ${messages}`;
   }
   const text = await result.outputs[0].text();
-  return finishCompile(text, params, "bun build");
+  return finishCompile(text, args, "bun build");
 };
+
+type CompileParams = Record<string, boolean | string | string[]> | CliArgs;
 
 /**
  * Resolves to the compiled code or void if it determines that the code
  * is up to date.
  * On error, rejects with the error.
- *
- * @param {Params} params
- * @param {(deps: string[]) => Promise<boolean>=} checkFreshFn
- * @param {(content: string, file: string, isEntry: boolean=) => string | null=} transpileFn
- * @return {Promise<string | void>}
  */
-const compile = async (params, checkFreshFn, transpileFn) => {
-  if (params["fast"])
+const compile = async (
+  params: CompileParams,
+  checkFreshFn?: (deps: string[]) => Promise<boolean>,
+  transpileFn?: TranspileFn
+): Promise<void | string> => {
+  if (!(params instanceof CliArgs))
+    params = new CliArgs(params);
+
+  if (params.isTrue("fast"))
     return compileWithBun(params);
 
   const {
-    /** @type {Map<string, ImportStatement>} */ unlinkedImports,
-    /** @type {Set<string>} */ allFiles,
-    /** @type {string} */ isolateDir,
-    /** @type {boolean} */ ignoreUnusedLocals
+    unlinkedImports,
+    allFiles,
+    isolateDir,
+    ignoreUnusedLocals
   } = await preprocessAndIsolate(params, transpileFn);
-  /** @const {string[]} */
-  const allFilesArray = Array.from(allFiles).sort();
+  const allFilesArray: string[] = Array.from(allFiles).sort();
   if (checkFreshFn && await checkFreshFn(allFilesArray.map(f => "/" + f)))
     return;
 
-  /** @const {string[]} */
   const jsCompErrors = [
     "unusedLocalVariables",
     "checkTypes",
     "missingProperties",
     "strictCheckTypes",
   ];
-  /** @const {string[]} */
-  const jsCompWarnings = [];
-  if (params["strict"])
+  const jsCompWarnings: string[] = [];
+  if (params.isTrue("strict"))
     jsCompWarnings.push("reportUnknownTypes");
-  if (params["loose"])
+  if (params.isTrue("loose"))
     jsCompErrors.pop();
   if (ignoreUnusedLocals)
     jsCompErrors.shift();
 
-  /** @const {Object<string, string|boolean|string[]>} */
   const options = {
     "js": allFilesArray,
     "compilation_level": "ADVANCED",
@@ -141,12 +140,10 @@ const compile = async (params, checkFreshFn, transpileFn) => {
     "chunk_output_type": "ES_MODULES",
     "module_resolution": "NODE",
     "dependency_mode": "PRUNE",
-    "entry_point": /** @type {string} */(params["entry"]),
+    "entry_point": params.asStringOr("entry", ""),
   };
-  if (params["define"])
-    options["define"] = /** @type {(string[]|boolean|string)} */(params["define"]);
 
-  const closureCompiler = new ClosureCompiler(options);
+  const closureCompiler = new ClosureCompiler(options as CompileOptions);
   closureCompiler.spawnOptions = {
     "cwd": isolateDir
   };
@@ -158,7 +155,7 @@ const compile = async (params, checkFreshFn, transpileFn) => {
         return;
       }
       output = postprocess(output, unlinkedImports);
-      if (params["printGccOutput"])
+      if (params.isTrue("printGccOutput"))
         console.log("GCC output\n", output);
       finishCompile(output, params, "GCC").then(resolve, reject);
     });

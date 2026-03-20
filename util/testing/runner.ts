@@ -1,7 +1,7 @@
 import { Glob, spawn } from "bun";
 import process from "node:process";
 import { compile } from "../../kdts/compile";
-import { Clear, CliArgs, Green, Red, asList, parseArgs } from "../cli";
+import { Clear, CliArgs, Green, Red, parseArgs } from "../cli";
 import { replaceExt } from "../paths";
 import { Throttle } from "../promises";
 
@@ -11,8 +11,6 @@ const args: CliArgs = parseArgs(process.argv.slice(2), "target", {
   "-bj": "buildConcurrency",
   "-rj": "runConcurrency"
 });
-args["buildConcurrency"] ||= "4";
-args["runConcurrency"] ||= "4";
 
 const createMatcher = (patterns: string[]): RegExp => {
   const regexPattern = patterns
@@ -30,9 +28,9 @@ const compileAndRunMatching = async (
   const glob = new Glob(include);
   const compileTasks: Promise<number>[] = [];
   const compileBN = new Throttle(
-    +args["buildConcurrency"] || +args["concurrency"]);
+    +args.asStringOr("buildConcurrency", "4"));
   const runBN = new Throttle(
-    +args["runConcurrency"] || +args["concurrency"]);
+    +args.asStringOr("runConcurrency", "4"));
 
   for await (const file of glob.scan(".")) {
     if (exclude.test(file)) continue;
@@ -49,11 +47,8 @@ const compileAndRunMatching = async (
         })
       );
 
-    compileTasks.push(
-      compileBN.add(() =>
-        compile({ ...args, entry: file, output })
-          .then(run))
-    );
+    compileTasks.push(compileBN.add(() =>
+      compile(args.fork({ entry: file, output })).then(run)));
   }
   return Promise.all(compileTasks)
     .then((exitCodes: number[]) =>
@@ -70,10 +65,9 @@ const getIncludes = (target: string[]) => {
   return pattern;
 };
 
-const include = getIncludes(asList(args, "target"));
+const include = getIncludes(args.asList("target"));
 const exclude: RegExp = createMatcher(
-  ["build/", "node_modules/"].concat(asList(args, "filter")),
-);
+  ["build/", "node_modules/"].concat(args.asList("filter")));
 const command = include.includes(".bench.") ? "bun" : "bun test";
 
 console.info(`Target: ${include} (filtering: ${exclude})`);
