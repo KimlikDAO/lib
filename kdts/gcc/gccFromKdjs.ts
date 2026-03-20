@@ -1,4 +1,4 @@
-import type {
+import {
   Options as AcornOptions,
   ClassDeclaration,
   Comment,
@@ -14,12 +14,12 @@ import type {
   Literal,
   ModuleDeclaration,
   ObjectExpression,
+  parse,
   Program,
   Statement,
   VariableDeclaration,
   VariableDeclarator,
 } from "acorn";
-import { parse } from "acorn";
 import { existsSync } from "node:fs";
 import { combine, getDir } from "../../util/paths";
 import {
@@ -31,7 +31,7 @@ import {
 import { serializeObjectExpressionWithLiteralKeys } from "../util/objects";
 import { resolveExtension } from "../util/resolver";
 import { Update, update } from "../util/textual";
-import { pathToNamespace } from "./dts";
+import { pathToNamespace } from "./externFromDts";
 import { transpileJsDoc } from "./jsdoc";
 
 const PACKAGE_EXTERNS = "node_modules/@kimlikdao/lib/kdts/externs/";

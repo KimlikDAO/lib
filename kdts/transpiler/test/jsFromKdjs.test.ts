@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { transpileKdjs } from "../kdjs";
+import { transpileKdjs } from "../jsFromKdjs";
 
 test("removes imports used only from jsdoc", () => {
   const input = `import { Foo } from "./types";

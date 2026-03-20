@@ -1,6 +1,6 @@
-import { readFileSync } from "node:fs";
-import { transpileKdjs } from "../transpiler/kdjs";
 import { PluginBuilder } from "bun";
+import { readFileSync } from "node:fs";
+import { transpileKdjs } from "../transpiler/jsFromKdjs";
 
 const kdtsPlugin = {
   name: "kdts",

@@ -1,7 +1,7 @@
 import { Comment } from "acorn";
 import { expect, test } from "bun:test";
 import { update } from "../../util/textual";
-import { transpileJsDoc } from "../jsdoc";
+import { transpileJsDoc } from "../../gcc/jsdoc";
 
 const makeComment = (commentStr: string): Comment => ({
   type: "Block",

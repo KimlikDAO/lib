@@ -2,7 +2,7 @@ import { describe, expect, it, test } from "bun:test";
 import {
   pathToNamespace,
   transpileDts as transpile
-} from "../dts";
+} from "../externFromDts";
 
 test("pathToNamespace should convert file paths to namespace names", () => {
   expect(pathToNamespace("api/jsonrpc.d.ts")).toBe("kdts$$api$jsonrpc");

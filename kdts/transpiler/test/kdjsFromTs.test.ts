@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { transpileTs } from "../ts";
+import { transpileTs } from "../kdjsFromTs";
 
 test("enums and variables", () => {
   const input = `

@@ -4,7 +4,7 @@
  *
  * @author KimlikDAO
  */
-import type {
+import {
   ClassDeclaration,
   Identifier,
   ImportDeclaration,

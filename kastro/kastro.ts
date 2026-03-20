@@ -80,14 +80,16 @@ const deployCrate = async (
 }
 
 const args = parseArgs(process.argv.slice(2), "command");
-const crateName = (Array.isArray(args["command"]) ? args["command"][1] : "")
-  + "/mpa";
+const [command, crate = ""] = args.asList("command");
+const crateName = `${crate}/mpa`;
 
-const BuildMode = (args["release"] as boolean)
+const BuildMode = args.isTrue("release")
   ? compiler.BuildMode.Release
-  : (args["compiled"] as boolean) ? compiler.BuildMode.Compiled : compiler.BuildMode.Dev;
+  : args.isTrue("compiled")
+    ? compiler.BuildMode.Compiled
+    : compiler.BuildMode.Dev;
 
-switch (args["command"] as string) {
+switch (command) {
   case "serve":
     serveCrate(crateName, { BuildMode }); break;
   case "build":

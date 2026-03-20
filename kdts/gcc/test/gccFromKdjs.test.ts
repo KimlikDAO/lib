@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { transpileJs } from "../js";
+import { transpileJs } from "../gccFromKdjs";
 
 test("exported const with type", () => {
   const input = `

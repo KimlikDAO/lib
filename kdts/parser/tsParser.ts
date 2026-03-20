@@ -5310,8 +5310,10 @@ function tsPlugin(options?: {
 }
 
 const TsParser = acornNamespace.Parser.extend(tsPlugin());
+const TsxParser = acornNamespace.Parser.extend(tsPlugin({ jsx: true }));
 
 export {
   TsParser,
+  TsxParser,
   tsPlugin
 };
