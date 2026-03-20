@@ -46,10 +46,10 @@ type ParserWithInternals = Parser & {
   kdtsImportStatements: ImportDeclarationInfo[];
   parseIdent(liberal?: boolean): Identifier;
   parseImport(node: Node): ImportDeclaration;
-  copyNode<T extends AnyNode>(node: T): T;
+  copyNode<T extends AnyNode>(node: T): AnyNode;
 };
 
-type ParserWithInternalsCtor = typeof Parser & {
+type ParserWithInternalsCtor = {
   new(options: Options, input: string, startPos?: number): ParserWithInternals;
 };
 
@@ -92,8 +92,11 @@ const kdtsPlugin = () => (BaseParser: typeof Parser): typeof Parser => {
     }
 
     copyNode<T extends AnyNode>(node: T): T {
-      const copied = base.copyNode.call(this as unknown as ParserWithInternals, node);
-      if (node.type === "Identifier") {
+      const copied = base.copyNode.call(
+        this as unknown as ParserWithInternals,
+        node
+      ) as T;
+      if (node.type == "Identifier") {
         const scopes = this.kdtsScopesByIdentifier.get(node);
         if (scopes) {
           const copiedIdentifier = copied as Identifier;
@@ -108,11 +111,11 @@ const kdtsPlugin = () => (BaseParser: typeof Parser): typeof Parser => {
   return KdjsParserWithPlugin as unknown as typeof Parser;
 };
 
-const KdjsParser = Parser.extend(kdtsPlugin()) as ParserWithInternalsCtor;
+const KdjsParser = Parser.extend(kdtsPlugin()) as unknown as ParserWithInternalsCtor;
 
 const serializeNamedSpecifier = (specifier: ImportSpecifier, content: string): string => {
   const imported = content.slice(specifier.imported.start, specifier.imported.end);
-  return specifier.imported.type === "Identifier" && specifier.local.name === specifier.imported.name
+  return specifier.imported.type == "Identifier" && specifier.local.name == specifier.imported.name
     ? imported
     : `${imported} as ${specifier.local.name}`;
 };
@@ -128,9 +131,9 @@ const serializeImportStatement = (
   for (const specifierInfo of importStatement.specifiers) {
     if (!specifierInfo.keep) continue;
     const { node } = specifierInfo;
-    if (node.type === "ImportDefaultSpecifier")
+    if (node.type == "ImportDefaultSpecifier")
       defaultSpecifier = node;
-    else if (node.type === "ImportNamespaceSpecifier")
+    else if (node.type == "ImportNamespaceSpecifier")
       namespaceSpecifier = node;
     else
       namedSpecifiers.push(node);
@@ -179,29 +182,29 @@ const isValueReference = (
       return false;
 
     case "AssignmentPattern":
-      return parent.right === node;
+      return parent.right == node;
 
     case "ClassDeclaration":
     case "ClassExpression":
-      return parent.superClass === node;
+      return parent.superClass == node;
 
     case "ExportSpecifier":
-      return parent.local === node
-        && grandparent?.type === "ExportNamedDeclaration"
+      return parent.local == node
+        && grandparent?.type == "ExportNamedDeclaration"
         && !grandparent.source;
 
     case "ImportAttribute":
-      return parent.value === node;
+      return false;
 
     case "MemberExpression":
-      return parent.object === node || parent.computed;
+      return parent.object == node || parent.computed;
 
     case "MethodDefinition":
     case "PropertyDefinition":
       return parent.key !== node || parent.computed;
 
     case "Property":
-      if (parent.key === node)
+      if (parent.key == node)
         return parent.computed;
       return grandparent?.type !== "ObjectPattern";
 
@@ -209,7 +212,7 @@ const isValueReference = (
       return false;
 
     case "VariableDeclarator":
-      return parent.init === node;
+      return parent.init == node;
 
     default:
       return true;
@@ -234,9 +237,9 @@ const makeImportUpdate = (
 ): Update => {
   let end = node.end;
   if (!replacement) {
-    if (content.charCodeAt(end) === 13 && content.charCodeAt(end + 1) === 10)
+    if (content.charCodeAt(end) == 13 && content.charCodeAt(end + 1) == 10)
       end += 2;
-    else if (content.charCodeAt(end) === 10 || content.charCodeAt(end) === 13)
+    else if (content.charCodeAt(end) == 10 || content.charCodeAt(end) == 13)
       ++end;
   }
   return {
@@ -255,13 +258,13 @@ const markUsedImports = (
 ): void => {
   if (!node || typeof node !== "object") return;
 
-  if (node.type === "Identifier") {
+  if (node.type == "Identifier") {
     const scopes = scopesByIdentifier.get(node);
     if (scopes && isValueReference(node, parent, grandparent) && !isShadowed(node.name, scopes))
       importsByLocalName.get(node.name)!.keep = true;
   }
 
-  for (const child of Object.values(node as Record<string, unknown>)) {
+  for (const child of Object.values(node as unknown as Record<string, unknown>)) {
     if (Array.isArray(child)) {
       for (const item of child)
         markUsedImports(item as AnyNode | null | undefined, scopesByIdentifier, importsByLocalName, node, parent);
@@ -274,7 +277,7 @@ const transpileKdjs = (content: string): string => {
   const parser = new KdjsParser({
     ecmaVersion: "latest",
     sourceType: "module",
-  }, content);
+  } as Options, content);
   const ast = parser.parse() as Program;
   const importsByLocalName = new Map<string, ImportSpecifierInfo>();
   const scopesByIdentifier = new Map<Identifier, Scope[]>();
@@ -292,7 +295,7 @@ const transpileKdjs = (content: string): string => {
 
   for (const importStatement of parser.kdtsImportStatements) {
     if (!importStatement.specifiers.length
-      || importStatement.specifiers.every((specifier) => specifier.keep))
+      || importStatement.specifiers.every((specifier: ImportSpecifierInfo) => specifier.keep))
       continue;
 
     updates.push(makeImportUpdate(

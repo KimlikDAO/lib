@@ -6,12 +6,12 @@ import {
   Node,
   ObjectExpression,
   parse,
+  Program,
   Property,
 } from "acorn";
-import { simple } from "acorn-walk";
 import { Options as AstringOptions, generate } from "astring";
-import { ImportStatement, writeImportStatement } from "./util/modules";
-import { Update, update } from "./util/textual";
+import { ImportStatement, writeImportStatement } from "../util/modules";
+import { Update, update } from "../util/textual";
 
 const ASTRING_OPTIONS: AstringOptions = {
   indent: "",
@@ -63,46 +63,62 @@ const getExportName = (prop: Property): string => {
   return generate(prop.key, ASTRING_OPTIONS);
 };
 
+const isExportTargetAssignmentStatement = (
+  node: Program["body"][number]
+): node is Program["body"][number] & {
+  type: "ExpressionStatement";
+  expression: AssignmentExpression & {
+    left: AssignmentExpression["left"] & {
+      type: "MemberExpression";
+      object: Identifier;
+      property: Identifier;
+    };
+    right: ObjectExpression;
+  };
+} =>
+  node.type == "ExpressionStatement"
+  && node.expression.type == "AssignmentExpression"
+  && isExportTargetAssignment(node.expression);
+
 const postprocess = (
   content: string,
   missingImports: Map<string, ImportStatement>
 ): string => {
-  const ast = parse(content, ACORN_OPTIONS);
+  const ast = parse(content, ACORN_OPTIONS) as Program;
   const updates: Update[] = [];
   let assignmentCode = "";
   let exportCode = "";
 
-  simple(ast, {
-    AssignmentExpression(node) {
-      if (!isExportTargetAssignment(node))
-        return;
+  for (const node of ast.body) {
+    if (!isExportTargetAssignmentStatement(node))
+      continue;
+    const assignment = node.expression;
 
-      const exportCount = node.right.properties.length;
-      if (exportCount == 1
-        && node.right.properties[0].type == "Property"
-        && getExportName(node.right.properties[0]) == "KDdefault")
-        exportCode = `export default ${generate(node.right.properties[0].value, ASTRING_OPTIONS)}`;
-      else if (exportCount > 0) {
-        exportCode = "export{";
-        for (const prop of node.right.properties) {
-          if (prop.type !== "Property")
-            continue;
-          const prefix = "KimlikDAOCompiler_";
-          let exportName = getExportName(prop);
-          if (exportName == "KDdefault")
-            exportName = exportName.slice(2);
-          assignmentCode += `const ${prefix}${exportName} = ${generate(prop.value, ASTRING_OPTIONS)};\n`;
-          exportCode += `${prefix}${exportName} as ${exportName},`;
-        }
-        exportCode = exportCode.slice(0, -1) + "}";
+    const exportCount = assignment.right.properties.length;
+    if (exportCount == 1
+      && assignment.right.properties[0].type == "Property"
+      && getExportName(assignment.right.properties[0]) == "KDdefault")
+      exportCode = `export default ${generate(assignment.right.properties[0].value, ASTRING_OPTIONS)}`;
+    else if (exportCount > 0) {
+      exportCode = "export{";
+      for (const prop of assignment.right.properties) {
+        if (prop.type != "Property")
+          continue;
+        const prefix = "KimlikDAOCompiler_";
+        let exportName = getExportName(prop);
+        if (exportName == "KDdefault")
+          exportName = exportName.slice(2);
+        assignmentCode += `const ${prefix}${exportName} = ${generate(prop.value, ASTRING_OPTIONS)};\n`;
+        exportCode += `${prefix}${exportName} as ${exportName},`;
       }
-      updates.push({
-        beg: node.start,
-        end: node.end,
-        put: "",
-      });
-    },
-  });
+      exportCode = exportCode.slice(0, -1) + "}";
+    }
+    updates.push({
+      beg: assignment.start,
+      end: assignment.end,
+      put: "",
+    });
+  }
 
   const newContent = generateImports(missingImports) + update(content, updates);
   return newContent + assignmentCode + exportCode;

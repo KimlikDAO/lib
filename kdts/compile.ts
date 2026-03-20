@@ -1,11 +1,9 @@
 import * as swc from "@swc/core";
-import { build, write } from "bun";
-import { compiler as ClosureCompiler, CompileOptions } from "google-closure-compiler";
+import { write } from "bun";
 import UglifyJS, { CompressOptions, MinifyOptions } from "uglify-js";
 import { CliArgs } from "../util/cli";
-import { postprocess } from "./postprocess";
-import { preprocessAndIsolate, TranspileFn } from "./preprocess";
-import { kdtsPlugin } from "./util/plugin";
+import { compile as compileWithBun } from "./bun/compile";
+import { compile as compileWithGcc } from "./gcc/compile";
 
 const UglifyOptions: MinifyOptions = {
   mangle: { toplevel: true },
@@ -35,16 +33,10 @@ const SwcMinifyOptions = {
   },
 };
 
-/**
- * Shared pipeline: UglifyJS -> tweakPasses -> SWC minify -> pick smaller ->
- * print, write. Used for both GCC and Bun build output.
- */
-const finishCompile = async (
+const finalize = async (
   code: string,
   args: CliArgs,
-  inputLabel: string
 ): Promise<string> => {
-  console.log(`${inputLabel} size:\t${code.length}`);
   if (args.isTrue("nologs"))
     (UglifyOptions.compress as CompressOptions).drop_console = true;
   const uglified = UglifyJS.minify(code, UglifyOptions);
@@ -66,100 +58,23 @@ const finishCompile = async (
   return result;
 };
 
-const compileWithBun = async (args: CliArgs) => {
-  const result = await build({
-    entrypoints: [args.asStringOr("entry", "")],
-    format: "esm",
-    target: "bun",
-    packages: "external",
-    minify: true,
-    plugins: [kdtsPlugin],
-  });
-  if (!result.success) {
-    const messages = result.logs.map((l) => l.message).join("\n");
-    throw `Bun build failed: ${messages}`;
-  }
-  const text = await result.outputs[0].text();
-  return finishCompile(text, args, "bun build");
-};
-
 type CompileParams = Record<string, boolean | string | string[]> | CliArgs;
 
-/**
- * Resolves to the compiled code or void if it determines that the code
- * is up to date.
- * On error, rejects with the error.
- */
+type TranspileFn = (content: string, file: string, isEntry?: boolean) =>
+  string | null;
+
 const compile = async (
   params: CompileParams,
   checkFreshFn?: (deps: string[]) => Promise<boolean>,
   transpileFn?: TranspileFn
-): Promise<void | string> => {
+): Promise<string | void> => {
   if (!(params instanceof CliArgs))
     params = new CliArgs(params);
+  const compiled = await (params.isTrue("fast")
+    ? compileWithBun(params)
+    : compileWithGcc(params, checkFreshFn, transpileFn));
+  if (!compiled) return;
+  return finalize(compiled, params);
+};
 
-  if (params.isTrue("fast"))
-    return compileWithBun(params);
-
-  const {
-    unlinkedImports,
-    allFiles,
-    isolateDir,
-    ignoreUnusedLocals
-  } = await preprocessAndIsolate(params, transpileFn);
-  const allFilesArray: string[] = Array.from(allFiles).sort();
-  if (checkFreshFn && await checkFreshFn(allFilesArray.map(f => "/" + f)))
-    return;
-
-  const jsCompErrors = [
-    "unusedLocalVariables",
-    "checkTypes",
-    "missingProperties",
-    "strictCheckTypes",
-  ];
-  const jsCompWarnings: string[] = [];
-  if (params.isTrue("strict"))
-    jsCompWarnings.push("reportUnknownTypes");
-  if (params.isTrue("loose"))
-    jsCompErrors.pop();
-  if (ignoreUnusedLocals)
-    jsCompErrors.shift();
-
-  const options = {
-    "js": allFilesArray,
-    "compilation_level": "ADVANCED",
-    "charset": "utf-8",
-    "warning_level": "verbose",
-    "emit_use_strict": false,
-    "rewrite_polyfills": false,
-    "assume_function_wrapper": true,
-    "jscomp_error": jsCompErrors,
-    "jscomp_warning": jsCompWarnings,
-    "language_in": "UNSTABLE",
-    "language_out": "UNSTABLE",
-    "chunk_output_type": "ES_MODULES",
-    "module_resolution": "NODE",
-    "dependency_mode": "PRUNE",
-    "entry_point": params.asStringOr("entry", ""),
-  };
-
-  const closureCompiler = new ClosureCompiler(options as CompileOptions);
-  closureCompiler.spawnOptions = {
-    "cwd": isolateDir
-  };
-  console.info("kdts isolate:", isolateDir);
-  return new Promise((resolve, reject) => {
-    closureCompiler.run((exitCode, output, errors) => {
-      if (exitCode || errors) {
-        reject(errors);
-        return;
-      }
-      output = postprocess(output, unlinkedImports);
-      if (params.isTrue("printGccOutput"))
-        console.log("GCC output\n", output);
-      finishCompile(output, params, "GCC").then(resolve, reject);
-    });
-  });
-}
-
-export { compile };
+export { compile, TranspileFn };

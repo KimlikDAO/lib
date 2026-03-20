@@ -17,7 +17,7 @@ type Address = string;
 export { Address };
 `
     const expected = `
-/** @externs */
+/** @fileoverview @externs */
 /**
  * @typedef {string}
  */
@@ -33,7 +33,7 @@ type Color = "red" | "green" | "blue";
 export { Color };
 `
     const expected = `
-/** @externs */
+/** @fileoverview @externs */
 /**
  * @typedef {string | string | string}
  */
@@ -66,7 +66,7 @@ export default { Request, Response };
 
   const result = transpile(input, "api/jsonrpc.d.ts");
   expect(result).toBe(`
-/** @externs */
+/** @fileoverview @externs */
 /**
  * @interface
  */
@@ -115,7 +115,7 @@ export { ApiClient };
 
   const result = transpile(input, "api/client.d.ts");
   expect(result).toBe(`
-/** @externs */
+/** @fileoverview @externs */
 import "../auth/auth.d.ts"; // kdts-djs: imports are for dependency crawling
 import "../ethereum/provider.d.ts"; // kdts-djs: imports are for dependency crawling
 /**
@@ -150,7 +150,7 @@ export { ExtendedProvider };
 
   const result = transpile(input, "test/provider.d.ts");
   expect(result).toBe(`
-/** @externs */
+/** @fileoverview @externs */
 import "../api/provider.d.ts"; // kdts-djs: imports are for dependency crawling
 /**
  * @interface
@@ -191,7 +191,7 @@ export { CfRequest, ModuleWorker, Env };
 `;
   const result = transpile(input, "moduleWorker.d.ts");
   expect(result).toBe(`
-/** @externs */
+/** @fileoverview @externs */
 class kdts$$moduleWorker$CfRequest extends Request {
   constructor() {
     /** @type {{

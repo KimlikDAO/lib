@@ -1,10 +1,10 @@
 import { file, write } from "bun";
-import { CliArgs } from "../util/cli";
-import { combine, getDir } from "../util/paths";
-import { transpileDts } from "./transpiler/dts";
-import { transpileJs } from "./transpiler/js";
-import { transpileTs } from "./transpiler/ts";
-import { ImportStatement } from "./util/modules";
+import { CliArgs } from "../../util/cli";
+import { combine, getDir } from "../../util/paths";
+import { transpileDts } from "../transpiler/dts";
+import { transpileJs } from "../transpiler/js";
+import { transpileTs } from "../transpiler/ts";
+import { ImportStatement } from "../util/modules";
 
 interface PreprocessResult {
   unlinkedImports: Map<string, ImportStatement>;

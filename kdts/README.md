@@ -46,7 +46,7 @@ injected when missing.
 Direct run:
 
 ```shell
-bun kdts/kdts.js entry.ts
+bun kdts/kdts.ts entry.ts
 ```
 
 or install globally:

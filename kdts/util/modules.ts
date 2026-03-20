@@ -1,5 +1,7 @@
 /**
- * local: imported
+ * Compact semantic import representation.
+ *
+ * `named` maps local name -> imported name.
  */
 interface ImportStatement {
   unnamed?: string;
@@ -9,12 +11,22 @@ interface ImportStatement {
 }
 
 /**
- * exported: local
+ * Compact semantic export representation.
+ *
+ * `named` maps exported name -> local name.
  */
 interface ExportStatement {
   unnamed?: string;
   named: Record<string, string>;
 }
+
+const createImportStatement = (): ImportStatement => ({
+  named: {},
+});
+
+const createExportStatement = (): ExportStatement => ({
+  named: {},
+});
 
 const writeImportStatement = (
   importStmt: ImportStatement,
@@ -37,5 +49,7 @@ const writeImportStatement = (
 export {
   ExportStatement,
   ImportStatement,
+  createExportStatement,
+  createImportStatement,
   writeImportStatement
 };

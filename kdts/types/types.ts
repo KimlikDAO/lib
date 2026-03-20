@@ -200,7 +200,6 @@ class InstanceType extends Type {
     super();
     this.name = name;
   }
-
   override toClosureExpr({ toParam, bare, wrap }: Context = {}): string {
     const modifiers = bare ? 0 : this.modifiers;
     let expr = NameMap[this.name] ?? this.name;
@@ -211,7 +210,6 @@ class InstanceType extends Type {
     }
     return expr;
   }
-
   override toTsExpr({ toParam, bare, wrap }: Context = {}): string {
     const modifiers = bare ? 0 : this.modifiers;
     let expr = this.name;
@@ -243,7 +241,6 @@ class GenericType extends Type {
     this.name = name;
     this.params = params;
   }
-
   override toClosureExpr({ toParam, bare, wrap }: Context = {}): string {
     const modifiers = bare ? 0 : this.modifiers;
     if (this.name == "Partial") return this.params[0].toClosureExpr({ wrap: true });
@@ -258,7 +255,6 @@ class GenericType extends Type {
     }
     return expr;
   }
-
   override toTsExpr({ toParam, bare, wrap }: Context = {}): string {
     const modifiers = bare ? 0 : this.modifiers;
     let inner: string;
@@ -285,7 +281,6 @@ class StructType extends Type {
     super();
     this.members = members;
   }
-
   override toClosureExpr({ toParam, wrap, bare }: Context = {}): string {
     const modifiers = bare ? 0 : this.modifiers;
     const members = this.members;
@@ -304,7 +299,6 @@ class StructType extends Type {
     }
     return expr;
   }
-
   override toTsExpr({ toParam, wrap, bare }: Context = {}): string {
     const modifiers = bare ? 0 : this.modifiers;
     const members = this.members;
@@ -348,9 +342,7 @@ class FunctionType extends Type {
     this.optionalAfter = optionalAfter ?? params.length;
     this.thisType = thisType;
   }
-
   toJsDoc(): void { }
-
   override toClosureExpr({ toParam, wrap, bare }: Context = {}): string {
     const modifiers = bare ? 0 : this.modifiers;
 
@@ -385,7 +377,6 @@ class FunctionType extends Type {
     }
     return functionType;
   }
-
   toTsDoc(): string {
     const lastIdx = this.params.length - 1;
     const lines: string[] = [];
@@ -409,7 +400,6 @@ class FunctionType extends Type {
     lines.push(` * @return {${returnTypeStr}}`);
     return "/**\n" + lines.join("\n") + "\n */";
   }
-
   override toTsExpr({ toParam, wrap, bare }: Context = {}): string {
     const modifiers = bare ? 0 : this.modifiers;
     const lastIdx = this.params.length - 1;
@@ -444,7 +434,6 @@ class FunctionType extends Type {
     }
     return functionType;
   }
-
   isMethod(): boolean { return !!this.thisType; }
 }
 
@@ -472,11 +461,9 @@ class ConstructorType extends FunctionType {
     this.extendsType = extendsType;
     this.implementsTypes = implementsTypes;
   }
-
   override toClosureExpr(context: Context): string {
     return super.toClosureExpr(context).replace("this:", "new:");
   }
-
   override toTsExpr(context: Context): string {
     return super.toTsExpr(context).replace("this:", "new:");
   }
@@ -514,5 +501,6 @@ export {
   Type,
   UndefinedType,
   UnionType,
-  UnknownType,
+  UnknownType
 };
+
