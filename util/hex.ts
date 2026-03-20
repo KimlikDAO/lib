@@ -1,4 +1,4 @@
-import { PureExpr } from "../kdjs/kdjs.d";
+import { PureExpr } from "../kdts/kdts.d";
 
 /** @noinline */
 const FromUint4 = "0123456789abcdef";

@@ -1,0 +1,6 @@
+{
+  "name": "@kimlikdao/lib/kdts/util/vscodePlugin",
+  "version": "0.0.0",
+  "type": "commonjs",
+  "main": "index.js"
+}

@@ -28,11 +28,11 @@ achieved through a bun plugin. Likely things won't even run on node.
 
 From within `lib/` you can also compile any file you want using
 ```sh
-bun kdjs file.ts --strict -o out.ts  # if no -o, the output is file.out.ts
+bun kdts file.ts --strict -o out.ts  # if no -o, the output is file.out.ts
 ```
 If you want to just see the output in console,
 ```sh
-bun kdjs file.ts --strict --print
+bun kdts file.ts --strict --print
 ```
 Here --strict is optional but ensures that every variable is typed and
 if the type of some variable cannot be determined compilation errs. Note

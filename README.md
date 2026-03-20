@@ -6,7 +6,7 @@
 [![KimlikDAO](https://img.shields.io/badge/Kimlik-DAO-blue)](https://kimlikdao.org)
 
 kimlikdao-js is a repository containing TypeScript and JavaScript modules essential to KimlikDAO projects.
-Both our js and ts modules are fully typed using ts type expressions and compiled using [`kdjs`](./kdjs), our
+Both our js and ts modules are fully typed using ts type expressions and compiled using [`kdts`](./kdts), our
 ts/js compiler with type aware optimizations.
 
 ## 🗂️ Features
@@ -18,12 +18,12 @@ ts/js compiler with type aware optimizations.
   - React-like .jsx components at zero runtime cost
   - Import css, fonts or images using es6 imports and receive a component
 
-⚙️ [`kdjs`](./kdjs): KimlikDAO TypeScript / JavaScript compiler
+⚙️ [`kdts`](./kdts): KimlikDAO TypeScript compiler
 
-  - A ts/js compiler fully using type information to guide optimizations.
-  - Seamless js/ts interop for the type system
-  - Uses the [Google Closure Compiler](https://github.com/google/closure-compiler),
-    as a backend with additional passes.
+  - A TypeScript compiler that leverages type information to perform advanced optimizations.
+  - Seamless js/ts interop including the type system
+  - Uses the [Google Closure Compiler](https://github.com/google/closure-compiler)
+    as a backend with additional optimization passes.
 
 🗝️ [`crypto`](./crypto): Cryptographic functions and libraries
 
@@ -66,12 +66,12 @@ The tests can be run in two different modes:
   ```shell
   bun test
   ```
-- Compiled (using `kdjs`):
-  We also run the same tests after compiling them with `kdjs` first:
+- Compiled (using `kdts`):
+  We also run the same tests after compiling them with `kdts` first:
   ```shell
   bun run test
   ```
-  Note that `kdjs` makes aggressive optimizations using the provided
+  Note that `kdts` makes aggressive optimizations using the provided
   type information. Running tests in compiled mode is crucial, as
   incorrect type annotations can lead to functionally incorrect output.
   There is also a fast build mode, which doesn't do typechecking

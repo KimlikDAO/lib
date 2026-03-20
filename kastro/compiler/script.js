@@ -1,10 +1,10 @@
-import { compile } from "../../kdjs/compile";
+import { compile } from "../../kdts/compile";
 import { filterGlobalProps, filterOutGlobalProps } from "../props";
 import { transpile } from "../transpiler/transpiler";
 
 /** @const {TargetFunction} */
 const scriptTarget = (_, { src: entry, ...props }) => {
-  const isolateDir = props.Lang ? "kdjs-" + props.Lang : "kdjs";
+  const isolateDir = props.Lang ? "kdts-" + props.Lang : "kdts";
   const { globals, ...rest} = filterOutGlobalProps(props);
   return compile({
     entry,

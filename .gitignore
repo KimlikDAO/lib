@@ -1,6 +1,6 @@
 .cursor
 .DS_Store
-.kdjs_isolate
+.kdts_isolate
 .secrets.js
 .vscode
 *.out.js
@@ -10,7 +10,7 @@
 /bench*.js
 build
 bun.lock*
-kdjs/transformer
+kdts/transformer
 node_modules*
 prompts.txt
 yarn.lock

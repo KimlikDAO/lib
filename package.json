@@ -6,10 +6,10 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "postinstall": "mkdir -p ./node_modules/@kimlikdao/lib && ln -sfn ../../../kastro ./node_modules/@kimlikdao/lib/kastro && ln -sfn ../../../kdjs ./node_modules/@kimlikdao/lib/kdjs",
+    "postinstall": "mkdir -p ./node_modules/@kimlikdao/lib && ln -sfn ../../../kastro ./node_modules/@kimlikdao/lib/kastro && ln -sfn ../../../kdts ./node_modules/@kimlikdao/lib/kdts",
     "test": "bun util/testing/runner.js test",
     "bench": "bun util/testing/runner.js bench",
-    "kdjs": "bun kdjs/kdjs.js",
+    "kdts": "bun kdts/kdts.js",
     "clear": "rm -rf build && clear"
   },
   "devDependencies": {

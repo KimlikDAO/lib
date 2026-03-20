@@ -1,34 +1,34 @@
 ---
-description: kdjs, our typescript / javascript compiler with advanced type aware optimizations
+description: kdts, our typescript / javascript compiler with advanced type aware optimizations
 alwaysApply: true
 ---
-kdjs is our ts/js compiler with advanced type-aware optimizations. TypeScript
+kdts is our ts/js compiler with advanced type-aware optimizations. TypeScript
 has a strong type system which should be helpful with, among many things,
 better code generation. With typical build pipelines today, it is unfortunate
 that all type information is stripped away before even the bundler or minifier
 can see it.
 
-kdjs aims to improve on these pipelines: it is a bundler and optimizer which
+kdts aims to improve on these pipelines: it is a bundler and optimizer which
 fully leverages the type system. Currently, we rely on the Google Closure
 Compiler as our backend, with a separate backend in the works.
 
-In kdjs, both ts and js files are annotated via TypeScript type expressions:
+In kdts, both ts and js files are annotated via TypeScript type expressions:
 - in ts files, at the standard annotation positions allowed by the syntax,
 - in js files, inside jsdoc annotations.
 
 We provide a seamless js/ts interoperability including the typing.
-In kdjs, all types exist in the same space as runtime values. Eliminating
+In kdts, all types exist in the same space as runtime values. Eliminating
 type marker objects from the compiled code is viewed as an optimization
 consideration, not a language-level distinction. Removing type marker objects
 is treated just like eliminating any other empty or vacuous objects and
-values, which kdjs excels at.
+values, which kdts excels at.
 
 In kjds, d.ts and .d.js files have a meaning consistent with but beyond ts:
-every property in kdjs besides those types defined in .d.js or .d.ts file
+every property in kdts besides those types defined in .d.js or .d.ts file
 is free to mangle. Properties of types defined in a .d.js and .d.ts files will
 be preserved as is.
 
-In kdjs classes and interfaces are nominal types whereas Object literal types
+In kdts classes and interfaces are nominal types whereas Object literal types
 are structural. The situation is the same whether you define the type in js
 or ts:
 

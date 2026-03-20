@@ -7,7 +7,7 @@ Kastro is a new web framework that achieves extreme performance by moving comput
 - ✅ React-like JSX components with full type safety
 - ⚡️ Aggressive compile-time optimization and static rendering
 - 🗜️ Ultra-minimal client JavaScript bundle
-- 🔍 Advanced type-driven optimizations through `kdjs` compiler
+- 🔍 Advanced type-driven optimizations through `kdts` compiler
 - 🌐 Integrated i18n, asset bundling and CSS modules
 
 ## Core Philosophy
@@ -97,7 +97,7 @@ Key features:
  - ⚡️ Static rendering at build time for optimal performance
  - 🗜️ Minimal client-side JavaScript bundle
  - 🔍 Advanced compile-time optimizations and type safety through our javascript
-   compiler [`kdjs`](../kdjs/README.md)
+   compiler [`kdts`](../kdts/README.md)
  - 🌐 End to end integrated i18n, asset bundling and css modules
 
 Unlike other frameworks that offer static rendering, Kastro takes a radical
@@ -247,7 +247,7 @@ const Page = () => (
   </html>
 );
 ```
-When transpiled by Kastro (but before compilation by kdjs), the above jsx file will become
+When transpiled by Kastro (but before compilation by kdts), the above jsx file will become
 ```javascript
 /** @param {{ id: string }} props */
 const StatelessComp = ({ id }) => {
@@ -292,7 +292,7 @@ const PageWithCheckBox = () => (
 
 PageWithCheckBox.isChecked = () => PageWithCheckBox.checkBox.on;
 ```
-When the above jsx file is transpiled for the client by Kastro (but before compilation by kdjs),
+When the above jsx file is transpiled for the client by Kastro (but before compilation by kdts),
 it will become
 ```javascript
 /** @param {{ id: string }} props */
@@ -367,7 +367,7 @@ pseudo components to encourage more maintainable code.
 
 ## Kastro type system
 
-Kastro leverages the type system of `kdjs` to provide both type safety and
+Kastro leverages the type system of `kdts` to provide both type safety and
 powerful compile-time optimizations. Unlike TypeScript, where type information
 is erased before optimization, Kastro's type system enables aggressive
 optimizations that would not be possible without the type information being

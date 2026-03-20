@@ -15,7 +15,7 @@ const serveCrate = async (crateName: string, { BuildMode }: Props) => {
   setupKastro();
   const map = getPageTargets(await import(crateName), { BuildMode });
   serve({
-    async fetch(req) {
+    async fetch(req: Request) {
       const path = new URL(req.url).pathname.slice(1);
       const dot = path.indexOf(".");
       const suffix = path.slice(dot + 1);
@@ -79,9 +79,10 @@ const deployCrate = async (
   return deployer.deploy(fromTarget(crateTarget), config.default[targetName]);
 }
 
-const args = parseArgs((process as NodeJS.Process).argv.slice(2), "command");
+const args = parseArgs(process.argv.slice(2), "command");
 const crateName = (Array.isArray(args["command"]) ? args["command"][1] : "")
-  + "/mpa.js";
+  + "/mpa";
+
 const BuildMode = (args["release"] as boolean)
   ? compiler.BuildMode.Release
   : (args["compiled"] as boolean) ? compiler.BuildMode.Compiled : compiler.BuildMode.Dev;

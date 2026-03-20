@@ -39,7 +39,7 @@ const Page = () => (
 );
 ```
 
-When transpiled by Kastro (but before compilation by kdjs), this becomes:
+When transpiled by Kastro (but before compilation by kdts), this becomes:
 
 ```javascript
 /** @param {{ id: string }} props */

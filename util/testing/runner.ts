@@ -1,6 +1,6 @@
 import { Glob, spawn } from "bun";
 import process from "node:process";
-import { compile } from "../../kdjs/compile";
+import { compile } from "../../kdts/compile";
 import { Clear, CliArgs, Green, Red, asList, parseArgs } from "../cli";
 import { replaceExt } from "../paths";
 import { Throttle } from "../promises";
@@ -70,7 +70,7 @@ const getIncludes = (target: string[]) => {
   return pattern;
 };
 
-const include = getIncludes(args["target"] as string[]);
+const include = getIncludes(asList(args, "target"));
 const exclude: RegExp = createMatcher(
   ["build/", "node_modules/"].concat(asList(args, "filter")),
 );

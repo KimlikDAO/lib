@@ -20,6 +20,7 @@ const pageTarget = (targetName, props) => {
   const targetModulePath = `${targetDir.slice(7)}/${targetModuleName}.jsx`;
 
   const { BuildMode, Lang } = props;
+
   initGlobals(props);
   const StyleSheets = makeStyleSheets();
   return import(targetModulePath)

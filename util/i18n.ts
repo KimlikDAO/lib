@@ -1,19 +1,18 @@
 /**
  * BCP-style language tags we ship. Adding a member means every
- * {@link I18nString} must include that key—compile time + kdjs keep
- * translations complete.
+ * {@link I18nString} must include that key.
  */
 enum LangCode {
   EN = "en",
   TR = "tr",
 }
 
-const Langs = Object.values(LangCode) as readonly LangCode[];
+const Langs = [LangCode.EN, LangCode.TR] as readonly LangCode[];
 
 /**
  * Represents one user-visible string in every supported language.
  *
- * When resolved with a compile time constant {@link LangCode}, kdjs will turn
+ * When resolved with a compile time constant {@link LangCode}, kdts will turn
  * a I18nString into a string literal.
  * @example
  * ```ts
@@ -37,7 +36,7 @@ type I18nStrings = Record<LangCode, readonly string[]>;
  * Represents text that is either shared across languages (plain string) or
  * per language.
  *
- * More conventient than {@link I18nString} but is harder for kdjs to inline.
+ * More conventient than {@link I18nString} but is harder for kdts to inline.
  * In client code, prefer {@link I18nString}.
  */
 type Localizable = Record<LangCode, string> | string;

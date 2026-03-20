@@ -33,7 +33,7 @@ const Worker = (props) => {
       printGccOutput: true,
       dynamicDeps: true,
       childTargets: ["/" + props.src], // Used in BuildMode.Dev only
-      externs: ["node_modules/@kimlikdao/lib/kdjs/externs/worker.d.js"],
+      externs: ["node_modules/@kimlikdao/lib/kdts/externs/worker.d.js"],
       ...props,
     }).then((bundleName) => {
       const globals = getGlobals();

@@ -2,8 +2,8 @@ import { Parser } from "acorn";
 import acornJsx from "acorn-jsx";
 import {
   ImportStatement, writeImportStatement
-} from "../../kdjs/util/modules";
-import { Update, update } from "../../kdjs/util/textual";
+} from "../../kdts/util/modules";
+import { Update, update } from "../../kdts/util/textual";
 import { getExt, getDir, combine } from "../../util/paths";
 import css from "./css";
 import { DomIdMapper } from "./domIdMapper";
@@ -36,7 +36,7 @@ const resolveModulePath = (importer, source) => source.startsWith('.')
  *
  *  - Remove imports which were needed only for the jsx expressions.
  *
- * @param {boolean} isEntry Is the current file the entry file provided to kdjs.
+ * @param {boolean} isEntry Is the current file the entry file provided to kdts.
  * @param {string} file Name of the file
  * @param {string} content The contents as a string
  * @param {DomIdMapper} domIdMapper

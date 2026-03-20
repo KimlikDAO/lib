@@ -1,6 +1,8 @@
+import { StrHash } from "./hash.d";
+
 interface Marker {
-  readonly contentHash: string;
-  readonly depHash?: string;
+  contentHash: StrHash;
+  depHash?: StrHash;
 }
 
 export { Marker };

@@ -1,19 +1,26 @@
-import hash, { AssetHash } from "./hash";
+import hash from "./hash";
+import { StrHash } from "./hash.d";
 import { Target } from "./target";
+
+type HashedName = `${StrHash}.${"html" | "js" | "css" | "txt" | "svg" | "webp" | "ttf" | "woff2"}`;
+
+type GivenName = string;
+
+type BundleName = HashedName | GivenName;
 
 interface BundleReport {
   hostUrl?: string;
-  namedAssets: Record<string, AssetHash>;
-  piggybackAssets: Record<string, AssetHash>;
-  hashedAssets: string[];
-  bundleHash?: AssetHash;
+  namedAssets: Record<GivenName, HashedName>;
+  piggybackAssets: Record<string, BundleName>;
+  hashedAssets: HashedName[];
+  bundleHash?: StrHash;
 }
 
 const getEtags = (
   bundleReport: BundleReport
-): Record<string, string> => {
+): Record<GivenName, StrHash> => {
   const namedAssets = bundleReport.namedAssets;
-  const etags: Record<string, string> = {};
+  const etags: Record<GivenName, StrHash> = {};
   for (const key in namedAssets) {
     const val = namedAssets[key];
     const dot = val.lastIndexOf(".");
@@ -30,4 +37,11 @@ const fromTarget = (target: Target): BundleReport => {
   return bundleReport;
 };
 
-export { BundleReport, fromTarget, getEtags };
+export {
+  BundleName,
+  BundleReport,
+  GivenName,
+  HashedName,
+  fromTarget,
+  getEtags
+};

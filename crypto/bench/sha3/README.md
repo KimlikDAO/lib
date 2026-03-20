@@ -4,7 +4,7 @@
 
 - **`sha3_orig.js`** is **not** “the original” implementation. It is an **older** branch that was already heavily optimized. The final Keccak core + pipeline live in **`sha3.ts`**.
 - On **full-pipeline** benchmarks (same entrypoint semantics you care about), the **Uint32Array scratch** version of `sha3` **beat `sha3_orig`**. Both were written/optimized here; the better pipeline was kept.
-- The move to **`Array(50)`** scratch came **after** that — e.g. for kdjs/GCC, codegen, or other constraints — not because a Bun microbench said Array wins on `f(s)` alone.
+- The move to **`Array(50)`** scratch came **after** that — e.g. for kdts/GCC, codegen, or other constraints — not because a Bun microbench said Array wins on `f(s)` alone.
 
 So: **Uint32Array sha3 > sha3_orig** in the author’s intended measurement; **Array** is a later choice for the current toolchain/shape.
 

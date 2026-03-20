@@ -19,7 +19,7 @@ import { Target, registerTargetFunction } from "./target";
 /**
  * @param {string} _targetName
  * @param {Props} props
- * @return {Promise<string>}
+ * @return {Promise<string | Uint8Array | null>}
  */
 const crateTarget = async (_targetName, props) => {
   if (!props.dynamicDeps) throw "Crate targets need to be dynamicProps";

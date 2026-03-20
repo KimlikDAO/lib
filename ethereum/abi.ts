@@ -1,4 +1,4 @@
-import { PureExpr } from "../kdjs/kdjs.d";
+import { PureExpr } from "../kdts/kdts.d";
 import { Address } from "./address.d";
 
 /** @pure */

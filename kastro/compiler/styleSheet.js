@@ -1,6 +1,5 @@
 import { minify } from "csso";
 
-/** @const {TextDecoder} */
 const Decoder = new TextDecoder();
 
 const styleSheetTarget = (_, { BuildMode, childTargets }) => Promise.all(childTargets)

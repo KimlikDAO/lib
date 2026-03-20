@@ -17,8 +17,8 @@ jobs:
           bun i
           bun test
 
-  kdjs_fast_unit_tests:
-    name: kdjs fast unit tests
+  kdts_fast_unit_tests:
+    name: kdts fast unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -27,8 +27,8 @@ jobs:
           bun i
           bun run test --fast
 
-  kdjs_unit_tests_crosschain:
-    name: kdjs unit tests, crosschain
+  kdts_unit_tests_crosschain:
+    name: kdts unit tests, crosschain
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -41,8 +41,8 @@ jobs:
           bun i
           bun run test crosschain --strict
 
-  kdjs_unit_tests_crypto:
-    name: kdjs unit tests, crypto
+  kdts_unit_tests_crypto:
+    name: kdts unit tests, crypto
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -55,8 +55,8 @@ jobs:
           bun i
           bun run test crypto --strict
 
-  kdjs_unit_tests_did:
-    name: kdjs unit tests, did
+  kdts_unit_tests_did:
+    name: kdts unit tests, did
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -69,8 +69,8 @@ jobs:
           bun i
           bun run test did --strict
 
-  kdjs_unit_tests_ethereum:
-    name: kdjs unit tests, ethereum
+  kdts_unit_tests_ethereum:
+    name: kdts unit tests, ethereum
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -83,8 +83,8 @@ jobs:
           bun i
           bun run test ethereum
 
-  kdjs_unit_tests_kastro:
-    name: kdjs unit tests, kastro
+  kdts_unit_tests_kastro:
+    name: kdts unit tests, kastro
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -97,8 +97,8 @@ jobs:
           bun i
           bun run test kastro
 
-  kdjs_unit_tests_kdjs:
-    name: kdjs unit tests, kdjs
+  kdts_unit_tests_kdts:
+    name: kdts unit tests, kdts
     runs-on: ubuntu-latest
     if: false # Temporarily disabled
     steps:
@@ -110,10 +110,10 @@ jobs:
           distribution: "temurin"
       - run: |
           bun i
-          bun run test kdjs
+          bun run test kdts
 
-  kdjs_unit_tests_mina:
-    name: kdjs unit tests, mina
+  kdts_unit_tests_mina:
+    name: kdts unit tests, mina
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -126,8 +126,8 @@ jobs:
           bun i
           bun run test mina --strict
 
-  kdjs_unit_tests_protocol:
-    name: kdjs unit tests, protocol
+  kdts_unit_tests_protocol:
+    name: kdts unit tests, protocol
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -140,8 +140,8 @@ jobs:
           bun i
           bun run test protocol
 
-  kdjs_unit_tests_util:
-    name: kdjs unit tests, util
+  kdts_unit_tests_util:
+    name: kdts unit tests, util
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -154,8 +154,8 @@ jobs:
           bun i
           bun run test util --strict
 
-  compile_kdjs_with_kdjs:
-    name: Compile `kdjs` with `kdjs`
+  compile_kdts_with_kdts:
+    name: Compile `kdts` with `kdts`
     runs-on: ubuntu-latest
     if: false # Temporarily disabled
     steps:
@@ -167,4 +167,4 @@ jobs:
           distribution: "temurin"
       - run: |
           bun i
-          bun kdjs/kdjs.js kdjs/kdjs.js
+          bun kdts/kdts.js kdts/kdts.js

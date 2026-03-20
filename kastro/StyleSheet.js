@@ -1,4 +1,3 @@
-import { keccak256Uint8 } from "../crypto/sha3";
 import { htmlTag } from "../util/markup/html";
 import { fileFromError } from "../util/reflection";
 import compiler from "./compiler/compiler";
@@ -14,11 +13,8 @@ class StyleSheetCollection {
    * @param {{ targetName: string, content: string }} target
    */
   add({ targetName, content: contentString }) {
-    /** @const {Uint8Array} */
     const content = Encoder.encode(contentString);
-    /** @const {ContentHash} */
-    const contentHash = keccak256Uint8(content);
-    /** @const {string} */
+    const contentHash = hash.from(content);
     const key = targetName.endsWith(".jsx")
       ? targetName.replace(".jsx", `-${hash.toStr(contentHash)}.css`)
       : targetName;
@@ -29,10 +25,8 @@ class StyleSheetCollection {
   addWithKey(key, { targetName, content: contentString }) {
     if (this.targets.has(key))
       return;
-    /** @const {Uint8Array} */
     const content = Encoder.encode(contentString);
-    /** @const {ContentHash} */
-    const contentHash = keccak256Uint8(content);
+    const contentHash = hash.from(content);
     this.targets.set(key, { targetName, content, contentHash });
   }
 
