@@ -88,6 +88,9 @@ class Matcher {
   toBeFalsy() { }
 
   /** @return {void} */
+  toBeUndefined() { }
+
+  /** @return {void} */
   toBeNull() { }
 
   /** @return {void} */

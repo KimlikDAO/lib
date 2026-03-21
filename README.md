@@ -28,11 +28,14 @@ ts/js compiler with type aware optimizations.
 🗝️ [`crypto`](./crypto): Cryptographic functions and libraries
 
   - [`arfCurve`](./crypto/arfCurve.ts): An efficient Arf Curve ($y^2 = x^3 + b$) class factory
+  - [`weierstrassCurve`](./crypto/weierstrassCurve.ts): A constant time Weierstrass Curve ($y^2 = x^3 + ax + b$) implementation
   - [`wesolowski`](./crypto/wesolowski.ts): Our Wesolowski VDF implementation
 
 🪪 [`did`](./did): Definitions of DID and KPass by KimlikDAO
 
 ### Other goodies
+
+🫙 `container`: Cryptographic containers such as Merkle Trees
 
 🧬 `crosschain`: Definitions and structures valid across all blockchains
 
@@ -88,9 +91,9 @@ bun run test crypto # compiled, --fast param available
 
 ## ⏱️ Benchmarks
 
-You can run a benchmark either directly as a regular es6 module
+You can run a single benchmark directly
 ```shell
-bun run crypto/bench/arfCurve/ladder.bench.ts
+bun bench crypto/bench/arfCurve/ladder.bench.ts # --fast param available
 ```
 or compile all of them and benchmark the compiled modules:
 ```shell

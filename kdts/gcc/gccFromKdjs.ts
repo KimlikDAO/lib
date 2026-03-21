@@ -34,7 +34,7 @@ import { Update, update } from "../util/textual";
 import { pathToNamespace } from "./externFromDts";
 import { transpileJsDoc } from "./jsdoc";
 
-const PACKAGE_EXTERNS = "node_modules/@kimlikdao/lib/kdts/externs/";
+const PACKAGE_EXTERNS = "node_modules/@kimlikdao/lib/kdts/@types/";
 const DECLARATION_FILE = /\.(d|e)\.(js|ts)$/;
 const DJS_FILE = /\.(d|e)\.js$/;
 const DTS_FILE = /\.(d|e)\.ts$/;

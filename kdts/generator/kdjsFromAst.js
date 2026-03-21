@@ -185,6 +185,10 @@ class Generator {
       for (const iface of n.extends) {
         this.ret(); this.put("@extends {"); this.rec(iface); this.put("}")
       }
+    if (n.typeParameters) {
+      this.ret(); this.put("@template ")
+      this.arr(n.typeParameters.params, ", ");
+    }
     this.cod();
     this.put("class "); this.rec(n.id); this.put(" "); this.rec(n.body);
   }
