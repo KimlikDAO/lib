@@ -71,7 +71,7 @@ const compile = async (
   if (!(params instanceof CliArgs))
     params = new CliArgs(params);
   const compiled = await (params.isTrue("fast")
-    ? compileWithBun(params)
+    ? compileWithBun(params, checkFreshFn)
     : compileWithGcc(params, checkFreshFn, transpileFn));
   if (!compiled) return;
   return finalize(compiled, params);
