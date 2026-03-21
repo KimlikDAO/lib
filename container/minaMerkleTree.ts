@@ -19,6 +19,7 @@ class MinaMerkleTree implements MerkleTree {
     this.zeros = zeros;
   }
 
+  /** @pure */
   getNode(key: BinaryKey): bigint {
     return this.nodes[key] ?? this.zeros[key.length];
   }
@@ -36,6 +37,7 @@ class MinaMerkleTree implements MerkleTree {
     }
   }
 
+  /** @pure */
   getWitness(key: HexKey): Witness[] {
     const h = this.height;
     key = hex.toBinary(key).padStart(h, "0").slice(0, h);
@@ -43,7 +45,7 @@ class MinaMerkleTree implements MerkleTree {
     for (let d = 0; key; ++d) {
       const isLeft = key.charCodeAt(key.length - 1) == 48;
       key = key.slice(0, -1);
-      const sibling = this.nodes[key + (+isLeft)] ?? this.zeros[h - d];
+      const sibling = this.nodes[key + +isLeft] ?? this.zeros[h - d];
       witness[d] = { isLeft, sibling };
     }
     return witness;

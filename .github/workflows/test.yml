@@ -35,6 +35,21 @@ jobs:
           bun i
           bun run test --fast
 
+  kdts_unit_tests_container:
+    name: kdts unit tests, container
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-java@v5
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: "temurin"
+          check-latest: true
+      - run: |
+          bun i
+          bun run test container --strict
+
   kdts_unit_tests_crosschain:
     name: kdts unit tests, crosschain
     runs-on: ubuntu-latest

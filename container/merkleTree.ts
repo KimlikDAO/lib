@@ -2,7 +2,7 @@ type HexKey = string;
 
 type BinaryKey = string;
 
-type Value = BigInt;
+type Value = bigint;
 
 type Witness = {
   isLeft: boolean;
@@ -10,9 +10,11 @@ type Witness = {
 };
 
 interface MerkleTree {
-  getNode(key: BinaryKey): bigint | Promise<bigint>;
-  getWitness(key: HexKey): Witness[] | Promise<Witness[]>;
   setLeaf(key: HexKey, value: bigint): bigint | Promise<bigint>;
+  /** @pure */
+  getNode(key: BinaryKey): bigint | Promise<bigint>;
+  /** @pure */
+  getWitness(key: HexKey): Witness[] | Promise<Witness[]>;
 }
 
 export {
