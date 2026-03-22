@@ -136,8 +136,8 @@ const makeStyleSheet = (fileName, cssContent) => {
  * This way, files associated with a component are grouped together and can
  * attach new styles to the same selectors with ease.
  *
- * @param {string[]} strings
- * @param {...string} values
+ * @param {TemplateStringsArray} strings
+ * @param {...(string|number|boolean|null|undefined)} values
  * @return {StyleSheet}
  */
 const css = (strings, ...values) => {

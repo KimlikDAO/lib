@@ -1,4 +1,5 @@
-import { plugin } from "bun";
+import { plugin, Transpiler } from "bun";
+import { readFileSync } from "node:fs";
 import process from "node:process";
 import { LangCode } from "../../util/i18n";
 import { combine, getDir } from "../../util/paths";
@@ -14,7 +15,7 @@ import {
 import { pageTarget } from "./page";
 import { scriptTarget } from "./script";
 import { styleSheetTarget } from "./styleSheet";
-import { Target, registerTargetFunction } from "./target";
+import { registerTargetFunction, Target } from "./target";
 
 /**
  * @param {string} _targetName
@@ -66,9 +67,34 @@ const setupKastro = () => {
   plugin({
     name: "kastro-js",
     async setup(build) {
+      const tsconfig = {
+        compilerOptions: {
+          jsxImportSource: "@kimlikdao/lib/kastro/transpiler",
+        },
+      };
+      const tsxTranspiler = new Transpiler({
+        loader: "tsx",
+        autoImportJSX: true,
+        tsconfig,
+        trimUnusedImports: true,
+      });
+      const jsxTranspiler = new Transpiler({
+        loader: "jsx",
+        autoImportJSX: true,
+        tsconfig,
+        trimUnusedImports: true,
+      });
       const cwdLen = process.cwd().length + 1;
       const path = (args) => args.path.slice(cwdLen);
 
+      build.onLoad({ filter: /\.tsx$/ }, (args) => {
+        const contents = tsxTranspiler.transformSync(readFileSync(args.path, "utf8"));
+        return { contents, loader: "js" };
+      });
+      build.onLoad({ filter: /\.jsx$/ }, (args) => {
+        const contents = jsxTranspiler.transformSync(readFileSync(args.path, "utf8"));
+        return { contents, loader: "js" };
+      });
       build.onLoad({ filter: /\.(svg|png|webp)$/ }, (args) => {
         const code = `import Image from "@kimlikdao/lib/kastro/Image";\n` +
           `export default (props) => Image({...props, src: "${path(args)}" });`;

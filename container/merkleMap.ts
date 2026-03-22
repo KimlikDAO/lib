@@ -1,4 +1,3 @@
-
 type BinaryKey = string;
 
 interface Map<K, V> {

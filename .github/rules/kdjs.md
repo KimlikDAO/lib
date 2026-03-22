@@ -78,7 +78,6 @@ Additionally, we have certain marker types, the most notable of which is
 `PureExpr`.
 
 ```ts
-import { PureExpr } from "@kimlikdao/kjds";
 // If `val` is not used, the entire expression will be eliminated
 const val = g(f()) + h() satisfies PureExpr;
 ```

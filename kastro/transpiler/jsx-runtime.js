@@ -66,11 +66,17 @@ const resolveElementProps = (props) => {
 
 const jsx = (name, props = {}) => {
   const globals = getGlobals();
+  const nameType = typeof name;
+  const isStateful = nameType == "function" && "instance" in props;
   resolveComponentProps(props, globals.Lang);
 
-  const nameType = typeof name;
   if (nameType == "function")
-    return name.call({}, { ...props, ...globals });
+    return isStateful
+      ? new name({ ...props, ...globals })
+      : name.call({}, { ...props, ...globals });
+
+  if (nameType == "object" && typeof name.render == "function")
+    return name.render.call(name, { ...props, ...globals });
 
   let { modifiesChildren, ...prop } = props;
 

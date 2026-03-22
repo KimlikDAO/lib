@@ -3,7 +3,14 @@ import { htmlTag } from "../util/markup/html";
 import compiler from "./compiler/compiler";
 import { addStyleSheet } from "./StyleSheet";
 
-interface FontProps {
+const Font = async ({
+  Lang,
+  BuildMode,
+  shared,
+  href,
+  name,
+  weight,
+}: {
   Lang: LangCode;
   BuildMode: number;
   SharedCss: Set<string>;
@@ -12,19 +19,8 @@ interface FontProps {
   href: string;
   name?: string;
   weight?: number;
-}
-
-const Font = async ({
-  Lang,
-  BuildMode,
-  shared,
-  href,
-  name: nameProp,
-  weight: weightProp,
-}: FontProps): Promise<string> => {
+}): Promise<string> => {
   const match = href.match(/([^/]+?)(\d{3})?\.[^.]+$/);
-  let name = nameProp;
-  let weight = weightProp;
   if (match) {
     name ??= match[1];
     const w = match[2];
@@ -71,17 +67,13 @@ const Font = async ({
       font-display: block;
     }`,
   });
-  return htmlTag(
-    "link",
-    {
-      rel: "preload",
-      href: woff2Bundled,
-      as: "font",
-      type: "font/woff2",
-      crossorigin: true,
-    },
-    true
-  );
+  return htmlTag("link", {
+    rel: "preload",
+    href: woff2Bundled,
+    as: "font",
+    type: "font/woff2",
+    crossorigin: true,
+  }, true);
 };
 
 export default Font;

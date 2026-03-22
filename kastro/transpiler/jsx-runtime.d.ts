@@ -1,11 +1,10 @@
 export namespace JSX {
+  type Element = any;
   type ElementType =
     | keyof IntrinsicElements
     | HTMLElement
-    | ((props: any) => Element)
-    | (new (props: any) => ElementClass);
-  interface Element extends Promise<string> {}
-  interface ElementClass {}
+    | ((props: any) => any)
+    | (new (props: any) => any);
   interface IntrinsicElements {
     [elem: string]: Record<string, unknown>;
   }

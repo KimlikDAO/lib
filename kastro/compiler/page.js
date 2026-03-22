@@ -17,17 +17,18 @@ import HtmlMinifierConfig from "./config/htmlMinifierConfig";
 const pageTarget = (targetName, props) => {
   const targetDir = getDir(targetName);
   const targetModuleName = capitalize(targetDir.slice(getDir(targetDir).length + 1));
-  const targetModulePath = `${targetDir.slice(7)}/${targetModuleName}.jsx`;
+  const targetModulePath = `/${targetDir.slice(7)}/${targetModuleName}`;
 
   const { BuildMode, Lang } = props;
 
   initGlobals(props);
   const StyleSheets = makeStyleSheets();
+
   return import(targetModulePath)
     .then((jsx) => jsx.default({ BuildMode, Lang }).render())
     .then((html) => Promise.all([
       StyleSheets({ BuildMode, Lang, targetDir }),
-      Script({ src: targetModulePath, ...filterGlobalProps(props) })
+      ""//Script({ src: targetModulePath, ...filterGlobalProps(props) })
     ])
       .then(([styleSheets, script]) => {
         html = "<!DOCTYPE html>" + html.replace("</head>", styleSheets + script + "</head>");

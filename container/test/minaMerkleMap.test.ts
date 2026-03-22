@@ -52,7 +52,7 @@ test("getWitnessed returns zero root and zero siblings for an absent key", () =>
 });
 
 test("getWitnessed returns current value, root and witness path", () => {
-  const zeros = buildZeros(32);
+  const zeros = buildZeros(4);
   const map = new MinaMerkleMap(4);
   let witnessed;
 
@@ -63,9 +63,9 @@ test("getWitnessed returns current value, root and witness path", () => {
   expect(witnessed.root).toBe(map.getInner(""));
   expect(witnessed.witness).toEqual([
     { isLeft: false, sibling: 31n },
-    { isLeft: false, sibling: zeros[31] },
-    { isLeft: false, sibling: zeros[30] },
-    { isLeft: false, sibling: zeros[29] }
+    { isLeft: false, sibling: zeros[3] },
+    { isLeft: false, sibling: zeros[2] },
+    { isLeft: false, sibling: zeros[1] }
   ]);
 
   map.set("D", 30n);
@@ -76,8 +76,8 @@ test("getWitnessed returns current value, root and witness path", () => {
   expect(witnessed.witness).toEqual([
     { isLeft: false, sibling: 31n },
     { isLeft: false, sibling: poseidon([0n, 30n]) },
-    { isLeft: false, sibling: zeros[30] },
-    { isLeft: false, sibling: zeros[29] }
+    { isLeft: false, sibling: zeros[2] },
+    { isLeft: false, sibling: zeros[1] }
   ]);
 
   map.set("B", 28n);
@@ -88,8 +88,8 @@ test("getWitnessed returns current value, root and witness path", () => {
   expect(witnessed.witness).toEqual([
     { isLeft: false, sibling: 31n },
     { isLeft: false, sibling: poseidon([0n, 30n]) },
-    { isLeft: false, sibling: poseidon([zeros[31], poseidon([0n, 28n])]) },
-    { isLeft: false, sibling: zeros[29] }
+    { isLeft: false, sibling: poseidon([zeros[3], poseidon([0n, 28n])]) },
+    { isLeft: false, sibling: zeros[1] }
   ]);
 
   witnessed = map.getWitnessed("E");
@@ -98,7 +98,7 @@ test("getWitnessed returns current value, root and witness path", () => {
   expect(witnessed.witness).toEqual([
     { isLeft: true, sibling: 0n },
     { isLeft: false, sibling: poseidon([0n, 30n]) },
-    { isLeft: false, sibling: poseidon([zeros[31], poseidon([0n, 28n])]) },
-    { isLeft: false, sibling: zeros[29] }
+    { isLeft: false, sibling: poseidon([zeros[3], poseidon([0n, 28n])]) },
+    { isLeft: false, sibling: zeros[1] }
   ]);
 });
