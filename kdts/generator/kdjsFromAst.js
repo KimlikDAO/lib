@@ -141,7 +141,10 @@ class Generator {
   TSTypeParameter(n) { this.put(n.name); }
   TSTypeParameterInstantiation(n) { this.put("<"); this.arr(n.params, ", "); this.put(">"); }
   TSTypeReference(n) { this.rec(n.typeName); this.rec(n.typeArguments); }
-  TSExpressionWithTypeArguments(n) { this.rec(n.expression); }
+  TSExpressionWithTypeArguments(n) {
+    this.rec(n.expression);
+    this.rec(n.typeArguments || n.typeParameters);
+  }
 
   // TS Declarations
   TSEnumDeclaration(n) {

@@ -71,4 +71,20 @@ describe("interfaces", () => {
       export { Provider, Connector };
     `));
   });
+
+  test("generic extends keeps type arguments in JSDoc", () => {
+    const input = stripIndent(`
+      interface Box<T> extends ReadonlyArray<T> {}
+    `);
+
+    expect(emit(input)).toBe(stripIndent(`
+      /**
+       * @interface
+       * @extends {ReadonlyArray<T>}
+       * @template T
+       */
+      class Box {
+      }
+    `));
+  });
 });

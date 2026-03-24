@@ -12,7 +12,7 @@ type Value = bigint;
 
 class MinaMerkleMap implements MerkleMap<Field, Value> {
   private nodes: Record<string, bigint> = {};
-  private zeros: bigint[];
+  private zeros: readonly bigint[];
 
   constructor(private height: number) {
     const zeros: bigint[] = Array(height + 1);

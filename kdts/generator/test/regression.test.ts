@@ -118,4 +118,18 @@ describe("regressions", () => {
       }
     `));
   });
+
+  test("implemented generic interface keeps type arguments in JSDoc", () => {
+    const input = stripIndent(`
+      class Cache<K> implements Map<K, bigint> {}
+    `);
+
+    expect(emit(input)).toBe(stripIndent(`
+      /**
+       * @implements {Map<K, bigint>}
+       */
+      class Cache {
+      }
+    `));
+  });
 });
