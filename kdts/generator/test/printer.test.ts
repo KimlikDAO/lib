@@ -1,40 +1,34 @@
 import { describe, expect, test } from "bun:test";
 import { emit, stripIndent } from "./harness";
 
-describe("printer", () => {
-  const exactCases = [
-    {
-      name: "typeof expression",
-      input: "typeof true;",
-      expected: "typeof true;\n"
-    },
-    {
-      name: "void expression",
-      input: "void 0;",
-      expected: "void 0;\n"
-    },
-    {
-      name: "member expression wraps assignment object",
-      input: "(hashToSections[h] ||= []).push(decryptedSections[key]);",
-      expected: "(hashToSections[h] ||= []).push(decryptedSections[key]);\n"
-    },
-    {
-      name: "for with expression init emits one semicolon before test",
-      input: "for (i = 0; i < 10; i++) {}",
-      expected: "for (i = 0; (i < 10); i++) {\n}\n"
-    },
-    {
-      name: "for with variable declaration init emits one semicolon before test",
-      input: "for (let i = 0; i < 10; i++) {}",
-      expected: "for (let i = 0; (i < 10); i++) {\n}\n"
-    }
-  ];
+const expectPrinted = (input: string, expected: string) => (): void => {
+  expect(emit(input)).toBe(expected);
+};
 
-  for (const { name, input, expected } of exactCases) {
-    test(name, () => {
-      expect(emit(input)).toBe(expected);
-    });
-  }
+describe("printer", () => {
+  test("typeof expression", expectPrinted("typeof true;", "typeof true;\n"));
+  test("void expression", expectPrinted("void 0;", "void 0;\n"));
+
+  test(
+    "member expression wraps assignment object",
+    expectPrinted(
+      "(hashToSections[h] ||= []).push(decryptedSections[key]);",
+      "(hashToSections[h] ||= []).push(decryptedSections[key]);\n"
+    )
+  );
+
+  test(
+    "for with expression init emits one semicolon before test",
+    expectPrinted("for (i = 0; i < 10; i++) {}", "for (i = 0; (i < 10); i++) {\n}\n")
+  );
+
+  test(
+    "for with variable declaration init emits one semicolon before test",
+    expectPrinted(
+      "for (let i = 0; i < 10; i++) {}",
+      "for (let i = 0; (i < 10); i++) {\n}\n"
+    )
+  );
 
   test("noinline typed variable keeps block JSDoc before while loop", () => {
     const input = stripIndent(`

@@ -2,20 +2,20 @@ import { describe, expect, test } from "bun:test";
 import { emit, readTaggedTargets } from "./harness";
 import type { TaggedTarget } from "./harness";
 
-type PropertyCase = {
-  input: string;
-  name: string;
+type PropertyExpectation = {
   targets: TaggedTarget[];
   outContains?: string[];
   outExcludes?: string[];
 };
 
-const expectPropertyOutput = ({
-  input,
-  targets,
-  outContains = [],
-  outExcludes = []
-}: PropertyCase): void => {
+const expectPropertyOutput = (
+  input: string,
+  {
+    targets,
+    outContains = [],
+    outExcludes = []
+  }: PropertyExpectation
+) => (): void => {
   const out = emit(input);
   expect(readTaggedTargets(out)).toEqual(targets);
   for (const fragment of outContains)
@@ -25,56 +25,55 @@ const expectPropertyOutput = ({
 };
 
 describe("property JSDoc", () => {
-  const cases: PropertyCase[] = [
-    {
-      name: "field infers generic constructor type",
-      input: `
+  test(
+    "field infers generic constructor type",
+    expectPropertyOutput(`
 class A<K, V> {
   map = new Map<K, V>();
 }
-`,
+`, {
       targets: [
         { tag: "type", type: "Map<K, V>", target: "map = new Map()" }
       ]
-    },
-    {
-      name: "explicit field annotation wins over init inference",
-      input: `
+    })
+  );
+
+  test(
+    "explicit field annotation wins over init inference",
+    expectPropertyOutput(`
 class A<K, V, T> {
   value: T = new Map<K, V>();
 }
-`,
+`, {
       targets: [
         { tag: "type", type: "T", target: "value = new Map()" }
       ]
-    },
-    {
-      name: "unsupported initializer emits no empty type block",
-      input: `
+    })
+  );
+
+  test(
+    "unsupported initializer emits no empty type block",
+    expectPropertyOutput(`
 class A {
   x = foo();
 }
-`,
+`, {
       targets: [],
       outContains: ["x = foo();"],
       outExcludes: ["@type {}", "/** @type {"]
-    },
-    {
-      name: "interface property keeps explicit type",
-      input: `
+    })
+  );
+
+  test(
+    "interface property keeps explicit type",
+    expectPropertyOutput(`
 interface Point {
   x: bigint;
 }
-`,
+`, {
       targets: [
         { tag: "type", type: "bigint", target: "x" }
       ]
-    }
-  ];
-
-  for (const testCase of cases) {
-    test(testCase.name, () => {
-      expectPropertyOutput(testCase);
-    });
-  }
+    })
+  );
 });

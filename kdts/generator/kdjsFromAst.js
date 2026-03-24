@@ -244,7 +244,15 @@ class Generator {
     } else
       this.put(this.typeMap?.get(n.name) ?? n.name);
   }
-  FunctionExpression(n) { }
+  FunctionExpression(n, showTypes) {
+    if (showTypes == undefined) showTypes = IdentifierTypes.JsDoc;
+    if (showTypes == IdentifierTypes.JsDoc && n.returnType) {
+      this.put("/** @return {"); this.rec(n.returnType); this.put("} */ ");
+    }
+    if (n.async) this.put("async ");
+    this.put("function ("); this.arr(n.params, ", ", showTypes); this.put(") ");
+    this.rec(n.body, null, /* wrapped */ true)
+  }
   ArrowFunctionExpression(n, showTypes) {
     // By default, show types in the inlineJsDoc format
     // If we've already printed the types in the jsDoc format, omit them.
@@ -418,6 +426,11 @@ class Generator {
       this.rec(n.id);
       if (n.init) { this.put(" = "); this.rec(n.init); }
     }
+  }
+  FunctionDeclaration(n) {
+    this.jsDoc(n);
+    this.put("function "); this.rec(n.id); this.put("("); this.arr(n.params, ", "); this.put(") ");
+    this.rec(n.body);
   }
   ArrayPattern(n) { this.put("["); this.arr(n.elements, ", "); this.put("]"); }
   ObjectPattern(n) { this.put("{ "); this.arr(n.properties, ", "); this.put(" }"); }
