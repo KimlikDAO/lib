@@ -76,7 +76,7 @@ const jsx = (name, props = {}) => {
       : name.call({}, { ...props, ...globals });
 
   if (nameType == "object" && typeof name.render == "function")
-    return name.render.call(name, { ...props, ...globals });
+    return name.render({ ...props, ...globals });
 
   let { modifiesChildren, ...prop } = props;
 

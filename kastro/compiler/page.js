@@ -3,6 +3,7 @@ import { capitalize, getDir } from "../../util/paths";
 import { filterGlobalProps } from "../props";
 import { Script } from "../Script";
 import { makeStyleSheets } from "../StyleSheet";
+import render from "../transpiler/render.js";
 import { initGlobals } from "../transpiler/pageGlobals";
 import HtmlMinifierConfig from "./config/htmlMinifierConfig";
 
@@ -25,7 +26,10 @@ const pageTarget = (targetName, props) => {
   const StyleSheets = makeStyleSheets();
 
   return import(targetModulePath)
-    .then((jsx) => jsx.default({ BuildMode, Lang }).render())
+    .then((mod) => render({
+      name: mod.default,
+      props: { BuildMode, Lang }
+    }, { BuildMode, Lang }))
     .then((html) => Promise.all([
       StyleSheets({ BuildMode, Lang, targetDir }),
       ""//Script({ src: targetModulePath, ...filterGlobalProps(props) })

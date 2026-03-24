@@ -1,5 +1,9 @@
 export namespace JSX {
-  type Element = any;
+  interface RuntimeNode {
+    name: ElementType;
+    props: Record<string, unknown>;
+  }
+  type Element = RuntimeNode;
   type ElementType =
     | keyof IntrinsicElements
     | HTMLElement
@@ -17,5 +21,9 @@ declare global {
 }
 
 export const Fragment: "";
-export function jsx(type: JSX.ElementType, props: Record<string, unknown>, key?: string): JSX.Element;
-export function jsxs(type: JSX.ElementType, props: Record<string, unknown>, key?: string): JSX.Element;
+export interface RuntimeNode {
+  name: JSX.ElementType | { name: string, id: string };
+  props: Record<string, unknown>;
+}
+export function jsx(type: JSX.ElementType | { name: string, id: string }, props: Record<string, unknown>, key?: string): RuntimeNode;
+export function jsxs(type: JSX.ElementType | { name: string, id: string }, props: Record<string, unknown>, key?: string): RuntimeNode;

@@ -1,7 +1,7 @@
 import * as swc from "@swc/core";
 import { write } from "bun";
 import UglifyJS, { CompressOptions, MinifyOptions } from "uglify-js";
-import { CliArgs } from "../util/cli";
+import { CliArgs, CliArgValue } from "../util/cli";
 import { compile as compileWithBun } from "./bun/compile";
 import { compile as compileWithGcc } from "./gcc/compile";
 
@@ -58,7 +58,7 @@ const finalize = async (
   return result;
 };
 
-type CompileParams = Record<string, boolean | string | string[]> | CliArgs;
+type CompileParams = Record<string, CliArgValue> | CliArgs;
 
 type TranspileFn = (content: string, file: string, isEntry?: boolean) =>
   string | null;

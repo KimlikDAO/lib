@@ -1,14 +1,11 @@
-import dom from "@kimlikdao/util/dom";
-import { LangCode } from "@kimlikdao/util/i18n";
+import dom from "@kimlikdao/lib/kastro/dom";
+import { LangCode } from "@kimlikdao/lib/util/i18n";
 import ArrowSvg from "./arrow.svg";
 import Css from "./LandingPage.css";
 
-/**
- * @param {{ Lang: LangCode }} props
- */
-const LandingPage = ({ Lang }) => {
-  const Button = dom.button(Css.ButtonId);
-  const Text = dom.span(Css.TextId);
+const LandingPage = ({ Lang }: { Lang: LangCode }) => {
+  const Button = dom.button(Css.Button);
+  const Text = dom.span(Css.Text);
 
   return (
     <html lang={Lang}>

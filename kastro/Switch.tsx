@@ -16,7 +16,7 @@ class Switch {
     const Root = dom.div(id);
     this.root = Root;
     return (
-      <Root modifiesChildren>
+      <Root>
         {modify(children, (c, i) => c.nodisplay = i != initialPane)}
       </Root>
     );

@@ -1,7 +1,7 @@
 import { partition } from "../../util/arrays";
-import { determineEnumType } from "./enums";
 import { Modifier } from "../types/modifier";
 import { partitionBody } from "./interfaces";
+import { inferEnumType, inferFromExpression } from "./inference";
 
 /** @enum {number} */
 const IdentifierTypes = {
@@ -26,26 +26,6 @@ const wrapExpression = (expr) =>
 const needsParensForMemberObject = (node) =>
   node?.type == "AssignmentExpression" || node?.type == "SequenceExpression";
 
-/**
- * Derives a TS keyword type node from a literal expression.
- *
- * Returns undefined if the argument is not a Literal or if we don't want to
- * infer a type from it.
- *
- * @param {unknown} n
- * @return {unknown|undefined}
- */
-const typeFromLiteral = (n) => {
-  if (!n || n.type != "Literal") return;
-  const v = n.value;
-  if (v === null) return { type: "TSNullKeyword" };
-  switch (typeof v) {
-    case "string": return { type: "TSStringKeyword" };
-    case "number": return { type: "TSNumberKeyword" };
-    case "boolean": return { type: "TSBooleanKeyword" };
-    case "bigint": return { type: "TSBigIntKeyword" };
-  }
-};
 
 /**
  * Rest parameters are typed as T[], readonly T[], Array<T>, or ReadonlyArray<T>.
@@ -165,7 +145,7 @@ class Generator {
 
   // TS Declarations
   TSEnumDeclaration(n) {
-    const type = determineEnumType(n);
+    const type = inferEnumType(n);
     this.put(`/** @enum {${type}} */`); this.ret();
     this.put("const "); this.rec(n.id); this.put(" = {");
     this.inc(); this.arrLines(n.members, ","); this.dec(); this.ret();
@@ -509,11 +489,14 @@ class Generator {
 
   // KDJS jsdoc
   jsDocType(n, modifiers) {
+    n.typeAnnotation ||= inferFromExpression(n.value);
     const tag = (modifiers & Modifier.Define)
       ? "define" : (modifiers & Modifier.Readonly) ? "const" : "type";
     if (modifiers <= (Modifier.Define | Modifier.Readonly)) {
+      if (!n.typeAnnotation) return;
       this.put(`/** @${tag} {`); this.rec(n.typeAnnotation); this.put("} */"); this.ret();
     } else {
+      if (!n.typeAnnotation && !(modifiers & Modifier.NoInline)) return;
       this.doc();
       if (modifiers & Modifier.NoInline) { this.ret(); this.put("@noinline"); }
       if (n.typeAnnotation) { this.ret(); this.put(`@${tag} {`); this.rec(n.typeAnnotation); this.put("}"); }
@@ -542,7 +525,7 @@ class Generator {
       if (param.type == "TSParameterProperty")
         param = param.parameter;
       if (param.type == "AssignmentPattern") {
-        param.left.typeAnnotation ||= typeFromLiteral(param.right);
+        param.left.typeAnnotation ||= inferFromExpression(param.right);
         isOptional = true;
         param = param.left;
       }

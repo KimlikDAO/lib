@@ -1,17 +1,14 @@
 /**
  * These MIME types have an internal compression mechanism and
  * do not benefit from a secondary compression.
- *
- * @type {Record<string, boolean>}
  */
-const CompressedMimes = {
+const CompressedMimes: Record<string, boolean> = {
   "woff2": true,
   "png": true,
   "webp": true,
 };
 
-/** @type {Record<string, string>} */
-const Mimes = {
+const Mimes: Record<string, string> = {
   "css": "text/css",
   "js": "application/javascript;charset=utf-8",
   // Font
@@ -26,6 +23,6 @@ const Mimes = {
 };
 
 export {
+  CompressedMimes,
   Mimes,
-  CompressedMimes
 };

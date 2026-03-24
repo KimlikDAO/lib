@@ -25,7 +25,7 @@ class KeyedSwitch {
     this.root = Root;
 
     return (
-      <Root modifiesChildren>
+      <Root>
         {modify(children as unknown as HTMLElement[], (c: HTMLElement, i) => {
           c.nodisplay = initialPane ? c.key != initialPane : i != this.selectedPane;
           delete c.key;

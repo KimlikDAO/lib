@@ -33,10 +33,18 @@ const partition = <T>(
   return [pos, neg];
 };
 
-const modify = <T>(arr: T[], f: (element: T, index: number) => void): T[] => {
+/** @modifies {arguments} */
+const modify = <T>(
+  arr: T[], f: (element: T, index: number) => void
+): T[] => {
   for (let i = 0; i < arr.length; ++i)
     f(arr[i], i);
   return arr;
 };
 
-export { chunk, modify, partition, shuffle };
+export {
+  chunk,
+  modify,
+  partition,
+  shuffle,
+};

@@ -2,10 +2,21 @@ import { spawn } from "bun";
 import { mkdir } from "node:fs/promises";
 import { optimize } from "svgo";
 import { getDir } from "../../util/paths";
+import render from "../transpiler/render.js";
 import SvgoConfig from "./config/svgoConfig";
 import SvgoInlineConfig from "./config/svgoInlineConfig";
 
 const Decoder = new TextDecoder();
+
+const optimizeChildTarget = (props, config) => props.childTargets[0]
+  .then(({ content }) => optimize(Decoder.decode(content), config).data);
+
+const renderTsxSvg = (props) => props.childTargets[0]
+  .then(({ targetName: childTargetName }) => import(childTargetName))
+  .then((mod) => render({
+    name: mod.default,
+    props
+  }, props));
 
 const webp = (inputFile, outputFile, { passes = 10, quality = 70, bundleWidth, bundleHeight }) =>
   mkdir(getDir(outputFile), { recursive: true })
@@ -43,22 +54,18 @@ const webpTarget = (targetName, props) =>
     .then(() => { });
 
 /** @const {TargetFunction} */
-const svgTarget = (_, props) => props.childTargets[0]
-  .then(({ content }) => optimize(Decoder.decode(content), SvgoConfig).data);
+const svgTarget = (_, props) => optimizeChildTarget(props, SvgoConfig);
 
 /** @const {TargetFunction} */
-const inlineSvgTarget = (_, props) => props.childTargets[0]
-  .then(({ content }) => optimize(Decoder.decode(content), SvgoInlineConfig).data);
+const inlineSvgTarget = (_, props) => optimizeChildTarget(props, SvgoInlineConfig);
 
 /** @const {TargetFunction} */
-const jsxSvgTarget = (_, props) => props.childTargets[0]
-  .then(({ targetName: childTargetName }) => import(childTargetName))
-  .then((mod) => mod.default(props).render());
+const tsxSvgTarget = (_, props) => renderTsxSvg(props);
 
 export {
   inlineSvgTarget,
-  jsxSvgTarget,
   pngTarget,
   svgTarget,
+  tsxSvgTarget,
   webpTarget
 };

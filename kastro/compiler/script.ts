@@ -1,16 +1,25 @@
 import { compile } from "../../kdts/compile";
+import type { Props } from "../props";
 import { filterGlobalProps, filterOutGlobalProps } from "../props";
 import { transpile } from "../transpiler/transpiler";
 
-/** @const {TargetFunction} */
-const scriptTarget = (_, { src: entry, ...props }) => {
+type ScriptTargetProps = Props & {
+  checkFreshFn?: (deps: string[]) => Promise<boolean>;
+  globals?: Record<string, unknown>;
+  src: string;
+};
+
+const scriptTarget = (
+  _targetName: string,
+  { src: entry, ...props }: ScriptTargetProps
+): Promise<string | void> => {
   const isolateDir = props.Lang ? "kdts-" + props.Lang : "kdts";
-  const { globals, ...rest} = filterOutGlobalProps(props);
+  const { globals, ...rest } = filterOutGlobalProps(props);
   return compile({
     entry,
     isolateDir,
     globals: {
-      ...props.globals,
+      ...globals,
       ...filterGlobalProps(props),
       GEN: false
     },

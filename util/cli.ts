@@ -86,6 +86,7 @@ const getSecret = async (
 export {
   Blue,
   Clear,
+  CliArgValue,
   CliArgs,
   Green,
   Red,
