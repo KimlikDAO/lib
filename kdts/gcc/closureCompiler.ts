@@ -11,9 +11,6 @@ const JavaRuntimeArgs = [
   "--sun-misc-unsafe-memory-access=allow",
 ];
 
-type ClosureCompilerPlatform = "native" | "java";
-type FileExists = (path: string) => boolean;
-
 interface CompileParams {
   allFiles: string[];
   entryPoint: string;
@@ -24,16 +21,15 @@ interface CompileParams {
 
 interface ClosureCompilerCommand {
   cmd: string[];
-  platform: ClosureCompilerPlatform;
+  platform: "native" | "java";
 }
 
 const resolveInstalledPath = (
   packagePath: string,
-  fileExists: FileExists = existsSync
 ): string | void => {
   for (const dir of NodeModulesDirs) {
     const installedPath = resolve(`${dir}/${packagePath}`);
-    if (fileExists(installedPath))
+    if (existsSync(installedPath))
       return installedPath;
   }
 };
@@ -41,7 +37,6 @@ const resolveInstalledPath = (
 const getNativeImagePath = (
   platform = process.platform,
   arch = process.arch,
-  fileExists: FileExists = existsSync,
 ): string | void => {
   let compilerPackage = "";
   if (platform == "darwin")
@@ -57,18 +52,14 @@ const getNativeImagePath = (
 
   return resolveInstalledPath(
     `${compilerPackage}/${platform == "win32" ? "compiler.exe" : "compiler"}`,
-    fileExists
   );
 };
 
-const getJavaJarPath = (fileExists: FileExists = existsSync): string => {
-  const javaJarPath = resolveInstalledPath(
-    "google-closure-compiler-java/compiler.jar",
-    fileExists
-  );
-  if (javaJarPath)
-    return javaJarPath;
-  throw new Error("No Closure Compiler jar found in node_modules.");
+const getJavaJarPath = (): string => {
+  const javaJarPath = resolveInstalledPath("google-closure-compiler-java/compiler.jar");
+  if (!javaJarPath)
+    throw new Error("No Closure Compiler jar found in node_modules.");
+  return javaJarPath;
 };
 
 const createCompilerArgs = (params: CompileParams): string[] => {
@@ -97,17 +88,15 @@ const createCompilerArgs = (params: CompileParams): string[] => {
   return args;
 };
 
-const createClosureCompilerCommand = (
-  params: CompileParams,
-  nativeImagePath = getNativeImagePath(),
-  javaJarPath = getJavaJarPath()
-): ClosureCompilerCommand => {
+const createClosureCompilerCommand = (params: CompileParams,): ClosureCompilerCommand => {
   const args = createCompilerArgs(params);
+  const nativeImagePath = getNativeImagePath();
   if (nativeImagePath)
     return {
       cmd: [nativeImagePath, ...args],
       platform: "native"
     };
+  const javaJarPath = getJavaJarPath()
   return {
     cmd: ["java", ...JavaRuntimeArgs, "-jar", javaJarPath, ...args],
     platform: "java"

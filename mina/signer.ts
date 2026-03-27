@@ -9,7 +9,7 @@ import address from "./address";
 import signature from "./signature";
 import { SignerSignature } from "./signature.d";
 
-/** @pure  */
+/** @pure */
 const signFields = (
   fields: readonly bigint[],
   privKey: bigint
@@ -22,7 +22,7 @@ const signFields = (
   } as SignerSignature;
 }
 
-/** @pure  */
+/** @pure */
 const signMessage = (message: string, privKey: bigint): SignerSignature => {
   const A = G.copy().multiply(privKey).proj();
   const sig = signMessageUnpacked(message, privKey, A);
@@ -32,7 +32,7 @@ const signMessage = (message: string, privKey: bigint): SignerSignature => {
   } as SignerSignature;
 }
 
-/** @pure  */
+/** @pure */
 const verifyFields = (
   fields: readonly bigint[],
   sig: SignerSignature
@@ -42,7 +42,7 @@ const verifyFields = (
   return verifyFieldsUnpacked(fields, r, s, pubKey);
 }
 
-/** @pure  */
+/** @pure */
 const verifyMessage = (message: string, sig: SignerSignature): boolean => {
   const { r, s } = signature.toUnpacked(sig.signature);
   const pubKey = address.toPublicKey(sig.signer);

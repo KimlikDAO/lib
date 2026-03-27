@@ -7,7 +7,7 @@ import bigints from "../util/bigints";
 import { Address } from "./address.d";
 import { decode, encode } from "./encoding";
 
-/** @pure  */
+/** @pure */
 const fromPublicKey = ({ x, yParity }: CompressedPoint): Address => {
   const buff = new Uint8Array(40);
   buff[0] = 203;
@@ -17,7 +17,7 @@ const fromPublicKey = ({ x, yParity }: CompressedPoint): Address => {
   return encode(buff);
 }
 
-/** @pure  */
+/** @pure */
 const toPublicKey = (addr: Address): CompressedPoint => {
   const bytes = decode(addr);
   return {
@@ -26,7 +26,7 @@ const toPublicKey = (addr: Address): CompressedPoint => {
   };
 }
 
-/** @pure  */
+/** @pure */
 const fromPoint = (A: AffinePoint): Address =>
   fromPublicKey(compressPoint(A));
 
