@@ -4,9 +4,9 @@ import { combine, getDir } from "../../util/paths";
 import { resolveRootPath } from "../frontend/resolver";
 import { SourceSet } from "../frontend/sourceSet";
 import { ModuleImports } from "../model/moduleImport";
-import { transpileTs } from "../transpiler/kdjsFromTs";
 import { transpileDts } from "./externFromDts";
 import { transpileKdjs } from "./gccFromKdjs";
+import { transpileTs } from "./kdjsFromTs";
 
 const DECL_FILE = /\.(d|e)\.(js|ts)$/;
 

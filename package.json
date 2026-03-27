@@ -16,6 +16,7 @@
     "@ethereumjs/evm": "^10.1.1",
     "@noble/secp256k1": "^3.0.0",
     "@types/bun": "^1.3.11",
+    "@types/css-tree": "^2.3.11",
     "@types/sax": "^1.2.7",
     "@types/uglify-js": "^3.17.5",
     "ethers": "^6.16.0",

@@ -1,5 +1,5 @@
-import { compiler as ClosureCompiler, CompileOptions } from "google-closure-compiler";
 import { CliArgs } from "../../util/cli";
+import { compileWithClosureCompiler } from "./closureCompiler";
 import { postprocess } from "./postprocess";
 import { preprocessAndIsolate, TranspileFn } from "./preprocess";
 
@@ -36,42 +36,18 @@ const compile = async (
   if (ignoreUnusedLocals)
     jsCompErrors.shift();
 
-  const options = {
-    "js": allFiles,
-    "compilation_level": "ADVANCED",
-    "charset": "utf-8",
-    "warning_level": "verbose",
-    "emit_use_strict": false,
-    "rewrite_polyfills": false,
-    "assume_function_wrapper": true,
-    "jscomp_error": jsCompErrors,
-    "jscomp_warning": jsCompWarnings,
-    "language_in": "UNSTABLE",
-    "language_out": "UNSTABLE",
-    "chunk_output_type": "ES_MODULES",
-    "module_resolution": "NODE",
-    "dependency_mode": "PRUNE",
-    "entry_point": args.asStringOr("entry", ""),
-  };
-
-  const closureCompiler = new ClosureCompiler(options as CompileOptions);
-  closureCompiler.spawnOptions = {
-    "cwd": isolateDir
-  };
-  console.info("kdts isolate:", isolateDir);
-  return new Promise((resolve, reject) => {
-    closureCompiler.run((exitCode, output, errors) => {
-      if (exitCode || errors) {
-        reject(errors);
-        return;
-      }
-      output = postprocess(output, unlinkedImports);
-      if (args.isTrue("printGccOutput"))
-        console.log("GCC output\n", output);
-      console.log(`GCC size:\t${output.length}`);
-      resolve(output);
-    });
+  let output = await compileWithClosureCompiler({
+    allFiles,
+    entryPoint: args.asStringOr("entry", ""),
+    isolateDir,
+    jsCompErrors,
+    jsCompWarnings,
   });
+  output = postprocess(output, unlinkedImports);
+  if (args.isTrue("printGccOutput"))
+    console.log("GCC output\n", output);
+  console.log(`GCC size:\t${output.length}`);
+  return output;
 }
 
 export { compile };
