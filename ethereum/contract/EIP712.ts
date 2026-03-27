@@ -23,7 +23,7 @@ const TypeRegistry = {
  */
 const encodeType = (typeName: EIP712Type, typeRegistry: EIP712TypeRegistry): string => {
   const seen = new Set<string>();
-  const stack = [typeName];
+  const stack = [typeName] as string[];
   while (stack.length) {
     const childName = stack.pop() as string;
     if (seen.has(childName)) continue;
@@ -32,10 +32,10 @@ const encodeType = (typeName: EIP712Type, typeRegistry: EIP712TypeRegistry): str
     if (!childType) continue;
     for (const { type } of childType)
       if (type in typeRegistry)
-        stack.push(type as EIP712Type);
+        stack.push(type);
   }
-  let ordered = [...seen].filter((t) => t != typeName).sort();
-  ordered = [typeName, ...ordered];
+  let ordered = [...seen].filter((t: string) => t != typeName).sort();
+  ordered = [typeName, ...ordered] as string[];
   let ser = "";
   for (const type of ordered)
     ser += `${type}(${typeRegistry[type].map((m) => `${m.type} ${m.name}`).join(",")})`;

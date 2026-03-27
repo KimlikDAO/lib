@@ -31,14 +31,54 @@ enum Modifier {
   ModifiesThisOnly = 1 << 12,
 }
 
+const ParseBracedModifier = -1;
+
+const JsDocModifierMap: Record<string, Modifier | -1> = {
+  "alwaysinline": Modifier.AlwaysInline,
+  "define": Modifier.Define,
+  "modifies": ParseBracedModifier,
+  "modifies {arguments}": Modifier.ModifiesArgumentsOnly,
+  "modifies {this}": Modifier.ModifiesThisOnly,
+  "noinline": Modifier.NoInline,
+  "nosideeffects": Modifier.NoSideEffects,
+  "pure": Modifier.Pure,
+  "pureOrBreakMyCode": Modifier.Pure
+};
+
+const isWhitespace = (charCode: number): boolean => charCode <= 32;
+
 const modifiersFromJsDoc = (jsDoc: string): number => {
   let modifiers = 0;
-  if (jsDoc.includes("@noinline")) modifiers |= Modifier.NoInline;
-  if (jsDoc.includes("@nosideeffects")) modifiers |= Modifier.NoSideEffects;
-  if (jsDoc.includes("@pure")) modifiers |= Modifier.Pure;
-  if (jsDoc.includes("@noinline")) modifiers |= Modifier.NoInline;
-  if (jsDoc.includes("@define")) modifiers |= Modifier.Define;
-  if (jsDoc.includes("@modifies {arguments}")) modifiers |= Modifier.ModifiesArgumentsOnly;
+  const parts = jsDoc.split("@");
+
+  for (let i = 1; i < parts.length; ++i) {
+    const part = parts[i];
+    let cursor = 0;
+    while (cursor < part.length && !isWhitespace(part.charCodeAt(cursor)))
+      ++cursor;
+    if (!cursor) continue;
+
+    const directive = part.slice(0, cursor);
+    const rule = JsDocModifierMap[directive];
+    if (rule == undefined) continue;
+    if (rule != ParseBracedModifier) {
+      modifiers |= rule;
+      continue;
+    }
+
+    while (cursor < part.length && isWhitespace(part.charCodeAt(cursor)))
+      ++cursor;
+    if (part.charCodeAt(cursor) != 123) continue;
+
+    const bracedEnd = part.indexOf("}", cursor + 1);
+    if (bracedEnd == -1) continue;
+
+    const bracedRule =
+      JsDocModifierMap[`${directive} ${part.slice(cursor, bracedEnd + 1)}`];
+    if (bracedRule != undefined && bracedRule != ParseBracedModifier)
+      modifiers |= bracedRule;
+  }
+
   return modifiers;
 }
 

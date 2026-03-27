@@ -1,7 +1,9 @@
 import { partition } from "../../util/arrays";
+import { toIdentifier } from "../gcc/generator";
 import { Modifier } from "../types/modifier";
-import { partitionBody } from "./interfaces";
 import { inferEnumType, inferFromExpression } from "./inference";
+import { partitionBody } from "./interfaces";
+import { conditionalType } from "./ttlGenerator";
 
 /** @enum {number} */
 const IdentifierTypes = {
@@ -51,7 +53,7 @@ const unwrapArrayElementType = (n) => {
 class Generator {
   indent = "";
   out = "";
-  constructor(typeMap) { this.typeMap = typeMap; }
+  constructor(options = {}) { this.djs = options.djs; }
 
   inc() { this.indent += "  "; }
   dec() { this.indent = this.indent.slice(0, -2); }
@@ -125,6 +127,7 @@ class Generator {
   TSConstructorType(n) {
     this.put("new "); this.TSFunctionType(n);
   }
+  TSConditionalType(n) { this.put("OUT"); }
   TSLiteralType(n) { this.put(typeof n.literal.value); }
   TSParenthesizedType(n) { this.put("("); this.rec(n.typeAnnotation); this.put(")"); }
   TSTupleType(n) { this.rec(n.elementTypes[0]); this.put("[]"); } // TODO() throw if multiple types
@@ -176,7 +179,7 @@ class Generator {
     this.put("class "); this.rec(n.id); this.put(" "); this.rec(n.body);
   }
   TSInterfaceBody(n) {
-    if (this.typeMap) { this.DJSInterfaceBody(n); return; }
+    if (this.djs) { this.DJSInterfaceBody(n); return; }
     this.put("{"); this.inc();
     this.arrLines(n.body, "", /* inInterface */ true);
     this.dec(); this.ret(); this.put("}");
@@ -193,6 +196,11 @@ class Generator {
     }
   }
   TSParameterProperty(n) { this.rec(n.parameter); }
+  TSDeclareFunction(n) {
+    this.jsDoc(n);
+    this.put("function "); this.rec(n.id); this.put("("); this.arr(n.params, ", "); this.put(") ");
+    this.put("{}");
+  }
 
   // JS Expressions
   Literal(n) { this.put(n.raw); }
@@ -236,16 +244,21 @@ class Generator {
       this.put(n.optional ? "?." : "."); this.rec(n.property);
     }
   }
+  identifierName(n) {
+    if (!this.djs || !n.symbolRef)
+      return n.name;
+    return toIdentifier(n.symbolRef.source, n.symbolRef.exportedName);
+  }
   Identifier(n, showTypes) {
     if (showTypes == IdentifierTypes.Ts && n.typeAnnotation) {
-      this.put(this.typeMap?.get(n.name) ?? n.name);
+      this.put(this.identifierName(n));
       if (n.optional) this.put("?");
       this.put(": "); this.rec(n.typeAnnotation);
     } else if (showTypes == IdentifierTypes.JsDoc && n.typeAnnotation) {
       this.put("/** @type {"); this.rec(n.typeAnnotation); this.put("} */ ");
-      this.put(this.typeMap?.get(n.name) ?? n.name);
+      this.put(this.identifierName(n));
     } else
-      this.put(this.typeMap?.get(n.name) ?? n.name);
+      this.put(this.identifierName(n));
   }
   FunctionExpression(n, showTypes) {
     if (showTypes == undefined) showTypes = IdentifierTypes.JsDoc;
@@ -283,8 +296,18 @@ class Generator {
       if (n.value.async) this.put("async "); this.rec(n.key);
       this.put("("); this.arr(n.value.params, ", "); this.put(") ");
       this.rec(n.value.body);
-    } else if (!n.shorthand) {
-      if (n.computed) this.put("["); this.rec(n.key); if (n.computed) this.put("]");
+    } else if (!n.shorthand
+      || (this.djs
+        && n.shorthand
+        && n.key?.type == "Identifier"
+        && n.value?.type == "Identifier"
+        && this.identifierName(n.value) != n.key.name)) {
+      if (n.computed) {
+        this.put("["); this.rec(n.key); this.put("]");
+      } else if (n.key?.type == "Identifier")
+        this.put(n.key.name);
+      else
+        this.rec(n.key);
       this.put(": "); this.rec(n.value);
     } else
       this.rec(n.value);
@@ -347,6 +370,7 @@ class Generator {
   }
   ImportDefaultSpecifier(n) { this.rec(n.local); }
   ExportNamedDeclaration(n) {
+    if (this.djs && n.declaration) { this.rec(n.declaration); return; }
     this.ret();
     if (n.specifiers.length < 3) {
       this.put("export { "); this.arr(n.specifiers, ", "); this.put(" };");
@@ -362,10 +386,15 @@ class Generator {
   }
   ExportDefaultDeclaration(n) { this.put("export default "); this.rec(n.declaration); }
   ClassDeclaration(n) {
-    if (n.implements) {
+    if (n.implements || n.typeParameters) {
       this.doc();
-      for (const iface of n.implements) {
-        this.ret(); this.put("@implements {"); this.rec(iface); this.put("}");
+      if (n.implements)
+        for (const iface of n.implements) {
+          this.ret(); this.put("@implements {"); this.rec(iface); this.put("}");
+        }
+      if (n.typeParameters) {
+        this.ret(); this.put("@template ");
+        this.arr(n.typeParameters.params, ", ");
       }
       this.cod();
     }
@@ -379,7 +408,7 @@ class Generator {
     this.dec(); this.put(")");
   }
   ClassBody(n) {
-    if (this.typeMap) { this.DJSClassBody(n); return; }
+    if (this.djs) { this.DJSClassBody(n); return; }
     this.put("{"); this.inc();
     this.arrLines(n.body, "");
     this.dec(); this.ret(); this.put("}");
@@ -391,7 +420,7 @@ class Generator {
     this.jsDoc(n.value, n.value.modifiers);
     if (n.static) this.put("static "); if (n.value.async) this.put("async ");
     this.rec(n.key); this.put("("); this.arr(n.value.params, ", "); this.put(") ");
-    this.rec(n.value.body);
+    if (n.value.body) this.rec(n.value.body); else this.put("{}");
   }
   PropertyDefinition(n) {
     this.jsDocType(n, n.modifiers);
@@ -526,9 +555,12 @@ class Generator {
     if (n.typeParameters) {
       // Inside the templated function, the template parameter is treated as
       // unknown, as there is no template narrowing in gcc.
-      this.ret(); this.put("@suppress {reportUnknownTypes}");
+      if (!this.djs) { this.ret(); this.put("@suppress {reportUnknownTypes}"); }
       this.ret(); this.put("@template ")
       this.arr(n.typeParameters.params, ", ");
+      if (n.returnType?.typeAnnotation?.type == "TSConditionalType") {
+        this.ret(); this.put(`@template OUT := ${conditionalType(n.returnType, { djs: this.djs })} =:`)
+      }
     }
     if (modifiers & Modifier.Override) { this.ret(); this.put("@override"); }
     if (modifiers & Modifier.NoInline) { this.ret(); this.put("@noinline"); }
@@ -582,11 +614,11 @@ class Generator {
     if (!n && !props.length) return;
     if (n) {
       const params = n.value.params;
-      const body = n.value.body.body;
       this.jsDoc(n.value);
       this.put("constructor("); this.arr(params, ", "); this.put(")");
       this.put(" {"); this.inc();
-      this.arrLines(body, "");
+      const body = n.value.body?.body;
+      if (body) this.arrLines(body, "");
       for (let param of params)
         if (param.type == "TSParameterProperty") {
           const modifiers = param.readonly ? Modifier.Readonly : 0;
@@ -612,8 +644,8 @@ class Generator {
   }
 }
 
-const generate = (node, typeMap) => {
-  const g = new Generator(typeMap);
+const generate = (node, options) => {
+  const g = new Generator(options);
   g.rec(node);
   return g.out;
 }

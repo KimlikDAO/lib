@@ -6,7 +6,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "postinstall": "mkdir -p ./node_modules/@kimlikdao/lib && ln -sfn ../../../kastro ./node_modules/@kimlikdao/lib/kastro && ln -sfn ../../../kdts ./node_modules/@kimlikdao/lib/kdts",
+    "postinstall": "mkdir -p ./node_modules/@kimlikdao && ln -sfn ../../kastro ./node_modules/@kimlikdao/kastro && ln -sfn ../../kdts ./node_modules/@kimlikdao/kdts",
     "test": "bun util/testing/runner.js test",
     "bench": "bun util/testing/runner.js bench",
     "kdts": "bun kdts/kdts.js",
@@ -28,7 +28,7 @@
     "astring": "^1.9.0",
     "css-tree": "^3.2.1",
     "csso": "^5.0.5",
-    "google-closure-compiler": "^20260318.0.0",
+    "google-closure-compiler": "^20260324.0.0",
     "html-minifier": "^4.0.0",
     "js-yaml": "^4.1.1",
     "sax": "^1.6.0",

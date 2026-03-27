@@ -1,15 +1,9 @@
-import type { Identifier, Literal, ObjectExpression, Property } from "acorn";
-
-const isIdentifier = (node: Property["key"]): node is Identifier =>
-  node.type === "Identifier";
-
-const isLiteral = (node: Property["key"]): node is Literal =>
-  node.type === "Literal";
+import { ObjectExpression, Property } from "acorn";
 
 const getPropertyKey = (prop: Property): string => {
-  if (isIdentifier(prop.key))
+  if (prop.key.type == "Identifier")
     return prop.key.name;
-  if (isLiteral(prop.key))
+  if (prop.key.type == "Literal")
     return String(prop.key.value);
   throw new Error(`Expected object literal key, got ${prop.key.type}`);
 };

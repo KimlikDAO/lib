@@ -1,15 +1,19 @@
 import { file, write } from "bun";
 import { CliArgs } from "../../util/cli";
 import { combine, getDir } from "../../util/paths";
+import { resolveRootPath } from "../frontend/resolver";
+import { SourceSet } from "../frontend/sourceSet";
+import { ModuleImports } from "../model/moduleImport";
 import { transpileTs } from "../transpiler/kdjsFromTs";
-import { ImportStatement } from "../util/modules";
 import { transpileDts } from "./externFromDts";
-import { transpileJs } from "./gccFromKdjs";
+import { transpileKdjs } from "./gccFromKdjs";
+
+const DECL_FILE = /\.(d|e)\.(js|ts)$/;
 
 interface PreprocessResult {
-  unlinkedImports: Map<string, ImportStatement>;
-  allFiles: Set<string>;
-  isolateDir: string;
+  unlinkedImports: ModuleImports,
+  allFiles: string[],
+  isolateDir: string,
   ignoreUnusedLocals: boolean;
 };
 
@@ -18,7 +22,7 @@ type TranspileFn = (content: string, file: string, isEntry?: boolean) =>
 
 const preprocessAndIsolate = async (
   args: CliArgs,
-  transpileFn?: TranspileFn
+  _transpileFn?: TranspileFn
 ): Promise<PreprocessResult> => {
   const entry = args.asStringOr("entry", "");
   const isolateDir = combine(
@@ -26,41 +30,35 @@ const preprocessAndIsolate = async (
     args.asStringOr("isolateDir", ".kdts_isolate")
   );
   const globals = args.asRecord("globals");
-  const externs = args.asList("externs");
-  const files = [entry, ...externs];
-
-  const unlinkedImports = new Map<string, ImportStatement>();
-  const allFiles = new Set<string>();
+  const sources = new SourceSet();
+  
+  sources.add(resolveRootPath(entry));
+  for (const extern of args.asList("externs"))
+    sources.add(resolveRootPath(extern));
+  const unlinkedImports = new ModuleImports();
   const writePromises: Promise<number>[] = [];
   let ignoreUnusedLocals = false;
 
-  for (let f; f = files.pop();) {
-    if (allFiles.has(f)) continue;
-    allFiles.add(f);
-    let content = await file(f).text();
-    if (f.endsWith(".d.ts") || f.endsWith(".e.ts"))
-      content = transpileDts(content, f);
-    else if (f.endsWith(".ts"))
-      content = transpileTs(content);
-    else if (!f.endsWith(".js")) {
-      if (!transpileFn)
-        throw "For non-js files please provide a transpile function: " + f;
-      const transpiled = transpileFn(content, f, f == entry);
-      content = transpiled || content;
-      ignoreUnusedLocals ||= !!transpiled;
-    }
-    content = transpileJs(f == entry, f, content, files, globals, unlinkedImports);
+  for (let source; source = sources.pop();) {
+    let content = await file(source.path).text();
 
-    const outFile = combine(isolateDir, f);
+    if (source.path.endsWith(".ts") && !source.path.endsWith(".d.ts"))
+      content = transpileTs(content);
+
+    content = DECL_FILE.test(source.path)
+      ? transpileDts(source, content, sources)
+      : transpileKdjs(source, content, sources, globals, unlinkedImports);
+
+    const outFile = combine(isolateDir, source.path);
     writePromises.push(write(outFile, content));
   }
   await Promise.all(writePromises);
   return {
     unlinkedImports,
-    allFiles,
+    allFiles: sources.getPaths(),
     isolateDir,
     ignoreUnusedLocals,
   };
 };
 
-export { preprocessAndIsolate, PreprocessResult, TranspileFn };
+export { preprocessAndIsolate, TranspileFn };

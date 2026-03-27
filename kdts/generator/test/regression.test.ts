@@ -127,6 +127,7 @@ describe("regressions", () => {
     expect(emit(input)).toBe(stripIndent(`
       /**
        * @implements {Map<K, bigint>}
+       * @template K
        */
       class Cache {
       }

@@ -1,0 +1,3 @@
+class ModuleExports {}
+
+export { ModuleExports };

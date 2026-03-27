@@ -1,6 +1,5 @@
 import { Comment } from "acorn";
 import { parseTypePrefix } from "../types/parser";
-import { Update } from "../util/textual";
 
 const TAGS_WITH_TYPES = new Set([
   "@type",
@@ -12,12 +11,13 @@ const TAGS_WITH_TYPES = new Set([
   "@define",
 ]);
 
-const transpileJsDoc = (comment: Comment, fileName: string): Update[] => {
+const transpileJsDoc = (comment: Comment, fileName: string): string => {
   if (comment.type !== "Block")
-    return [];
+    return `//${comment.value}`;
 
-  const updates: Update[] = [];
   const value = comment.value;
+  let out = "/*";
+  let last = 0;
 
   for (let i = 0; i < value.length; ++i) {
     const ch = value.charCodeAt(i);
@@ -50,11 +50,8 @@ const transpileJsDoc = (comment: Comment, fileName: string): Update[] => {
       const closureExpr =
         (paramRest ? "..." : "") +
         type.toClosureExpr({ toParam: tag === "@param" && paramOpt });
-      updates.push({
-        beg: comment.start + 2 + typeStart,
-        end: comment.start + 2 + endPos,
-        put: closureExpr,
-      });
+      out += value.substring(last, typeStart) + closureExpr;
+      last = endPos;
       i = endPos;
     } catch (e) {
       console.warn(
@@ -63,7 +60,7 @@ const transpileJsDoc = (comment: Comment, fileName: string): Update[] => {
       );
     }
   }
-  return updates;
+  return out + value.substring(last) + "*/";
 };
 
 export { transpileJsDoc };

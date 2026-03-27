@@ -30,7 +30,7 @@ enum TopTypeName {
 }
 
 class Type {
-  constructor(public modifiers: number = 0) {}
+  constructor(public modifiers: number = 0) { }
   isNullable(): boolean { return !!(this.modifiers & Modifier.Nullable); }
   isOptional(): boolean { return !!(this.modifiers & Modifier.Optional); }
   toClosureExpr(_context?: Context): string { throw "Abstract method"; }
@@ -44,7 +44,6 @@ class UnionType extends Type {
   constructor(types?: Type[]) {
     super();
     this.typeMap = new Map();
-
     if (types) for (const type of types) type.addToUnion(this);
   }
 
@@ -121,12 +120,11 @@ class PrimitiveType extends Type {
   readonly name: PrimitiveTypeName;
 
   constructor(name: PrimitiveTypeName) {
-    const modifiers =
-      name === PrimitiveTypeName.Null
-        ? Modifier.Nullable
-        : name === PrimitiveTypeName.Undefined
-          ? Modifier.Optional
-          : 0;
+    let modifiers = 0;
+    if (name === PrimitiveTypeName.Null)
+      modifiers = Modifier.Nullable;
+    else if (name === PrimitiveTypeName.Undefined)
+      modifiers = Modifier.Optional;
     super(modifiers);
     this.name = name;
   }
@@ -461,10 +459,10 @@ class ConstructorType extends FunctionType {
     this.extendsType = extendsType;
     this.implementsTypes = implementsTypes;
   }
-  override toClosureExpr(context: Context): string {
+  override toClosureExpr(context: Context = {}): string {
     return super.toClosureExpr(context).replace("this:", "new:");
   }
-  override toTsExpr(context: Context): string {
+  override toTsExpr(context: Context = {}): string {
     return super.toTsExpr(context).replace("this:", "new:");
   }
 }

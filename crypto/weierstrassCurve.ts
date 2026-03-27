@@ -22,8 +22,8 @@ import { inverse, prepareSqrt } from "./modular";
  * implementation as close to constant-time as possible.
  *
  * @param P - The prime modulus of the base field 𝔽ₚ.
- * @param a - The coefficient of the x term, must be in (-P, P).
- * @param b - The coefficient of the x³ term, must be in (-P, P).
+ * @param a - The coefficient of the x term, must be in [-P, P).
+ * @param b - The coefficient of the x³ term, must be in [-P, P).
  * @param [sqrt] - The function to compute square roots in 𝔽ₚ. If omitted,
  *                 a default Tonelli-Shanks sqrt function is used.
  * @returns The elliptic curve.

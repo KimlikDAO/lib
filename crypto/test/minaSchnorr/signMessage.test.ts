@@ -33,7 +33,7 @@ test("sign with ours, verify with mina-signer", () => {
       scalar: s.toString()
     },
     publicKey: client.derivePublicKey(privKey58)
-  } as minaSigner.SignedMessage;
+  };
   expect(client.verifyMessage(signedMessage)).toBeTrue();
 });
 
@@ -49,6 +49,6 @@ test("sign multiple fields, i.e., >254 bits", () => {
       scalar: s.toString()
     },
     publicKey: client.derivePublicKey(privKey58)
-  } as minaSigner.SignedMessage;
+  };
   expect(client.verifyMessage(signedMessage)).toBeTrue();
 });

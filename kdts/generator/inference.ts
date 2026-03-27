@@ -16,8 +16,8 @@ const inferNewExpressionType = (n: any): any => {
   if (n.callee?.type != "Identifier" || !n.typeArguments?.params?.length) return;
   return {
     type: "TSTypeReference",
-    typeName: { ...n.callee },
-    typeArguments: { ...n.typeArguments }
+    typeName: n.callee,
+    typeArguments: n.typeArguments
   };
 };
 

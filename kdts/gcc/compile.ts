@@ -19,8 +19,7 @@ const compile = async (
     isolateDir,
     ignoreUnusedLocals
   } = await preprocessAndIsolate(args, transpileFn);
-  const allFilesArray: string[] = Array.from(allFiles).sort();
-  if (checkFreshFn && await checkFreshFn(allFilesArray.map(f => "/" + f)))
+  if (checkFreshFn && await checkFreshFn(allFiles.map(f => "/" + f)))
     return;
 
   const jsCompErrors = [
@@ -38,7 +37,7 @@ const compile = async (
     jsCompErrors.shift();
 
   const options = {
-    "js": allFilesArray,
+    "js": allFiles,
     "compilation_level": "ADVANCED",
     "charset": "utf-8",
     "warning_level": "verbose",

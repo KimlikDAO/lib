@@ -16,12 +16,12 @@ ts/js compiler with type aware optimizations.
 🪁 [`kastro`](./kastro): Our compile-time focused web-framework
 
   - React-like .jsx components at zero runtime cost
-  - Import css, fonts or images using es6 imports and receive a component
+  - Import css, fonts or images using es6 imports and receive an asset component
 
 ⚙️ [`kdts`](./kdts): KimlikDAO TypeScript compiler
 
   - A TypeScript compiler that leverages type information to perform advanced optimizations.
-  - Seamless js/ts interop including the type system
+  - Seamless js/ts interoperability, including the type system
   - Uses the [Google Closure Compiler](https://github.com/google/closure-compiler)
     as a backend with additional optimization passes.
 

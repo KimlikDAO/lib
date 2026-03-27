@@ -38,6 +38,7 @@ const compile = async (
     packages: "external",
     minify: true,
     plugins: [kdtsPlugin],
+    tsconfig: args.asStringOr("tsconfig", ""),
   });
   if (!result.success) {
     const messages = result.logs.map((l) => l.message).join("\n");

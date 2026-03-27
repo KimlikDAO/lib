@@ -43,6 +43,6 @@ test("sign with ours, verify with mina-signer", () => {
     data: [31n, 31n, 69n],
     signature: sig,
     publicKey: client.derivePublicKey(privKey58)
-  } as minaSigner.SignedFields;
+  };
   expect(client.verifyFields(signedFields)).toBeTrue();
 });

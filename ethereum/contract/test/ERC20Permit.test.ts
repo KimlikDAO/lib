@@ -1,10 +1,9 @@
 import { expect, test } from "bun:test";
-import { ethers } from "ethers";
+import { ethers, TypedDataDomain } from "ethers";
 import { ChainId } from "../../chains";
 import { MockProvider } from "../../mock/provider";
 import { Signature } from "../../signature.d";
 import { signerAddress } from "../../signer";
-import { EIP712DomainData } from "../EIP712.d";
 import { ERC20Permit } from "../ERC20Permit";
 import { TokenCode, Tokens } from "../tokens";
 
@@ -35,17 +34,16 @@ test("ERC20Permit create and verify permit", async () => {
     version: "" + token.version,
     chainId: parseInt(token.chainId, 16),
     verifyingContract: token.contract
-  } as EIP712DomainData;
+  } as TypedDataDomain;
   const message: Record<string, unknown> = {
     "owner": owner,
     "spender": spender,
     "value": value,
     "nonce": 0,
     "deadline": BigInt("0x" + deadlineHex)
-  };
+  } ;
 
   const digestHex = ethers.TypedDataEncoder.hash(domain, types, message);
   const recovered = signerAddress(digestHex.slice(2), sig);
   expect(recovered.toLowerCase()).toBe(owner.toLowerCase());
 });
-
