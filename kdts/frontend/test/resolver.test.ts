@@ -33,3 +33,19 @@ test("strips regular source extensions before relative resolution", () => {
   expect(resolved.path).toBe("src/dep.ts");
   expect(resolved.source).toBe("module:src/dep");
 });
+
+test("resolves package types from package.json", () => {
+  const cwd = mkdtempSync(join(tmpdir(), "kdts-resolver-"));
+  const pkgDir = join(cwd, "node_modules", "pkg", "dist");
+  mkdirSync(pkgDir, { recursive: true });
+  writeFileSync(join(cwd, "node_modules", "pkg", "package.json"), JSON.stringify({
+    types: "dist/index.d.ts",
+  }));
+  writeFileSync(join(pkgDir, "index.d.ts"), "");
+  process.chdir(cwd);
+
+  const resolved = resolvePath("src/main.ts", "pkg");
+
+  expect(resolved.path).toBe("node_modules/pkg/dist/index.d.ts");
+  expect(resolved.source).toBe("package:pkg");
+});
