@@ -16,7 +16,7 @@ type SourcePath = {
  *  - ts
  *  - js
  * 
- * we do not support .mjs, or .cjs; all files are assumed to be pacakges.
+ * we do not support .mjs, or .cjs; all files are assumed to be modules.
  */
 const JsLikeExt: readonly string[] = [".tsx", ".jsx", ".ts", ".js"];
 

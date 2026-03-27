@@ -7,7 +7,7 @@ type Update = {
 };
 
 class CodeUpdater {
-  private readonly updates: Update[] = [];
+  readonly updates: Update[] = [];
 
   replace(node: Node, put: string) {
     this.replaceRange(node.start, node.end, put);
@@ -25,11 +25,11 @@ class CodeUpdater {
     const updates = this.updates.sort((a, b) => a.beg - b.beg);
     let out = "";
     let last = 0;
-    for (const update of updates) {
-      if (update.beg < last)
-        throw `CodeUpdater updates overlap near (${update.beg}, ${update.end}); previous update ended at ${last}`;
-      out += source.substring(last, update.beg) + update.put;
-      last = update.end;
+    for (const { beg, end, put } of updates) {
+      if (beg < last)
+        throw `CodeUpdater updates overlap near (${beg}, ${end}); previous update ended at ${last}`;
+      out += source.substring(last, beg) + put;
+      last = end;
     }
     return out + source.substring(last);
   }

@@ -296,12 +296,7 @@ class Generator {
       if (n.value.async) this.put("async "); this.rec(n.key);
       this.put("("); this.arr(n.value.params, ", "); this.put(") ");
       this.rec(n.value.body);
-    } else if (!n.shorthand
-      || (this.djs
-        && n.shorthand
-        && n.key?.type == "Identifier"
-        && n.value?.type == "Identifier"
-        && this.identifierName(n.value) != n.key.name)) {
+    } else if (!n.shorthand) {
       if (n.computed) {
         this.put("["); this.rec(n.key); this.put("]");
       } else if (n.key?.type == "Identifier")

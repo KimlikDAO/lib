@@ -121,9 +121,9 @@ class PrimitiveType extends Type {
 
   constructor(name: PrimitiveTypeName) {
     let modifiers = 0;
-    if (name === PrimitiveTypeName.Null)
+    if (name == PrimitiveTypeName.Null)
       modifiers = Modifier.Nullable;
-    else if (name === PrimitiveTypeName.Undefined)
+    else if (name == PrimitiveTypeName.Undefined)
       modifiers = Modifier.Optional;
     super(modifiers);
     this.name = name;
@@ -161,7 +161,7 @@ class PrimitiveType extends Type {
   }
 
   override addToUnion(union: UnionType): void {
-    if (this.name === PrimitiveTypeName.Null || this.name === PrimitiveTypeName.Undefined)
+    if (this.name == PrimitiveTypeName.Null || this.name == PrimitiveTypeName.Undefined)
       union.modifiers |= this.modifiers;
     else
       union.addSingle(this);
@@ -186,7 +186,7 @@ class TopType extends Type {
   }
 
   override toTsExpr({ toParam }: Context = {}): string {
-    const name = this.name === TopTypeName.Any ? "any" : "unknown";
+    const name = this.name == TopTypeName.Any ? "any" : "unknown";
     return name + (toParam ? "=" : "");
   }
 }
@@ -256,9 +256,9 @@ class GenericType extends Type {
   override toTsExpr({ toParam, bare, wrap }: Context = {}): string {
     const modifiers = bare ? 0 : this.modifiers;
     let inner: string;
-    if (this.name === "Array")
+    if (this.name == "Array")
       inner = this.params[0].toTsExpr({ wrap: true }) + "[]";
-    else if (this.name === "ReadonlyArray")
+    else if (this.name == "ReadonlyArray")
       inner = "readonly " + this.params[0].toTsExpr({ wrap: true }) + "[]";
     else
       inner = this.name + "<" + this.params.map((p) => p.toTsExpr()).join(", ") + ">";
@@ -347,7 +347,7 @@ class FunctionType extends Type {
     const lastIdx = this.params.length - 1;
     const paramTypes = this.params
       .map((param, i) => {
-        if (this.rest && i === lastIdx)
+        if (this.rest && i == lastIdx)
           return "..." + param.toClosureExpr({ bare: true });
         const isOptional = i >= this.optionalAfter;
         return param.toClosureExpr({ toParam: isOptional, wrap: true });
@@ -364,7 +364,7 @@ class FunctionType extends Type {
       functionType = `function(${paramTypes})`;
 
     if (!(this.returnType instanceof PrimitiveType &&
-      this.returnType.name === PrimitiveTypeName.Undefined))
+      this.returnType.name == PrimitiveTypeName.Undefined))
       functionType += `: ${returnTypeStr}`;
 
     if (modifiers & Modifier.Nullable)
@@ -386,7 +386,7 @@ class FunctionType extends Type {
       const param = this.params[i]!;
       const label = this.paramNames?.[i] ?? "arg" + i;
       const isOptional = i >= this.optionalAfter;
-      if (this.rest && i === lastIdx) {
+      if (this.rest && i == lastIdx) {
         const restType = param.toTsExpr({ bare: true });
         lines.push(` * @param {...${restType}} ${label}`);
       } else {
@@ -403,7 +403,7 @@ class FunctionType extends Type {
     const lastIdx = this.params.length - 1;
     const paramParts = this.params.map((param, i) => {
       const label = this.paramNames?.[i] ?? "arg" + i;
-      if (this.rest && i === lastIdx)
+      if (this.rest && i == lastIdx)
         return "..." + label + ": " + param.toTsExpr({ bare: true });
       const isOptional = i >= this.optionalAfter;
       return (
@@ -419,7 +419,7 @@ class FunctionType extends Type {
     } else
       functionType = `(${paramTypes})`;
     if (!(this.returnType instanceof PrimitiveType &&
-      this.returnType.name === PrimitiveTypeName.Undefined))
+      this.returnType.name == PrimitiveTypeName.Undefined))
       functionType += ` => ${returnTypeStr}`;
     else
       functionType += " => void";
@@ -501,4 +501,3 @@ export {
   UnionType,
   UnknownType
 };
-

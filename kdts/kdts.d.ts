@@ -6,6 +6,8 @@
  *
  * @example
  * ```ts
+ * import { PureExpr } from "@kimlikdao/kdts";
+ *
  * const x = f(123) satisfies PureExpr;
  * ```
  */
