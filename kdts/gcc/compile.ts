@@ -46,7 +46,7 @@ const compile = async (
   output = postprocess(output, unlinkedImports);
   if (args.isTrue("printGccOutput"))
     console.log("GCC output\n", output);
-  console.log(`GCC size:\t${output.length}`);
+  console.log(`GCC size:     ${output.length}`);
   return output;
 }
 
