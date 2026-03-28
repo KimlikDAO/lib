@@ -5,7 +5,6 @@ import {
   inferFromExpression
 } from "../transform/inference";
 import { toIdentifier } from "./generator";
-import { partitionBody } from "./interfaces";
 import { conditionalType } from "./ttlGenerator";
 
 /** @enum {number} */
@@ -181,7 +180,6 @@ class Generator {
     this.put("class "); this.rec(n.id); this.put(" "); this.rec(n.body);
   }
   TSInterfaceBody(n) {
-    if (this.djs) { this.DJSInterfaceBody(n); return; }
     this.put("{"); this.inc();
     this.arrLines(n.body, "", /* inInterface */ true);
     this.dec(); this.ret(); this.put("}");
@@ -405,7 +403,6 @@ class Generator {
     this.dec(); this.put(")");
   }
   ClassBody(n) {
-    if (this.djs) { this.DJSClassBody(n); return; }
     this.put("{"); this.inc();
     this.arrLines(n.body, "");
     this.dec(); this.ret(); this.put("}");
@@ -590,52 +587,27 @@ class Generator {
     if (retType) { this.ret(); this.put("@return {"); this.rec(retType); this.put("}"); }
     this.cod();
   }
-  DJSInterfaceBody(n) {
-    const { instanceProps, other } = partitionBody(n.body);
-    this.put("{"); this.inc();
-    this.ConstructorDefinition(null, instanceProps);
-    this.arrLines(other, "", true);
-    this.dec(); this.ret(); this.put("}");
-  }
-  DJSClassBody(n) {
-    const { ctor, instanceProps, other } = partitionBody(n.body);
-    this.put("{"); this.inc();
-    this.ConstructorDefinition(ctor, instanceProps);
-    this.arrLines(other, "");
-    this.dec(); this.ret(); this.put("}");
-  }
   // Handles classes with explicity constructor, and potentially
   // `TSParameterProperty`'s and `Property`'s.
   // TODO(KimlikDAO-bot): do this properly. we need prop deduping
-  ConstructorDefinition(n, props = []) {
-    if (!n && !props.length) return;
-    if (n) {
-      const params = n.value.params;
-      this.jsDoc(n.value);
-      this.put("constructor("); this.arr(params, ", "); this.put(")");
-      this.put(" {"); this.inc();
-      const body = n.value.body?.body;
-      if (body) this.arrLines(body, "");
-      for (let param of params)
-        if (param.type == "TSParameterProperty") {
-          const modifiers = param.readonly ? Modifier.Readonly : 0;
-          param = param.parameter;
-          if (param.type == "AssignmentPattern")
-            param = param.left;
-          this.ret();
-          this.jsDocType(param, modifiers);
-          this.put("this."); this.rec(param);
-          this.put(" = "); this.rec(param); this.put(";");
-        }
-    } else {
-      this.ret();
-      this.put("constructor() {"); this.inc();
-    }
-    for (const prop of props) {
-      this.ret();
-      this.jsDocType(prop, prop.readonly ? Modifier.Readonly : 0);
-      this.put("this."); this.rec(prop.key); this.put(";");
-    }
+  ConstructorDefinition(n) {
+    const params = n.value.params;
+    this.jsDoc(n.value);
+    this.put("constructor("); this.arr(params, ", "); this.put(")");
+    this.put(" {"); this.inc();
+    const body = n.value.body?.body;
+    if (body) this.arrLines(body, "");
+    for (let param of params)
+      if (param.type == "TSParameterProperty") {
+        const modifiers = param.readonly ? Modifier.Readonly : 0;
+        param = param.parameter;
+        if (param.type == "AssignmentPattern")
+          param = param.left;
+        this.ret();
+        this.jsDocType(param, modifiers);
+        this.put("this."); this.rec(param);
+        this.put(" = "); this.rec(param); this.put(";");
+      }
     this.dec(); this.ret();
     this.put("}")
   }

@@ -179,14 +179,12 @@ export { ExtendedProvider };
  * @extends {kdts$$module$api$provider_d$BaseProvider}
  */
 class kdts$$module$api$client_d$ExtendedProvider {
-  constructor() {
-    /** @type {string} */
-    this.additionalProperty;
-  }
   /**
    * @return {undefined}
    */
   additionalMethod() {}
+  /** @type {string} */
+  additionalProperty;
 }
 
 `.slice(1));
@@ -217,10 +215,8 @@ export { CfRequest, ModuleWorker, Env };
   expect(result).toBe(`
 /** @fileoverview @externs */
 class kdts$$module$address_d$CfRequest extends Request {
-  constructor() {
-    /** @type {{ clientAcceptEncoding: (string|undefined) }} */
-    this.cf;
-  }
+  /** @type {{ clientAcceptEncoding: (string|undefined) }} */
+  cf;
 }
 /**
  * @interface
