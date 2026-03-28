@@ -1,7 +1,10 @@
 import { partition } from "../../util/arrays";
-import { toIdentifier } from "../gcc/generator";
-import { Modifier } from "../types/modifier";
-import { inferEnumType, inferFromExpression } from "./inference";
+import { Modifier } from "../model/modifier";
+import {
+  inferEnumType,
+  inferFromExpression
+} from "../transform/inference";
+import { toIdentifier } from "./generator";
 import { partitionBody } from "./interfaces";
 import { conditionalType } from "./ttlGenerator";
 
@@ -27,7 +30,6 @@ const wrapExpression = (expr) =>
 /** True when this expression must be wrapped in () when used as the object of a MemberExpression. */
 const needsParensForMemberObject = (node) =>
   node?.type == "AssignmentExpression" || node?.type == "SequenceExpression";
-
 
 /**
  * Rest parameters are typed as T[], readonly T[], Array<T>, or ReadonlyArray<T>.

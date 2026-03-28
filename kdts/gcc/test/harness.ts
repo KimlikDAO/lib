@@ -1,5 +1,5 @@
 import { TsParser } from "../../parser/tsParser";
-import { inferFromExpression } from "../inference";
+import { inferFromExpression } from "../../transform/inference";
 import { generate } from "../kdjsFromAst";
 
 type JsDocParam = {

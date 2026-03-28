@@ -127,6 +127,36 @@ class kdts$$module$api$client_d$ApiClient {
   expect(sources.getPaths()).toEqual(["auth/auth.d.ts", "ethereum/provider.d.ts"]);
 });
 
+test("import type participates in the same binding space", () => {
+  const input = `
+import type { User } from "../auth/auth.d.ts";
+
+interface ApiClient {
+  authenticate(): Promise<User>;
+}
+
+export { ApiClient };
+`;
+
+  const { output, sources } = transpileWithSources(input, "api/client.d.ts", {
+    "auth/auth.d.ts": ""
+  });
+  expect(output).toBe(`
+/** @fileoverview @externs */
+/**
+ * @interface
+ */
+class kdts$$module$api$client_d$ApiClient {
+  /**
+   * @return {!Promise<!kdts$$module$auth$auth_d$User>}
+   */
+  authenticate() {}
+}
+
+`.slice(1));
+  expect(sources.getPaths()).toEqual(["auth/auth.d.ts"]);
+});
+
 test("should handle interface extensions", () => {
   const input = `
 import { BaseProvider } from "../api/provider.d.ts";

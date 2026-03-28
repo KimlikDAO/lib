@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { inferredTypeOf } from "./harness";
+import { inferredTypeOf } from "../../gcc/test/harness";
 
 const expectInferred = (input: string, type: string) => (): void => {
   expect(inferredTypeOf(input)).toBe(type);

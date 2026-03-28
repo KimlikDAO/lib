@@ -11,7 +11,7 @@ import {
   TopTypeName,
   Type,
   UnionType
-} from "./types";
+} from "../model/types";
 
 /** @type {Set<string>} */
 const PrimitiveNames = new Set(Object.values(PrimitiveTypeName));

@@ -1,5 +1,5 @@
 import { Comment } from "acorn";
-import { parseTypePrefix } from "../types/parser";
+import { parseTypePrefix } from "../parser/typeParser";
 
 const TAGS_WITH_TYPES = new Set([
   "@type",

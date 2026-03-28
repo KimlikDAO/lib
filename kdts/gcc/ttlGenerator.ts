@@ -1,12 +1,6 @@
 import { Node } from "acorn";
-import { toIdentifier } from "../gcc/generator";
-import { SourceId } from "../model/moduleImport";
-
-interface SymbolRef {
-  source: SourceId;
-  exportedName?: string;
-  space: "type" | "value" | "namespace";
-}
+import { SymbolRef } from "../model/symbolRef";
+import { toIdentifier } from "./generator";
 
 interface TsIdentifier extends Node {
   type: "Identifier";

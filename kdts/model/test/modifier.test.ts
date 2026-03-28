@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { Modifier, modifiersFromJsDoc } from "../modifier";
+import { Modifier, modifiersFromJsDoc } from "../../model/modifier";
 
 const expectModifiers = (jsDoc: string, expected: number) => () => {
   expect(modifiersFromJsDoc(jsDoc)).toBe(expected);

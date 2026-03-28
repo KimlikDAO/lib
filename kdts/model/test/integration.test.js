@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { parseType } from "../parser";
+import { parseType } from "../../parser/typeParser";
 
 describe("Basics", () => {
   test("Type | null", () => {

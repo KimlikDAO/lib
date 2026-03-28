@@ -63,7 +63,7 @@ const getJavaJarPath = (): string => {
 };
 
 const createCompilerArgs = (params: CompileParams): string[] => {
-  const args = params.allFiles.map((file) => `--js=${file}`);
+  const args = params.allFiles;
   args.push(
     "--compilation_level=ADVANCED",
     "--charset=utf-8",

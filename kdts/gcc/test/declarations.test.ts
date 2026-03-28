@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
+import { Modifier } from "../../model/modifier";
 import { TsParser } from "../../parser/tsParser";
-import { Modifier } from "../../types/modifier";
 import { emitFirst, stripIndent } from "./harness";
 
 const expectFirstEmit = (input: string, expected: string) => (): void => {

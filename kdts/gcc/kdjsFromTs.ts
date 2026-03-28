@@ -1,4 +1,4 @@
-import { generate } from "../generator/kdjsFromAst";
+import { generate } from "./kdjsFromAst";
 import { TsParser } from "../parser/tsParser";
 
 const transpileTs = (content: string): string =>

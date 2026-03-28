@@ -12,7 +12,7 @@ import {
   UndefinedType,
   UnionType,
   UnknownType,
-} from "./types";
+} from "../model/types";
 
 /**
  * @param {acorn.Node} typeName - Identifier or TSQualifiedName

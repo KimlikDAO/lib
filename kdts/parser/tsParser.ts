@@ -1,6 +1,6 @@
 import * as acornNamespace from "acorn";
 import { Node, Options, Position, TokenType } from "acorn";
-import { propagateType } from "../types/converter";
+import { propagateType } from "./converter";
 import { DecoratorsError, TypeScriptError } from "./error";
 import generateParseDecorators from "./extentions/decorators";
 import generateParseImportAssertions from "./extentions/import-assertions";
@@ -9,7 +9,7 @@ import { AcornParseClass } from "./middleware";
 import { checkKeyName, DestructuringErrors, isPrivateNameConflicted } from "./parseutil";
 import { TS_SCOPE_OTHER, TS_SCOPE_TS_MODULE } from "./scopeflags";
 import { generateAcornTypeScript } from "./tokenType";
-import { modifiersFromJsDoc } from "../types/modifier";
+import { modifiersFromJsDoc } from "../model/modifier";
 import {
   Accessibility,
   LookaheadState,

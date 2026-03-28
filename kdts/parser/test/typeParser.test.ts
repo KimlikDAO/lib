@@ -1,5 +1,4 @@
 import { describe, expect, it, test } from "bun:test";
-import { parseType, parseTypePrefix } from "../parser";
 import {
   ConstructorType,
   FunctionType,
@@ -11,7 +10,8 @@ import {
   TopType,
   TopTypeName,
   UnionType
-} from "../types";
+} from "../../model/types";
+import { parseType, parseTypePrefix } from "../typeParser";
 
 describe("Primitives, TopTypes and simple UnionTypes", () => {
   it("parses string", () => {

@@ -1,5 +1,4 @@
 import { describe, expect, test } from "bun:test";
-import { propagateType } from "../converter";
 import {
   GenericType,
   InstanceType,
@@ -8,7 +7,8 @@ import {
   TopType,
   TopTypeName,
   UnionType,
-} from "../types";
+} from "../../model/types";
+import { propagateType } from "../converter";
 
 /**
  * Creates a typed acorn-like node (for use as a child in composite nodes).

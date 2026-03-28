@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { Modifier } from "../../types/modifier";
+import { Modifier } from "../../model/modifier";
 import { parseSource } from "./utils";
 
 test("VariableDeclaration has modifiers from preceding JSDoc @define", () => {

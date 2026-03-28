@@ -1,3 +1,3 @@
-class ModuleExports {}
+class ModuleExports { }
 
 export { ModuleExports };
