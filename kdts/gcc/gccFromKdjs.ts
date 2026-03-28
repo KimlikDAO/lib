@@ -44,7 +44,7 @@ const transpileKdjs = (
   });
 
   for (const comment of comments)
-    if (comment.type === "Block")
+    if (comment.type == "Block")
       updater.replace(comment, transpileJsDoc(comment, source.path));
 
   const typeOnlyImports = new ModuleImports();
