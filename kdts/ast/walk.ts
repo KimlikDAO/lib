@@ -1,10 +1,10 @@
 import { Node } from "acorn";
 
 class Walker {
-  rec(n: Node, ...rest: unknown[]) {
+  rec(n: Node | null | undefined, ...rest: unknown[]) {
     if (n && typeof (this as any)[n.type] == "function")
       (this as any)[n.type](n, ...rest);
-    else
+    else if (n)
       console.error("No method for node type: ", n.type);
   }
 };
@@ -12,10 +12,10 @@ class Walker {
 class Generator {
   indent = "";
   out = "";
-  rec(n: Node, ...rest: unknown[]) {
+  rec(n: Node | null | undefined, ...rest: unknown[]) {
     if (n && typeof (this as any)[n.type] == "function")
       (this as any)[n.type](n, ...rest);
-    else
+    else if (n)
       console.error("No method for node type: ", n.type);
   }
   inc() { this.indent += "  "; }
@@ -30,21 +30,21 @@ class Generator {
   ens(s: string) { if (!this.out.endsWith(s)) this.out += s; }
   ret(c?: string) { this.out += (c ?? "") + "\n" + this.indent; }
 
-  arr(a: Node[], sep: string, ...rest: unknown[]) {
+  arr(a: readonly (Node | null)[], sep: string, ...rest: unknown[]) {
     let s = "";
     for (const x of a) {
       s ? this.put(s) : s = sep;
       this.rec(x, ...rest);
     }
   }
-  arrLines(a: Node[], sep: string, ...rest: unknown[]) {
+  arrLines(a: readonly (Node | null)[], sep: string, ...rest: unknown[]) {
     let s = "";
     for (const x of a) {
       s ? this.put(s) : s = sep
       this.ret(); this.rec(x, ...rest);
     }
   }
-  arrInner(a: Node[], ...rest: unknown[]) {
+  arrInner(a: readonly Node[], ...rest: unknown[]) {
     let first = true;
     for (const x of a) {
       if (first) first = false; else this.ret();
