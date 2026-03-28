@@ -8,13 +8,14 @@
  * ```ts
  * import { PureExpr } from "@kimlikdao/kdts";
  *
- * const x = f(123) + g(h(x)) satisfies PureExpr;
+ * const x = 42;
+ * const y = f(123) + g(h(x)) satisfies PureExpr;
  * ```
- * Now if x is determined to be unused, the entire expression
+ * Now if y is determined to be unused, the entire expression
  * `f(123) + g(h(x))` will be eliminated, even if `f` `g` and `h` individually
  * cannot be determined to be pure.
  *
- * Further, even if `x` is used, the expression may be replaced by the
+ * Further, even if `y` is used, the expression may be replaced by the
  * evaluated result.
  */
 type PureExpr = any;

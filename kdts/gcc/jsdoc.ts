@@ -12,7 +12,7 @@ const TAGS_WITH_TYPES = new Set([
 ]);
 
 const transpileJsDoc = (comment: Comment, fileName: string): string => {
-  if (comment.type !== "Block")
+  if (comment.type != "Block")
     return `//${comment.value}`;
 
   const value = comment.value;
@@ -49,7 +49,7 @@ const transpileJsDoc = (comment: Comment, fileName: string): string => {
 
       const closureExpr =
         (paramRest ? "..." : "") +
-        type.toClosureExpr({ toParam: tag === "@param" && paramOpt });
+        type.toClosureExpr({ toParam: tag == "@param" && paramOpt });
       out += value.substring(last, typeStart) + closureExpr;
       last = endPos;
       i = endPos;

@@ -3,39 +3,10 @@ import { Address } from "../address.d";
 import { ChainId } from "../chains";
 import { Provider, RemoteProvider } from "../provider";
 import { TransactionHash } from "../transaction.d";
-import { Revokable } from "./DID";
-import { SoulboundNFT } from "./ERC721";
 import { Tokens } from "./tokens";
 
 const MILLION = 1_000_000;
 const TRILLION = 10n ** 12n;
-
-interface IKPass extends SoulboundNFT, Revokable {
-  createWithRevokers(
-    chainId: ChainId,
-    address: Address,
-    cid: string,
-    revokeThreshold: number,
-    revokers: Record<string, number>,
-  ): Promise<TransactionHash>;
-  createWithRevokersWithTokenPermit(
-    chainId: ChainId,
-    address: Address,
-    cid: string,
-    revokeThreshold: number,
-    revokers: Record<string, number>,
-    signature: string,
-  ): Promise<TransactionHash>;
-  createWithRevokersWithTokenPayment(
-    chainId: ChainId,
-    address: Address,
-    cid: string,
-    revokeThreshold: number,
-    revokers: Record<string, number>,
-    token: number,
-  ): Promise<TransactionHash>;
-  priceIn(chainId: ChainId, token: number): Promise<[number, number]>;
-}
 
 const maybeGasLimit = (chainId: ChainId, gasLimit: number): number | undefined =>
   chainId == ChainId.xa4b1 ? undefined : gasLimit;
@@ -55,26 +26,26 @@ const serializeRevokers = (
   return abi.uint64(revokeThreshold) + ser.slice(16);
 };
 
-const KPass: IKPass = {
+const KPass = {
   contract: "0xcCc0a9b023177549fcf26c947edb5bfD9B230cCc",
-  provider: new RemoteProvider(() => Promise.resolve("")),
+  provider: new RemoteProvider(() => Promise.resolve("")) as Provider,
 
   setProvider(provider: Provider): void {
     KPass.provider = provider;
   },
   handleOf(chainId: ChainId, address: Address): Promise<string> {
     return KPass.provider.read({
+      chainId,
       to: KPass.contract,
       data: "0xc50a1514" + abi.address(address),
-      chainId,
     });
   },
   revokesRemaining(chainId: ChainId, sender: Address): Promise<number> {
     return KPass.provider
       .read({
+        chainId,
         to: KPass.contract,
         data: "0x165c44f3" + abi.address(sender),
-        chainId,
       })
       .then((revokes) => parseInt(revokes.slice(-6), 16));
   },
@@ -84,11 +55,11 @@ const KPass: IKPass = {
     deltaWeight: number,
   ): Promise<TransactionHash> {
     return KPass.provider.write({
+      chainId,
       to: KPass.contract,
       from: address,
       gas: maybeGasLimit(chainId, 22_000),
       data: "0xab505b1c" + abi.uint256(deltaWeight),
-      chainId,
     });
   },
   addRevoker(
@@ -98,6 +69,7 @@ const KPass: IKPass = {
     revokerAddress: Address,
   ): Promise<TransactionHash> {
     return KPass.provider.write({
+      chainId,
       to: KPass.contract,
       from: address,
       gas: maybeGasLimit(chainId, 49_000),
@@ -105,16 +77,15 @@ const KPass: IKPass = {
         "0xf02b3297" +
         abi.uint96(deltaWeight) +
         abi.packedAddress(revokerAddress),
-      chainId,
     });
   },
   revoke(chainId: ChainId, address: Address): Promise<TransactionHash> {
     return KPass.provider.write({
+      chainId,
       to: KPass.contract,
       from: address,
       gas: maybeGasLimit(chainId, 53_000),
       data: "0xb6549f75",
-      chainId,
     });
   },
   revokeFriend(
@@ -123,11 +94,11 @@ const KPass: IKPass = {
     friend: Address,
   ): Promise<TransactionHash> {
     return KPass.provider.write({
+      chainId,
       to: KPass.contract,
       from: address,
       gas: maybeGasLimit(chainId, 80_000),
       data: "0x3a2c82c7" + abi.address(friend),
-      chainId,
     });
   },
   createWithRevokers(
@@ -152,12 +123,12 @@ const KPass: IKPass = {
             70_000 + 25_000 * Object.keys(revokers).length,
           );
       return KPass.provider.write({
+        chainId,
         to: KPass.contract,
         from: address,
         value: price,
         gas,
         data,
-        chainId,
       });
     });
   },
@@ -184,12 +155,12 @@ const KPass: IKPass = {
           180_000 + 25_000 * Object.keys(revokers).length,
         );
     return KPass.provider.write({
+      chainId,
       to: KPass.contract,
       from: address,
       value: 0,
       gas,
       data,
-      chainId,
     });
   },
   createWithRevokersWithTokenPayment(
@@ -219,12 +190,12 @@ const KPass: IKPass = {
           160_000 + 25_000 * Object.keys(revokers).length,
         );
     return KPass.provider.write({
+      chainId,
       to: KPass.contract,
       from: address,
       value: 0,
       gas,
       data,
-      chainId,
     });
   },
   priceIn(chainId: ChainId, token: number): Promise<[number, number]> {
@@ -242,6 +213,6 @@ const KPass: IKPass = {
     const base = price[chainId][token];
     return Promise.resolve([base * 1.5, base]);
   }
-} as IKPass;
+};
 
 export default KPass;

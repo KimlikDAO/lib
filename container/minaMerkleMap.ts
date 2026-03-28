@@ -23,7 +23,7 @@ class MinaMerkleMap implements MerkleMap<Field, Value> {
   }
 
   static toBinaryKey(key: Field, height: number): BinaryKey {
-    if (typeof key === "bigint")
+    if (typeof key == "bigint")
       key = key.toString(16);
     else if (key.startsWith("0x"))
       key = key.slice(2);

@@ -5,7 +5,7 @@ const getDir = (fileName: string): string =>
 /** @pure */
 const getExt = (fileName: string, orElse = ""): string => {
   const dot = fileName.lastIndexOf(".") + 1;
-  return dot === 0 ? orElse : fileName.slice(dot);
+  return dot == 0 ? orElse : fileName.slice(dot);
 };
 
 /** @pure */

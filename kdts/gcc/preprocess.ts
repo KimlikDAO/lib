@@ -6,7 +6,7 @@ import { SourceSet } from "../frontend/sourceSet";
 import { ModuleImports } from "../model/moduleImport";
 import { transpileDts } from "./externFromDts";
 import { transpileKdjs } from "./gccFromKdjs";
-import { transpileTs } from "./kdjsFromTs";
+import { transpileTs } from "./gccFromTs";
 
 const DECL_FILE = /\.(d|e)\.(js|ts)$/;
 

@@ -14,11 +14,12 @@ type SourcePath = {
  *  - tsx
  *  - jsx
  *  - ts
+ *  - mjs
  *  - js
  * 
- * we do not support .mjs, or .cjs; all files are assumed to be modules.
+ * we do not support .cjs currently; all files are assumed to be modules.
  */
-const JsLikeExt: readonly string[] = [".tsx", ".jsx", ".ts", ".js"];
+const JsLikeExt: readonly string[] = [".tsx", ".jsx", ".ts", ".mjs", ".js"];
 
 const resolveExt = (path: string): string => {
   if (existsSync(path)) return path;

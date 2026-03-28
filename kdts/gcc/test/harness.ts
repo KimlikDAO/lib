@@ -114,7 +114,7 @@ const readTaggedTargets = (output: string): TaggedTarget[] => {
       continue;
     }
 
-    if (line === "/**" || line === "*/" || line.startsWith("* @") || line.startsWith("*"))
+    if (line == "/**" || line == "*/" || line.startsWith("* @") || line.startsWith("*"))
       continue;
 
     if (pending) {

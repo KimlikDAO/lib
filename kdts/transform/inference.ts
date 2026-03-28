@@ -1,8 +1,7 @@
-
 const inferLiteralType = (n: any): any => {
   if (!n || n.type != "Literal") return;
   const v = n.value;
-  if (v === null) return { type: "TSNullKeyword" };
+  if (v == null) return { type: "TSNullKeyword" };
   switch (typeof v) {
     case "string": return { type: "TSStringKeyword" };
     case "number": return { type: "TSNumberKeyword" };
@@ -32,8 +31,8 @@ const inferEnumType = (n: any): string => {
     if (!init) {
       hasNumber = true; // auto-increment
     } else if (
-      init.type === "StringLiteral" ||
-      (init.type === "Literal" && typeof init.value === "string")
+      init.type == "StringLiteral" ||
+      (init.type == "Literal" && typeof init.value == "string")
     ) {
       hasString = true;
     } else {
