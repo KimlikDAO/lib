@@ -1,5 +1,8 @@
 import { Node } from "acorn";
 
+const isNode = (x: unknown): x is Node =>
+  !!x && typeof x == "object" && typeof (x as Node).type == "string";
+
 class Walker {
   rec(n: Node | null | undefined, ...rest: unknown[]) {
     if (n && typeof (this as any)[n.type] == "function")
@@ -8,6 +11,42 @@ class Walker {
       console.error("No method for node type: ", n.type);
   }
 };
+
+class Mutator {
+  mut(n: Node | null | undefined, ...rest: unknown[]) {
+    if (!n) return n;
+    const handled = typeof (this as any)[n.type] == "function"
+      ? (this as any)[n.type](n, ...rest)
+      : undefined;
+    if (handled !== true)
+      this.mutChildren(n);
+    return n;
+  }
+  replaceNode<T extends Node>(target: Node, next: T, ...staleKeys: string[]): T {
+    Object.assign(target, next);
+    const record = target as unknown as Record<string, unknown>;
+    const nextRecord = next as unknown as Record<string, unknown>;
+    for (const key of staleKeys)
+      if (!(key in nextRecord))
+        delete record[key];
+    return target as T;
+  }
+  mutChildren(n: Node) {
+    const record = n as unknown as Record<string, unknown>;
+    for (const key in n) {
+      if (key == "type" || key == "start" || key == "end" || key == "range" ||
+        key == "loc" || key == "typeExpression" || key == "symbolRef")
+        continue;
+      const value = record[key];
+      if (Array.isArray(value)) {
+        for (const x of value)
+          if (isNode(x))
+            this.mut(x);
+      } else if (isNode(value))
+        this.mut(value);
+    }
+  }
+}
 
 class Generator {
   indent = "";
@@ -53,4 +92,4 @@ class Generator {
   }
 }
 
-export { Walker, Generator };
+export { Walker, Mutator, Generator };

@@ -8,8 +8,6 @@ import { transpileDts } from "./externFromDts";
 import { transpileKdjs } from "./gccFromKdjs";
 import { transpileTs } from "./gccFromTs";
 
-const DECL_FILE = /\.(d|e)\.(js|ts)$/;
-
 interface PreprocessResult {
   unlinkedImports: ModuleImports,
   allFiles: string[],
@@ -31,7 +29,7 @@ const preprocessAndIsolate = async (
   );
   const globals = args.asRecord("globals");
   const sources = new SourceSet();
-  
+
   sources.add(resolveRootPath(entry));
   for (const extern of args.asList("externs"))
     sources.add(resolveRootPath(extern));
@@ -42,12 +40,13 @@ const preprocessAndIsolate = async (
   for (let source; source = sources.pop();) {
     let content = await file(source.path).text();
 
-    if (source.path.endsWith(".ts") && !source.path.endsWith(".d.ts"))
-      content = transpileTs(content);
-
-    content = DECL_FILE.test(source.path)
-      ? transpileDts(source, content, sources)
-      : transpileKdjs(source, content, sources, globals, unlinkedImports);
+    if (source.path.endsWith(".d.ts"))
+      content = transpileDts(source, content, sources);
+    else if (source.path.endsWith(".ts"))
+      content = transpileTs(source, content, sources, unlinkedImports);
+    else if (source.path.endsWith(".js"))
+      content = transpileKdjs(source, content, sources, globals, unlinkedImports);
+    else throw "Provide transpile function";
 
     const outFile = combine(isolateDir, source.path);
     writePromises.push(write(outFile, content));

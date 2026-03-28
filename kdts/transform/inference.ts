@@ -1,3 +1,7 @@
+import { Node } from "acorn";
+import { isIdentifier } from "../ast/guards";
+import { TSArrayType, TSTupleType, TSTypeReference } from "../ast/types";
+
 const inferLiteralType = (n: any): any => {
   if (!n || n.type != "Literal") return;
   const v = n.value;
@@ -45,12 +49,25 @@ const inferEnumType = (n: any): string => {
     const err = new Error(
       `Mixed enums (string and number) are not supported. Use a string-only or number-only enum: ${name}${locEnd}`
     );
-    if (n.loc) err.loc = n.loc;
-    if (n.start != null) err.start = n.start;
-    if (n.end != null) err.end = n.end;
     throw err;
   }
   return hasString ? "string" : "number";
 };
 
-export { inferEnumType, inferFromExpression };
+const inferArrayLikeElementType = (n: Node): Node | void => {
+  if (n.type == "TSTupleType")
+    return (n as TSTupleType).elementTypes[0];
+  if (n.type == "TSArrayType")
+    return (n as TSArrayType).elementType;
+  if (n.type == "TSTypeReference") {
+    const typeName = (n as TSTypeReference).typeName;
+    if (isIdentifier(typeName) && (typeName.name == "Array" || typeName.name == "ReadonlyArray"))
+      return (n as TSTypeReference).typeArguments?.params[0];
+  }
+}
+
+export {
+  inferArrayLikeElementType,
+  inferEnumType,
+  inferFromExpression
+};

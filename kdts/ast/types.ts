@@ -11,7 +11,7 @@ import {
 import { Modifier } from "../model/modifier";
 import { SymbolRef } from "../model/symbolRef";
 
-export type TsKeywordType =
+export type TSKeywordType =
   | "TSStringKeyword"
   | "TSNumberKeyword"
   | "TSBooleanKeyword"
@@ -24,94 +24,93 @@ export type TsKeywordType =
   | "TSObjectKeyword"
   | "TSNeverKeyword";
 
-export interface TsKeywordNode<T extends TsKeywordType = TsKeywordType> extends Node {
+export interface TSKeywordNode<T extends TSKeywordType = TSKeywordType> extends Node {
   type: T;
 }
 
-export type TsIdentifier = Identifier;
+export type TSIdentifier = Identifier;
 
-export interface TsQualifiedName extends Node {
+export interface TSQualifiedName extends Node {
   type: "TSQualifiedName";
-  left: TsEntityName;
+  left: TSEntityName;
   right: Identifier;
-  name?: string;
   symbolRef?: SymbolRef;
 }
 
-export type TsEntityName = Identifier | TsQualifiedName;
+export type TSEntityName = Identifier | TSQualifiedName;
 
-export interface TsArrayType extends Node {
+export interface TSArrayType extends Node {
   type: "TSArrayType";
   elementType: Node;
 }
 
-export interface TsAsExpression extends Node {
+export interface TSAsExpression extends Node {
   type: "TSAsExpression";
   expression: Node;
   typeAnnotation: Node;
 }
 
-export interface TsNamedTypeNode extends Node {
-  typeName?: { name?: string } | null;
+export interface TSNamedTypeNode extends Node {
+  typeName?: { name?: string };
 }
 
-export interface TsSatisfiesExpression extends Node {
+export interface TSSatisfiesExpression extends Node {
   type: "TSSatisfiesExpression";
   expression: Node;
-  typeAnnotation?: TsNamedTypeNode | null;
+  typeAnnotation?: TSNamedTypeNode;
 }
 
-export interface TsNonNullExpression extends Node {
+export interface TSNonNullExpression extends Node {
   type: "TSNonNullExpression";
   expression: Node;
 }
 
-export type TsParameter =
+export type TSParameter =
   | Identifier
   | ArrayPattern
   | ObjectPattern
   | RestElement
   | AssignmentPattern
   | MemberExpression
-  | TsParameterProperty;
+  | TSParameterProperty;
 
-export interface TsTypeParameter extends Node {
+export interface TSTypeParameter extends Node {
   type: "TSTypeParameter";
   name: string;
-  constraint?: Node | null;
-  default?: Node | null;
+  constraint?: Node;
+  default?: Node;
 }
 
-export interface TsTypeParameterDeclaration extends Node {
+export interface TSTypeParameterDeclaration extends Node {
   type: "TSTypeParameterDeclaration";
-  params: TsTypeParameter[];
+  params: TSTypeParameter[];
 }
 
-export interface TsTypeParameterInstantiation extends Node {
+export interface TSTypeParameterInstantiation extends Node {
   type: "TSTypeParameterInstantiation";
   params: Node[];
 }
 
-export interface TsTypeAnnotation extends Node {
+export interface TSTypeAnnotation extends Node {
   type: "TSTypeAnnotation";
   typeAnnotation: Node;
 }
 
-export interface TsFunctionType extends Node {
+export interface TSFunctionType extends Node {
   type: "TSFunctionType";
-  parameters: TsParameter[];
+  parameters: TSParameter[];
   typeAnnotation: Node;
-  typeParameters?: TsTypeParameterDeclaration | null;
+  typeParameters?: TSTypeParameterDeclaration;
 }
 
-export interface TsConstructorType extends Node {
+export interface TSConstructorType extends Node {
   type: "TSConstructorType";
-  parameters: TsParameter[];
+  parameters: TSParameter[];
   typeAnnotation: Node;
-  typeParameters?: TsTypeParameterDeclaration | null;
+  typeParameters?: TSTypeParameterDeclaration;
 }
 
-export interface TsConditionalType extends Node {
+export interface TSConditionalType extends Node {
   type: "TSConditionalType";
   checkType: Node;
   extendsType: Node;
@@ -119,201 +118,225 @@ export interface TsConditionalType extends Node {
   falseType: Node;
 }
 
-export interface TsLiteralType extends Node {
+export interface TSLiteralType extends Node {
   type: "TSLiteralType";
   literal: Literal;
 }
 
-export interface TsParenthesizedType extends Node {
+export interface TSParenthesizedType extends Node {
   type: "TSParenthesizedType";
   typeAnnotation: Node;
 }
 
-export interface TsTupleType extends Node {
+export interface TSTupleType extends Node {
   type: "TSTupleType";
   elementTypes: Node[];
 }
 
-export interface TsUnionType extends Node {
+export interface TSNamedTupleMember extends Node {
+  type: "TSNamedTupleMember";
+  label: Node;
+  elementType: Node;
+  optional?: boolean;
+}
+
+export interface TSUnionType extends Node {
   type: "TSUnionType";
   types: Node[];
 }
 
-export interface TsTypeLiteral extends Node {
+export type TSMappedModifier = boolean | "+" | "-";
+
+export interface TSMappedType extends Node {
+  type: "TSMappedType";
+  readonly?: TSMappedModifier;
+  optional?: TSMappedModifier;
+  typeParameter: Node;
+  nameType?: Node | null;
+  typeAnnotation?: Node;
+}
+
+export interface TSTypeLiteral extends Node {
   type: "TSTypeLiteral";
   members: Node[];
 }
 
-export interface TsTypeOperator extends Node {
+export interface TSTypeOperator extends Node {
   type: "TSTypeOperator";
   operator: "keyof" | "readonly" | "unique";
   typeAnnotation: Node;
 }
 
-export interface TsTypeQuery extends Node {
+export interface TSTypeQuery extends Node {
   type: "TSTypeQuery";
   exprName: Node;
 }
 
-export interface TsTypeReference extends Node {
+export interface TSTypeReference extends Node {
   type: "TSTypeReference";
-  typeName: TsEntityName;
-  typeArguments?: TsTypeParameterInstantiation | null;
+  typeName: TSEntityName;
+  typeArguments?: TSTypeParameterInstantiation;
 }
 
-export interface TsExpressionWithTypeArguments extends Node {
+export interface TSExpressionWithTypeArguments extends Node {
   type: "TSExpressionWithTypeArguments";
   expression: Node;
-  typeArguments?: TsTypeParameterInstantiation | null;
-  typeParameters?: TsTypeParameterInstantiation | null;
+  typeArguments?: TSTypeParameterInstantiation;
+  typeParameters?: TSTypeParameterInstantiation;
 }
 
-export interface TsEnumMember extends Node {
+export interface TSEnumMember extends Node {
   type: "TSEnumMember";
   id: Identifier | Literal;
-  initializer?: Node | null;
+  initializer?: Node;
 }
 
-export interface TsEnumDeclaration extends Node {
+export interface TSEnumDeclaration extends Node {
   type: "TSEnumDeclaration";
   id: Identifier;
-  members: TsEnumMember[];
+  members: TSEnumMember[];
 }
 
-export interface TsTypeAliasDeclaration extends Node {
+export interface TSTypeAliasDeclaration extends Node {
   type: "TSTypeAliasDeclaration";
   id: Identifier;
   typeAnnotation: Node;
-  typeParameters?: TsTypeParameterDeclaration | null;
+  typeParameters?: TSTypeParameterDeclaration;
 }
 
-export interface TsInterfaceBody extends Node {
+export interface TSInterfaceBody extends Node {
   type: "TSInterfaceBody";
   body: Node[];
 }
 
-export interface TsInterfaceDeclaration extends Node {
+export interface TSInterfaceDeclaration extends Node {
   type: "TSInterfaceDeclaration";
   id: Identifier;
-  body: TsInterfaceBody;
-  extends?: TsExpressionWithTypeArguments[] | null;
-  typeParameters?: TsTypeParameterDeclaration | null;
+  body: TSInterfaceBody;
+  extends?: TSExpressionWithTypeArguments[];
+  typeParameters?: TSTypeParameterDeclaration;
 }
 
-export interface TsMethodSignature extends Node {
+export interface TSMethodSignature extends Node {
   type: "TSMethodSignature";
   key: Node;
-  parameters: TsParameter[];
+  parameters: TSParameter[];
   modifiers: Modifier;
-  typeParameters?: TsTypeParameterDeclaration | null;
-  typeAnnotation?: TsTypeAnnotation | null;
+  typeParameters?: TSTypeParameterDeclaration ;
+  typeAnnotation?: TSTypeAnnotation;
 }
 
-export interface TsPropertySignature extends Node {
+export interface TSPropertySignature extends Node {
   type: "TSPropertySignature";
   key: Node;
   modifiers: Modifier;
   optional?: boolean;
-  typeAnnotation?: TsTypeAnnotation | null;
+  typeAnnotation?: TSTypeAnnotation;
 }
 
-export interface TsParameterProperty extends Node {
+export interface TSParameterProperty extends Node {
   type: "TSParameterProperty";
-  parameter: TsParameter;
+  parameter: TSParameter;
   readonly?: boolean;
-  optional?: boolean;
-  typeAnnotation?: TsTypeAnnotation | null;
+  typeAnnotation?: TSTypeAnnotation;
 }
 
-export interface TsDeclareFunction extends Node {
+export interface TSDeclareFunction extends Node {
   type: "TSDeclareFunction";
   id: Identifier | null;
-  params: TsParameter[];
-  returnType?: TsTypeAnnotation | null;
-  typeParameters?: TsTypeParameterDeclaration | null;
+  params: TSParameter[];
+  returnType?: TSTypeAnnotation;
+  typeParameters?: TSTypeParameterDeclaration;
 }
 
-export type TsDeclaration =
-  | TsEnumDeclaration
-  | TsTypeAliasDeclaration
-  | TsInterfaceDeclaration
-  | TsDeclareFunction;
+export type TSDeclaration =
+  | TSEnumDeclaration
+  | TSTypeAliasDeclaration
+  | TSInterfaceDeclaration
+  | TSDeclareFunction;
 
-export type TsNode =
-  | TsKeywordNode
-  | TsArrayType
-  | TsAsExpression
-  | TsSatisfiesExpression
-  | TsNonNullExpression
-  | TsFunctionType
-  | TsConstructorType
-  | TsConditionalType
-  | TsLiteralType
-  | TsParenthesizedType
-  | TsTupleType
-  | TsUnionType
-  | TsQualifiedName
-  | TsTypeAnnotation
-  | TsTypeLiteral
-  | TsTypeOperator
-  | TsTypeQuery
-  | TsTypeParameter
-  | TsTypeParameterDeclaration
-  | TsTypeParameterInstantiation
-  | TsTypeReference
-  | TsExpressionWithTypeArguments
-  | TsDeclaration
-  | TsInterfaceBody
-  | TsMethodSignature
-  | TsPropertySignature
-  | TsParameterProperty;
+export type TSNode =
+  | TSKeywordNode
+  | TSArrayType
+  | TSAsExpression
+  | TSSatisfiesExpression
+  | TSNonNullExpression
+  | TSFunctionType
+  | TSConstructorType
+  | TSConditionalType
+  | TSLiteralType
+  | TSParenthesizedType
+  | TSTupleType
+  | TSNamedTupleMember
+  | TSUnionType
+  | TSMappedType
+  | TSQualifiedName
+  | TSTypeAnnotation
+  | TSTypeLiteral
+  | TSTypeOperator
+  | TSTypeQuery
+  | TSTypeParameter
+  | TSTypeParameterDeclaration
+  | TSTypeParameterInstantiation
+  | TSTypeReference
+  | TSExpressionWithTypeArguments
+  | TSDeclaration
+  | TSInterfaceBody
+  | TSMethodSignature
+  | TSPropertySignature
+  | TSParameterProperty;
 
-export interface TsTypeAnnotationNode extends Node {
-  typeAnnotation?: Node | null;
+export interface TSTypeAnnotationNode extends Node {
+  typeAnnotation?: Node;
 }
 
 declare module "acorn" {
   interface Identifier {
     optional?: boolean;
-    typeAnnotation?: TsTypeAnnotation | null;
+    typeAnnotation?: TSTypeAnnotation;
     symbolRef?: SymbolRef;
   }
 
   interface MemberExpression {
-    typeAnnotation?: TsTypeAnnotation | null;
+    typeAnnotation?: TSTypeAnnotation;
   }
 
   interface ObjectPattern {
     optional?: boolean;
-    typeAnnotation?: TsTypeAnnotation | null;
+    typeAnnotation?: TSTypeAnnotation;
   }
 
   interface ArrayPattern {
     optional?: boolean;
-    typeAnnotation?: TsTypeAnnotation | null;
+    typeAnnotation?: TSTypeAnnotation;
   }
 
   interface RestElement {
     optional?: boolean;
-    typeAnnotation?: TsTypeAnnotation | null;
+    typeAnnotation?: TSTypeAnnotation;
   }
 
   interface AssignmentPattern {
     optional?: boolean;
-    typeAnnotation?: TsTypeAnnotation | null;
+    typeAnnotation?: TSTypeAnnotation;
+  }
+
+  interface EmptyStatement {
+    comment?: string;
   }
 
   interface Function {
     modifiers: Modifier;
-    returnType?: TsTypeAnnotation | null;
-    typeAnnotation?: TsTypeAnnotation | null;
-    typeParameters?: TsTypeParameterDeclaration | null;
+    returnType?: TSTypeAnnotation;
+    typeAnnotation?: TSTypeAnnotation;
+    typeParameters?: TSTypeParameterDeclaration;
   }
 
   interface MethodDefinition {
     modifiers: Modifier;
+    optional?: boolean;
     override?: boolean;
-    typeParameters?: TsTypeParameterDeclaration | null;
+    typeParameters?: TSTypeParameterDeclaration;
   }
 
   interface PropertyDefinition {
@@ -321,7 +344,7 @@ declare module "acorn" {
     optional?: boolean;
     override?: boolean;
     readonly?: boolean;
-    typeAnnotation?: TsTypeAnnotation | null;
+    typeAnnotation?: TSTypeAnnotation;
   }
 
   interface VariableDeclaration {
@@ -329,8 +352,8 @@ declare module "acorn" {
   }
 
   interface Class {
-    implements?: TsExpressionWithTypeArguments[] | null;
-    typeParameters?: TsTypeParameterDeclaration | null;
+    implements?: TSExpressionWithTypeArguments[];
+    typeParameters?: TSTypeParameterDeclaration;
   }
 
   interface ImportDeclaration {
@@ -342,6 +365,6 @@ declare module "acorn" {
   }
 
   interface NodeTypes {
-    ts: TsNode;
+    ts: TSNode;
   }
 }

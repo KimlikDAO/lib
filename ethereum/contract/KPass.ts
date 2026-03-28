@@ -41,13 +41,11 @@ const KPass = {
     });
   },
   revokesRemaining(chainId: ChainId, sender: Address): Promise<number> {
-    return KPass.provider
-      .read({
-        chainId,
-        to: KPass.contract,
-        data: "0x165c44f3" + abi.address(sender),
-      })
-      .then((revokes) => parseInt(revokes.slice(-6), 16));
+    return KPass.provider.read({
+      chainId,
+      to: KPass.contract,
+      data: "0x165c44f3" + abi.address(sender),
+    }).then((revokes) => parseInt(revokes.slice(-6), 16));
   },
   reduceRevokeThreshold(
     chainId: ChainId,
@@ -58,8 +56,8 @@ const KPass = {
       chainId,
       to: KPass.contract,
       from: address,
-      gas: maybeGasLimit(chainId, 22_000),
       data: "0xab505b1c" + abi.uint256(deltaWeight),
+      gas: maybeGasLimit(chainId, 22_000),
     });
   },
   addRevoker(
@@ -72,11 +70,11 @@ const KPass = {
       chainId,
       to: KPass.contract,
       from: address,
-      gas: maybeGasLimit(chainId, 49_000),
       data:
         "0xf02b3297" +
         abi.uint96(deltaWeight) +
         abi.packedAddress(revokerAddress),
+      gas: maybeGasLimit(chainId, 49_000),
     });
   },
   revoke(chainId: ChainId, address: Address): Promise<TransactionHash> {
@@ -84,8 +82,8 @@ const KPass = {
       chainId,
       to: KPass.contract,
       from: address,
-      gas: maybeGasLimit(chainId, 53_000),
       data: "0xb6549f75",
+      gas: maybeGasLimit(chainId, 53_000),
     });
   },
   revokeFriend(
@@ -97,8 +95,8 @@ const KPass = {
       chainId,
       to: KPass.contract,
       from: address,
-      gas: maybeGasLimit(chainId, 80_000),
       data: "0x3a2c82c7" + abi.address(friend),
+      gas: maybeGasLimit(chainId, 80_000),
     });
   },
   createWithRevokers(
@@ -127,8 +125,8 @@ const KPass = {
         to: KPass.contract,
         from: address,
         value: price,
-        gas,
         data,
+        gas,
       });
     });
   },
@@ -159,8 +157,8 @@ const KPass = {
       to: KPass.contract,
       from: address,
       value: 0,
-      gas,
       data,
+      gas,
     });
   },
   createWithRevokersWithTokenPayment(
@@ -194,8 +192,8 @@ const KPass = {
       to: KPass.contract,
       from: address,
       value: 0,
-      gas,
       data,
+      gas,
     });
   },
   priceIn(chainId: ChainId, token: number): Promise<[number, number]> {

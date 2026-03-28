@@ -110,7 +110,7 @@ function nonNull<T>(x?: T | null): T {
 
 // Doesn't handle "void" or "null" because those are keywords, not identifiers.
 // It also doesn't handle "intrinsic", since usually it's not a keyword.
-function keywordTypeFromName(value: string): Node | typeof undefined {
+function keywordTypeFromName(value: string): string | undefined {
   switch (value) {
     case "any":
       return "TSAnyKeyword";
@@ -177,7 +177,7 @@ function tsPlugin(options?: {
       tokenIsTSTypeOperator
     } = acornTypeScript;
 
-    const nextLineBreak =(code: string, from: number, end: number = code.length) => {
+    const nextLineBreak = (code: string, from: number, end: number = code.length) => {
       for (let i = from; i < end; i++) {
         let next = code.charCodeAt(i);
         if (isNewLine(next))
@@ -213,7 +213,7 @@ function tsPlugin(options?: {
       maybeInArrowParameters: boolean = false;
       shouldParseArrowReturnType: any | undefined = undefined;
       shouldParseAsyncArrowReturnType: any | undefined = undefined;
-      decoratorStack: any[] = [[]];
+      override decoratorStack: any[] = [[]];
       importsStack: any[] = [[]];
       /**
        * we will only parse one import node or export node at same time.
@@ -221,7 +221,7 @@ function tsPlugin(options?: {
        * */
       importOrExportOuterKind: string | undefined = undefined;
       ecmaVersion: number;
-      stashedModifiers: number;
+      stashedModifiers: number = 0;
 
       constructor(options: Options, input: string, startPos?: number) {
         super(options, input, startPos);
@@ -250,7 +250,7 @@ function tsPlugin(options?: {
         return super.getTokenFromCode(code);
       }
 
-      readToken(code: number): any {
+      override readToken(code: number): any {
         if (!this.inType) {
           let context = this.curContext();
           if (context === tsTokContexts.tc_expr) return this.jsx_readToken();
@@ -279,7 +279,7 @@ function tsPlugin(options?: {
         return super.readToken(code);
       }
 
-      getTokenFromCode(code: number): TokenType {
+      override getTokenFromCode(code: number): TokenType {
         if (this.inType) {
           return this.getTokenFromCodeInType(code);
         }
@@ -296,7 +296,7 @@ function tsPlugin(options?: {
         return this.ts_isContextual(tokTypes.abstract) && this.lookahead().type === tt._class;
       }
 
-      finishNode(node, type: string) {
+      override finishNode(node, type: string) {
         if (node.type !== '' && node.end !== 0) {
           return node;
         }
@@ -388,7 +388,7 @@ function tsPlugin(options?: {
         if (this.options.ranges) node.range[1] = endPos;
       }
 
-      startNodeAtNode(type: Node): any {
+      override startNodeAtNode(type: Node): any {
         return super.startNodeAt(type.start, type.loc.start);
       }
 
@@ -644,16 +644,15 @@ function tsPlugin(options?: {
         return this.finishToken(type, word);
       }
 
-      startNode() {
+      override startNode() {
         const node = super.startNode();
-        node.modifiers = this.stashedModifiers;
+        if (this.stashedModifiers)
+          node.modifiers = this.stashedModifiers;
         this.stashedModifiers = 0;
         return node;
       }
 
       skipBlockComment() {
-        let startLoc;
-        if (!this.isLookahead) startLoc = this.options.onComment && this.curPosition();
         let start = this.pos;
         let end = this.input.indexOf('*/', (this.pos += 2));
         if (end === -1) this.raise(this.pos - 2, 'Unterminated comment');
@@ -672,7 +671,7 @@ function tsPlugin(options?: {
         this.stashedModifiers = modifiersFromJsDoc(this.input.slice(start + 2, end));
       }
 
-      skipLineComment(startSkip) {
+      skipLineComment(startSkip: number) {
         let start = this.pos;
         let startLoc;
         if (!this.isLookahead) startLoc = this.options.onComment && this.curPosition();
@@ -695,7 +694,7 @@ function tsPlugin(options?: {
           );
       }
 
-      finishToken(type: TokenType, val?: string): any {
+      override finishToken(type: TokenType, val?: string): any {
         this.preValue = this.value;
         this.preToken = this.type;
 
@@ -728,11 +727,10 @@ function tsPlugin(options?: {
       addExtra(node: any, key: string, value: any, enumerable: boolean = true): void {
         if (!node) return;
         const extra = (node.extra = node.extra || {});
-        if (enumerable) {
+        if (enumerable)
           extra[key] = value;
-        } else {
+        else
           Object.defineProperty(extra, key, { enumerable, value });
-        }
       }
 
       /**
@@ -760,7 +758,7 @@ function tsPlugin(options?: {
       /**
        * Reset the start location of node to the start location of locationNode
        */
-      resetStartLocationFromNode(node: Node, locationNode: Node): void {
+      override resetStartLocationFromNode(node: Node, locationNode: Node): void {
         this.resetStartLocation(node, locationNode.start, locationNode.loc.start);
       }
 
@@ -5311,7 +5309,7 @@ function tsPlugin(options?: {
 
 const TsParser = acornNamespace.Parser.extend(tsPlugin());
 const TsxParser = acornNamespace.Parser.extend(tsPlugin({ jsx: true }));
-const DtsParser = acornNamespace.Parser.extend(tsPlugin({ dts: true}));
+const DtsParser = acornNamespace.Parser.extend(tsPlugin({ dts: true }));
 
 export {
   DtsParser,

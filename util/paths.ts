@@ -8,7 +8,11 @@ const getExt = (fileName: string, orElse = ""): string => {
   return dot == 0 ? orElse : fileName.slice(dot);
 };
 
-/** @pure */
+/**
+ * Replaces the extension of a file name with the provided extension. The
+ * provided extension must include the dot.
+ * @pure
+ */
 const replaceExt = (fileName: string, ext: string): string => {
   const dot = fileName.lastIndexOf(".");
   return dot == -1 ? fileName : fileName.slice(0, dot) + ext;
