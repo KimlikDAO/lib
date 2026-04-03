@@ -4,7 +4,7 @@ import { combine, getDir } from "../../util/paths";
 import { resolveRootPath } from "../frontend/resolver";
 import { SourceSet } from "../frontend/sourceSet";
 import { ModuleImports } from "../model/moduleImports";
-import { transpileKdjs } from "./gccFromKdjs";
+import { transpileJs } from "./gccFromKdjs";
 import { transpileDts, transpileTs } from "./transpile";
 
 interface PreprocessResult {
@@ -44,7 +44,7 @@ const preprocessAndIsolate = async (
     else if (source.path.endsWith(".ts"))
       content = transpileTs(source, content, sources, overrides, unlinkedImports);
     else if (source.path.endsWith(".js"))
-      content = transpileKdjs(source, content, sources, overrides, unlinkedImports);
+      content = transpileJs(source, content, sources, overrides, unlinkedImports);
     else throw "Provide transpile function";
 
     const outFile = combine(isolateDir, source.path);
