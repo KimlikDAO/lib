@@ -1,0 +1,9 @@
+{
+  "name": "@kimlikdao/kdts",
+  "types": "./kdts.d.ts",
+  "exports": {
+    ".": {
+      "types": "./kdts.d.ts"
+    }
+  }
+}

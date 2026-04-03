@@ -1,7 +1,6 @@
-import { PureExpr } from "../kdts/kdts.d";
+import { LargeConstant, PureExpr } from "@kimlikdao/kdts";
 
-/** @noinline */
-const FromUint4 = "0123456789abcdef";
+const FromUint4 = "0123456789abcdef" satisfies LargeConstant;
 
 const FromUint8: readonly string[] = (
   (): string[] => {

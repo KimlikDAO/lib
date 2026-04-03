@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { combine, getDir, replaceExt } from "../../util/paths";
-import { SourceId } from "../model/moduleImport";
+import { SourceId } from "../model/moduleImports";
 
 const KDTS_TYPES = "node_modules/@kimlikdao/kdts/@types/";
 
@@ -52,6 +52,9 @@ const splitPackagePath = (path: string): [string, string] => {
 }
 
 const resolvePath = (importer: string, path: string): SourcePath => {
+  // temp hack until we implement workspace support
+  if (path.startsWith("@kimlikdao/kdts"))
+    path = "/kdts/kdts.d.ts";
   switch (path[0]) {
     case ".":
       path = resolveExt(combine(getDir(importer), path));

@@ -351,6 +351,10 @@ declare module "acorn" {
     modifiers: Modifier;
   }
 
+  interface VariableDeclarator {
+    modifiers?: Modifier;
+  }
+
   interface Class {
     implements?: TSExpressionWithTypeArguments[];
     typeParameters?: TSTypeParameterDeclaration;

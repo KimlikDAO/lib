@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { Modifier, modifiersFromJsDoc } from "../../model/modifier";
+import { Modifier, modifiersFromJsDoc } from "../modifier";
 
 const expectModifiers = (jsDoc: string, expected: number) => () => {
   expect(modifiersFromJsDoc(jsDoc)).toBe(expected);
@@ -13,7 +13,7 @@ test(
  * @noinline
  * @nosideeffects
 `,
-    Modifier.Define | Modifier.NoInline | Modifier.NoSideEffects
+    Modifier.NoInline | Modifier.NoSideEffects
   )
 );
 

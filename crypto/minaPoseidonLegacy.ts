@@ -1,7 +1,7 @@
+import { LargeConstant } from "@kimlikdao/kdts";
 import { pow5 } from "./modular";
 
-/** @noinline */
-const P = (1n << 254n) + 0x224698fc094cf91b992d30ed00000001n;
+const P = (1n << 254n) + 0x224698fc094cf91b992d30ed00000001n satisfies LargeConstant;
 
 /** @pure */
 const poseidon = (vals: bigint[]): bigint => {
@@ -27,6 +27,7 @@ const poseidon = (vals: bigint[]): bigint => {
       s2 = (t2 + rc2[j]) % P;
     }
   }
+  if (n & 1) vals.pop();
   return s0;
 };
 
@@ -40,7 +41,6 @@ const md20 = 0x6c364440aa3b6cf17615d7114a87bdd15917ee6c2d6ec8451336adead4ab5a7n;
 const md21 = 0x250b797d72cab6bdcf47520851e6d9e069927ff59ca0038c81fab3c8f2ec2261n;
 const md22 = 0x2557460f3563ba3aa6c4a826ba8639377129acef2f2589b1302dcc8b61eea7bfn;
 
-/** @noinline */
 const rc0: readonly bigint[] = [
   0xcd102badb124ebe9c7358494bd7fa35928b7c0954bbf25f00f95df0a63992b4n,
   0xd6f067838fca70a3a82d8f7ed72345b0d88d592e2ed2aa03fdeb28371bdad60n,
@@ -105,9 +105,8 @@ const rc0: readonly bigint[] = [
   0x289a1a58eb1dc10717fac769b508156d581d8b63aed8fe6902e08bcddf9e3395n,
   0x1a6a14f5b7a8fa4ed50a60244fbba4bc5470e4cd4ca7a326d8ae8664bc19517en,
   0x1cbe945e02625d9af40f5a2945a311fc95246ae07cce8c0777265fbc01facaden,
-];
+] satisfies LargeConstant;
 
-/** @noinline */
 const rc1: readonly bigint[] = [
   0x20f1731eef7b4190a40dacf31757cc39bd16733e18d5f624741757bfd7a51d5n,
   0x3fb917be23bf82c2ba391b81704ee5a7aae2a9a7e8a75d4b5678f03b729c756fn,
@@ -172,9 +171,8 @@ const rc1: readonly bigint[] = [
   0x57bfbceaa7f9d5110feb295922ea73006a70b2553057ed6343724cac8bf4ea9n,
   0x6ed5244e5e6e55c987fe995cf281e6d873e8750d50f2813f13d6609528f0889n,
   0x10e279901e0b4a08f590e5a44b6667b3e608bc7d2411e9190c6538a916ea298n,
-];
+] satisfies LargeConstant;
 
-/** @noinline */
 const rc2: readonly bigint[] = [
   0x1e3339ede4ca0304d2fdadf84d097d0bdd370e0aeaa49d68db98fde08cdbdf52n,
   0x33c766ac8e43ad4f0001fe8aa2165058d1015a3bed8b2cf657a0d21951ec6995n,
@@ -239,6 +237,6 @@ const rc2: readonly bigint[] = [
   0x25188b12757e81d8e10352d5a6b540a61737b057aa34afb88c56e6a17f1021e4n,
   0x3d405c061d987d6d24e705f8736185498f9454ee641ca25331735e3183b892b5n,
   0x1ec2e81eba84f4527aaef43f2ea98d3edcf8f753c705a54b53841c264b1d8d5en,
-];
+] satisfies LargeConstant;
 
 export { P, poseidon };

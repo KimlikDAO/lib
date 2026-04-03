@@ -1,7 +1,3 @@
-import { TsParser } from "../../parser/tsParser";
-import { inferFromExpression } from "../../transform/inference";
-import { generate } from "../kdjsFromAst";
-
 type JsDocParam = {
   name: string;
   type: string;
@@ -22,39 +18,6 @@ type TaggedTarget = {
   type: string;
 };
 
-const parse = (source: string) => TsParser.parse(source);
-
-const emit = (source: string): string => generate(parse(source));
-
-const emitFirst = (source: string): string => {
-  const body = parse(source).body as any[];
-  return generate(body[0]);
-};
-
-const expressionOf = (source: string): any => {
-  const body = parse(`const _ = ${source};`).body as any[];
-  return body[0].declarations[0].init;
-};
-
-const inferredTypeOf = (source: string): string | undefined => {
-  const inferred = inferFromExpression(expressionOf(source));
-  return inferred && generate(inferred);
-};
-
-const renderedTypeOf = (source: string): string => {
-  const body = parse(source).body as any[];
-  return generate(body[0].declarations[0].id.typeAnnotation.typeAnnotation);
-};
-
-const stripIndent = (text: string): string => {
-  const lines = text.replace(/^\n/, "").split("\n");
-  const nonEmpty = lines.filter((line) => line.trim());
-  const indent = nonEmpty.length
-    ? Math.min(...nonEmpty.map((line) => line.match(/^ */)![0].length))
-    : 0;
-  return lines.map((line) => line.slice(indent)).join("\n");
-};
-
 const readJsDoc = (output: string): JsDocInfo => {
   const lines = output.split("\n").map((line) => line.trim());
   const params: JsDocParam[] = [];
@@ -62,10 +25,22 @@ const readJsDoc = (output: string): JsDocInfo => {
   const templates: string[] = [];
   let returnType: string | null = null;
 
-  for (const line of lines) {
-    const param = line.match(/^\* @param \{(.+)\} (.+)$/);
-    if (param) {
-      params.push({ type: param[1], name: param[2] });
+  for (let i = 0; i < lines.length; ++i) {
+    const line = lines[i]!;
+
+    if (line.startsWith("* @param ")) {
+      let paramText = line.slice("* @param ".length);
+
+      while (!/^\{[\s\S]+\} (.+)$/.test(paramText) && i + 1 < lines.length) {
+        const nextLine = lines[++i]!;
+        if (!nextLine.startsWith("*"))
+          break;
+        paramText += "\n" + (nextLine.startsWith("* ") ? nextLine.slice(2) : nextLine.slice(1));
+      }
+
+      const param = paramText.match(/^\{([\s\S]+)\} (.+)$/);
+      if (param)
+        params.push({ type: param[1], name: param[2] });
       continue;
     }
 
@@ -82,9 +57,8 @@ const readJsDoc = (output: string): JsDocInfo => {
     }
 
     const tag = line.match(/^\* @([a-z]+)(?:\b.*)?$/);
-    if (tag) {
+    if (tag)
       tags.push(tag[1]);
-    }
   }
 
   const signature = lines.find((line) =>
@@ -130,13 +104,9 @@ const readTaggedTargets = (output: string): TaggedTarget[] => {
 };
 
 export {
-  emit,
-  emitFirst,
-  expressionOf,
-  inferredTypeOf,
+  JsDocInfo,
+  JsDocParam,
+  TaggedTarget,
   readJsDoc,
-  readTaggedTargets,
-  renderedTypeOf,
-  stripIndent
+  readTaggedTargets
 };
-export type { JsDocInfo, JsDocParam, TaggedTarget };

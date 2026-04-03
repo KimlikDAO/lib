@@ -15,15 +15,23 @@ if (!entry) {
 Usage: kdts entry.js [parameters]
 
 Parameters:
-  --fast         : Use Bun bundler (way faster, but larger output)
-  --output (-o)  : The name of the output file
+  --output (-o)  : Output file name
+                   default: entry.js -> entry.out.js
+  --fast         : Compile without using the type info
+                   Uses bun bundler on bun, esbuild on node
   --print        : Print the compiled code to stdout
+  --nologs       : Strip all console.log() calls
+  --override     : Value for a \`satisfies Overridable\` annotated variable
+                   example: --override DEBUG=true
+  --overrides    : A JSON encoded object to be used for variable overrides
+  --packages     : "external" or "bundle"
+  --external     : If packages is set to bundle, a list of package names to
+                   consider external
+
+Parameters (typed mode only):
   --strict       : Report unknown types
   --loose        : Don't perform strictCheckTypes
-  --nologs       : Strip all console.log() calls
-  --define       : Values for @define annotated variables
   --isolateDir   : Directory name to write the isolated and preprocessed input files
-  --globals      : A JSON encoded object to be used as globals
 `);
   process.exit(0);
 }

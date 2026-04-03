@@ -1,90 +1,73 @@
-import { describe, expect, test } from "bun:test";
-import { emit, stripIndent } from "./harness";
+import { test } from "bun:test";
+import { harness } from "../../util/testing/harness";
+import { transpileTs } from "../transpile";
 
-describe("interfaces", () => {
-  test("simple interface emits fields and methods", () => {
-    const input = stripIndent(`
-      interface Point {
-        x: bigint;
-        y: bigint;
-        copy(): Point;
-        increment(other: Point): Point;
-      }
-    `);
+const expectEmit = harness(transpileTs);
 
-    expect(emit(input)).toBe(stripIndent(`
+test("interfaces", () => {
+  expectEmit(`
+    interface Point {
+      x: bigint;
+      y: bigint;
+      copy(): Point;
+      increment(other: Point): Point;
+    }`, `
+    /**
+     * @interface
+     */
+    class Point {
+      /** @type {bigint} */
+      x;
+      /** @type {bigint} */
+      y;
       /**
-       * @interface
+       * @return {!Point}
        */
-      class Point {
-        /** @type {bigint} */
-        x;
-        /** @type {bigint} */
-        y;
-        /**
-         * @return {Point}
-         */
-        copy() {}
-        /**
-         * @param {Point} other
-         * @return {Point}
-         */
-        increment(other) {}
-      }
-    `));
-  });
-
-  test("typedef, extends, callback param, and optional param stay compact", () => {
-    const input = stripIndent(`
-      type Provider = MinaProvider | EthereumProvider;
-
-      interface Connector extends Signer {
-        connect(
-          chain: ChainId,
-          changed: (chainId: ChainId) => void,
-          onlyIfApproved?: boolean
-        ): Promise<void> | void;
-      }
-
-      export { Provider, Connector };
-    `);
-
-    expect(emit(input)).toBe(stripIndent(`
+      copy() {}
       /**
-       * @typedef {MinaProvider | EthereumProvider}
+       * @param {!Point} other
+       * @return {!Point}
        */
-      const Provider = {};
+      increment(other) {}
+    }
+  `);
+  expectEmit(`
+    type Provider = MinaProvider | EthereumProvider;
+
+    interface Connector extends Signer {
+      connect(
+        chain: ChainId,
+        changed: (chainId: ChainId) => void,
+        onlyIfApproved?: boolean
+      ): Promise<void> | void;
+    }
+  `, `
+    /**
+     * @typedef {(!MinaProvider|!EthereumProvider)}
+     */
+    const Provider = {};
+    /**
+     * @interface
+     * @extends {Signer}
+     */
+    class Connector {
       /**
-       * @interface
-       * @extends {Signer}
+       * @param {!ChainId} chain
+       * @param {function(!ChainId):void} changed
+       * @param {boolean=} onlyIfApproved
+       * @return {(!Promise<void>|void)}
        */
-      class Connector {
-        /**
-         * @param {ChainId} chain
-         * @param {(chainId: ChainId) => void} changed
-         * @param {boolean=} onlyIfApproved
-         * @return {Promise<void> | void}
-         */
-        connect(chain, changed, onlyIfApproved) {}
-      }
+      connect(chain, changed, onlyIfApproved) {}
+    }
+  `);
 
-      export { Provider, Connector };
-    `));
-  });
-
-  test("generic extends keeps type arguments in JSDoc", () => {
-    const input = stripIndent(`
-      interface Box<T> extends ReadonlyArray<T> {}
-    `);
-
-    expect(emit(input)).toBe(stripIndent(`
-      /**
-       * @interface
-       * @extends {ReadonlyArray<T>}
-       * @template T
-       */
-      class Box {
-      }
-    `));
-  });
+  expectEmit(`
+    interface Box<T> extends ReadonlyArray<T> {}`, `
+    /**
+     * @interface
+     * @extends {ReadonlyArray<!T>}
+     * @template T
+     */
+    class Box {}
+  `);
 });

@@ -12,13 +12,6 @@ const args: CliArgs = parseArgs(process.argv.slice(2), "target", {
   "-rj": "runConcurrency"
 });
 
-const createMatcher = (patterns: string[]): RegExp => {
-  const regexPattern = patterns
-    .map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
-    .join("|");
-  return new RegExp(regexPattern);
-};
-
 const compileAndRunMatching = async (
   include: string,
   exclude: RegExp,
@@ -65,10 +58,18 @@ const getIncludes = (target: string[]) => {
   return pattern;
 };
 
+const getExcludes = (patterns: string[]): RegExp => {
+  const regexPattern = patterns
+    .map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .join("|");
+  return new RegExp(regexPattern);
+};
+
 const include = getIncludes(args.asList("target"));
-const exclude: RegExp = createMatcher(
+const exclude = getExcludes(
   ["build/", "node_modules/"].concat(args.asList("filter")));
 const command = include.includes(".bench.") ? "bun" : "bun test";
 
 console.info(`Target: ${include} (filtering: ${exclude})`);
-compileAndRunMatching(include, exclude, command, args).then(ensureAllPassed);
+compileAndRunMatching(include, exclude, command, args)
+  .then(ensureAllPassed);

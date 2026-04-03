@@ -1,7 +1,7 @@
+import { LargeConstant } from "@kimlikdao/kdts";
 import { bench } from "../../../util/testing/bench";
 
-/** @noinline */
-const P = (1n << 256n) - (1n << 32n) - 977n;
+const P = (1n << 256n) - (1n << 32n) - 977n satisfies LargeConstant;
 
 /** @pure */
 const sqrt1 = (n: bigint): bigint => {

@@ -1,5 +1,5 @@
+import { PureExpr } from "@kimlikdao/kdts";
 import { keccak256Uint32, keccak256Uint32ToHex } from "../crypto/sha3";
-import { PureExpr } from "../kdts/kdts.d";
 import bigints from "../util/bigints";
 import { Address } from "./address.d";
 

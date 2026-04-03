@@ -7,15 +7,14 @@
  *
  * @author KimlikDAO
  */
+import { LargeConstant } from "@kimlikdao/kdts";
 import bigints from "../util/bigints";
 import { arfCurve } from "./arfCurve";
-import { Curve, CompressedPoint, Point, aX_bY } from "./ellipticCurve";
+import { CompressedPoint, Curve, Point, aX_bY } from "./ellipticCurve";
 import { inverse } from "./modular";
 
-/** @noinline */
-const P = (1n << 256n) - (1n << 32n) - 977n;
-/** @noinline */
-const Q = P - 0x14551231950b75fc4402da1722fc9baeen;
+const P = (1n << 256n) - (1n << 32n) - 977n satisfies LargeConstant;
+const Q = P - 0x14551231950b75fc4402da1722fc9baeen satisfies LargeConstant;
 
 /** @pure */
 const tower = (b: bigint, pow: number): bigint => {
@@ -62,11 +61,10 @@ const Secp256k1: Curve = Object.assign(arfCurve(P), {
   }
 }) as Curve;
 
-/** @noinline */
 const G: Point = Secp256k1.pointFromAffine({
   x: 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798n,
   y: 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8n
-});
+}) satisfies LargeConstant;
 
 /** @pure */
 const sign = (digest: bigint, privKey: bigint): {
@@ -131,8 +129,8 @@ const recoverSigner = (
 
 export {
   G, P, Q, Secp256k1,
-  sqrt,
   recoverSigner,
   sign,
+  sqrt,
   verify
 };

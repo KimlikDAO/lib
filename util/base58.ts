@@ -1,6 +1,7 @@
-/** @noinline */
+import { LargeConstant } from "@kimlikdao/kdts";
+
 const Base58Chars =
-  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz" satisfies LargeConstant;
 
 const Base58Map: number[] = new Array(256);
 for (let i = 0; i < Base58Chars.length; ++i)

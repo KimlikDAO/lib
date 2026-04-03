@@ -2,7 +2,7 @@ import { Comment, parse } from "acorn";
 import { getExt } from "../../util/paths";
 import { SourcePath, resolvePath } from "../frontend/resolver";
 import { SourceSet } from "../frontend/sourceSet";
-import { ModuleImports } from "../model/moduleImport";
+import { ModuleImports } from "../model/moduleImports";
 import { CodeUpdater } from "../util/textual";
 import { generateAliasImports } from "./generator";
 import { transpileJsDoc } from "./jsdoc";

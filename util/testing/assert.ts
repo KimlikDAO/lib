@@ -53,7 +53,7 @@ const assertStats = () => {
     console.log(`${Red}Test failed ${process.exitCode}${Clear}`);
 }
 
-const fail = (): number => process.exitCode = -1;
+const fail = (_: unknown): void => { process.exitCode = -1; };
 
 process.on("uncaughtException", fail);
 process.on("unhandledRejection", fail);

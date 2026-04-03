@@ -2,10 +2,7 @@ enum Modifier {
   Nullable = 1,
   Optional = 2,
   Readonly = 4,
-
-  // VariableDeclaration (with single declarator) whose
-  // value can be provided through a compiler parameter.
-  Define = 8,
+  ClosureNamespace = 8,
 
   Override = 16,
 
@@ -35,7 +32,6 @@ const ParseBracedModifier = -1;
 
 const JsDocModifierMap: Record<string, Modifier | -1> = {
   "alwaysinline": Modifier.AlwaysInline,
-  "define": Modifier.Define,
   "modifies": ParseBracedModifier,
   "modifies {arguments}": Modifier.ModifiesArgumentsOnly,
   "modifies {this}": Modifier.ModifiesThisOnly,

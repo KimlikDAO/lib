@@ -22,16 +22,20 @@ class CodeUpdater {
     this.updates.push({ beg, end, put });
   }
   apply(source: string): string {
-    const updates = this.updates.sort((a, b) => a.beg - b.beg);
+    // Sort beg major and end minor
+    const updates = this.updates.sort(
+      (a, b) => a.beg == b.beg ? a.end - b.end : a.beg - b.beg);
     let out = "";
-    let last = 0;
-    for (const { beg, end, put } of updates) {
-      if (beg < last)
-        throw `CodeUpdater updates overlap near (${beg}, ${end}); previous update ended at ${last}`;
-      out += source.substring(last, beg) + put;
-      last = end;
+    let v = { beg: 0, end: 0, put: "" };
+    // flush when v.beg < u.beg  or v.beg == v.end
+    // the remaining case is v.beg == u.beg and v.beg != v.end
+    // which is a child replacement and should be overriden (no flush)
+    for (const u of updates) {
+      if (v.beg < u.beg || v.beg == v.end)
+        out += v.put + source.substring(v.end, u.beg);
+      v = u;
     }
-    return out + source.substring(last);
+    return out + v.put + source.substring(v.end);
   }
 }
 

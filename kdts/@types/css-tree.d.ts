@@ -19,13 +19,13 @@ export interface Comment extends Node {
   readonly value: string;
 }
 
-export interface ListItem<T extends CssNode = CssNode> {
+export interface ListItem<T extends CssNode> {
   prev?: ListItem<T>;
   next?: ListItem<T>;
   data: T;
 }
 
-export interface List<T extends CssNode = CssNode> {
+export interface List<T extends CssNode> {
   head?: ListItem<T>;
   tail?: ListItem<T>;
 }

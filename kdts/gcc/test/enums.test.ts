@@ -1,31 +1,34 @@
-import { describe, expect, test } from "bun:test";
-import { emitFirst, stripIndent } from "./harness";
+import { test } from "bun:test";
+import { harness } from "../../util/testing/harness";
+import { transpileTs } from "../transpile";
 
-describe("enums", () => {
-  test("string enum emits @enum {string}", () => {
-    const input = stripIndent(`
-      enum ChainId {
-        x1 = "0x1",
-        x144 = "0x144",
-        x38 = "0x38",
-        MinaMainnet = "mina:mainnet",
-      }
-    `);
+const expectEmit = harness(transpileTs);
 
-    expect(emitFirst(input)).toBe(stripIndent(`
-      /** @enum {string} */
-      const ChainId = {
-        x1: "0x1",
-        x144: "0x144",
-        x38: "0x38",
-        MinaMainnet: "mina:mainnet"
-      };
-    `).trimEnd());
-  });
-
-  test("mixed enum throws a focused error", () => {
-    expect(() => emitFirst(`enum Mixed { A = "a", B = 1 }`)).toThrow(
-      "Mixed enums (string and number) are not supported. Use a string-only or number-only enum: Mixed"
-    );
-  });
+test("enums", () => {
+  expectEmit(`
+    enum ChainId {
+      x1 = "0x1",
+      x144 = "0x144",
+      x38 = "0x38",
+      MinaMainnet = "mina:mainnet",
+    }`, `
+    /** @enum {string} */
+    const ChainId = {
+      x1: "0x1",
+      x144: "0x144",
+      x38: "0x38",
+      MinaMainnet: "mina:mainnet"
+    };
+  `);
+  expectEmit(`
+    enum Animals {
+      Dog = 1,
+      Cat = 2,
+    }`, `
+    /** @enum {number} */
+    const Animals = {
+      Dog: 1,
+      Cat: 2
+    };
+  `);
 });

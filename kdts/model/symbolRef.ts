@@ -1,4 +1,4 @@
-import { SourceId } from "./moduleImport";
+import { SourceId } from "./moduleImports";
 
 type SymbolRef = {
   source: SourceId;

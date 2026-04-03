@@ -1,3 +1,4 @@
+import { LargeConstant } from "@kimlikdao/kdts";
 import { ChainId } from "../crosschain/chains";
 import { ERC721MetaData } from "../ethereum/contract/ERC721.d";
 import KPass from "../ethereum/contract/KPass";
@@ -5,8 +6,7 @@ import hex from "../util/hex";
 import { I18nString, LangCode } from "../util/i18n";
 import { SectionGroup } from "./KPass";
 
-/** @noinline */
-const KIMLIKDAO_URL = "https://kimlikdao.org";
+const KIMLIKDAO_URL = "https://kimlikdao.org" satisfies LargeConstant;
 
 const userPrompt = (sections: string[]): I18nString => {
   const sectionText = sections.join(",\n  ");

@@ -3,10 +3,9 @@ import { CliArgs } from "../../util/cli";
 import { combine, getDir } from "../../util/paths";
 import { resolveRootPath } from "../frontend/resolver";
 import { SourceSet } from "../frontend/sourceSet";
-import { ModuleImports } from "../model/moduleImport";
-import { transpileDts } from "./externFromDts";
+import { ModuleImports } from "../model/moduleImports";
 import { transpileKdjs } from "./gccFromKdjs";
-import { transpileTs } from "./gccFromTs";
+import { transpileDts, transpileTs } from "./transpile";
 
 interface PreprocessResult {
   unlinkedImports: ModuleImports,
@@ -27,7 +26,7 @@ const preprocessAndIsolate = async (
     getDir(args.asStringOr("output", "build/" + entry)),
     args.asStringOr("isolateDir", ".kdts_isolate")
   );
-  const globals = args.asRecord("globals");
+  const overrides = args.asRecord("overrides");
   const sources = new SourceSet();
 
   sources.add(resolveRootPath(entry));
@@ -43,9 +42,9 @@ const preprocessAndIsolate = async (
     if (source.path.endsWith(".d.ts"))
       content = transpileDts(source, content, sources);
     else if (source.path.endsWith(".ts"))
-      content = transpileTs(source, content, sources, unlinkedImports);
+      content = transpileTs(source, content, sources, overrides, unlinkedImports);
     else if (source.path.endsWith(".js"))
-      content = transpileKdjs(source, content, sources, globals, unlinkedImports);
+      content = transpileKdjs(source, content, sources, overrides, unlinkedImports);
     else throw "Provide transpile function";
 
     const outFile = combine(isolateDir, source.path);

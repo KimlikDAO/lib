@@ -1,8 +1,8 @@
 import { Node } from "acorn";
-import { isIdentifier } from "../ast/guards";
-import { TSArrayType, TSTupleType, TSTypeReference } from "../ast/types";
+import { isIdentifier } from "./guards";
+import { TSArrayType, TSTupleType, TSTypeReference } from "./types";
 
-const inferLiteralType = (n: any): any => {
+const probeLiteralType = (n: any): any => {
   if (!n || n.type != "Literal") return;
   const v = n.value;
   if (v == null) return { type: "TSNullKeyword" };
@@ -14,7 +14,7 @@ const inferLiteralType = (n: any): any => {
   }
 };
 
-const inferNewExpressionType = (n: any): any => {
+const probeNewExpressionType = (n: any): any => {
   if (!n || n.type != "NewExpression") return;
   if (n.callee?.type != "Identifier" || !n.typeArguments?.params?.length) return;
   return {
@@ -24,10 +24,10 @@ const inferNewExpressionType = (n: any): any => {
   };
 };
 
-const inferFromExpression = (n: any): any =>
-  inferLiteralType(n) || inferNewExpressionType(n);
+const probeExpressionType = (n: any): any =>
+  probeLiteralType(n) || probeNewExpressionType(n);
 
-const inferEnumType = (n: any): string => {
+const probeEnumType = (n: any): string => {
   let hasString = false;
   let hasNumber = false;
   for (const member of n.members) {
@@ -54,20 +54,35 @@ const inferEnumType = (n: any): string => {
   return hasString ? "string" : "number";
 };
 
-const inferArrayLikeElementType = (n: Node): Node | void => {
+const probeTypeReferenceArgs = (n: Node | undefined, ...names: string[]): Node[] | void => {
+  if (!n || n.type != "TSTypeReference") return;
+  const typeName = (n as TSTypeReference).typeName;
+  if (!isIdentifier(typeName) || !names.includes(typeName.name)) return;
+  return (n as TSTypeReference).typeArguments?.params;
+};
+
+const probeTypeReferenceArg = (
+  n: Node | undefined,
+  names: string | string[],
+  position: number
+): Node | void => {
+  const allNames = Array.isArray(names) ? names : [names];
+  return probeTypeReferenceArgs(n, ...allNames)?.[position];
+};
+
+const probeArrayLikeElementType = (n: Node | undefined): Node | void => {
+  if (!n) return;
   if (n.type == "TSTupleType")
     return (n as TSTupleType).elementTypes[0];
   if (n.type == "TSArrayType")
     return (n as TSArrayType).elementType;
-  if (n.type == "TSTypeReference") {
-    const typeName = (n as TSTypeReference).typeName;
-    if (isIdentifier(typeName) && (typeName.name == "Array" || typeName.name == "ReadonlyArray"))
-      return (n as TSTypeReference).typeArguments?.params[0];
-  }
+  return probeTypeReferenceArg(n, ["Array", "ReadonlyArray"], 0);
 }
 
 export {
-  inferArrayLikeElementType,
-  inferEnumType,
-  inferFromExpression
+  probeArrayLikeElementType,
+  probeEnumType,
+  probeExpressionType,
+  probeTypeReferenceArg,
+  probeTypeReferenceArgs
 };

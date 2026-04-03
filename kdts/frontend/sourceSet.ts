@@ -1,4 +1,4 @@
-import { SourceId } from "../model/moduleImport";
+import { SourceId } from "../model/moduleImports";
 import { SourcePath } from "./resolver";
 
 class SourceSet {
@@ -8,17 +8,14 @@ class SourceSet {
   add(resolved: SourcePath) {
     if (this.bySource.has(resolved.source))
       return;
-
     this.bySource.set(resolved.source, resolved);
     this.pending.push(resolved.source);
   }
-
   pop(): SourcePath | undefined {
     const source = this.pending.pop();
     if (!source) return;
     return this.bySource.get(source)!;
   }
-
   getPaths(): string[] {
     return Array.from(this.bySource.values(), ({ path }) => path).sort();
   }

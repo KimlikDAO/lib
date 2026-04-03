@@ -95,11 +95,12 @@ import {
 } from "../ast/types";
 import { Generator } from "../ast/walk";
 import { Modifier } from "../model/modifier";
-import { ModuleImports, SourceId } from "../model/moduleImport";
+import { ModuleImports, SourceId } from "../model/moduleImports";
 import {
-  inferEnumType,
-  inferFromExpression
-} from "../transform/inference";
+  probeArrayLikeElementType,
+  probeEnumType,
+  probeExpressionType
+} from "../ast/probe";
 import { conditionalType } from "./ttlGenerator";
 
 const toIdentifier = (source: SourceId, name: string): string => {
@@ -167,14 +168,13 @@ const generateEsmImports = (moduleImports: ModuleImports): string => {
   return out;
 };
 
-const IdentifierTypes = {
-  None: 0,
-  JsDoc: 1,
-  Ts: 2,
-  Param: 3
-} as const;
+enum EmitMode {
+  Binding,
+  BindingJsDoc,
+  BindingTs,
+  JsDocParamType
+};
 
-type IdentifierType = typeof IdentifierTypes[keyof typeof IdentifierTypes];
 type KdjsImportSpecifier = ImportSpecifier & { imported: Identifier; local: Identifier };
 type KdjsExportSpecifier = ExportSpecifier & { local: Identifier; exported: Identifier };
 type KdjsProperty =
@@ -189,8 +189,18 @@ type JsDocTarget = {
   typeParameters?: { params: TSTypeParameter[] } | null;
 };
 
-const genJsDocType = (d: VariableDeclarator) => d.id.typeAnnotation ||
-  d.init && d.init.type.endsWith("FunctionExpression");
+const usesConstJsDoc = (modifiers = 0): boolean =>
+  !!(modifiers & (Modifier.Readonly | Modifier.ClosureNamespace));
+
+const hasTypeJsDocModifiers = (modifiers = 0): boolean =>
+  !!(modifiers & (Modifier.ClosureNamespace | Modifier.NoInline));
+
+const hasMultiLineTypeJsDocModifiers = (modifiers = 0): boolean =>
+  !!(modifiers & Modifier.NoInline);
+
+const genJsDocType = (d: VariableDeclarator): boolean => !!d.id.typeAnnotation ||
+  !!(d.init && d.init.type.endsWith("FunctionExpression")) ||
+  hasTypeJsDocModifiers(d.modifiers ?? 0);
 
 const wrapExpression = (expr?: Node | null) =>
   expr?.type == "AssignmentExpression" && (expr as AssignmentExpression).left?.type == "ObjectPattern";
@@ -202,22 +212,14 @@ const needsParensForMemberObject = (node?: Node | null) =>
 const entityNameText = (node: Identifier | TSQualifiedName): string =>
   isIdentifier(node) ? node.name : `${entityNameText(node.left)}.${node.right.name}`;
 
-/**
- * Rest parameters are typed as T[], readonly T[], Array<T>, or ReadonlyArray<T>.
- * JSDoc @param {...T} needs the element type T only.
- */
-const unwrapArrayElementType = (n?: Node | null): Node | void => {
-  if (!n) return;
-  if (n.type == "TSArrayType")
-    return (n as TSArrayType).elementType;
-  if (n.type == "TSTypeOperator" && (n as TSTypeOperator).operator == "readonly")
-    return unwrapArrayElementType((n as TSTypeOperator).typeAnnotation);
-  if (n.type == "TSTypeReference" && (n as TSTypeReference).typeArguments?.params?.length) {
-    const ref = n as TSTypeReference;
-    const id = entityNameText(ref.typeName);
-    if (id == "ReadonlyArray" || id == "Array")
-      return ref.typeArguments?.params[0];
-  }
+const jsDocParamName = (param: TSParameter): Identifier | null => {
+  if (param.type == "TSParameterProperty")
+    return jsDocParamName(param.parameter);
+  if (param.type == "AssignmentPattern")
+    return jsDocParamName(param.left as TSParameter);
+  if (param.type == "RestElement")
+    return jsDocParamName(param.argument as TSParameter);
+  return param.type == "Identifier" ? param : null;
 };
 
 class GccGenerator extends Generator {
@@ -250,12 +252,12 @@ class GccGenerator extends Generator {
   }
   TSNonNullExpression(n: TSNonNullExpression) { this.rec(n.expression); }
   TSFunctionType(n: TSFunctionType) {
-    this.put("function("); this.arr(n.parameters, ", ", IdentifierTypes.Param); this.put("):");
+    this.put("function("); this.arr(n.parameters, ",", EmitMode.JsDocParamType); this.put("):");
     this.rec(n.typeAnnotation);
   }
   TSConstructorType(n: TSConstructorType) {
     this.put("function(new:"); this.rec(n.typeAnnotation); this.put(", ");
-    this.arr(n.parameters, ", ", IdentifierTypes.Param);
+    this.arr(n.parameters, ", ", EmitMode.JsDocParamType);
   }
   TSConditionalType() { this.put("OUT"); }
   TSLiteralType(n: TSLiteralType) { this.put(typeof n.literal.value); }
@@ -285,7 +287,7 @@ class GccGenerator extends Generator {
 
   // TS Declarations
   TSEnumDeclaration(n: TSEnumDeclaration) {
-    const type = inferEnumType(n);
+    const type = probeEnumType(n);
     this.put(`/** @enum {${type}} */`); this.ret();
     this.put("const "); this.rec(n.id); this.put(" = {");
     this.inc(); this.arrLines(n.members, ","); this.dec(); this.ret();
@@ -313,9 +315,11 @@ class GccGenerator extends Generator {
     this.put("class "); this.rec(n.id); this.put(" "); this.rec(n.body);
   }
   TSInterfaceBody(n: TSInterfaceBody) {
-    this.put("{"); this.inc();
+    this.put("{");
+    this.inc();
     this.arrLines(n.body, "", /* inInterface */ true);
-    this.dec(); this.ret(); this.put("}");
+    this.dec(); if (n.body.length) this.ret();
+    this.put("}");
   }
   TSMethodSignature(n: TSMethodSignature) {
     this.jsDoc(n, n.modifiers);
@@ -329,7 +333,7 @@ class GccGenerator extends Generator {
       if (n.optional) this.put("("); this.rec(n.typeAnnotation); if (n.optional) this.put("|undefined)");
     }
   }
-  TSParameterProperty(n: TSParameterProperty) { this.rec(n.parameter); }
+  TSParameterProperty(n: TSParameterProperty, emitMode?: EmitMode) { this.rec(n.parameter, emitMode); }
   TSDeclareFunction(n: TSDeclareFunction) {
     this.jsDoc(n);
     this.put("function "); this.rec(n.id); this.put("("); this.arr(n.params, ", "); this.put(") ");
@@ -383,37 +387,34 @@ class GccGenerator extends Generator {
       return n.name;
     return toIdentifier(n.symbolRef.source, n.symbolRef.exportedName!);
   }
-  Identifier(n: Identifier, showTypes?: IdentifierType) {
-    if (showTypes == IdentifierTypes.Ts && n.typeAnnotation) {
+  Identifier(n: Identifier, emitMode: EmitMode = EmitMode.Binding) {
+    if (emitMode == EmitMode.BindingTs && n.typeAnnotation) {
       this.put(this.identifierName(n));
       if (n.optional) this.put("?");
       this.put(": "); this.rec(n.typeAnnotation);
-    } else if (showTypes == IdentifierTypes.JsDoc && n.typeAnnotation) {
+    } else if (emitMode == EmitMode.BindingJsDoc && n.typeAnnotation) {
       this.put("/** @type {"); this.rec(n.typeAnnotation); this.put("} */ ");
       this.put(this.identifierName(n));
-    } else if (showTypes == IdentifierTypes.Param && n.typeAnnotation)
+    } else if (emitMode == EmitMode.JsDocParamType && n.typeAnnotation) {
       this.rec(n.typeAnnotation);
-    else
+      if (n.optional) this.put("=");
+    } else
       this.put(this.identifierName(n));
   }
-  FunctionExpression(n: FunctionExpression, showTypes?: IdentifierType) {
-    if (showTypes == undefined) showTypes = IdentifierTypes.JsDoc;
-    if (showTypes == IdentifierTypes.JsDoc && n.returnType) {
+  FunctionExpression(n: FunctionExpression, emitMode: EmitMode = EmitMode.BindingJsDoc) {
+    if (emitMode == EmitMode.BindingJsDoc && n.returnType) {
       this.put("/** @return {"); this.rec(n.returnType); this.put("} */ ");
     }
     if (n.async) this.put("async ");
-    this.put("function ("); this.arr(n.params, ", ", showTypes); this.put(") ");
+    this.put("function ("); this.arr(n.params, ", ", emitMode); this.put(") ");
     this.rec(n.body, null, /* wrapped */ true)
   }
-  ArrowFunctionExpression(n: ArrowFunctionExpression, showTypes?: IdentifierType) {
-    // By default, show types in the inlineJsDoc format
-    // If we've already printed the types in the jsDoc format, omit them.
-    if (showTypes == undefined) showTypes = IdentifierTypes.JsDoc;
-    if (showTypes == IdentifierTypes.JsDoc && n.returnType) {
+  ArrowFunctionExpression(n: ArrowFunctionExpression, emitMode: EmitMode = EmitMode.BindingJsDoc) {
+    if (emitMode == EmitMode.BindingJsDoc && n.returnType) {
       this.put("/** @return {"); this.rec(n.returnType); this.put("} */ ");
     }
     if (n.async) this.put("async ");
-    this.put("("); this.arr(n.params, ", ", showTypes); this.put(") => ");
+    this.put("("); this.arr(n.params, ", ", emitMode); this.put(") => ");
     this.rec(n.body, null, /* wrapped */ true)
   }
   LogicalExpression(n: LogicalExpression) {
@@ -462,11 +463,20 @@ class GccGenerator extends Generator {
     this.put("("); this.arr(n.arguments, ", "); this.put(")");
   }
   SpreadElement(n: SpreadElement) { this.put("..."); this.rec(n.argument); }
-  RestElement(n: RestElement, showTypes?: IdentifierType) {
-    this.put("..."); this.rec(n.argument);
-    if (showTypes == IdentifierTypes.Ts && n.typeAnnotation) {
-      this.put(": "); this.rec(n.typeAnnotation);
+  RestElement(n: RestElement, emitMode: EmitMode = EmitMode.Binding) {
+    const inner = n.typeAnnotation?.typeAnnotation;
+    const elementType = probeArrayLikeElementType(inner) || inner;
+    if (emitMode == EmitMode.JsDocParamType && elementType) {
+      this.put("..."); this.rec(elementType); return;
     }
+    if (emitMode == EmitMode.BindingTs && n.typeAnnotation) {
+      this.put("..."); this.rec(n.argument); this.put(": "); this.rec(n.typeAnnotation); return;
+    }
+    if (emitMode == EmitMode.BindingJsDoc && elementType) {
+      this.put("/** @type {..."); this.rec(elementType); this.put("} */ ");
+      this.rec(n.argument); return;
+    }
+    this.put("..."); this.rec(n.argument);
   }
   ImportExpression(n: ImportExpression) { this.put("import("); this.rec(n.source); this.put(")"); }
   AssignmentExpression(n: AssignmentExpression) { this.rec(n.left); this.put(` ${n.operator} `); this.rec(n.right); }
@@ -541,9 +551,11 @@ class GccGenerator extends Generator {
     this.dec(); this.put(")");
   }
   ClassBody(n: ClassBody) {
-    this.put("{"); this.inc();
+    this.put("{");
+    this.inc();
     this.arrLines(n.body, "");
-    this.dec(); this.ret(); this.put("}");
+    this.dec(); if (n.body.length) this.ret();
+    this.put("}");
   }
   MethodDefinition(n: MethodDefinition) {
     if (n.kind == "constructor") { this.ConstructorDefinition(n); return }
@@ -561,14 +573,12 @@ class GccGenerator extends Generator {
   }
   VariableDeclaration(n: VariableDeclaration) {
     n.modifiers |= n.kind == "const" ? Modifier.Readonly : 0;
-    if (n.modifiers > Modifier.Readonly) {
+    if (hasTypeJsDocModifiers(n.modifiers)) {
       if (n.declarations.length != 1)
         throw "A declaration with jsdoc modifiers must have a single declarator";
-      if (n.modifiers & Modifier.Define && !n.declarations[0].id.typeAnnotation)
-        throw "A @define variable declaration must have an explicit type annotation";
       this.rec(n.declarations[0], n.modifiers); return;
     }
-    const [typed, untyped] = partition(n.declarations, (d) => !!genJsDocType(d));
+    const [typed, untyped] = partition(n.declarations, genJsDocType);
     this.arrInner(typed, n.modifiers);
     if (untyped.length) {
       if (typed.length) this.ret();
@@ -581,10 +591,14 @@ class GccGenerator extends Generator {
    */
   VariableDeclarator(n: VariableDeclarator, modifiers?: Modifier) {
     if (modifiers != undefined) {
+      modifiers |= n.modifiers ?? 0;
       const isFunctionDecl = n.init && n.init.type.endsWith("FunctionExpression");
-      if (isFunctionDecl) this.jsDoc(n.init as FunctionExpression | ArrowFunctionExpression, modifiers); else this.jsDocType(n.id, modifiers);
+      if (isFunctionDecl)
+        this.jsDoc(n.init as FunctionExpression | ArrowFunctionExpression, modifiers);
+      else
+        this.jsDocType(n.id, modifiers);
       this.put((modifiers & Modifier.Readonly) ? "const " : "let "); this.rec(n.id);
-      if (n.init) { this.put(" = "); this.rec(n.init, isFunctionDecl ? IdentifierTypes.None : undefined); }
+      if (n.init) { this.put(" = "); this.rec(n.init, isFunctionDecl ? EmitMode.Binding : undefined); }
       this.put(";");
     } else {
       this.rec(n.id);
@@ -596,9 +610,38 @@ class GccGenerator extends Generator {
     this.put("function "); this.rec(n.id); this.put("("); this.arr(n.params, ", "); this.put(") ");
     this.rec(n.body);
   }
-  ArrayPattern(n: ArrayPattern) { this.put("["); this.arr(n.elements, ", "); this.put("]"); }
-  ObjectPattern(n: ObjectPattern) { this.put("{ "); this.arr(n.properties, ", "); this.put(" }"); }
-  AssignmentPattern(n: AssignmentPattern) { this.rec(n.left); this.put(" = "); this.rec(n.right); }
+  ArrayPattern(n: ArrayPattern, emitMode: EmitMode = EmitMode.Binding) {
+    if (emitMode == EmitMode.JsDocParamType && n.typeAnnotation) {
+      this.rec(n.typeAnnotation); return;
+    }
+    if (emitMode == EmitMode.BindingJsDoc && n.typeAnnotation) {
+      this.put("/** @type {"); this.rec(n.typeAnnotation); this.put("} */ ");
+    }
+    this.put("["); this.arr(n.elements, ", "); this.put("]");
+    if (emitMode == EmitMode.BindingTs && n.typeAnnotation) {
+      if (n.optional) this.put("?"); this.put(": "); this.rec(n.typeAnnotation);
+    }
+  }
+  ObjectPattern(n: ObjectPattern, emitMode: EmitMode = EmitMode.Binding) {
+    if (emitMode == EmitMode.JsDocParamType && n.typeAnnotation) {
+      this.rec(n.typeAnnotation); return;
+    }
+    if (emitMode == EmitMode.BindingJsDoc && n.typeAnnotation) {
+      this.put("/** @type {"); this.rec(n.typeAnnotation); this.put("} */ ");
+    }
+    this.put("{ "); this.arr(n.properties, ", "); this.put(" }");
+    if (emitMode == EmitMode.BindingTs && n.typeAnnotation) {
+      if (n.optional) this.put("?"); this.put(": "); this.rec(n.typeAnnotation);
+    }
+  }
+  AssignmentPattern(n: AssignmentPattern, emitMode: EmitMode = EmitMode.Binding) {
+    if (emitMode == EmitMode.JsDocParamType) {
+      this.rec(n.left.typeAnnotation || probeExpressionType(n.right), emitMode);
+      this.put("=");
+    } else {
+      this.rec(n.left, emitMode); this.put(" = "); this.rec(n.right);
+    }
+  }
   ContinueStatement(n: ContinueStatement) {
     this.put("continue"); if (n.label) { this.put(" "); this.rec(n.label); } this.put(";");
   }
@@ -656,7 +699,7 @@ class GccGenerator extends Generator {
   }
   BlockStatement(n: BlockStatement) {
     this.put("{");
-    this.inc(); this.arrLines(n.body, ""); this.dec(); this.ret();
+    this.inc(); this.arrLines(n.body, ""); this.dec(); if (n.body.length) this.ret();
     this.put("}");
   }
   Program(n: Program) { this.arrInner(n.body); this.ret(); }
@@ -672,17 +715,24 @@ class GccGenerator extends Generator {
 
   // KDJS jsdoc
   jsDocType(n: JsDocTypeTarget, modifiers = 0) {
-    n.typeAnnotation ||= inferFromExpression(n.value);
-    const tag = (modifiers & Modifier.Define)
-      ? "define" : (modifiers & Modifier.Readonly) ? "const" : "type";
-    if (modifiers <= (Modifier.Define | Modifier.Readonly)) {
-      if (!n.typeAnnotation) return;
+    n.typeAnnotation ||= probeExpressionType(n.value);
+    const tag = usesConstJsDoc(modifiers) ? "const" : "type";
+    if (!hasMultiLineTypeJsDocModifiers(modifiers)) {
+      if (!n.typeAnnotation) {
+        if (modifiers & Modifier.ClosureNamespace) { this.put("/** @const */"); this.ret(); }
+        return;
+      }
       this.put(`/** @${tag} {`); this.rec(n.typeAnnotation); this.put("} */"); this.ret();
     } else {
-      if (!n.typeAnnotation && !(modifiers & Modifier.NoInline)) return;
+      if (!n.typeAnnotation && !(modifiers & (Modifier.NoInline | Modifier.ClosureNamespace)))
+        return;
       this.doc();
       if (modifiers & Modifier.NoInline) { this.ret(); this.put("@noinline"); }
-      if (n.typeAnnotation) { this.ret(); this.put(`@${tag} {`); this.rec(n.typeAnnotation); this.put("}"); }
+      if (n.typeAnnotation) {
+        this.ret(); this.put(`@${tag} {`); this.rec(n.typeAnnotation); this.put("}");
+      } else if (modifiers & Modifier.ClosureNamespace) {
+        this.ret(); this.put("@const");
+      }
       this.cod();
     }
   }
@@ -705,28 +755,10 @@ class GccGenerator extends Generator {
     if (modifiers & Modifier.NoSideEffects) { this.ret(); this.put("@nosideeffects"); }
     let i = 0;
     for (let param of params) {
-      let isOptional = "optional" in param;
-      let isRest = false;
-      let typeAnnotation: Node | undefined;
-      if (param.type == "TSParameterProperty")
-        param = param.parameter;
-      if (param.type == "AssignmentPattern") {
-        param.left.typeAnnotation ||= inferFromExpression(param.right);
-        isOptional = true;
-        param = param.left;
-      }
-      if (param.type == "RestElement") {
-        isRest = true;
-        const inner = param.typeAnnotation?.typeAnnotation;
-        typeAnnotation = unwrapArrayElementType(inner) || inner;
-        param = param.argument;
-      }
+      const name = jsDocParamName(param);
       this.ret();
-      this.put("@param {");
-      if (isRest) this.put("...");
-      this.rec(typeAnnotation ?? param.typeAnnotation);
-      if (isOptional) this.put("="); this.put("} ");
-      if (param.type == "Identifier") { this.rec(param); } else { this.put(`arg${i++}`); }
+      this.put("@param {"); this.rec(param, EmitMode.JsDocParamType); this.put("} ");
+      if (name) this.rec(name); else this.put(`arg${i++}`);
     }
     if (retType) { this.ret(); this.put("@return {"); this.rec(retType); this.put("}"); }
     this.cod();
@@ -764,7 +796,7 @@ const generate = (node: Node, options?: { djs?: boolean }): string => {
 }
 
 export {
-  IdentifierTypes,
+  EmitMode,
   GccGenerator,
   generate,
   generateAliasImports,

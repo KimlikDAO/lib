@@ -1,3 +1,4 @@
+import { LargeConstant } from "@kimlikdao/kdts";
 import { bench } from "../../../util/testing/bench";
 import { arfCurve } from "../../arfCurve";
 import { AffinePoint, Point } from "../../ellipticCurve";
@@ -103,11 +104,10 @@ const doubleGPT = (R: Point): Point => {
 }
 
 const SecpFamily = arfCurve(P);
-/** @noinline */
 const G: Point = SecpFamily.pointFromAffine({
   x: 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798n,
   y: 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8n
-});
+}) satisfies LargeConstant;
 const A = G.copy().multiply(exp2(10000n, Q)).proj();
 
 const makeFunc = (f: ((R: Point) => Point) | null): () => AffinePoint => {

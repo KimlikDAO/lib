@@ -1,3 +1,4 @@
+import { LargeConstant } from "@kimlikdao/kdts";
 import bigints from "../util/bigints";
 import { arfCurve } from "./arfCurve";
 import { AffinePoint, CompressedPoint, Curve, Point } from "./ellipticCurve";
@@ -5,8 +6,7 @@ import { P, poseidon } from "./minaPoseidon";
 import { poseidon as poseidonLegacy } from "./minaPoseidonLegacy";
 import { tonelliShanks } from "./modular";
 
-/** @noinline */
-const Q = P + 0x47afc1f319ba3400000000n;
+const Q = P + 0x47afc1f319ba3400000000n satisfies LargeConstant;
 
 /** @pure */
 const sqrt = (n: bigint): bigint | null => tonelliShanks(n, P, (P - 1n) >> 32n,
@@ -29,7 +29,6 @@ const Pallas: Curve = Object.assign(arfCurve(P), {
   }
 }) as Curve;
 
-/** @noinline */
 const G: Point = Pallas.pointFromAffine({
   x: 1n,
   y: 0x1b74b5a30a12937c53dfa9f06378ee548f655bd4333d477119cf7a23caed2abbn
@@ -150,7 +149,7 @@ const verifyMessage = (
 }
 
 export {
-  G, P, Q, Pallas,
+  G, P, Pallas, Q,
   hashFields,
   hashMessage,
   signFields,

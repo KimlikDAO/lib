@@ -65,6 +65,7 @@ interface PromiseMatcher<T> {
   readonly rejects: Matcher<unknown>;
 }
 
-export function expect<T>(actual: T): T extends PromiseLike<infer U> ? PromiseMatcher<U> : Matcher<T>;
+export function expect<T>(actual: T): T extends PromiseLike<infer U>
+  ? PromiseMatcher<U> : Matcher<T>;
 
 export function afterAll(callback: () => void): void;

@@ -10,7 +10,7 @@ import {
   TopType,
   TopTypeName,
   UnionType
-} from "../../model/types";
+} from "../types";
 
 describe("PrimitiveType", () => {
   test("the null type", () => {

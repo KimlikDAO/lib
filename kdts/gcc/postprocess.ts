@@ -1,4 +1,4 @@
-import { ModuleImports } from "../model/moduleImport";
+import { ModuleImports } from "../model/moduleImports";
 import { generateEsmImports } from "./generator";
 
 const postprocess = (

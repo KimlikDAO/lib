@@ -1,10 +1,10 @@
+import { LargeConstant } from "@kimlikdao/kdts";
 import hex from "../util/hex";
 import { expTimesExp } from "./modular";
 import { getNonsmooth } from "./primes";
 import { keccak256Uint32ToHex } from "./sha3";
 
-/** @noinline */
-const N = 0xe0b7782dbd6c9fc269cc5259ca7be1b451c9fbbc20293434852f6f3e8603460932b66001276a399f2e20dc942c627159b28652138463e1fc59446d8715ae651cff6823ba0a6202d12f34b4ca06d6ae6cecd7b9962df8380a5469b79145c8b433d493d82aeb28a0305bf0c766377f005fd5de2d3594867116237c5c40fd542575n;
+const N = 0xe0b7782dbd6c9fc269cc5259ca7be1b451c9fbbc20293434852f6f3e8603460932b66001276a399f2e20dc942c627159b28652138463e1fc59446d8715ae651cff6823ba0a6202d12f34b4ca06d6ae6cecd7b9962df8380a5469b79145c8b433d493d82aeb28a0305bf0c766377f005fd5de2d3594867116237c5c40fd542575n satisfies LargeConstant;
 
 /**
  * Generates a challenge supposedly sent from the verifier to the prover.
