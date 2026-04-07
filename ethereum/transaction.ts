@@ -12,7 +12,7 @@ type TransactionRequest = {
 
 const hex = (v: number | bigint): string => "0x" + (v as bigint).toString(16);
 
-/** @pure */
+/** @satisfies {PureFn} */
 const serialize = (req: TransactionRequest): Transaction => {
   return {
     data: req.data ?? "0x",

@@ -1,7 +1,7 @@
+import { LargeConstant } from "@kimlikdao/kdts";
 import { expect, test } from "bun:test";
 import base58 from "../base58";
 import hex from "../hex";
-import { LargeConstant } from "@kimlikdao/kdts";
 
 test("base58 ↔ hex vectors", () => {
   expect(base58.from(hex.toUint8Array(""))).toBe("");

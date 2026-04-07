@@ -30,11 +30,9 @@ class ModuleImports {
         default:
           continue;
       }
-
       this.byLocal[localName] = { source, importedName };
     }
   }
-
   groupBySource(): Record<SourceId, Record<string, string>> {
     const groups = {} as Record<SourceId, Record<string, string>>;
     for (const localName in this.byLocal) {

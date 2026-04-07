@@ -1,9 +1,9 @@
 import { LargeConstant } from "@kimlikdao/kdts";
-import { bench } from "../../../util/testing/bench";
+import { bench } from "@kimlikdao/kdts/bench";
 
 const P = (1n << 256n) - (1n << 32n) - 977n satisfies LargeConstant;
 
-/** @pure */
+/** @satisfies {PureFn} */
 const sqrt1 = (n: bigint): bigint => {
   const tower = (b: bigint, pow: number): bigint => {
     while (pow-- > 0)
@@ -26,7 +26,7 @@ const sqrt1 = (n: bigint): bigint => {
   return tower(t2, 2);
 }
 
-/** @pure */
+/** @satisfies {PureFn} */
 const sqrt2 = (n: bigint): bigint => {
   let r = 1n;
   for (let e = (P + 1n) / 4n; e > 0n; e >>= 1n) { // powMod: modular exponentiation.

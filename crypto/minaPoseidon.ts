@@ -3,7 +3,7 @@ import { pow7 } from "./modular";
 
 const P = (1n << 254n) + 0x224698fc094cf91b992d30ed00000001n satisfies LargeConstant;
 
-/** @pure */
+/** @satisfies {PureFn} */
 const poseidon = (vals: bigint[]): bigint => {
   const n = vals.length;
   let s0 = 0n, s1 = 0n, s2 = 0n;

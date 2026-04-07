@@ -1,9 +1,3 @@
-/**
- * @fileoverview JSON-RPC 2.0 type definitions.
- *
- * @author KimlikDAO
- */
-
 interface RpcRequest {
   readonly jsonrpc: string;
   readonly method: string;

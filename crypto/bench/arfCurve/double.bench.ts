@@ -1,11 +1,11 @@
 import { LargeConstant } from "@kimlikdao/kdts";
-import { bench } from "../../../util/testing/bench";
-import { arfCurve } from "../../arfCurve";
+import { bench } from "@kimlikdao/kdts/bench";
+import { arfCurveFamily } from "../../arfCurve";
 import { AffinePoint, Point } from "../../ellipticCurve";
 import { exp2 } from "../../modular";
 import { P, Q } from "../../secp256k1";
 
-/** @pure */
+/** @satisfies {PureFn} */
 const modP = (x: bigint): bigint => {
   let res = x % P;
   return res >= 0n ? res : res + P;
@@ -103,7 +103,7 @@ const doubleGPT = (R: Point): Point => {
   return R;
 }
 
-const SecpFamily = arfCurve(P);
+const SecpFamily = arfCurveFamily(P);
 const G: Point = SecpFamily.pointFromAffine({
   x: 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798n,
   y: 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8n

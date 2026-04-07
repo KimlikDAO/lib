@@ -13,7 +13,7 @@ const N = 0xe0b7782dbd6c9fc269cc5259ca7be1b451c9fbbc20293434852f6f3e8603460932b6
  * unpredictable function of the VDF output without any interaction.
  *
  * @param gArr A Uint32Array of length 8 with a buffer of at least 40 words.
- * @pure
+ * @satisfies {PureFn}
  */
 const generateChallenge = (gArr: Uint32Array, yArr: Uint32Array): bigint => {
   const buff = new Uint32Array(40);
@@ -22,7 +22,7 @@ const generateChallenge = (gArr: Uint32Array, yArr: Uint32Array): bigint => {
   return getNonsmooth(keccak256Uint32ToHex(buff).slice(3));
 }
 
-/** @pure */
+/** @satisfies {PureFn} */
 const evaluate = (
   gArr: Uint32Array, t: number
 ): {
@@ -50,7 +50,7 @@ const evaluate = (
 
 /**
  * Reconstructs y from the paramters logT, gArr, π, l.
- * @pure
+ * @satisfies {PureFn}
  */
 const reconstructY = (
   logT: number,

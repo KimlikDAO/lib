@@ -1,9 +1,3 @@
-/**
- * @fileoverview OAuth 2.0 type definitions.
- *
- * @author KimlikDAO
- */
-
 interface AccessToken {
   readonly access_token: string;
   readonly token_type: string;
@@ -19,4 +13,4 @@ interface AccessTokenRequest {
   readonly redirect_uri?: string;
 }
 
-export default { AccessToken, AccessTokenRequest };
+export { AccessToken, AccessTokenRequest };

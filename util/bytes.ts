@@ -1,8 +1,4 @@
-/**
- * @author KimlikDAO
- */
-
-/** @pure */
+/** @satisfies {PureFn} */
 const fromUint32ArrayBE = (arr: Uint32Array): Uint8Array => {
   const n = arr.length * 4;
   const bytes = new Uint8Array(n);
@@ -16,7 +12,7 @@ const fromUint32ArrayBE = (arr: Uint32Array): Uint8Array => {
   return bytes;
 };
 
-/** @pure */
+/** @satisfies {PureFn} */
 const toUint32ArrayBE = (bytes: Uint8Array): Uint32Array => {
   const n = bytes.length;
   const arr = new Uint32Array((n + 3) / 4);

@@ -34,6 +34,7 @@ type LookaheadState = {
   lineStart: number;
   curPosition: () => Position;
   containsEsc: boolean;
+  stashedModifiers: number;
 };
 
 type ParsingContext =

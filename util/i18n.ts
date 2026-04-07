@@ -43,7 +43,8 @@ type Localizable = Record<LangCode, string> | string;
 
 /**
  * Given `LangCode`, resolves the Localizable to a string.
- * @pure
+ *
+ * @satisfies {PureFn}
  */
 const localize = (l: Localizable, lang: LangCode): string =>
   typeof l == "string" ? l : l[lang];
@@ -52,7 +53,7 @@ const localize = (l: Localizable, lang: LangCode): string =>
  * Builds an {@link I18nString} from static template pieces and
  * {@link Localizable} holes.
  *
- * @pure
+ * @satisfies {PureFn}
  */
 const i18n = (
   strings: readonly string[],

@@ -26,7 +26,7 @@ const OddPrimes: readonly number[] = [
  * @param N The number to test.
  * @param d It should satisfy d.2^s = N.
  * @param s The number of rounds of the Miller-Rabin test.
- * @pure
+ * @satisfies {PureFn}
  */
 const millerRabinBase2 = (N: bigint, d: bigint, s: number): boolean => {
   if (N == 3n) return true;
@@ -44,7 +44,7 @@ const millerRabinBase2 = (N: bigint, d: bigint, s: number): boolean => {
 /**
  * @param seed Random seed for the non-smooth number generation.
  *             A hex string of 64 characters.
- * @pure
+ * @satisfies {PureFn}
  */
 const getNonsmooth = (seed: string): bigint => {
   // The most significant 244 bits of the generated number are from the seed.

@@ -1,11 +1,11 @@
-<h1><img src="https://raw.githubusercontent.com/KimlikDAO/dapp/ana/components/icon.svg" align="top" height="44"> kimlikdao-js</a></h1>
+<h1><img src="https://raw.githubusercontent.com/KimlikDAO/dapp/ana/components/icon.svg" align="top" height="44"> kimlikdao-lib</a></h1>
 
 [![Tests](https://img.shields.io/github/actions/workflow/status/KimlikDAO/kimlikdao-js/test.yml?branch=ana)](https://github.com/KimlikDAO/kimlikdao-js/actions/workflows/test.yml)
 [![npm version](https://img.shields.io/npm/v/@kimlikdao/lib.svg)](https://www.npmjs.com/package/@kimlikdao/lib)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![KimlikDAO](https://img.shields.io/badge/Kimlik-DAO-blue)](https://kimlikdao.org)
 
-kimlikdao-js is a repository containing TypeScript and JavaScript modules essential to KimlikDAO projects.
+kimlikdao-lib is a repository containing TypeScript modules essential to KimlikDAO projects.
 Both our js and ts modules are fully typed using ts type expressions and compiled using [`kdts`](./kdts), our
 ts/js compiler with type aware optimizations.
 
@@ -50,8 +50,8 @@ ts/js compiler with type aware optimizations.
 ## 👩‍💻 Development
 
 ```shell
-git clone https://github.com/KimlikDAO/kimlikdao-js
-cd kimlikdao-js
+git clone https://github.com/KimlikDAO/kimlikdao-lib
+cd kimlikdao-lib
 bun i
 ```
 
@@ -72,7 +72,7 @@ The tests can be run in two different modes:
 - Compiled (using `kdts`):
   We also run the same tests after compiling them with `kdts` first:
   ```shell
-  bun run test
+  kdts test
   ```
   Note that `kdts` makes aggressive optimizations using the provided
   type information. Running tests in compiled mode is crucial, as
@@ -80,24 +80,24 @@ The tests can be run in two different modes:
   There is also a fast build mode, which doesn't do typechecking
   and produces larger outputs
   ```shell
-  bun run test --fast
+  kdts test --fast
   ```
 
 To run tests in a specific directory, say `crypto`, you can also do
 ```shell
 bun test crypto # uncompiled
-bun run test crypto # compiled, --fast param available
+kdts test crypto # compiled, --fast param available
 ```
 
 ## ⏱️ Benchmarks
 
 You can run a single benchmark directly
 ```shell
-bun bench crypto/bench/arfCurve/ladder.bench.ts # --fast param available
+kdts bench crypto/bench/arfCurve/ladder.bench.ts # --fast param available
 ```
 or compile all of them and benchmark the compiled modules:
 ```shell
-bun bench
+kdts bench
 ```
 
 When run, output will look like this:

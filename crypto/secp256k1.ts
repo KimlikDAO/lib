@@ -16,7 +16,7 @@ import { inverse } from "./modular";
 const P = (1n << 256n) - (1n << 32n) - 977n satisfies LargeConstant;
 const Q = P - 0x14551231950b75fc4402da1722fc9baeen satisfies LargeConstant;
 
-/** @pure */
+/** @satisfies {PureFn} */
 const tower = (b: bigint, pow: number): bigint => {
   while (pow-- > 0) b = b * b % P;
   return b;
@@ -25,7 +25,7 @@ const tower = (b: bigint, pow: number): bigint => {
 /**
  * Returns the square root of n if n is a quadratic residue; null otherwise.
  *
- * @pure
+ * @satisfies {PureFn}
  */
 const sqrt = (n: bigint): bigint | null => {
   const b2 = n * n * n % P;
@@ -45,28 +45,14 @@ const sqrt = (n: bigint): bigint | null => {
   return r * r % P == n ? r : null;
 };
 
-const Secp256k1: Curve = Object.assign(arfCurve(P), {
-  /**
-   * If x³ + 7 is a quadratic residue, returns the point (x, y, 1) with the
-   * provided x and y satisfying y² = x³ + 7 with the given parity; otherwise
-   * returns null.
-   *
-   * @pure
-   */
-  pointFrom({ x, yParity }: CompressedPoint): Point | null {
-    const y2 = (x * x * x + 7n) % P
-    const y = sqrt(y2);
-    if (!y) return null; // -7 is not a cubic residue, hence no point (x, 0)
-    return new Secp256k1(x, (y & 1n) == (yParity as unknown as bigint) ? y : P - y, 1n);
-  }
-}) as Curve;
+const Secp256k1: Curve = arfCurve(P, 7n, sqrt);
 
 const G: Point = Secp256k1.pointFromAffine({
   x: 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798n,
   y: 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8n
 }) satisfies LargeConstant;
 
-/** @pure */
+/** @satisfies {SideEffectFreeFn} */
 const sign = (digest: bigint, privKey: bigint): {
   r: bigint,
   s: bigint,
@@ -88,7 +74,7 @@ const sign = (digest: bigint, privKey: bigint): {
   }
 }
 
-/** @pure */
+/** @satisfies {PureFn} */
 const verify = (
   digest: bigint,
   r: bigint,
@@ -111,7 +97,7 @@ const verify = (
  * digest if the signature is valid; otherwise returns `(0, 0)`, the point at
  * infinity.
  *
- * @pure
+ * @satisfies {PureFn}
  */
 const recoverSigner = (
   digest: bigint,
@@ -122,7 +108,7 @@ const recoverSigner = (
   if (r <= 0n || Q <= r || s <= 0n || Q <= s)
     return { x: 0n, y: 0n };
   const ir = inverse(r, Q);
-  const K = Secp256k1.pointFrom({ x: r, yParity});
+  const K = Secp256k1.pointFrom({ x: r, yParity });
   if (!K) return { x: 0n, y: 0n };
   return aX_bY(Q - (digest * ir % Q), G.copy(), s * ir % Q, K).proj();
 }

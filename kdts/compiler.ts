@@ -2,6 +2,7 @@ import * as swc from "@swc/core";
 import { write } from "bun";
 import UglifyJS, { CompressOptions, MinifyOptions } from "uglify-js";
 import { CliArgs, CliArgValue } from "../util/cli";
+import { replaceExt } from "../util/paths";
 import { compile as compileWithBun } from "./bun/compile";
 import { compile as compileWithGcc } from "./gcc/compile";
 
@@ -70,6 +71,10 @@ const compile = async (
 ): Promise<string | void> => {
   if (!(params instanceof CliArgs))
     params = new CliArgs(params);
+
+  const target = params.asList("target");
+  params.setIfMissing("entry", target[0] == "compile" ? target[1] : target[0]);
+  params.setIfMissing("output", replaceExt(params.asStringOr("entry", ""), ".out.js"));
   const compiled = await (params.isTrue("fast")
     ? compileWithBun(params, checkFreshFn)
     : compileWithGcc(params, checkFreshFn, transpileFn));

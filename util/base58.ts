@@ -7,7 +7,7 @@ const Base58Map: number[] = new Array(256);
 for (let i = 0; i < Base58Chars.length; ++i)
   Base58Map[Base58Chars.charCodeAt(i)] = i;
 
-/** @pure */
+/** @satisfies {PureFn} */
 const from = (bytes: Uint8Array | number[]): string => {
   const codes: number[] = [];
 
@@ -30,7 +30,7 @@ const from = (bytes: Uint8Array | number[]): string => {
   return String.fromCharCode(...codes.reverse());
 };
 
-/** @pure */
+/** @satisfies {PureFn} */
 const toBytes = (str: string): Uint8Array<ArrayBuffer> => {
   const n = str.length;
   const bytes: number[] = [];

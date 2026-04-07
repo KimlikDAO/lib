@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import bigints from "../../util/bigints";
-import { arfCurve } from "../arfCurve";
+import { arfCurveFamily } from "../arfCurve";
 import { CurveFamily, Point } from "../ellipticCurve";
 
 describe("Purve, Qurve curves", () => {
@@ -12,8 +12,8 @@ describe("Purve, Qurve curves", () => {
    *
    *  y² = x³ + 2
    */
-  const Purve = arfCurve(P);
-  const Qurve = arfCurve(Q);
+  const Purve = arfCurveFamily(P);
+  const Qurve = arfCurveFamily(Q);
 
   const Gp = Purve.pointFromAffine({ x: 1n, y: 4n });
   const Gq = Qurve.pointFromAffine({ x: 4n, y: 3n });
@@ -29,7 +29,7 @@ describe("Purve, Qurve curves", () => {
 
 describe("group laws", () => {
   const P = 0x24240D8241D5445106C8442084001384E0000013n;
-  const Bn158: CurveFamily = arfCurve(P);
+  const Bn158: CurveFamily = arfCurveFamily(P);
   const G: Point = Bn158.pointFromAffine({
     x: P - 1n, // y² = x³ + 17
     y: 4n      // 4² = -1³ + 17

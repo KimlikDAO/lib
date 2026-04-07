@@ -44,8 +44,10 @@ const compile = async (
     jsCompWarnings,
   });
   output = postprocess(output, unlinkedImports);
-  if (args.isTrue("printGccOutput"))
-    console.log("GCC output\n", output);
+  if (args.isTrue("printGccOutput")) {
+    console.log("GCC output");
+    console.log(output);
+  }
   console.log(`GCC size:     ${output.length}`);
   return output;
 }

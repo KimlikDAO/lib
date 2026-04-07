@@ -21,7 +21,7 @@ const VoidElementTag: Record<string, boolean> = {
 
 const htmlTag = (
   tagName: string,
-  props: Record<string, string | number | boolean | null>,
+  props: Record<string, string | number | boolean | null | undefined>,
   selfClosing: boolean,
 ): string => {
   let html = "<" + tagName;

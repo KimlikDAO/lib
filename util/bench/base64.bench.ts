@@ -1,8 +1,8 @@
-import { bench } from "../../util/testing/bench";
+import { bench } from "@kimlikdao/kdts/bench";
 import base64 from "../base64";
 import hex from "../hex";
 
-/** @pure */
+/** @satisfies {PureFn} */
 const fromBigIntViaHex = (n: bigint): string =>
   base64.from(hex.toUint8Array(n.toString(16)));
 
@@ -19,15 +19,15 @@ bench("base64.fromBigInt", {
 const output = "U29tZSBiYXNlNjQgZGF0YS4=";
 const input = base64.toBytes(output);
 
-/** @pure */
+/** @satisfies {PureFn} */
 const fromSpreadMap = (b: Uint8Array): string =>
   btoa([...b].map((x: number) => String.fromCharCode(x)).join(""));
 
-/** @pure */
+/** @satisfies {PureFn} */
 const fromArrayFrom = (bytes: Uint8Array): string =>
   btoa(Array.from(bytes, (x) => String.fromCharCode(x as number)).join(""));
 
-/** @pure */
+/** @satisfies {PureFn} */
 const fromConcatLoop = (bytes: Uint8Array): string => {
   let binary = "";
   for (let i = 0; i < bytes.length; ++i)
@@ -35,7 +35,7 @@ const fromConcatLoop = (bytes: Uint8Array): string => {
   return btoa(binary);
 };
 
-/** @pure */
+/** @satisfies {PureFn} */
 const fromJoinLoop = (bytes: Uint8Array): string => {
   const chars: string[] = new Array(bytes.length);
   for (let i = 0; i < bytes.length; ++i)

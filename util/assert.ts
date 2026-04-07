@@ -7,7 +7,7 @@
  */
 import { deepEquals } from "bun";
 import process from "node:process";
-import { Clear, Green, Red } from "../cli";
+import { Clear, Green, Red } from "./cli";
 
 console.time("test");
 

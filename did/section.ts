@@ -6,7 +6,7 @@ import { ExposureReport, HumanID, Section } from "./section.d";
 
 const KIMLIKDAO_HASH_PREFIX = "\x19KimlikDAO hash\n";
 
-/** @pure */
+/** @satisfies {PureFn} */
 const hashExposureReport = (exposureReport: ExposureReport): string => {
   /**
    * The `exposureReport` is hashed in an EVM friendly way.
@@ -21,7 +21,7 @@ const hashExposureReport = (exposureReport: ExposureReport): string => {
   return keccak256Uint32ToHex(new Uint32Array(buff.buffer));
 };
 
-/** @pure */
+/** @satisfies {PureFn} */
 const hashHumanID = (humanID: HumanID): string => {
   /**
    * The `humanID` is hashed in an EVM friendly way.
@@ -45,7 +45,7 @@ const NOT_HASHED: Set<string> = new Set([
   "commitmentR",
 ]);
 
-/** @pure */
+/** @satisfies {PureFn} */
 const hash = (sectionName: string, section: Section): string => {
   switch (sectionName) {
     case "exposureReport":

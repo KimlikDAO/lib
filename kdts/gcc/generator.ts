@@ -94,7 +94,7 @@ import {
   TSUnionType
 } from "../ast/types";
 import { Generator } from "../ast/walk";
-import { Modifier } from "../model/modifier";
+import { Modifier, hasAll } from "../model/modifier";
 import { ModuleImports, SourceId } from "../model/moduleImports";
 import {
   probeArrayLikeElementType,
@@ -151,7 +151,10 @@ const generateEsmImports = (moduleImports: ModuleImports): string => {
     out += ` from "${removeOrigin(source)}";\n`;
   };
 
-  for (const source of Object.keys(groups).sort() as SourceId[]) {
+  const sources = (Object.keys(groups)
+    .filter(source => source != "package:@kimlikdao/kdts")
+    .sort()) as SourceId[];
+  for (const source of sources) {
     const imports = groups[source];
     const hasDefault = "default" in imports;
     const hasNamespace = "*" in imports;
@@ -401,22 +404,23 @@ class GccGenerator extends Generator {
     } else
       this.put(this.identifierName(n));
   }
-  FunctionExpression(n: FunctionExpression, emitMode: EmitMode = EmitMode.BindingJsDoc) {
+  functionExpression(
+    n: FunctionExpression | ArrowFunctionExpression,
+    emitMode: EmitMode = EmitMode.BindingJsDoc
+  ) {
+    const arrow = n.type.startsWith("Arrow");
     if (emitMode == EmitMode.BindingJsDoc && n.returnType) {
-      this.put("/** @return {"); this.rec(n.returnType); this.put("} */ ");
+      const effects = hasAll(n.modifiers, Modifier.SideEffectFree) ? "@nosideeffects " : "";
+      this.put(`/** ${effects}@return {`); this.rec(n.returnType); this.put("} */ ");
     }
     if (n.async) this.put("async ");
-    this.put("function ("); this.arr(n.params, ", ", emitMode); this.put(") ");
+    this.put(arrow ? "(" : "function (");
+    this.arr(n.params, ", ", emitMode);
+    this.put(arrow ? ") => " : ") ");
     this.rec(n.body, null, /* wrapped */ true)
   }
-  ArrowFunctionExpression(n: ArrowFunctionExpression, emitMode: EmitMode = EmitMode.BindingJsDoc) {
-    if (emitMode == EmitMode.BindingJsDoc && n.returnType) {
-      this.put("/** @return {"); this.rec(n.returnType); this.put("} */ ");
-    }
-    if (n.async) this.put("async ");
-    this.put("("); this.arr(n.params, ", ", emitMode); this.put(") => ");
-    this.rec(n.body, null, /* wrapped */ true)
-  }
+  FunctionExpression(n: FunctionExpression, emitMode: EmitMode) { this.functionExpression(n, emitMode); }
+  ArrowFunctionExpression(n: ArrowFunctionExpression, emitMode: EmitMode) { this.functionExpression(n, emitMode); }
   LogicalExpression(n: LogicalExpression) {
     this.put("("); this.rec(n.left); this.put(` ${n.operator} `); this.rec(n.right); this.put(")");
   }
@@ -729,10 +733,9 @@ class GccGenerator extends Generator {
       this.doc();
       if (modifiers & Modifier.NoInline) { this.ret(); this.put("@noinline"); }
       if (n.typeAnnotation) {
-        this.ret(); this.put(`@${tag} {`); this.rec(n.typeAnnotation); this.put("}");
-      } else if (modifiers & Modifier.ClosureNamespace) {
-        this.ret(); this.put("@const");
-      }
+        this.put(`@${tag} {`, true); this.rec(n.typeAnnotation); this.put("}");
+      } else if (modifiers & Modifier.ClosureNamespace)
+        this.put("@const", true);
       this.cod();
     }
   }
@@ -743,16 +746,23 @@ class GccGenerator extends Generator {
     if (n.typeParameters) {
       // Inside the templated function, the template parameter is treated as
       // unknown, as there is no template narrowing in gcc.
-      if (!this.djs) { this.ret(); this.put("@suppress {reportUnknownTypes}"); }
-      this.ret(); this.put("@template ")
+      if (!this.djs) this.put("@suppress {reportUnknownTypes}", true);
+      this.put("@template ", true)
       this.arr(n.typeParameters.params, ", ");
-      if (n.returnType?.typeAnnotation?.type == "TSConditionalType") {
-        this.ret(); this.put(`@template OUT := ${conditionalType(n.returnType, { djs: this.djs })} =:`)
-      }
+      if (n.returnType?.typeAnnotation?.type == "TSConditionalType")
+        this.put(`@template OUT := ${conditionalType(n.returnType, { djs: this.djs })} =:`, true)
     }
-    if (modifiers & Modifier.Override) { this.ret(); this.put("@override"); }
-    if (modifiers & Modifier.NoInline) { this.ret(); this.put("@noinline"); }
-    if (modifiers & Modifier.NoSideEffects) { this.ret(); this.put("@nosideeffects"); }
+    if (modifiers & Modifier.Override)
+      this.put("@override", true);
+    if (modifiers & Modifier.NoInline)
+      this.put("@noinline", true);
+    if (hasAll(modifiers, Modifier.SideEffectFree))
+      this.put("@nosideeffects", true);
+    if (this.djs && hasAll(modifiers, Modifier.InPlace))
+      this.put("@modifies {arguments}", true);
+    if (this.djs && hasAll(modifiers, Modifier.PureMethod))
+      this.put("@modifies {this}", true);
+
     let i = 0;
     for (let param of params) {
       const name = jsDocParamName(param);

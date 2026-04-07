@@ -1,5 +1,5 @@
-import { shuffle } from "../arrays";
-import { assertEq } from "./assert";
+import { shuffle } from "../util/arrays";
+import { assertEq } from "../util/assert";
 
 const bench = <A, T>(
   description: string,

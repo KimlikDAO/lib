@@ -12,7 +12,7 @@ import { VerifiableID } from "./verifiableID.d";
 const KIMLIKDAO_VERIFIABLE_ID_LOG_ITERATIONS = 20;
 const KIMLIKDAO_VERIFIABLE_ID_ITERATIONS = 1 << 20;
 
-/** @pure */
+/** @satisfies {PureFn} */
 const prepareGenerateKey = (privateKey: string): Promise<CryptoKey> => crypto.subtle.importKey(
   "pkcs8",
   base64.toBytes(privateKey), {
@@ -21,7 +21,7 @@ const prepareGenerateKey = (privateKey: string): Promise<CryptoKey> => crypto.su
   } as RsaHashedImportParams, false, ["sign"]
 );
 
-/** @pure */
+/** @satisfies {PureFn} */
 const generate = (personKey: string, generateKey: CryptoKey): Promise<VerifiableID> =>
   crypto.subtle.sign(
     "RSASSA-PKCS1-v1_5", generateKey, new TextEncoder().encode(personKey)
@@ -36,7 +36,7 @@ const generate = (personKey: string, generateKey: CryptoKey): Promise<Verifiable
     } as VerifiableID;
   });
 
-/** @pure */
+/** @satisfies {PureFn} */
 const verify = (
   verifiableID: VerifiableID,
   personKey: string,

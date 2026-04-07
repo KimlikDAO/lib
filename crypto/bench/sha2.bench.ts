@@ -1,4 +1,4 @@
-import { bench } from "../../util/testing/bench";
+import { bench } from "@kimlikdao/kdts/bench";
 import { g as unroll1 } from "../sha2";
 import { f as unroll4 } from "../test/sha2/compression";
 

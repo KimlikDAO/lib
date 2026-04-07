@@ -4,6 +4,9 @@ import { resolve } from "node:path";
 
 const NodeModulesDirs = [
   "node_modules",
+  "node_modules/.bun/node_modules",
+  "kdts/node_modules",
+  "kdts/node_modules/.bun/node_modules",
   "node_modules/google-closure-compiler/node_modules",
 ];
 const JavaRuntimeArgs = [

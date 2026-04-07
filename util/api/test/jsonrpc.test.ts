@@ -1,5 +1,4 @@
 import { expect, it } from "bun:test";
-import abi from "../../../ethereum/abi";
 import jsonrpc from "../jsonrpc";
 
 const OLD_TCKO_ADDR = "0xb97bf95b4f3110285727b70da5a7465bfd2098ca";
@@ -8,7 +7,7 @@ const MILLION = 1_000_000;
 it("should fetch KPass `balanceOf()`, `maxSupply()`, `decimals()` and `supplyCap()` in parallel",
   () => jsonrpc.callMulti("https://api.avax.network/ext/bc/C/rpc", "eth_call", [
     [{
-      "data": "0x70a08231" + abi.address("0xccc00bc7e6983b1901825888a7bb3bda3b051b12"), // balanceOf()
+      "data": "0x70a08231" + "0".repeat(24) + "ccc00bc7e6983b1901825888a7bb3bda3b051b12", // balanceOf()
       "to": OLD_TCKO_ADDR
     }, "latest"], [{
       "data": "0xd5abeb01", // maxSupply()

@@ -12,7 +12,7 @@ const RC: readonly number[] = [
   0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 ];
 
-/** @modifies {arguments} */
+/** @satisfies {InPlaceFn} */
 const extend = (t: Uint32Array) => {
   for (let i = 16, t1, s0, s1; i < 64; ++i) {
     t1 = t[i - 15];
@@ -25,7 +25,8 @@ const extend = (t: Uint32Array) => {
 
 /**
  * The sha256 compression function, with 4 rounds unrolled.
- * @modifies {arguments}
+ *
+ * @satisfies {InPlaceFn}
  */
 const f = (s: Uint32Array, t: Uint32Array) => {
   extend(t);

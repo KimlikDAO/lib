@@ -7,9 +7,9 @@ interface Point {
   double(): Point;
   increment(other: Point): Point;
   multiply(n: bigint): Point;
-  /** @pure */
+  /** @satisfies {PureFn} */
   proj(): AffinePoint;
-  /** @pure */
+  /** @satisfies {PureFn} */
   copy(): Point;
 }
 
@@ -28,28 +28,28 @@ class CurveFamilyPoint implements Point {
   double(): Point { return this; }
   increment(_other: Point): Point { return this; }
   multiply(_n: bigint): Point { return this; }
-  /** @pure */
+  /** @satisfies {PureFn} */
   proj(): AffinePoint { return { x: this.x, y: this.y }; }
-  /** @pure */
+  /** @satisfies {PureFn} */
   copy(): Point { return new CurveFamilyPoint(this.x, this.y, this.z); }
-  /** @pure */
+  /** @satisfies {PureFn} */
   static pointFromAffine({ x, y }: AffinePoint): Point {
     return new CurveFamilyPoint(x, y, 1n);
   };
 }
 
 class CurvePoint extends CurveFamilyPoint {
-  /** @pure */
+  /** @satisfies {PureFn} */
   static pointFrom(_C: CompressedPoint): Point | null { return null };
 }
 
-/** @pure */
+/** @satisfies {PureFn} */
 const compressPoint = ({ x, y }: AffinePoint): CompressedPoint => ({ x, yParity: !!(y & 1n) });
 
 /**
  * Computes aX + bY at the cost of a single scalar × point multiplication.
  *
- * @pure
+ * @satisfies {PureFn}
  */
 const aX_bY = (a: bigint, X: Point, b: bigint, Y: Point): Point => {
   let aBits = a.toString(2);

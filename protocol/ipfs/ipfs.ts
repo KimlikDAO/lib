@@ -4,7 +4,8 @@ import type { AddResult } from "./ipfs.d";
 /**
  * Write an integer in the Continue-Bit-Encoding.
  * We support integers up to 21 bits since IPFS blocks are capped at 16-bit length.
- * @modifies {arguments}
+ *
+ * @satisfies {InPlaceFn}
  */
 const writeCBE = (buff: Uint8Array, n: number): void => {
   if (n < 128) {
@@ -20,7 +21,7 @@ const writeCBE = (buff: Uint8Array, n: number): void => {
   }
 };
 
-/** @pure */
+/** @satisfies {PureFn} */
 const hash = (data: Uint8Array): Promise<Uint8Array> => {
   const n = data.length;
   const nEncodedLen = n < 128 ? 1 : n < 16384 ? 2 : 3;
@@ -39,7 +40,7 @@ const hash = (data: Uint8Array): Promise<Uint8Array> => {
     .then((buff) => new Uint8Array(buff));
 };
 
-/** @pure */
+/** @satisfies {PureFn} */
 const CID = (hash: Uint8Array): string => {
   const bytes = new Uint8Array(34);
   bytes.set([18, 32]);

@@ -16,12 +16,12 @@ test("dedupes by source id and keeps the first resolved path", () => {
   const sources = createSourceSet(
     { path: "lib/a.ts", source: "module:lib/a" },
     { path: "symlinked/a.ts", source: "module:lib/a" },
-    { path: "node_modules/@kimlikdao/kdts/@types/bun.d.ts", source: "package:bun" },
+    { path: "node_modules/@kimlikdao/kdts/@types/bun/index.d.ts", source: "package:bun" },
   );
 
   expect(sources.getPaths()).toEqual([
     "lib/a.ts",
-    "node_modules/@kimlikdao/kdts/@types/bun.d.ts",
+    "node_modules/@kimlikdao/kdts/@types/bun/index.d.ts",
   ]);
 });
 

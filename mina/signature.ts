@@ -8,7 +8,7 @@ type UnpackedSignature = {
   s: bigint;
 };
 
-/** @pure */
+/** @satisfies {PureFn} */
 const fromUnpacked = ({ r, s }: UnpackedSignature): Signature => {
   const buff = new Uint8Array(70);
   buff[0] = 154;
@@ -18,7 +18,7 @@ const fromUnpacked = ({ r, s }: UnpackedSignature): Signature => {
   return encode(buff);
 }
 
-/** @pure */
+/** @satisfies {PureFn} */
 const toUnpacked = (sig: Signature): UnpackedSignature => {
   const bytes = base58.toBytes(sig);
   return {

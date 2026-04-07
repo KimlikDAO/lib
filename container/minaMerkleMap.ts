@@ -43,17 +43,17 @@ class MinaMerkleMap implements MerkleMap<Field, Value> {
       val = poseidon(isLeft ? [val, sibling] : [sibling, val]);
     }
   }
-  /** @pure */
+  /** @satisfies {PureFn} */
   get(key: Field): Value | undefined {
     key = MinaMerkleMap.toBinaryKey(key, this.height);
     return this.nodes[key];
   }
 
-  /** @pure */
+  /** @satisfies {PureFn} */
   getInner(key: BinaryKey): Value {
     return this.nodes[key] ?? this.zeros[key.length];
   }
-  /** @pure */
+  /** @satisfies {PureFn} */
   getWitnessed(key: Field): Witnessed<Value> {
     const h = this.height;
     key = MinaMerkleMap.toBinaryKey(key, h);

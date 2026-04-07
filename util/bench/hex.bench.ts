@@ -1,9 +1,9 @@
-import { bench } from "../../util/testing/bench";
+import { bench } from "@kimlikdao/kdts/bench";
 import hex from "../hex";
 
 const FromUint8 = hex.FromUint8;
 
-/** @pure */
+/** @satisfies {PureFn} */
 const hexFromLoop = (bytes: Uint8Array): string => {
   const octets: string[] = new Array(bytes.length);
   for (let i = 0; i < bytes.length; ++i)
@@ -11,7 +11,7 @@ const hexFromLoop = (bytes: Uint8Array): string => {
   return octets.join("");
 };
 
-/** @pure */
+/** @satisfies {PureFn} */
 const hexFromArrayFrom = (bytes: Uint8Array): string =>
   Array.from(bytes, (i) => FromUint8[i as number]).join("");
 
@@ -29,7 +29,7 @@ bench("hex.from (bytes → hex string)", {
   }],
 });
 
-/** @pure */
+/** @satisfies {PureFn} */
 const toUint8ParseInt = (str: string): Uint8Array => {
   if (str.length & 1) str = "0" + str;
   const buff = new Uint8Array(str.length / 2);
@@ -38,7 +38,7 @@ const toUint8ParseInt = (str: string): Uint8Array => {
   return buff;
 };
 
-/** @pure */
+/** @satisfies {PureFn} */
 const toUint8CharCode = (str: string): Uint8Array => {
   if (str.length & 1) str = "0" + str;
   const buff = new Uint8Array(str.length / 2);

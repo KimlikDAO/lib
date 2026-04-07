@@ -1,4 +1,4 @@
-import { bench } from "../../../util/testing/bench";
+import { bench } from "@kimlikdao/kdts/bench";
 import bigints from "../../../util/bigints";
 
 /** secp256k1 field prime */

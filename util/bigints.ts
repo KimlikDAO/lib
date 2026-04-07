@@ -14,9 +14,9 @@ import hex from "./hex";
  * // n = 0x123456 -> LE bytes [0x56, 0x34, 0x12]
  * const first = intoBytesBE(out, 0x123456n, 5);
  * // out is now [0, 0, 0x12, 0x34, 0x56, 0]
- * // first === 2 (index of first written byte)
+ * // first == 2 (index of first written byte)
  * ```
- * @modifies {arguments}
+ * @satisfies {InPlaceFn}
  */
 const intoBytesBE = (
   bytes: Uint8Array | number[],
@@ -43,7 +43,7 @@ const intoBytesBE = (
  * intoBytesLE(out, 0x123456n, 1);
  * // out is now [0, 0x56, 0x34, 0x12, 0, 0]
  * ```
- * @modifies {arguments}
+ * @satisfies {InPlaceFn}
  */
 const intoBytesLE = (
   bytes: Uint8Array | number[],
@@ -55,13 +55,14 @@ const intoBytesLE = (
     bytes[j] = parseInt(str.substring(i - 2, i), 16);
 };
 
-/** @pure */
+/** @satisfies {PureFn} */
 const fromBytesBE = (bytes: Uint8Array): bigint => BigInt("0x" + hex.from(bytes));
 
-/** @pure */
-const fromBytesLE = (bytes: Uint8Array | number[]): bigint => BigInt("0x" + hex.fromBytesLE(bytes));
+/** @satisfies {PureFn} */
+const fromBytesLE = (bytes: Uint8Array | number[]): bigint =>
+  BigInt("0x" + hex.fromBytesLE(bytes));
 
-/** @nosideeffects */
+/** @satisfies {SideEffectFreeFn} */
 const random = (bits: number): bigint => BigInt("0x" +
   hex.from(crypto.getRandomValues(new Uint8Array((bits + 7) / 8 | 0)) as Uint8Array));
 

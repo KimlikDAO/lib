@@ -1,5 +1,5 @@
+import { assertIs } from "../../util/assert";
 import hex from "../../util/hex";
-import { assertIs } from "../../util/testing/assert";
 import { Op, OpData, Ops, pushN } from "./opcodes";
 
 /** @const */

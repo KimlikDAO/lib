@@ -10,7 +10,7 @@ const Decoder = new TextDecoder() satisfies PureExpr;
  * Returns the ethereum address for a given public key in the (x, y) format.
  * The returned address is not checksummed. Use {@link validate()} to apply
  * the checksum if needed.
- * @pure
+ * @satisfies {PureFn}
  */
 const fromPoint = ({ x, y }: { x: bigint, y: bigint }): Address => {
   const bytes = new Uint8Array(64);
@@ -21,7 +21,7 @@ const fromPoint = ({ x, y }: { x: bigint, y: bigint }): Address => {
   return "0x" + hash.toHex();
 }
 
-/** @pure */
+/** @satisfies {PureFn} */
 const hashAddr = (addr: Address): string => {
   const bytes = Encoder.encode(addr.slice(2).toLowerCase());
   return keccak256Uint32ToHex(new Uint32Array(bytes.buffer));
@@ -33,7 +33,7 @@ const hashAddr = (addr: Address): string => {
  * checksummed address. For mixed-case input, returns the address if the
  * checksum is valid; null otherwise. Returns null for malformed inputs, such
  * as wrong length, missing '0x' prefix, or invalid characters.
- * @pure
+ * @satisfies {PureFn}
  */
 const validate = (addr: Address): Address | null => {
   if (addr.length != 42 || !addr.startsWith("0x")) return null;
@@ -66,7 +66,7 @@ const validate = (addr: Address): Address | null => {
 
 /**
  * Tests if a given string is a valid EVM address with correct checksum.
- * @pure
+ * @satisfies {PureFn}
  */
 const isValid = (addr: Address): boolean => {
   if (addr.length != 42 || !addr.startsWith("0x")) return false;

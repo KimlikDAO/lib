@@ -15,4 +15,4 @@ export var secrets: BunSecrets;
 export function deepEquals<T>(a: T, b: T, strict?: boolean): boolean;
 
 /** Returns a 64 bit Wyhash hash of the data. */
-export function hash(data: Uint8Array | string): bigint | number;
+export function hash(data: Uint8Array | string): bigint;

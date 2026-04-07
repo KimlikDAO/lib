@@ -1,4 +1,4 @@
-import { bench } from "../../../util/testing/bench";
+import { bench } from "@kimlikdao/kdts/bench";
 import { exp, expTimesExp } from "../../modular";
 
 const expTimesExpViaBigIntMask = (a: bigint, x: bigint, b: bigint, y: bigint, M: bigint): bigint => {

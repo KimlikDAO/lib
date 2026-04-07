@@ -1,21 +1,21 @@
 import hex from "./hex";
 
-/** @pure */
+/** @satisfies {PureFn} */
 const from = (bytes: Uint8Array): string => bytes.toBase64();
 
 // TODO(KimlikDAO-bot): consider toString(8) route.
-/** @pure */
+/** @satisfies {PureFn} */
 const fromBigInt = (n: bigint): string => from(hex.toUint8Array(n.toString(16)));
 
-/** @pure */
+/** @satisfies {PureFn} */
 const toBytes = (base64: string): Uint8Array<ArrayBuffer> =>
   Uint8Array.fromBase64(base64);
 
-/** @pure */
+/** @satisfies {PureFn} */
 const toBigInt = (base64: string): bigint =>
   BigInt("0x" + hex.from(toBytes(base64)));
 
-/** @modifies {arguments} */
+/** @satisfies {InPlaceFn} */
 const intoBytes = (bytes: Uint8Array, base64: string): void => {
   bytes.setFromBase64(base64);
 };

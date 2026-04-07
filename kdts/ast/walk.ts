@@ -65,9 +65,11 @@ class Generator {
     const ind = this.indent = this.indent.slice(0, -3);
     this.out += "\n" + ind + " */\n" + ind;
   }
-  put(s: string) { this.out += s; }
+  ret() { this.out += "\n" + this.indent; }
+  put(s: string, onNewLine = false) {
+    if (onNewLine) this.out += "\n" + this.indent; this.out += s;
+  }
   ens(s: string) { if (!this.out.endsWith(s)) this.out += s; }
-  ret(c?: string) { this.out += (c ?? "") + "\n" + this.indent; }
 
   arr(a: readonly (Node | null)[], sep: string, ...rest: unknown[]) {
     let s = "";

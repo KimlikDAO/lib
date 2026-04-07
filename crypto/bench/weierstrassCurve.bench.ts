@@ -1,5 +1,5 @@
+import { bench } from "@kimlikdao/kdts/bench";
 import bigints from "../../util/bigints";
-import { bench } from "../../util/testing/bench";
 import { G as G_arf } from "../secp256k1";
 import { G as G_wei } from "../test/weierstrassCurve/secp256k1";
 

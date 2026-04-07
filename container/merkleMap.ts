@@ -2,7 +2,7 @@ type BinaryKey = string;
 
 interface Map<K, V> {
   set(key: K, value: V): V | undefined;
-  /** @pure */
+  /** @satisfies {PureFn} */
   get(key: K): V | undefined;
 }
 
@@ -18,9 +18,9 @@ interface Witnessed<V> {
 }
 
 interface MerkleMap<K, V> extends Map<K, V> {
-  /** @pure */
+  /** @satisfies {PureFn} */
   getInner(key: BinaryKey): V;
-  /** @pure */
+  /** @satisfies {PureFn} */
   getWitnessed(key: K): Witnessed<V>;
 }
 

@@ -1,13 +1,20 @@
-import { AffinePoint, CurveFamily, Point } from "./ellipticCurve";
+import {
+  AffinePoint,
+  CompressedPoint,
+  Curve,
+  CurveFamily,
+  Point
+} from "./ellipticCurve";
 import { inverse } from "./modular";
 
 /**
- * Returns an Arf curve family over the base field 𝔽ₚ for a given prime P: an
+ * Returns an Arf {@link CurveFamily} over the base field 𝔽ₚ for a given P: an
  * elliptic curve with equation y² = x³ + b for some b. For P ≡ 1 (mod 6) there
  * are 6 isomorphism classes; to specify one, one needs to implement the
- * `pointFrom(x, yParity)` method of the `Curve` interface, which fixes `b` and
- * hence the `Curve`. Note that a curve does not fix a generator; that is
- * specified outside the `Curve`.
+ * `pointFrom(x, yParity)` method of the {@link Curve} interface, which fixes
+ * `b` and hence the `Curve`; see {@link arfCurve()}.
+ * Note that a curve does not fix a generator; that is specified outside the
+ * `Curve`.
  *
  * Some popular choices:
  * - secp256k1:
@@ -16,13 +23,15 @@ import { inverse } from "./modular";
  * - Pallas:
  *   P = 0x40000000000000000000000000000000224698FC094CF91B992D30ED00000001,
  *   y² = x³ + 5
- * @pure
+ *
+ * @satisfies {PureFn}
  */
-const arfCurve = (P: bigint): CurveFamily => {
+const arfCurveFamily = (P: bigint): CurveFamily => {
   /**
    * Returns a non-negative number t such that 0 ≤ t < P and x ≡ t (mod P).
    * If positivity is not required, prefer the % operator.
-   * @pure
+   *
+   * @satisfies {PureFn}
    */
   const modP = (x: bigint): bigint => {
     const t = x % P;
@@ -30,13 +39,13 @@ const arfCurve = (P: bigint): CurveFamily => {
   };
   return class ArfFamilyPoint implements Point {
     constructor(public x: bigint, public y: bigint, public z: bigint) { }
-    /** @pure */
+    /** @satisfies {PureFn} */
     static pointFromAffine({ x, y }: AffinePoint): Point {
       return new ArfFamilyPoint(x, y, 1n);
     };
-    /** @pure */
+    /** @satisfies {PureFn} */
     copy(): Point { return new ArfFamilyPoint(this.x, this.y, this.z); }
-    /** @pure */
+    /** @satisfies {PureFn} */
     proj(): AffinePoint {
       if (this.z == 0n) return { x: 0n, y: 0n };
       const iz = inverse(this.z, P);
@@ -111,4 +120,22 @@ const arfCurve = (P: bigint): CurveFamily => {
   } as CurveFamily;
 }
 
-export { arfCurve };
+const arfCurve = (
+  P: bigint,
+  b: bigint,
+  sqrt: (x: bigint) => bigint | null
+): Curve => {
+  const ArfFamily = arfCurveFamily(P);
+  return Object.assign(ArfFamily, {
+    /** @satisfies {PureFn} */
+    pointFrom({ x, yParity }: CompressedPoint): Point | null {
+      const y = sqrt((x * x * x + b) % P);
+      // For prime order curves, y == 0 is not on the curve
+      // so we don't need to distinguish y == null and y == 0n
+      if (!y) return null;
+      return new ArfFamily(x, (y & 1n) == (yParity as unknown as bigint) ? y : P - y, 1n);
+    }
+  }) as Curve;
+}
+
+export { arfCurve, arfCurveFamily };

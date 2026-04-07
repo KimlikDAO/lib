@@ -388,10 +388,6 @@ function tsPlugin(options?: {
         if (this.options.ranges) node.range[1] = endPos;
       }
 
-      override startNodeAtNode(type: Node): any {
-        return super.startNodeAt(type.start, type.loc.start);
-      }
-
       nextTokenStart(): number {
         return this.nextTokenStartSince(this.pos);
       }
@@ -559,7 +555,8 @@ function tsPlugin(options?: {
           curLine: this.curLine,
           lineStart: this.lineStart,
           curPosition: this.curPosition,
-          containsEsc: this.containsEsc
+          containsEsc: this.containsEsc,
+          stashedModifiers: this.stashedModifiers
         };
       }
 
@@ -580,7 +577,8 @@ function tsPlugin(options?: {
           curLine: this.curLine,
           lineStart: this.lineStart,
           curPosition: this.curPosition,
-          containsEsc: this.containsEsc
+          containsEsc: this.containsEsc,
+          stashedModifiers: this.stashedModifiers
         };
       }
 
@@ -601,6 +599,7 @@ function tsPlugin(options?: {
         this.lineStart = state.lineStart;
         this.curPosition = state.curPosition;
         this.containsEsc = state.containsEsc;
+        this.stashedModifiers = state.stashedModifiers;
       }
 
       // Utilities
@@ -646,10 +645,24 @@ function tsPlugin(options?: {
 
       override startNode() {
         const node = super.startNode();
-        if (this.stashedModifiers)
+        if (this.stashedModifiers) {
           node.modifiers = this.stashedModifiers;
-        this.stashedModifiers = 0;
+          this.stashedModifiers = 0;
+        }
         return node;
+      }
+
+      override startNodeAt(start: number, startLoc: Position): any {
+        const node = super.startNodeAt(start, startLoc);
+        if (this.stashedModifiers) {
+          node.modifiers = this.stashedModifiers;
+          this.stashedModifiers = 0;
+        }
+        return node;
+      }
+
+      override startNodeAtNode(type: Node): any {
+        return this.startNodeAt(type.start, type.loc!.start);
       }
 
       skipBlockComment() {
@@ -4380,10 +4393,12 @@ function tsPlugin(options?: {
       }
 
       parseParenAndDistinguishExpression(canBeArrow, forInit) {
-        let startPos = this.start,
-          startLoc = this.startLoc,
-          val,
-          allowTrailingComma = this.ecmaVersion >= 8;
+        let startPos = this.start;
+        let startLoc = this.startLoc;
+        let val;
+        let allowTrailingComma = this.ecmaVersion >= 8;
+        const modifiers = this.stashedModifiers;
+        this.stashedModifiers = 0;
         if (this.ecmaVersion >= 6) {
           const oldMaybeInArrowParameters = this.maybeInArrowParameters;
           this.maybeInArrowParameters = true;
@@ -4418,8 +4433,8 @@ function tsPlugin(options?: {
               );
             }
           }
-          let innerEndPos = this.lastTokEnd,
-            innerEndLoc = this.lastTokEndLoc;
+          let innerEndPos = this.lastTokEnd;
+          let innerEndLoc = this.lastTokEndLoc;
           this.expect(tt.parenR);
           this.maybeInArrowParameters = oldMaybeInArrowParameters;
           if (canBeArrow && this.shouldParseArrow(exprList) && this.eat(tt.arrow)) {
@@ -4427,6 +4442,7 @@ function tsPlugin(options?: {
             this.checkYieldAwaitInDefaultParams();
             this.yieldPos = oldYieldPos;
             this.awaitPos = oldAwaitPos;
+            this.stashedModifiers = modifiers;
             return this.parseParenArrowList(startPos, startLoc, exprList, forInit);
           }
           if (!exprList.length || lastIsComma) this.unexpected(this.lastTokStart);
@@ -4435,6 +4451,7 @@ function tsPlugin(options?: {
           this.yieldPos = oldYieldPos || this.yieldPos;
           this.awaitPos = oldAwaitPos || this.awaitPos;
           if (exprList.length > 1) {
+            this.stashedModifiers = modifiers;
             val = this.startNodeAt(innerStartPos, innerStartLoc);
             val.expressions = exprList;
             this.finishNodeAt(val, 'SequenceExpression', innerEndPos, innerEndLoc);
@@ -4446,10 +4463,13 @@ function tsPlugin(options?: {
         }
 
         if (this.options.preserveParens) {
+          this.stashedModifiers = modifiers;
           let par = this.startNodeAt(startPos, startLoc);
           par.expression = val;
           return this.finishNode(par, 'ParenthesizedExpression');
         } else {
+          if (modifiers)
+            val.modifiers = (val.modifiers ?? 0) | modifiers;
           return val;
         }
       }

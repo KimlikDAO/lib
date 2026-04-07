@@ -5,7 +5,7 @@ const CreatePrefix = keccak256Uint8(new TextEncoder().encode("zksyncCreate"));
 
 /**
  * Computes the contract address for EraVM with a deployment nonce <= 255.
- * @pure
+ * @satisfies {PureFn}
  */
 const getCreateAddress = (deployer: Address, nonce: number): Address => {
   const out = new Uint8Array(96);

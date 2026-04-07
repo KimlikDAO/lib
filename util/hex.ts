@@ -20,18 +20,18 @@ const ToBinary: Record<string, string> = (
     return toBinary;
   })() satisfies PureExpr;
 
-/** @pure */
+/** @satisfies {PureFn} */
 const toBinary = (hexStr: string): string =>
   Array.from(hexStr, (s: string) => ToBinary[s]).join("");
 
-/** @pure */
+/** @satisfies {PureFn} */
 const from = (bytes: Uint8Array): string => bytes.toHex();
 
-/** @pure */
+/** @satisfies {PureFn} */
 const toUint8Array = (str: string): Uint8Array<ArrayBuffer> =>
   Uint8Array.fromHex(str.length & 1 ? "0" + str : str);
 
-/** @pure */
+/** @satisfies {PureFn} */
 const fromBytesLE = (bytes: Uint8Array | number[]): string => {
   /** @const {number} */
   const n = bytes.length;
@@ -41,7 +41,7 @@ const fromBytesLE = (bytes: Uint8Array | number[]): string => {
   return octets.join("");
 }
 
-/** @pure */
+/** @satisfies {PureFn} */
 const fromUint32ArrayBE = (words: Uint32Array): string => {
   const n = 4 * words.length;
   const octets: string[] = Array(n);
@@ -54,14 +54,14 @@ const fromUint32ArrayBE = (words: Uint32Array): string => {
   return octets.join("");
 }
 
-/** @modifies {arguments} */
+/** @satisfies {InPlaceFn} */
 const intoBytes = (bytes: Uint8Array | number[], str: string): void => {
   const n = str.length;
   for (let i = -(n & 1), j = 0; i < n; ++j, i += 2)
     bytes[j] = parseInt(str.substring(i, i + 2), 16);
 }
 
-/** @modifies {arguments} */
+/** @satisfies {InPlaceFn} */
 const intoUint32ArrayBE = (
   words: Uint32Array | number[],
   length: number,

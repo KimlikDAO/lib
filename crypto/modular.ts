@@ -3,7 +3,8 @@
  *
  * Requires that b < P and P is a prime. Returns x such that bx + Py = 1 and
  * 0 < x < P.
- * @pure
+ *
+ * @satisfies {PureFn}
  */
 const inverse = (b: bigint, P: bigint): bigint => {
   let a = P;
@@ -24,7 +25,7 @@ const inverse = (b: bigint, P: bigint): bigint => {
  * Computes aˣ (mod M) and outputs the smallest positive representation.
  * The function is not constant time and should not be used in cases where
  * side-channel attacks are possible.
- * @pure
+ * @satisfies {PureFn}
  */
 const exp = (a: bigint, x: bigint, M: bigint): bigint => {
   const xBits = x.toString(2);
@@ -38,13 +39,13 @@ const exp = (a: bigint, x: bigint, M: bigint): bigint => {
   return r;
 }
 
-/** @pure */
+/** @satisfies {PureFn} */
 const pow5 = (b: bigint, M: bigint): bigint => {
   const t = b * b % M;
   return b * t * t % M;
 }
 
-/** @pure */
+/** @satisfies {PureFn} */
 const pow7 = (b: bigint, M: bigint): bigint => {
   const t = b * b * b % M;
   return b * t * t % M;
@@ -55,7 +56,7 @@ const pow7 = (b: bigint, M: bigint): bigint => {
  *
  * Provides a modest 5% speedup over the `exp(2, x, M)`. May be deprecated
  * later since the speedup is miniscule.
- * @pure
+ * @satisfies {PureFn}
  */
 const exp2 = (x: bigint, M: bigint): bigint => {
   const xDigits = x.toString(16);
@@ -69,7 +70,7 @@ const exp2 = (x: bigint, M: bigint): bigint => {
   return r;
 }
 
-/** @pure */
+/** @satisfies {PureFn} */
 const expTimesExp = (
   a: bigint,
   x: bigint,
@@ -102,7 +103,7 @@ const expTimesExp = (
  * @param c z^Q where z is a quadratic non-residue
  * @param M so that Q.2^M == P-1
  * @return sqrt(n) if n is a quadratic residue, null otherwise
- * @pure
+ * @satisfies {PureFn}
  */
 const tonelliShanks = (
   n: bigint,
@@ -135,7 +136,7 @@ const tonelliShanks = (
  *
  * If P is a compile-time constant, one can even compute the Tonelli-Shanks
  * parameters and call {@link tonelliShanks()} directly with those values.
- * @pure
+ * @satisfies {PureFn}
  */
 const sqrt = (n: bigint, P: bigint): bigint | null => {
   let Q = P >> 1n;
@@ -155,7 +156,7 @@ const sqrt = (n: bigint, P: bigint): bigint | null => {
  *
  * If P is a compile-time constant, one can even precompute the Tonelli-Shanks
  * parameters and call {@link tonelliShanks()} directly with those values.
- * @pure
+ * @satisfies {PureFn}
  */
 const prepareSqrt = (P: bigint): (x: bigint) => bigint | null => {
   let Q = P >> 1n;

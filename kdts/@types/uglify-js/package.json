@@ -1,0 +1,4 @@
+{
+  "name": "uglify-js",
+  "types": "./index.d.js"
+}

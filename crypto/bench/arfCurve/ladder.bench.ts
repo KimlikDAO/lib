@@ -1,5 +1,5 @@
+import { bench } from "@kimlikdao/kdts/bench";
 import bigints from "../../../util/bigints";
-import { bench } from "../../../util/testing/bench";
 import { Point } from "../../ellipticCurve";
 import { G, Q, Secp256k1 } from "../../secp256k1";
 

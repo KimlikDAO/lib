@@ -379,7 +379,7 @@ class FunctionType extends Type {
     const lastIdx = this.params.length - 1;
     const lines: string[] = [];
     if (this.modifiers & Modifier.NoInline) lines.push(" * @noinline");
-    if (this.modifiers & Modifier.NoSideEffects)
+    if (this.modifiers & Modifier.SideEffectFree)
       lines.push(" * @nosideeffects");
     if (this.modifiers & Modifier.Pure) lines.push(" * @pureOrBreakMyCode");
     for (let i = 0; i < this.params.length; i++) {

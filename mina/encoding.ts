@@ -5,7 +5,8 @@ import bigints from "../util/bigints";
 /**
  * Given a buffer, adds a checksum to the last 4 bytes and returns the base58
  * encoding of the whole buffer.
- * @modifies {arguments}
+ *
+ * @satisfies {InPlaceFn}
  */
 const encode = (buff: Uint8Array): string => {
   const n = buff.length;
@@ -21,7 +22,8 @@ const encode = (buff: Uint8Array): string => {
 
 /**
  * Given a base58 encoded string, decodes the buffer and validates the checksum.
- * @pure
+ *
+ * @satisfies {PureFn}
  */
 const decode = (data: string): Uint8Array => {
   const buff = base58.toBytes(data);
@@ -37,7 +39,7 @@ const decode = (data: string): Uint8Array => {
 /**
  * Parses a private key from Mina encoded base58 string.
  *
- * @pure
+ * @satisfies {PureFn}
  */
 const parsePrivateKey = (privateKey: string): bigint =>
   bigints.fromBytesLE(decode(privateKey).subarray(2, 34));
@@ -45,7 +47,8 @@ const parsePrivateKey = (privateKey: string): bigint =>
 /**
  * Given a buffer of length `n` ending with [128, 0, 0, 0], computes a checksum
  * from all but the last 4 bytes.
- * @pure
+ *
+ * @satisfies {PureFn}
  */
 const checksum = (buff: Uint8Array): number => {
   const m = buff.length - 4;

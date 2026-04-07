@@ -6,39 +6,33 @@ enum Modifier {
 
   Override = 16,
 
-  // -- Optimization hints and directives -- //
-
-  // A VariableDeclaration whose init should be move to callsite.
+  // A VariableDeclaration whose init should be moved to callsite.
   AlwaysInline = 1 << 7,
   NoInline = 1 << 8,
 
-  /**
-   * No mutation of observable external state. It can still read mutable
-   * external state or mutate external state that is not observable.
-   * Example: {@link Math.random()}
-   */
-  NoSideEffects = 1 << 9,
+  ReadonlyArguments = 1 << 20,
+  ReadonlyThis = 1 << 21,
+  ReadonlyExternal = 1 << 22,
+  NoMutableExternal = 1 << 23,
+  ReturnsValue = 1 << 24,
 
-  // Given the same input, always returns the same output.
-  // Functionally, this means no reads of mutable external state.
-  Deterministic = 1 << 10,
-  Pure = 1 << 9 | 1 << 10,
-
-  ModifiesArgumentsOnly = 1 << 11,
-  ModifiesThisOnly = 1 << 12,
+  InPlace = ReadonlyThis | ReadonlyExternal,
+  PureMethod = ReadonlyExternal | ReadonlyArguments | ReturnsValue,
+  SideEffectFree = ReadonlyExternal | ReadonlyArguments,
+  PureAlias = SideEffectFree | NoMutableExternal,
+  Pure = PureAlias | ReturnsValue
 }
 
-const ParseBracedModifier = -1;
+const hasAll = (lhs: Modifier, rhs: Modifier): boolean => (lhs & rhs) == rhs;
 
 const JsDocModifierMap: Record<string, Modifier | -1> = {
   "alwaysinline": Modifier.AlwaysInline,
-  "modifies": ParseBracedModifier,
-  "modifies {arguments}": Modifier.ModifiesArgumentsOnly,
-  "modifies {this}": Modifier.ModifiesThisOnly,
-  "noinline": Modifier.NoInline,
-  "nosideeffects": Modifier.NoSideEffects,
-  "pure": Modifier.Pure,
-  "pureOrBreakMyCode": Modifier.Pure
+  "satisfies": -1,
+  "satisfies {InPlaceFn}": Modifier.InPlace,
+  "satisfies {PureMethodFn}": Modifier.PureMethod,
+  "satisfies {SideEffectFreeFn}": Modifier.SideEffectFree,
+  "satisfies {PureAliasFn}": Modifier.PureAlias,
+  "satisfies {PureFn}": Modifier.Pure,
 };
 
 const isWhitespace = (charCode: number): boolean => charCode <= 32;
@@ -57,7 +51,7 @@ const modifiersFromJsDoc = (jsDoc: string): number => {
     const directive = part.slice(0, cursor);
     const rule = JsDocModifierMap[directive];
     if (rule == undefined) continue;
-    if (rule != ParseBracedModifier) {
+    if (rule != -1) {
       modifiers |= rule;
       continue;
     }
@@ -71,11 +65,11 @@ const modifiersFromJsDoc = (jsDoc: string): number => {
 
     const bracedRule =
       JsDocModifierMap[`${directive} ${part.slice(cursor, bracedEnd + 1)}`];
-    if (bracedRule != undefined && bracedRule != ParseBracedModifier)
+    if (bracedRule != undefined && bracedRule != -1)
       modifiers |= bracedRule;
   }
 
   return modifiers;
 }
 
-export { Modifier, modifiersFromJsDoc };
+export { Modifier, modifiersFromJsDoc, hasAll };

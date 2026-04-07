@@ -1,4 +1,4 @@
-import { assertIs } from "../../util/testing/assert";
+import { assertIs } from "../../util/assert";
 import { evaluate } from "../wesolowski";
 
 const buff = Uint32Array.from("00000001".repeat(5));

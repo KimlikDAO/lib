@@ -1,12 +1,18 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { combine, getDir, replaceExt } from "../../util/paths";
 import { SourceId } from "../model/moduleImports";
 
-const KDTS_TYPES = "node_modules/@kimlikdao/kdts/@types/";
+const KDTS_TYPES = "node_modules/@kimlikdao/kdts/@types";
 
 type SourcePath = {
   source: SourceId
   path: string,
+};
+
+type PackageJson = {
+  main?: string;
+  types?: string;
+  typings?: string;
 };
 
 /**
@@ -21,10 +27,18 @@ type SourcePath = {
  */
 const JsLikeExt: readonly string[] = [".tsx", ".jsx", ".ts", ".mjs", ".js"];
 
+const isFile = (path: string): boolean => {
+  try {
+    return !statSync(path).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
 const resolveExt = (path: string): string => {
-  if (existsSync(path)) return path;
+  if (isFile(path)) return path;
   for (const ext of JsLikeExt)
-    if (existsSync(path + ext)) return path + ext;
+    if (isFile(path + ext)) return path + ext;
   return "";
 }
 
@@ -35,15 +49,22 @@ const stripJsLikeExt = (path: string): string => {
 }
 
 const resolveDeclaration = (path: string): string => {
-  if (existsSync(path)) return path;
-  if (existsSync(path + ".d.ts")) return path + ".d.ts";
-  if (existsSync(path + ".ts")) return path + ".ts";
-  if (existsSync(combine(path, "index.d.ts"))) return combine(path, "index.d.ts");
-  if (existsSync(combine(path, "index.ts"))) return combine(path, "index.ts");
+  if (isFile(path)) return path;
+  if (isFile(path + ".d.ts")) return path + ".d.ts";
+  if (isFile(path + ".d.js")) return path + ".d.js";
+  if (isFile(path + ".ts")) return path + ".ts";
+  if (isFile(combine(path, "index.d.ts"))) return combine(path, "index.d.ts");
+  if (isFile(combine(path, "index.d.js"))) return combine(path, "index.d.js");
+  if (isFile(combine(path, "index.ts"))) return combine(path, "index.ts");
   return "";
 }
 
 const splitPackagePath = (path: string): [string, string] => {
+  const colon = path.indexOf(":");
+  const slash = path.indexOf("/");
+  if (colon != -1 && (slash == -1 || colon < slash))
+    return [path.slice(0, colon), "/" + path.slice(colon + 1)];
+
   const parts = path.split("/");
   const packageName = path.startsWith("@")
     ? parts.slice(0, 2).join("/")
@@ -51,48 +72,53 @@ const splitPackagePath = (path: string): [string, string] => {
   return [packageName, path.slice(packageName.length)];
 }
 
+const resolveRootImport = (packageDir: string, packageJson: PackageJson): string => {
+  const declarationPath = packageJson.types
+    || packageJson.typings
+    || (packageJson.main && replaceExt(packageJson.main, ".d.ts"))
+    || "index";
+  return resolveDeclaration(combine(packageDir, declarationPath));
+}
+
+const moduleAtPath = (path: string): SourcePath => ({
+  path,
+  source: `module:${stripJsLikeExt(path)}`
+});
+
+const resolvePackage = (
+  modulesPath: string,
+  packagePath: string
+): string => {
+  const [packageName, subpath] = splitPackagePath(packagePath);
+  const packageDir = combine(modulesPath, packageName);
+  if (!existsSync(packageDir))
+    return "";
+
+  const packageJsonPath = combine(packageDir, "package.json");
+  if (!isFile(packageJsonPath))
+    throw Error(`Package ${packageName} is missing package.json`);
+
+  const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8")) as PackageJson;
+  return subpath
+    ? resolveDeclaration(combine(packageDir, subpath.slice(1)))
+    : resolveRootImport(packageDir, packageJson);
+}
+
 const resolvePath = (importer: string, path: string): SourcePath => {
-  // temp hack until we implement workspace support
-  if (path.startsWith("@kimlikdao/kdts"))
-    path = "/kdts/kdts.d.ts";
   switch (path[0]) {
     case ".":
-      path = resolveExt(combine(getDir(importer), path));
-      return {
-        path,
-        source: `module:${stripJsLikeExt(path)}`
-      };
+      return moduleAtPath(resolveExt(combine(getDir(importer), path)));
     case "/":
-      path = resolveExt(path.slice(1));
-      return {
-        path,
-        source: `module:${stripJsLikeExt(path)}`
-      }
+      return moduleAtPath(resolveExt(path.slice(1)));
     default:
-      const source: SourceId = `package:${path}`;
       const packagePath = path;
-      path = resolveExt(KDTS_TYPES + packagePath.replaceAll(":", "/") + ".d");
-      if (!path) {
-        const [packageName, subpath] = splitPackagePath(packagePath);
-        if (subpath)
-          path = resolveDeclaration(`node_modules/${packagePath}`);
-        else {
-          const packageJson = JSON.parse(
-            readFileSync(`node_modules/${packageName}/package.json`, "utf8")
-          ) as {
-            main?: string,
-            types?: string,
-            typings?: string,
-          };
-          const declarationPath = packageJson.types
-            || packageJson.typings
-            || (packageJson.main && replaceExt(packageJson.main, ".d.ts"))
-            || "index.d.ts";
-          path = resolveDeclaration(combine(`node_modules/${packageName}`, declarationPath));
-        }
+      const source: SourceId = `package:${packagePath}`;
+      for (const nodeModulesPath of [KDTS_TYPES, "node_modules"]) {
+        const resolvedPath = resolvePackage(nodeModulesPath, packagePath);
+        if (resolvedPath)
+          return { path: resolvedPath, source };
       }
-      if (!path) throw Error(`No types for package ${packagePath} found!`);
-      return { path, source }
+      throw Error(`No types for package ${packagePath} found!`);
   }
 }
 

@@ -1,0 +1,4 @@
+{
+  "name": "node",
+  "types": "./process.d.ts"
+}

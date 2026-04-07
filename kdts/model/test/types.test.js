@@ -576,7 +576,7 @@ describe("toTsExpr (TS/JSDoc inside {})", () => {
       undefined,
       new PrimitiveType(PrimitiveTypeName.Number)
     );
-    fn.modifiers = Modifier.NoInline | Modifier.NoSideEffects | Modifier.Pure;
+    fn.modifiers = Modifier.NoInline | Modifier.SideEffectFree | Modifier.Pure;
     expect(fn.toTsDoc()).toBe(
       "/**\n" +
       " * @noinline\n" +

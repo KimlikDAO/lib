@@ -1,8 +1,6 @@
 /**
- * @author KimlikDAO
+ * @satisfies {PureFn}
  */
-
-/** @pure */
 const keccak256Uint32 = (words: Uint32Array): Uint32Array => {
   const s = Array(50);
   let i = 0;
@@ -20,15 +18,17 @@ const keccak256Uint32 = (words: Uint32Array): Uint32Array => {
   return new Uint32Array(s.slice(0, 8));
 }
 
-/** @pure */
+/**
+ * @satisfies {PureFn}
+ */
 const keccak256Uint32ToHex = (words: Uint32Array): string =>
   new Uint8Array(keccak256Uint32(words).buffer, 0, 32).toHex();
 
-/** @pure */
+/** @satisfies {PureFn} */
 const keccak256 = (str: string): string =>
   keccak256Uint8(new TextEncoder().encode(str)).toHex();
 
-/** @pure */
+/** @satisfies {PureFn} */
 const keccak256Uint8 = (bytes: Uint8Array): Uint8Array => {
   const words = new Uint32Array(bytes.buffer, 0, bytes.length >> 2);
   const s = Array(50);
@@ -67,7 +67,7 @@ const RC: readonly number[] = [
   2147516545, 2147483648, 32896, 2147483648, 2147483649, 0, 2147516424, 2147483648
 ];
 
-/** @modifies {arguments} */
+/** @satisfies {InPlaceFn} */
 const f = (s: number[] | Uint32Array): void => {
   let h, l, c0, c1, c2, c3, c4, c5, c6, c7, c8, c9,
     b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15, b16, b17,

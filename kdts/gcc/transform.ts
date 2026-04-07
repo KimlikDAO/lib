@@ -157,6 +157,7 @@ class GccExternTransform extends GccTransform {
     this.typeOnlyImports.add(n, resolvedImport.source);
     return false;
   }
+  ExportNamedDeclaration(n: ExportNamedDeclaration) { console.log(n); }
   ExportDefaultDeclaration(n: ExportDefaultDeclaration) {
     this.replaceNode(
       n,

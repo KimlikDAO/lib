@@ -1,7 +1,3 @@
-/**
- * @author KimlikDAO
- */
-
 // Initial constants
 const IC: readonly number[] = [
   0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
@@ -23,7 +19,8 @@ const RC: readonly number[] = [
 /**
  * Given a Uint32Array of length at most 2^32 - 1, outputs the sha256
  * as a Uint32Array of length 8.
- * @pure
+ *
+ * @satisfies {PureFn}
  */
 const sha256Uint32 = (words: Uint32Array): Uint32Array => {
   const n = words.length;
@@ -52,7 +49,8 @@ const sha256Uint32 = (words: Uint32Array): Uint32Array => {
 /**
  * Extends the first 16 words into the remaining 48 words w[16..63] of the
  * message schedule array.
- * @modifies {arguments}
+ *
+ * @satisfies {InPlaceFn}
  */
 const extend = (t: Uint32Array): void => {
   for (let i = 16, t1, s0, s1; i < 64; ++i) {
@@ -66,7 +64,8 @@ const extend = (t: Uint32Array): void => {
 
 /**
  * The sha256 compression function, implemented 1:1 without loop unrolling.
- * @modifies {arguments}
+ *
+ * @satisfies {InPlaceFn}
  */
 const g = (s: Uint32Array, t: Uint32Array): void => {
   extend(t);
@@ -86,7 +85,8 @@ const g = (s: Uint32Array, t: Uint32Array): void => {
 
 /**
  * Computes HMAC-SHA256 for a key of length at most 16 words (64 bytes).
- * @pure
+ *
+ * @satisfies {PureFn}
  */
 const hmacUint32 = (key: Uint32Array, message: Uint32Array): Uint32Array => {
   const m = key.length;

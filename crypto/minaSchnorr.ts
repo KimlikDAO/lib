@@ -8,33 +8,18 @@ import { tonelliShanks } from "./modular";
 
 const Q = P + 0x47afc1f319ba3400000000n satisfies LargeConstant;
 
-/** @pure */
+/** @satisfies {PureFn} */
 const sqrt = (n: bigint): bigint | null => tonelliShanks(n, P, (P - 1n) >> 32n,
   0x2bce74deac30ebda362120830561f81aea322bf2b7bb7584bdad6fabd87ea32fn, 32n);
 
-const Pallas: Curve = Object.assign(arfCurve(P), {
-  /**
-   * If x³ + 5 is a quadratic residue, returns the point (x, y, 1) with the
-   * provided x and y satisfying y² = x³ + 5 with the given parity; otherwise
-   * returns null.
-   *
-   * x must be in [0, P)
-   *
-   * @pure
-   */
-  pointFrom({ x, yParity }: CompressedPoint): Point | null {
-    const y = sqrt(x * x * x + 5n);
-    if (!y) return null; // -5 is not a cubic residue, hence no point (x, 0)
-    return new Pallas(x, (y & 1n) == (yParity as unknown as bigint) ? y : P - y, 1n);
-  }
-}) as Curve;
+const Pallas: Curve = arfCurve(P, 5n, sqrt);
 
 const G: Point = Pallas.pointFromAffine({
   x: 1n,
   y: 0x1b74b5a30a12937c53dfa9f06378ee548f655bd4333d477119cf7a23caed2abbn
 });
 
-/** @pure */
+/** @satisfies {PureFn} */
 const hashFields = (
   fields: readonly bigint[],
   { x, y }: AffinePoint,
@@ -53,7 +38,10 @@ const hashFields = (
  * providing the public key as an affine point `A` as a hint will prevent
  * recomputing it inside this function.
  *
- * @pure
+ * The function is not deterministic; in particular a random 256-bit k
+ * is chosen and then reduced in mod Q.
+ *
+ * @satisfies {SideEffectFreeFn}
  */
 const signFields = (
   fields: readonly bigint[],
@@ -69,7 +57,7 @@ const signFields = (
   return { r, s };
 }
 
-/** @pure */
+/** @satisfies {PureFn} */
 const verifyFields = (
   fields: readonly bigint[],
   r: bigint,
@@ -88,8 +76,12 @@ const verifyFields = (
   return (y & 1n) == 0n && x == r;
 }
 
-/** @pure */
-const hashMessage = (message: string, { x, y }: AffinePoint, r: bigint): bigint => {
+/** @satisfies {PureFn} */
+const hashMessage = (
+  message: string,
+  { x, y }: AffinePoint,
+  r: bigint
+): bigint => {
   const fields: bigint[] = [
     0x74656e6e69614d65727574616e676953616e694dn,
     0n,
@@ -115,7 +107,7 @@ const hashMessage = (message: string, { x, y }: AffinePoint, r: bigint): bigint 
  * providing the public key as an affine point `A` as a hint will prevent
  * recomputing it inside this function.
  *
- * @pure
+ * @satisfies {SideEffectFreeFn}
  */
 const signMessage = (message: string, privKey: bigint, A?: AffinePoint): {
   r: bigint,
@@ -130,7 +122,7 @@ const signMessage = (message: string, privKey: bigint, A?: AffinePoint): {
   return { r, s };
 }
 
-/** @pure */
+/** @satisfies {PureFn} */
 const verifyMessage = (
   message: string,
   r: bigint,
@@ -149,11 +141,10 @@ const verifyMessage = (
 }
 
 export {
-  G, P, Pallas, Q,
-  hashFields,
-  hashMessage,
-  signFields,
+  G, hashFields,
+  hashMessage, P, Pallas, Q, signFields,
   signMessage,
   verifyFields,
   verifyMessage
 };
+

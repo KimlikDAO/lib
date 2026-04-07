@@ -12,7 +12,7 @@ import { Signature } from "./signature.d";
  *
  *   0x3f17f1962b36e491b30a40b2405849e597ba5fb5.
  *
- * @pure
+ * @satisfies {PureFn}
  */
 const signerAddress = (digest: string, signature: Signature): Address => {
   const highNibble = parseInt(signature[64], 16);
@@ -26,13 +26,13 @@ const signerAddress = (digest: string, signature: Signature): Address => {
     recoverSigner(BigInt("0x" + digest), r, s, yParity));
 }
 
-/** @pure */
+/** @satisfies {PureFn} */
 const sign = (digest: string, privateKey: bigint): Signature => {
   const { r, s, yParity } = signUnpacked(BigInt("0x" + digest), privateKey);
   return abi.uint256(r) + abi.uint256(yParity ? s + (1n << 255n) : s);
 }
 
-/** @pure */
+/** @satisfies {PureFn} */
 const personalDigest = (msg: string): string => {
   const encoder = new TextEncoder();
   const msgEncoded = encoder.encode(msg);

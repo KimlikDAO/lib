@@ -1,6 +1,6 @@
 /**
  * Shufles the array uniformly at random in place.
- * @modifies {arguments}
+ * @satisfies {InPlaceFn}
  */
 const shuffle = <T>(arr: T[]): T[] => {
   for (let i = arr.length - 1; i > 0; --i) {
@@ -12,7 +12,8 @@ const shuffle = <T>(arr: T[]): T[] => {
 
 /** 
  * Splits an array into chunks of size n.
- * @pure
+ *
+ * @satisfies {PureFn}
  */
 const chunk = <T>(arr: T[], n: number): T[][] => {
   if (n <= 0) return [];
@@ -22,7 +23,7 @@ const chunk = <T>(arr: T[], n: number): T[][] => {
   return result;
 };
 
-/** @pure */
+/** @satisfies {PureFn} */
 const partition = <T>(
   arr: readonly T[], p: (element: T) => boolean
 ): [T[], T[]] => {
@@ -33,7 +34,7 @@ const partition = <T>(
   return [pos, neg];
 };
 
-/** @modifies {arguments} */
+/** @satisfies {InPlaceFn} */
 const modify = <T>(
   arr: T[], f: (element: T, index: number) => void
 ): T[] => {

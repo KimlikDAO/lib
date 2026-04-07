@@ -40,7 +40,7 @@ const commit = (
  *   32 bytes {@link HumanID.commitment}
  *    8 bytes {@link Uint8Array(8)} padding for pow nonce
  *
- * @pure
+ * @satisfies {PureFn}
  */
 const commitDouble = (
   chainGroup: ChainGroup,

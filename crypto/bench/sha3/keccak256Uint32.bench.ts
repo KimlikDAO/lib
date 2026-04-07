@@ -1,7 +1,7 @@
-import { bench } from "../../../util/testing/bench";
+import { bench } from "@kimlikdao/kdts/bench";
 import { f, keccak256Uint32 } from "../../sha3";
 
-/** @pure */
+/** @satisfies {PureFn} */
 const keccak256Uint32_typed = (words: Uint32Array): Uint32Array => {
   const s: Uint32Array = new Uint32Array(50);
   for (let i = 0; i < 50; ++i) s[i] = 0;
@@ -21,7 +21,7 @@ const keccak256Uint32_typed = (words: Uint32Array): Uint32Array => {
   return s.subarray(0, 8);
 };
 
-/** @pure */
+/** @satisfies {PureFn} */
 const keccak256Uint32_loop = (words: Uint32Array): Uint32Array => {
   const s = Array(50);
   let i = 0;

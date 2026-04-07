@@ -16,13 +16,11 @@ class CliArgs {
       ? [value]
       : Array.isArray(value) ? value : [];
   }
-
   asStringOr(key: string, or: string): string {
     const value = this.map[key];
     return typeof value == "string" ? value :
       Array.isArray(value) ? (value as string[])[0] : or;
   }
-
   asRecord(key: string): Record<string, unknown> {
     const value = this.map[key];
     if (typeof value == "string")
@@ -31,17 +29,14 @@ class CliArgs {
       return {};
     return value;
   }
-
   isTrue(key: string): boolean {
     const value = this.map[key];
     return typeof value == "boolean" ? value :
       typeof value == "string" && value.toLowerCase() != "false";
   }
-
   setIfMissing(key: string, value: CliArgValue): CliArgValue {
     return this.map[key] ||= value;
   }
-
   fork(entries: Record<string, CliArgValue>): CliArgs {
     return new CliArgs({ ...this.map, ...entries });
   }

@@ -1,7 +1,3 @@
-/**
- * @author KimlikDAO
- */
-
 interface TypedDataDomain {
   name: string;
   version: string;

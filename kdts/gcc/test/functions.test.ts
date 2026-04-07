@@ -84,7 +84,7 @@ describe("ArrowFunctionExpression", () => {
 describe("FunctionExpression", () => {
   test("validator", () => {
     expectEmit(`
-      /** @pure */
+      /** @satisfies {PureFn} */
       const validate = function(
         data: Uint8Array,
         signature: { r: bigint, s: bigint, yParity: boolean }

@@ -25,7 +25,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: |
           bun i
-          bun run test --fast
+          bun run test --fast --filter kdts/ kastro/
 
   kdts_unit_tests_container:
     name: kdts unit tests, container

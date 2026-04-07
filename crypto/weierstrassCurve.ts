@@ -27,7 +27,7 @@ import { inverse, prepareSqrt } from "./modular";
  * @param [sqrt] - The function to compute square roots in 𝔽ₚ. If omitted,
  *                 a default Tonelli-Shanks sqrt function is used.
  * @returns The elliptic curve.
- * @pure
+ * @satisfies {PureFn}
  */
 const weierstrassCurve = (
   P: bigint, a: bigint, b: bigint,
@@ -36,7 +36,7 @@ const weierstrassCurve = (
   /**
    * Returns a non-negative number t such that 0 ≤ t < P and x ≡ t (mod P).
    * If positivity is not required, prefer the % operator.
-   * @pure
+   * @satisfies {PureFn}
    */
   const modP = (x: bigint): bigint => {
     const t = x % P;
@@ -48,19 +48,19 @@ const weierstrassCurve = (
   return class WeierstrassPoint implements Point {
     /** Provided x, y and z must all be in [0, P) */
     constructor(public x: bigint, public y: bigint, public z: bigint) { }
-    /** @pure x, y must be in [0, P) */
+    /** @satisfies {PureFn} x, y must be in [0, P) */
     static pointFromAffine({ x, y }: AffinePoint): Point {
       return new WeierstrassPoint(x, y, 1n);
     };
-    /** @pure x must be in [0, P) */
+    /** @satisfies {PureFn} x must be in [0, P) */
     static pointFrom({ x, yParity }: CompressedPoint): Point | null {
       const y = sqrt(x * (x * x + a) + b);
       if (y == null) return null;
       return new WeierstrassPoint(x, (y & 1n) == (yParity as unknown as bigint) ? y : P - y, 1n);
     }
-    /** @pure */
+    /** @satisfies {PureFn} */
     copy(): Point { return new WeierstrassPoint(this.x, this.y, this.z); }
-    /** @pure */
+    /** @satisfies {PureFn} */
     proj(): AffinePoint {
       if (this.z == 0n) return { x: 0n, y: 0n };
       const iz = inverse(this.z, P);

@@ -1,16 +1,14 @@
 import { Glob, spawn } from "bun";
 import process from "node:process";
-import { compile } from "../../kdts/compile";
-import { Clear, CliArgs, Green, Red, parseArgs } from "../cli";
-import { replaceExt } from "../paths";
-import { Throttle } from "../promises";
-
-const args: CliArgs = parseArgs(process.argv.slice(2), "target", {
-  "-f": "filter",
-  "-j": "concurrency",
-  "-bj": "buildConcurrency",
-  "-rj": "runConcurrency"
-});
+import {
+  Clear,
+  CliArgs,
+  Green,
+  Red
+} from "../util/cli";
+import { replaceExt } from "../util/paths";
+import { Throttle } from "../util/promises";
+import { compile } from "./compiler";
 
 const compileAndRunMatching = async (
   include: string,
@@ -65,11 +63,15 @@ const getExcludes = (patterns: string[]): RegExp => {
   return new RegExp(regexPattern);
 };
 
-const include = getIncludes(args.asList("target"));
-const exclude = getExcludes(
-  ["build/", "node_modules/"].concat(args.asList("filter")));
-const command = include.includes(".bench.") ? "bun" : "bun test";
+const run = (args: CliArgs) => {
+  const include = getIncludes(args.asList("target"));
+  const exclude = getExcludes(
+    ["build/", "node_modules/"].concat(args.asList("filter")));
+  const command = include.includes(".test.") ? "bun test" : "bun";
 
-console.info(`Target: ${include} (filtering: ${exclude})`);
-compileAndRunMatching(include, exclude, command, args)
-  .then(ensureAllPassed);
+  console.info(`Target: ${include} (filtering: ${exclude})`);
+  compileAndRunMatching(include, exclude, command, args)
+    .then(ensureAllPassed);
+}
+
+export { run };
