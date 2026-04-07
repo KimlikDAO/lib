@@ -27,7 +27,7 @@ import { inverse, prepareSqrt } from "./modular";
  * @param [sqrt] - The function to compute square roots in 𝔽ₚ. If omitted,
  *                 a default Tonelli-Shanks sqrt function is used.
  * @returns The elliptic curve.
- * @satisfies {PureFn}
+ * @satisfies {PureAliasFn}
  */
 const weierstrassCurve = (
   P: bigint, a: bigint, b: bigint,

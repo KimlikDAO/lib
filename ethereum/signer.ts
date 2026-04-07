@@ -26,7 +26,7 @@ const signerAddress = (digest: string, signature: Signature): Address => {
     recoverSigner(BigInt("0x" + digest), r, s, yParity));
 }
 
-/** @satisfies {PureFn} */
+/** @satisfies {SideEffectFreeFn} */
 const sign = (digest: string, privateKey: bigint): Signature => {
   const { r, s, yParity } = signUnpacked(BigInt("0x" + digest), privateKey);
   return abi.uint256(r) + abi.uint256(yParity ? s + (1n << 255n) : s);

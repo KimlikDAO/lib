@@ -22,6 +22,7 @@ class MinaMerkleMap implements MerkleMap<Field, Value> {
     this.zeros = zeros;
   }
 
+  /** @satisfies {PureFn} */
   static toBinaryKey(key: Field, height: number): BinaryKey {
     if (typeof key == "bigint")
       key = key.toString(16);
@@ -29,7 +30,7 @@ class MinaMerkleMap implements MerkleMap<Field, Value> {
       key = key.slice(2);
     return hex.toBinary(key).padStart(height, "0").slice(0, height);
   }
-
+  /** @satisfies {MethodFn} */
   set(key: Field, val: Value): Value | undefined {
     let h = this.height;
     key = MinaMerkleMap.toBinaryKey(key, h);
@@ -48,7 +49,6 @@ class MinaMerkleMap implements MerkleMap<Field, Value> {
     key = MinaMerkleMap.toBinaryKey(key, this.height);
     return this.nodes[key];
   }
-
   /** @satisfies {PureFn} */
   getInner(key: BinaryKey): Value {
     return this.nodes[key] ?? this.zeros[key.length];

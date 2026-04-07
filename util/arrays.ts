@@ -1,6 +1,6 @@
 /**
  * Shufles the array uniformly at random in place.
- * @satisfies {InPlaceFn}
+ * @satisfies {InPlaceRandFn}
  */
 const shuffle = <T>(arr: T[]): T[] => {
   for (let i = arr.length - 1; i > 0; --i) {
@@ -10,7 +10,7 @@ const shuffle = <T>(arr: T[]): T[] => {
   return arr;
 };
 
-/** 
+/**
  * Splits an array into chunks of size n.
  *
  * @satisfies {PureFn}

@@ -23,8 +23,6 @@ import { inverse } from "./modular";
  * - Pallas:
  *   P = 0x40000000000000000000000000000000224698FC094CF91B992D30ED00000001,
  *   y² = x³ + 5
- *
- * @satisfies {PureFn}
  */
 const arfCurveFamily = (P: bigint): CurveFamily => {
   /**
@@ -120,6 +118,21 @@ const arfCurveFamily = (P: bigint): CurveFamily => {
   } as CurveFamily;
 }
 
+/**
+ * Returns an elliptic curve over the field 𝔽ₚ with equation y² = x³ + b.
+ *
+ * A function `sqrt` should be provided to compute square roots in 𝔽ₚ. If a
+ * specialized implementation is not available, one can use `prepareSqrt(P)`
+ * from modular.
+ *
+ * This implementation uses the Arf lifting of the y² = x³ + b curve:
+ *
+ *   y² = x³ + bz⁶,
+ *
+ * where the z=1 projection gives the original curve.
+ *
+ * @satisfies {PureAliasFn}
+ */
 const arfCurve = (
   P: bigint,
   b: bigint,

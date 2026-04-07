@@ -88,6 +88,7 @@ import {
   TSTypeLiteral,
   TSTypeOperator,
   TSTypeParameter,
+  TSTypeParameterDeclaration,
   TSTypeParameterInstantiation,
   TSTypeQuery,
   TSTypeReference,
@@ -189,7 +190,7 @@ type JsDocTarget = {
   parameters?: TSParameter[];
   returnType?: TSTypeAnnotation | null;
   typeAnnotation?: TSTypeAnnotation | null;
-  typeParameters?: { params: TSTypeParameter[] } | null;
+  typeParameters?: TSTypeParameterDeclaration | null
 };
 
 const usesConstJsDoc = (modifiers = 0): boolean =>
@@ -214,6 +215,12 @@ const needsParensForMemberObject = (node?: Node | null) =>
 
 const entityNameText = (node: Identifier | TSQualifiedName): string =>
   isIdentifier(node) ? node.name : `${entityNameText(node.left)}.${node.right.name}`;
+
+const isFreshValueConstraint = (node?: Node): boolean => {
+  if (node?.type != "TSTypeReference")
+    return false;
+  return entityNameText((node as TSTypeReference).typeName) == "FreshValue";
+};
 
 const jsDocParamName = (param: TSParameter): Identifier | null => {
   if (param.type == "TSParameterProperty")
@@ -262,7 +269,7 @@ class GccGenerator extends Generator {
     this.put("function(new:"); this.rec(n.typeAnnotation); this.put(", ");
     this.arr(n.parameters, ", ", EmitMode.JsDocParamType);
   }
-  TSConditionalType() { this.put("OUT"); }
+  TSConditionalType() { this.put("RETURN"); }
   TSLiteralType(n: TSLiteralType) { this.put(typeof n.literal.value); }
   TSParenthesizedType(n: TSParenthesizedType) {
     this.put("("); this.rec(n.typeAnnotation); this.put(")");
@@ -303,6 +310,23 @@ class GccGenerator extends Generator {
     this.cod();
     this.put("const "); this.rec(n.id); this.put(" = {};");
   }
+  TSTypeParameterDeclaration(n: TSTypeParameterDeclaration) {
+    if (!n.params.length) return;
+    const grouped: string[] = [];
+    const flush = () => {
+      if (!grouped.length) return;
+      this.ret(); this.put("@template "); this.put(grouped.join(", "));
+      grouped.length = 0;
+    };
+    for (const param of n.params)
+      if (param.constraint && !isFreshValueConstraint(param.constraint)) {
+        flush();
+        this.ret(); this.put("@template {"); this.rec(param.constraint); this.put("} ");
+        this.put(param.name);
+      } else
+        grouped.push(param.name);
+    flush();
+  }
   TSInterfaceDeclaration(n: TSInterfaceDeclaration) {
     this.doc(); this.ret();
     this.put("@interface");
@@ -310,10 +334,7 @@ class GccGenerator extends Generator {
       for (const iface of n.extends) {
         this.ret(); this.put("@extends {"); this.rec(iface); this.put("}")
       }
-    if (n.typeParameters) {
-      this.ret(); this.put("@template ")
-      this.arr(n.typeParameters.params, ", ");
-    }
+    this.rec(n.typeParameters);
     this.cod();
     this.put("class "); this.rec(n.id); this.put(" "); this.rec(n.body);
   }
@@ -539,10 +560,7 @@ class GccGenerator extends Generator {
         for (const iface of n.implements) {
           this.ret(); this.put("@implements {"); this.rec(iface); this.put("}");
         }
-      if (n.typeParameters) {
-        this.ret(); this.put("@template ");
-        this.arr(n.typeParameters.params, ", ");
-      }
+      this.rec(n.typeParameters);
       this.cod();
     }
     this.put("class "); this.rec(n.id);
@@ -743,25 +761,17 @@ class GccGenerator extends Generator {
     const params: TSParameter[] = n.params || n.parameters || [];
     const retType = n.returnType || n.typeAnnotation;
     this.doc();
-    if (n.typeParameters) {
-      // Inside the templated function, the template parameter is treated as
-      // unknown, as there is no template narrowing in gcc.
-      if (!this.djs) this.put("@suppress {reportUnknownTypes}", true);
-      this.put("@template ", true)
-      this.arr(n.typeParameters.params, ", ");
-      if (n.returnType?.typeAnnotation?.type == "TSConditionalType")
-        this.put(`@template OUT := ${conditionalType(n.returnType, { djs: this.djs })} =:`, true)
-    }
+    if (n.typeParameters && !this.djs)
+      this.put("@suppress {reportUnknownTypes}", true);
+    this.rec(n.typeParameters);
+    if (n.returnType?.typeAnnotation?.type == "TSConditionalType")
+      this.put(`@template RETURN := ${conditionalType(n.returnType, { djs: this.djs })} =:`, true)
     if (modifiers & Modifier.Override)
       this.put("@override", true);
     if (modifiers & Modifier.NoInline)
       this.put("@noinline", true);
     if (hasAll(modifiers, Modifier.SideEffectFree))
       this.put("@nosideeffects", true);
-    if (this.djs && hasAll(modifiers, Modifier.InPlace))
-      this.put("@modifies {arguments}", true);
-    if (this.djs && hasAll(modifiers, Modifier.PureMethod))
-      this.put("@modifies {this}", true);
 
     let i = 0;
     for (let param of params) {

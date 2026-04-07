@@ -1,6 +1,5 @@
 import * as acornNamespace from "acorn";
 import { Node, Options, Position, TokenType } from "acorn";
-import { propagateType } from "./converter";
 import { DecoratorsError, TypeScriptError } from "./error";
 import generateParseDecorators from "./extentions/decorators";
 import generateParseImportAssertions from "./extentions/import-assertions";
@@ -301,7 +300,7 @@ function tsPlugin(options?: {
           return node;
         }
         const result = super.finishNode(node, type);
-        if (type.startsWith("TS") || type === "ArrowFunctionExpression") propagateType(result);
+        // if (type.startsWith("TS") || type === "ArrowFunctionExpression") propagateType(result);
         return result;
       }
 
@@ -3234,7 +3233,6 @@ function tsPlugin(options?: {
 
       typeCastToParameter(node: any): any {
         node.expression.typeAnnotation = node.typeAnnotation;
-        node.expression.typeExpression = node.typeAnnotation?.typeExpression;
         this.resetEndLocation(
           node.expression,
           node.typeAnnotation.end,
@@ -4227,7 +4225,6 @@ function tsPlugin(options?: {
         const type = this.tsTryParseTypeAnnotation();
         if (type) {
           param.typeAnnotation = type;
-          param.typeExpression = (type as any).typeExpression;
         }
         this.resetEndLocation(param);
         return param;

@@ -42,8 +42,8 @@ type Overridable = any;
 type LargeConstant = any;
 
 /**
- * In kdts a `Value` is a primitive or an object with single reference
- * containing `Value`s.
+ * In kdts a `FreshValue` is a primitive or an object with single reference
+ * containing `FreshValue`s.
  *
  * @example
  * ```ts
@@ -52,29 +52,36 @@ type LargeConstant = any;
  * { name: "John", age: 30 }
  * new Uint8Array([1, 2, 3])
  * ```
- * The following are not `Value`s
+ * The following are not `FreshValue`s
  * ```ts
  * const name = "123";
  * { name, age: 30 } // has external reference to name
  * arr1.length > arr2.length ? arr1 : arr2 // arr_i are external references
  * ```
  */
-type Value = any;
+type FreshValue = any;
 
 declare global {
   /**
    * A function that mutates the provided arguments but cannot mutate any other
-   * state that is not reachable from the provided arguments.
+   * state that is not reachable from the provided arguments. Such functions
+   * cannot depend on mutable external state and hence are deterministic.
    *
    * @example
    * ```ts
    * const writeInPlace = (bytes: Uint8Array, hex: string) =>
    *   bytes.setFromHex(hex);
    *
-   * writeInto satisfies InPlaceFn;
+   * writeInPlace satisfies InPlaceFn;
    * ```
    */
   type InPlaceFn = Function;
+
+  /**
+   * A function that mutates the provided arguments but cannot mutate any other
+   * state. Unlike {@link InPlaceFn}, can depend on external mutable state.
+   */
+  type InPlaceRandFn = Function;
 
   /**
    * A class method that can mutate only the instance state and nothing else.
@@ -85,10 +92,10 @@ declare global {
    *   c = 0;
    *   inc() { ++this.c; }
    * }
-   * Counter.prototype.inc satisfies PureMethodFn;
+   * Counter.prototype.inc satisfies MethodFn;
    * ```
    */
-  type PureMethodFn = Function;
+  type MethodFn = Function;
 
   /**
    * A function that has no observable mutations to external state. Such
@@ -120,8 +127,8 @@ declare global {
 
   /**
    * A function that is side-effect free, deterministic and that returns a
-   * {@link Value}. A `Value` is a primitive or a fresh object containing
-   * `Value`s.
+   * {@link FreshValue}. A `FreshValue` is a primitive or a freshly created
+   * object containing `FreshValue`s.
    *
    * Calls to such functions can be replaced by the return value if the
    * parameters are known at compile time. They also admit all optimizations
@@ -131,6 +138,7 @@ declare global {
 }
 
 export {
+  FreshValue,
   LargeConstant,
   Overridable,
   PureExpr,

@@ -13,14 +13,16 @@ enum Modifier {
   ReadonlyArguments = 1 << 20,
   ReadonlyThis = 1 << 21,
   ReadonlyExternal = 1 << 22,
-  NoMutableExternal = 1 << 23,
-  ReturnsValue = 1 << 24,
+  NoMutableExternal = ReadonlyExternal + (1 << 23),
+  ReturnsFreshValue = 1 << 24,
 
-  InPlace = ReadonlyThis | ReadonlyExternal,
-  PureMethod = ReadonlyExternal | ReadonlyArguments | ReturnsValue,
-  SideEffectFree = ReadonlyExternal | ReadonlyArguments,
-  PureAlias = SideEffectFree | NoMutableExternal,
-  Pure = PureAlias | ReturnsValue
+  Deterministic = NoMutableExternal,
+  SideEffectFree = ReadonlyArguments + ReadonlyThis + ReadonlyExternal,
+  InPlace = ReadonlyThis + NoMutableExternal, // Can mutate arguments
+  InPlaceRand = ReadonlyThis + ReadonlyExternal, // Can mutate arguments and depend mutable external state
+  Method = ReadonlyArguments + Deterministic, // Can mutate this
+  PureAlias = ReadonlyArguments + ReadonlyThis + Deterministic, // Can return aliased
+  Pure = PureAlias + ReturnsFreshValue
 }
 
 const hasAll = (lhs: Modifier, rhs: Modifier): boolean => (lhs & rhs) == rhs;
@@ -29,7 +31,8 @@ const JsDocModifierMap: Record<string, Modifier | -1> = {
   "alwaysinline": Modifier.AlwaysInline,
   "satisfies": -1,
   "satisfies {InPlaceFn}": Modifier.InPlace,
-  "satisfies {PureMethodFn}": Modifier.PureMethod,
+  "satisfies {InPlaceRandFn}": Modifier.InPlaceRand,
+  "satisfies {MethodFn}": Modifier.Method,
   "satisfies {SideEffectFreeFn}": Modifier.SideEffectFree,
   "satisfies {PureAliasFn}": Modifier.PureAlias,
   "satisfies {PureFn}": Modifier.Pure,
