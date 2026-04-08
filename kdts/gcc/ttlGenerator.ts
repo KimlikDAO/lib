@@ -34,12 +34,14 @@ const conditionalTypeNode = (node: TSConditionalType | TSTypeAnnotation): TSCond
 
 const conditionalType = (node: TSConditionalType | TSTypeAnnotation, options: { djs?: boolean }): string => {
   const type = conditionalTypeNode(node);
+  const checkType = getTypeReferenceName(type.checkType, options);
+  const extendsType = getTypeReferenceName(type.extendsType, options);
   const trueType = getTypeReferenceName(type.trueType, options);
   const falseType = getTypeReferenceName(type.falseType, options);
   return "cond(" +
-    "isTemplatized(T) && sub(rawTypeOf(T), 'IThenable')," +
-    `type('${trueType}', templateTypeOf(T, 0)),` +
-    `type('${falseType}', T))`;
+    `isTemplatized(${checkType}) && sub(rawTypeOf(${checkType}), '${extendsType}'),` +
+    `type('${trueType}', templateTypeOf(${checkType}, 0)),` +
+    `type('${falseType}', ${checkType}))`;
 }
 
 export { conditionalType };

@@ -10,7 +10,7 @@
 import { LargeConstant } from "@kimlikdao/kdts";
 import bigints from "../util/bigints";
 import { arfCurve } from "./arfCurve";
-import { CompressedPoint, Curve, Point, aX_bY } from "./ellipticCurve";
+import { Curve, Point, aX_bY } from "./ellipticCurve";
 import { inverse } from "./modular";
 
 const P = (1n << 256n) - (1n << 32n) - 977n satisfies LargeConstant;

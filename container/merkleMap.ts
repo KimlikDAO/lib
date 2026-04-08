@@ -1,8 +1,6 @@
-import { FreshValue } from "@kimlikdao/kdts";
-
 type BinaryKey = string;
 
-interface Map<K, V extends FreshValue> {
+interface Map<K, V> {
   set(key: K, value: V): V | undefined;
   /** @satisfies {PureFn} */
   get(key: K): V | undefined;

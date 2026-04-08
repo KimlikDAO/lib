@@ -33,6 +33,7 @@ const NameMap: Record<string, string> = {
   "Record": "Object",
   "PromiseSettledResult": "Promise.AllSettledResultElement",
   "RsaHashedImportParams": "webCrypto.RsaHashedImportParams",
+  "PromiseLike": "IThenable"
 };
 
 class GccTransform extends Mutator {

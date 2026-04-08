@@ -42,13 +42,13 @@ type Overridable = any;
 type LargeConstant = any;
 
 /**
- * In kdts a `FreshValue` is a primitive or an object with single reference
- * containing `FreshValue`s.
+ * A `FreshValue` is a primitive or an object with single reference containing
+ * `FreshValue`s.
  *
  * @example
  * ```ts
  * [1, 2, 3]
- * { odd: [1n, 3n, 5n], even: [2n, 4n, 6n,] }
+ * { odd: [1n, 3n, 5n], even: [2n, 4n, 6n] }
  * { name: "John", age: 30 }
  * new Uint8Array([1, 2, 3])
  * ```

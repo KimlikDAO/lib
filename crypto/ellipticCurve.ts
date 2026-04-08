@@ -61,10 +61,10 @@ const aX_bY = (a: bigint, X: Point, b: bigint, Y: Point): Point => {
   const O = X.copy().multiply(0n);
   const X_Y = X.copy().increment(Y);
   const d: readonly Point[] = [O, X, Y, X_Y];
-  let R = d[(aBits.charCodeAt(0) - 48) + 2 * (bBits.charCodeAt(0) - 48)].copy();
+  let R = d[aBits.charCodeAt(0) + 2 * bBits.charCodeAt(0) - 144].copy();
   for (let i = 1; i < aBits.length; ++i) {
     R.double();
-    R.increment(d[(aBits.charCodeAt(i) - 48) + 2 * (bBits.charCodeAt(i) - 48)]);
+    R.increment(d[aBits.charCodeAt(i) + 2 * bBits.charCodeAt(i) - 144]);
   }
   return R;
 }
