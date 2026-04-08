@@ -79,6 +79,7 @@ const createCompilerArgs = (params: CompileParams): string[] => {
     "--chunk_output_type=ES_MODULES",
     "--module_resolution=NODE",
     "--dependency_mode=PRUNE",
+    "--jscomp_off=boundedGenerics"
   );
 
   for (const error of params.jsCompErrors)
