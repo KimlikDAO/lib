@@ -9,7 +9,7 @@
   "dependencies": {
     "@swc/core": "^1.15.24",
     "acorn": "^8.16.0",
-    "google-closure-compiler": "^20260401.0.0",
+    "google-closure-compiler": "^20260406.0.0",
     "uglify-js": "3.19.3"
   },
   "devDependencies": {

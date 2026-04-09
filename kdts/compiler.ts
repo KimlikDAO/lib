@@ -38,8 +38,9 @@ const finalize = async (
   code: string,
   args: CliArgs,
 ): Promise<string> => {
-  if (args.isTrue("nologs"))
-    (UglifyOptions.compress as CompressOptions).drop_console = true;
+  const dropConsole = args.isTrue("nologs");
+  (UglifyOptions.compress as CompressOptions).drop_console = dropConsole;
+  (SwcMinifyOptions.compress as CompressOptions).drop_console = dropConsole;
   const uglified = UglifyJS.minify(code, UglifyOptions);
   if (uglified.error)
     throw uglified.error;

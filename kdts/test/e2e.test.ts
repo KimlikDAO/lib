@@ -6,7 +6,7 @@ import { compileEntry } from "../util/testing/e2e";
 test("compile API compiles a.ts and emitted output runs", async () => {
   const entry = relative(
     process.cwd(),
-    fileURLToPath(new URL("./dogCage.ts", import.meta.url))
+    fileURLToPath(new URL("../showcase/dogCage.ts", import.meta.url))
   );
   const compiled = await compileEntry(entry);
 

@@ -1,3 +1,4 @@
+import { LargeConstant } from "@kimlikdao/kdts";
 import { describe, expect, test } from "bun:test";
 import bigints from "../../util/bigints";
 import { arfCurveFamily } from "../arfCurve";
@@ -28,7 +29,7 @@ describe("Purve, Qurve curves", () => {
 });
 
 describe("group laws", () => {
-  const P = 0x24240D8241D5445106C8442084001384E0000013n;
+  const P = 0x24240D8241D5445106C8442084001384E0000013n satisfies LargeConstant;
   const Bn158: CurveFamily = arfCurveFamily(P);
   const G: Point = Bn158.pointFromAffine({
     x: P - 1n, // y² = x³ + 17

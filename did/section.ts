@@ -10,9 +10,9 @@ const KIMLIKDAO_HASH_PREFIX = "\x19KimlikDAO hash\n";
 const hashExposureReport = (exposureReport: ExposureReport): string => {
   /**
    * The `exposureReport` is hashed in an EVM friendly way.
-   * 16 bytes {@link KIMLIKDAO_HASH_PREFIX},
-   * 16 bytes {@link Section.signatureTs} (big endian),
-   * 32 bytes {@link ExposureReport.id}
+   *   16 bytes {@link KIMLIKDAO_HASH_PREFIX},
+   *   16 bytes {@link Section.signatureTs} (big endian),
+   *   32 bytes {@link ExposureReport.id}
    */
   const buff = new Uint8Array(64);
   new TextEncoder().encodeInto(KIMLIKDAO_HASH_PREFIX, buff);
@@ -25,10 +25,10 @@ const hashExposureReport = (exposureReport: ExposureReport): string => {
 const hashHumanID = (humanID: HumanID): string => {
   /**
    * The `humanID` is hashed in an EVM friendly way.
-   * 16 bytes {@link KIMLIKDAO_HASH_PREFIX},
-   * 16 bytes {@link Section.signatureTs} (big endian),
-   * 32 bytes {@link Section.commitment},
-   * 32 bytes {@link HumanID.id}
+   *   16 bytes {@link KIMLIKDAO_HASH_PREFIX},
+   *   16 bytes {@link Section.signatureTs} (big endian),
+   *   32 bytes {@link Section.commitment},
+   *   32 bytes {@link HumanID.id}
    */
   const buff = new Uint8Array(96);
   new TextEncoder().encodeInto(KIMLIKDAO_HASH_PREFIX, buff);
