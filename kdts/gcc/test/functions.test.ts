@@ -121,4 +121,24 @@ describe("FunctionDeclaration", ()=>{
       function validate(data, signature) {}
     `);
   });
+
+  test("emits requireInlining for requireInlining declarations", () => {
+    expectEmit(`
+      /** @requireInlining */
+      function arr<T>(x: T[] | T): T[] {
+        return Array.isArray(x) ? x : [x];
+      }
+    `, `
+      /**
+       * @suppress {reportUnknownTypes}
+       * @template T
+       * @requireInlining
+       * @param {(!Array<!T>|!T)} x
+       * @return {!Array<!T>}
+       */
+      function arr(x) {
+        return (Array.isArray(x) ? x : [x]);
+      }
+    `);
+  });
 });

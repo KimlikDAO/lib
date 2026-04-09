@@ -48,7 +48,7 @@ const compile = async (
     console.log("GCC output");
     console.log(output);
   }
-  console.log(`GCC size:     ${output.length}`);
+  console.log(`GCC size:       ${output.length}`);
   return output;
 }
 

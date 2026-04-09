@@ -29,12 +29,12 @@ test("ERC20Permit create and verify permit", async () => {
       { name: "deadline", type: "uint256" }
     ]
   };
-  const domain = {
+  const domain: TypedDataDomain = {
     name: token.name,
     version: "" + token.version,
     chainId: parseInt(token.chainId, 16),
     verifyingContract: token.contract
-  } as TypedDataDomain;
+  };
   const message: Record<string, unknown> = {
     "owner": owner,
     "spender": spender,

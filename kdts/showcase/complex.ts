@@ -17,8 +17,8 @@ const polynomial = (...coeff: C[]): (x: C) => C => {
   return (x: C): C => {
     let y = coeff[0];
     let xt = x;
-    for (let i = 1; i < coeff.length; ++i) {
-      y = add(y, mul(coeff[i], xt));
+    for (let t = 1; t < coeff.length; ++t) {
+      y = add(y, mul(coeff[t], xt));
       xt = mul(xt, x);
     }
     return y;

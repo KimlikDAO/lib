@@ -36,6 +36,19 @@ test("Function modifiers attach on ArrowFunctionExpressions", () => {
   expect(innerFn.modifiers).toBe(Modifier.Pure);
 });
 
+test("AlwaysInline modifiers attach on FunctionDeclarations", () => {
+  const ast = parseSource(`
+    /** @requireInlining */
+    function arr<T>(x: T[] | T): T[] {
+      return Array.isArray(x) ? x : [x];
+    }
+  `);
+  const stmt = ast.body[0];
+  expect(stmt.type).toBe("FunctionDeclaration");
+  expect(stmt.id.name).toBe("arr");
+  expect(stmt.modifiers).toBe(Modifier.RequireInline);
+});
+
 test("Function modifiers attach on parenthesized destructuring ArrowFunctionExpressions", () => {
   const ast = parseSource(`
     f(

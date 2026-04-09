@@ -12,7 +12,7 @@ import {
   EIP712TypeRegistry
 } from "../EIP712.d";
 
-const TypeRegistry = {
+const TypeRegistry:EIP712TypeRegistry = {
   "Permit": [
     { name: "owner", type: "address" },
     { name: "spender", type: "address" },
@@ -33,14 +33,14 @@ const TypeRegistry = {
     { name: "to", type: "Person" },
     { name: "contents", type: "string" }
   ],
-} as EIP712TypeRegistry;
+};
 
-const Domain = {
+const Domain: EIP712DomainData = {
   name: "Ether Mail",
   version: "1",
   chainId: 1,
   verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
-} as EIP712DomainData;
+};
 
 const Message: Record<string, unknown> = {
   "from": {

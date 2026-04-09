@@ -628,7 +628,7 @@ class GccGenerator extends Generator {
     }
   }
   FunctionDeclaration(n: FunctionDeclaration) {
-    this.jsDoc(n);
+    this.jsDoc(n, n.modifiers);
     this.put("function "); this.rec(n.id); this.put("("); this.arr(n.params, ", "); this.put(") ");
     this.rec(n.body);
   }
@@ -772,6 +772,8 @@ class GccGenerator extends Generator {
       this.put("@noinline", true);
     if (hasAll(modifiers, Modifier.SideEffectFree))
       this.put("@nosideeffects", true);
+    if (modifiers & Modifier.RequireInline)
+      this.put("@requireInlining", true);
 
     let i = 0;
     for (let param of params) {

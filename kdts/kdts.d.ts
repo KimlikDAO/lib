@@ -63,6 +63,21 @@ type FreshValue = any;
 
 declare global {
   /**
+   * An inline function is one whose body is copied to each call site.
+   * InlineFn's cannot be used as runtime values except in a satisfies
+   * expression.
+   *
+   * @example
+   * ```ts
+   * function arr<T>(x: T[] | T): T[] {
+   *   return Array.isArray(x) ? x : [x];
+   * }
+   * arr satisfies InlineFn;
+   * ```
+   */
+  type InlineFn = Function;
+
+  /**
    * A function that mutates the provided arguments but cannot mutate any other
    * state that is not reachable from the provided arguments. Such functions
    * cannot depend on mutable external state and hence are deterministic.

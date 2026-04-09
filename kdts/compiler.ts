@@ -44,14 +44,13 @@ const finalize = async (
   const uglified = UglifyJS.minify(code, UglifyOptions);
   if (uglified.error)
     throw uglified.error;
-  console.log(uglified.warnings, uglified.error);
   const uglifiedCode = uglified.code;
   const swcOutput = await swc.minify(uglifiedCode, SwcMinifyOptions);
   let result = uglifiedCode.length < swcOutput.code.length
     ? uglifiedCode : swcOutput.code;
 
-  console.log(`Uglified size:\t${uglifiedCode.length}`);
-  console.log(`SWC size:     \t${swcOutput.code.length}`);
+  console.log(`Uglified size:  ${uglifiedCode.length}`);
+  console.log(`SWC size:       ${swcOutput.code.length}`);
   if (args.isTrue("print"))
     console.log("UglifyJS output:\n", uglifiedCode, "\nSWC output:\n", swcOutput.code);
   const output = args.asStringOr("output", "");

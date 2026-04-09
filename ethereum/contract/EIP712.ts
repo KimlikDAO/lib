@@ -8,14 +8,14 @@ import {
   EIP712TypeRegistry
 } from "./EIP712.d";
 
-const TypeRegistry = {
+const TypeRegistry: EIP712TypeRegistry = {
   "EIP712Domain": [
     { name: "name", type: "string" },
     { name: "version", type: "string" },
     { name: "chainId", type: "uint256" },
     { name: "verifyingContract", type: "address" }
   ]
-} as EIP712TypeRegistry;
+};
 
 /**
  * Full type string for a struct (including dependent struct type strings, sorted by name).

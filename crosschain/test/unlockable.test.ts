@@ -40,7 +40,7 @@ describe("Golden tests", () => {
   const signer = new EthersSigner(1337n);
 
   it("decrypt golden text 1", () => {
-    const unlockable = {
+    const unlockable: Unlockable = {
       version: "promptsign-sha256-aes-ctr",
       nonce: "0+65lpD4UK01Ljy90sdYCA==",
       ciphertext: "y4GV2MBVZml0uT69UIdOKv0DEolaTgTaSOyhtz5DvWcIGB/KrjFNCxuaA" +
@@ -50,7 +50,7 @@ describe("Golden tests", () => {
         "Fm0C8ck1KMfEzhAaDUJCCI+jEhb4c2SbDoN8VS+lKO5C2AdotIC6tEDZYyricXxwafK" +
         "7jA6GqFII2YjRX+SQ==",
       userPrompt: "Golden prompt"
-    } as Unlockable;
+    };
     expect(decrypt(unlockable, signer, signer.getAddress())).resolves
       .toBe("Golden text");
   });

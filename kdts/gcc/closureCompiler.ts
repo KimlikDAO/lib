@@ -114,8 +114,8 @@ const compileWithClosureCompiler = async (
   params: CompileParams,
 ): Promise<string> => {
   const { cmd, platform } = createClosureCompilerCommand(params);
-  console.info("GCC isolate: ", params.isolateDir, `(for ${params.entryPoint})`);
-  console.info("GCC platform:", platform);
+  console.info("GCC isolate:   ", params.isolateDir, `(for ${params.entryPoint})`);
+  console.info("GCC platform:  ", platform);
 
   const proc = spawn({
     cmd,

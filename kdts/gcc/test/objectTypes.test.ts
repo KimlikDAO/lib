@@ -36,3 +36,26 @@ test("Object types", () => {
     const User = {};
   `);
 });
+
+test("Explicitly typed object literal initializers are wrapped with TSAsExpression", () => {
+  expectEmit(`
+    type User = {
+      name: string
+    };
+
+    const user: User = {
+      name: "Ada"
+    };
+  `, `
+    /**
+     * @typedef {{
+     *   name: string
+     * }}
+     */
+    const User = {};
+    /** @const {!User} */
+    const user = /** @type {!User} */({
+      name: "Ada"
+    });
+  `);
+});

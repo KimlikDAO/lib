@@ -74,8 +74,17 @@ class GccJsTransform extends GccTransform {
 
   VariableDeclarator(n: VariableDeclarator) {
     const init: Node | null | undefined = n.init;
-    if (!isSatisfiesExpression(init))
+    const explicitType = n.id.typeAnnotation?.typeAnnotation;
+    if (!isSatisfiesExpression(init)) {
+      if (explicitType && init?.type == "ObjectExpression") {
+        n.init = {
+          type: "TSAsExpression",
+          expression: init,
+          typeAnnotation: explicitType
+        } as unknown as VariableDeclarator["init"];
+      }
       return;
+    }
     const marker = init.typeAnnotation?.typeName?.name;
     if (marker == "LargeConstant") {
       n.modifiers = (n.modifiers ?? 0) | Modifier.NoInline;
@@ -85,7 +94,7 @@ class GccJsTransform extends GccTransform {
     if (marker != "Overridable" || !isIdentifier(n.id) ||
       !Object.hasOwn(this.overrides, n.id.name))
       return;
-    const type = n.id.typeAnnotation?.typeAnnotation || probeExpressionType(init.expression);
+    const type = explicitType || probeExpressionType(init.expression);
     if (!type)
       throw "Missing override type";
     n.init = {

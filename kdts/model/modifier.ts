@@ -7,8 +7,9 @@ enum Modifier {
   Override = 16,
 
   // A VariableDeclaration whose init should be moved to callsite.
-  AlwaysInline = 1 << 7,
-  NoInline = 1 << 8,
+  RequireInline = 1 << 7,
+  EncourageInline = 1 << 8,
+  NoInline = 1 << 9,
 
   ReadonlyArguments = 1 << 20,
   ReadonlyThis = 1 << 21,
@@ -28,8 +29,10 @@ enum Modifier {
 const hasAll = (lhs: Modifier, rhs: Modifier): boolean => (lhs & rhs) == rhs;
 
 const JsDocModifierMap: Record<string, Modifier | -1> = {
-  "alwaysinline": Modifier.AlwaysInline,
+  "requireInlining": Modifier.RequireInline,
+  "encourageInlining": Modifier.EncourageInline,
   "satisfies": -1,
+  "satisfies {InlineFn}": Modifier.RequireInline,
   "satisfies {InPlaceFn}": Modifier.InPlace,
   "satisfies {InPlaceRandFn}": Modifier.InPlaceRand,
   "satisfies {MethodFn}": Modifier.Method,

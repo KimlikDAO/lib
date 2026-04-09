@@ -10,7 +10,7 @@ const transpileTs = (
   source: SourcePath,
   content: string,
   sources: SourceSet,
-  overrides: Record<string, unknown>,
+  overrides: Record<string, unknown> = {},
   unlinkedImports: ModuleImports
 ): string => {
   const ast = TsParser.parse(content);
