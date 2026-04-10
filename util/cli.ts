@@ -6,63 +6,80 @@ const Blue = "\x1b[44m";
 const Clear = "\x1b[0m";
 
 type CliArgValue = boolean | string | string[] | Record<string, unknown>;
+type CliArgData = string[] | Record<string, unknown>;
 
 class CliArgs {
-  constructor(private map: Record<string, CliArgValue>) { }
+  constructor(private map: Record<string, CliArgData>) { }
+
+  static fromArgv(
+    argv: string[],
+    defaultKey: string,
+    shortKeyMap: Record<string, string>
+  ): CliArgs {
+    let key: string = defaultKey;
+    let values: string[] = [];
+    const map: Record<string, string[]> = {};
+
+    const args = argv.slice(2);
+    args.push("--");
+    for (const arg of args) {
+      if (arg.startsWith("-")) {
+        map[key] = (map[key] || []).concat(values);
+        key = arg.startsWith("--") ? arg.slice(2) : shortKeyMap[arg] as string;
+        values = [];
+      } else
+        values.push(arg);
+    }
+    return new CliArgs(map);
+  }
+
+  static from(entries: Record<string, CliArgValue> | CliArgs): CliArgs {
+    if (entries instanceof CliArgs)
+      return entries;
+
+    const map: Record<string, CliArgData> = {};
+    for (const key in entries)
+      map[key] = CliArgs.toData(entries[key]!);
+    return new CliArgs(map);
+  }
+
+  private static toData(value: CliArgValue): CliArgData {
+    if (typeof value == "boolean")
+      return value ? [] : ["false"];
+    if (typeof value == "string")
+      return [value];
+    if (Array.isArray(value))
+      return value.slice();
+    return value;
+  }
 
   asList(key: string): string[] {
     const value = this.map[key];
-    return typeof value == "string"
-      ? [value]
-      : Array.isArray(value) ? value : [];
+    return Array.isArray(value) ? value : [];
   }
   asStringOr(key: string, or: string): string {
     const value = this.map[key];
-    return typeof value == "string" ? value :
-      Array.isArray(value) ? (value as string[])[0] : or;
+    return Array.isArray(value) && value.length ? value[0] as string : or;
   }
   asRecord(key: string): Record<string, unknown> {
     const value = this.map[key];
-    if (typeof value == "string")
-      return JSON.parse(value) as Record<string, unknown>;
-    if (Array.isArray(value) || typeof value == "boolean")
+    if (value && !Array.isArray(value))
+      return value;
+    if (value?.length != 1)
       return {};
-    return value;
+    return JSON.parse(value[0]!) as Record<string, unknown>;
   }
   isTrue(key: string): boolean {
     const value = this.map[key];
-    return typeof value == "boolean" ? value :
-      typeof value == "string" && value.toLowerCase() != "false";
+    return Array.isArray(value) &&
+      (!value.length || (value[0] as string).toLowerCase() != "false");
   }
   setIfMissing(key: string, value: CliArgValue): CliArgValue {
-    return this.map[key] ||= value;
+    return this.map[key] ||= CliArgs.toData(value);
   }
   fork(entries: Record<string, CliArgValue>): CliArgs {
-    return new CliArgs({ ...this.map, ...entries });
+    return CliArgs.from({ ...this.map, ...entries });
   }
-}
-
-const parseArgs = (
-  args: string[],
-  defaultArgKey: string,
-  shortArgMap: Record<string, string> = {}
-): CliArgs => {
-  let key: string = defaultArgKey;
-  let values: string[] = [];
-  const map: Record<string, boolean | string | string[]> = {};
-
-  args.push("--");
-  for (const arg of args) {
-    if (arg.startsWith("-")) {
-      map[key] = values.length
-        ? (values.length == 1 ? values[0] : values)
-        : true;
-      key = arg.startsWith("--") ? arg.slice(2) : shortArgMap[arg] as string;
-      values = [] as string[];
-    } else
-      values.push(arg)
-  }
-  return new CliArgs(map);
 }
 
 const getSecret = async (
@@ -85,6 +102,5 @@ export {
   CliArgs,
   Green,
   Red,
-  getSecret,
-  parseArgs
+  getSecret
 };

@@ -64,13 +64,42 @@ type CompileParams = Record<string, CliArgValue> | CliArgs;
 type TranspileFn = (content: string, file: string, isEntry?: boolean) =>
   string | null;
 
+const parseOverrideValue = (value: string): unknown => {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
+};
+
+const normalizeCompileArgs = (args: CliArgs): CliArgs => {
+  const overrideSpecs = args.asList("override");
+  const overrideJson = args.asList("overrides");
+  if (!overrideSpecs.length && !overrideJson.length)
+    return args;
+  if (overrideJson.length > 1)
+    throw "Provide at most one --overrides JSON object";
+
+  const overrides = { ...args.asRecord("overrides") };
+  for (const spec of overrideSpecs) {
+    const eq = spec.indexOf("=");
+    if (eq <= 0)
+      throw `Invalid --override ${spec}; expected NAME=VALUE`;
+    overrides[spec.slice(0, eq)] = parseOverrideValue(spec.slice(eq + 1));
+  }
+  return args.fork({
+    override: [],
+    overrides
+  });
+};
+
 const compile = async (
   params: CompileParams,
   checkFreshFn?: (deps: string[]) => Promise<boolean>,
   transpileFn?: TranspileFn
 ): Promise<string | void> => {
-  if (!(params instanceof CliArgs))
-    params = new CliArgs(params);
+  params = CliArgs.from(params);
+  params = normalizeCompileArgs(params);
 
   const target = params.asList("target");
   params.setIfMissing("entry", target[0] == "compile" ? target[1] : target[0]);
@@ -82,4 +111,4 @@ const compile = async (
   return finalize(compiled, params);
 };
 
-export { compile, TranspileFn };
+export { compile, normalizeCompileArgs, TranspileFn };

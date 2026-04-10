@@ -8,7 +8,7 @@ import {
 } from "../util/cli";
 import { replaceExt } from "../util/paths";
 import { Throttle } from "../util/promises";
-import { compile } from "./compiler";
+import { compile, normalizeCompileArgs } from "./compiler";
 
 const compileAndRunMatching = async (
   include: string,
@@ -64,6 +64,7 @@ const getExcludes = (patterns: string[]): RegExp => {
 };
 
 const run = (args: CliArgs) => {
+  args = normalizeCompileArgs(args);
   const include = getIncludes(args.asList("target"));
   const exclude = getExcludes(
     ["build/", "node_modules/"].concat(args.asList("filter")));

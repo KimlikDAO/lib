@@ -1,4 +1,4 @@
 import { plugin } from "bun";
-import { kdtsPlugin } from "./plugin";
+import { kdtsRuntimePlugin } from "./plugin";
 
-plugin(kdtsPlugin);
+plugin(kdtsRuntimePlugin);

@@ -1,11 +1,11 @@
 #!/usr/bin/env bun
 
 import process from "node:process";
-import { parseArgs } from "../util/cli";
+import { CliArgs } from "../util/cli";
 import { compile } from "./compiler";
 import { run } from "./runner";
 
-const args = parseArgs(process.argv.slice(2), "target", {
+const args = CliArgs.fromArgv(process.argv, "target", {
   "-o": "output",
   "-d": "exports",
   "-f": "filter",

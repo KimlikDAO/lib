@@ -2,7 +2,7 @@ import { build, Transpiler } from "bun";
 import { readFileSync } from "node:fs";
 import { CliArgs } from "../../util/cli";
 import { combine, getDir } from "../../util/paths";
-import { kdtsPlugin } from "../util/plugin";
+import { makeKdtsOverridablePlugin } from "../util/plugin";
 
 const collectDeps = (entry: string): string[] => {
   const allFiles = new Set<string>();
@@ -29,6 +29,7 @@ const compile = async (
   checkFreshFn?: (deps: string[]) => Promise<boolean>,
 ): Promise<string | void> => {
   const entry = args.asStringOr("entry", "");
+  const overrides = args.asRecord("overrides");
   if (checkFreshFn && await checkFreshFn(collectDeps(entry)))
     return;
   const result = await build({
@@ -37,8 +38,9 @@ const compile = async (
     target: "bun",
     packages: "external",
     minify: true,
-    plugins: [kdtsPlugin],
-    tsconfig: args.asStringOr("tsconfig", ""),
+    plugins: Object.keys(overrides).length
+      ? [makeKdtsOverridablePlugin(overrides)]
+      : [],
   });
   if (!result.success) {
     const messages = result.logs.map((l) => l.message).join("\n");

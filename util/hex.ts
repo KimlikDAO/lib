@@ -55,10 +55,8 @@ const fromUint32ArrayBE = (words: Uint32Array): string => {
 }
 
 /** @satisfies {InPlaceFn} */
-const intoBytes = (bytes: Uint8Array | number[], str: string): void => {
-  const n = str.length;
-  for (let i = -(n & 1), j = 0; i < n; ++j, i += 2)
-    bytes[j] = parseInt(str.substring(i, i + 2), 16);
+const intoBytes = (bytes: Uint8Array, str: string): void => {
+  bytes.setFromHex(str.length & 1 ? "0" + str : str);
 }
 
 /** @satisfies {InPlaceFn} */
