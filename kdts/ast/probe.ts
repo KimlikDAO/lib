@@ -1,4 +1,3 @@
-import { Node } from "acorn";
 import { isIdentifier } from "./guards";
 import { TSArrayType, TSTupleType, TSTypeReference } from "./types";
 
@@ -24,8 +23,33 @@ const probeNewExpressionType = (n: any): any => {
   };
 };
 
+const probeArrayExpressionType = (n: any): any => {
+  if (!n || n.type != "ArrayExpression" || !n.elements?.length)
+    return;
+
+  const firstElement = n.elements[0];
+  if (!firstElement || firstElement.type == "SpreadElement")
+    return;
+  const elementType = probeLiteralType(firstElement);
+  if (!elementType)
+    return;
+
+  for (let i = 1; i < n.elements.length; ++i) {
+    const element = n.elements[i];
+    if (!element || element.type == "SpreadElement" ||
+      probeLiteralType(element)?.type != elementType.type)
+      return;
+  }
+  return {
+    type: "TSArrayType",
+    elementType
+  };
+};
+
 const probeExpressionType = (n: any): any =>
-  probeLiteralType(n) || probeNewExpressionType(n);
+  probeLiteralType(n) ||
+  probeArrayExpressionType(n) ||
+  probeNewExpressionType(n);
 
 const probeEnumType = (n: any): string => {
   let hasString = false;

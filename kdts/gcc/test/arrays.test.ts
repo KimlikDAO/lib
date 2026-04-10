@@ -25,6 +25,7 @@ test("arrays", () => {
       array = [1n, 2n];
     }`, `
     class HasArray {
+      /** @type {!Array<bigint>} */
       array = [1n, 2n];
     }
   `);

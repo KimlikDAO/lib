@@ -95,8 +95,6 @@ class GccJsTransform extends GccTransform {
       !Object.hasOwn(this.overrides, n.id.name))
       return;
     const type = explicitType || probeExpressionType(init.expression);
-    if (!type)
-      throw "Missing override type";
     n.init = {
       type: "TSAsExpression",
       expression: synthJsonValue(this.overrides[n.id.name]),

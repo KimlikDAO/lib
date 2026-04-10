@@ -34,3 +34,15 @@ test("Overridable satisfies uses override JSON with explicit object type", () =>
     }
   });
 });
+
+test("Overridable satisfies uses inferred array type", () => {
+  expectEmit(`
+    const Ports = [80, 443] satisfies Overridable;
+  `, `
+    const Ports = /** @type {!Array<number>} */([8080, 8443]);
+  `, {
+    overrides: {
+      "Ports": [8080, 8443]
+    }
+  });
+});
