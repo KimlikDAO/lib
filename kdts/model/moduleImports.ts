@@ -1,6 +1,6 @@
 import { ImportDeclaration } from "acorn";
 
-type SourceId = `package:${string}` | `module:${string}`;
+type SourceId = `package:${string}` | `module:${string}` | "global";
 
 type ImportBinding = {
   source: SourceId;

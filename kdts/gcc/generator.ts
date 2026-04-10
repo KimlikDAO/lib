@@ -75,6 +75,7 @@ import {
   TSInterfaceDeclaration,
   TSLiteralType,
   TSMethodSignature,
+  TSModuleDeclaration,
   TSNonNullExpression,
   TSParameter,
   TSParameterProperty,
@@ -362,6 +363,11 @@ class GccGenerator extends Generator {
     this.jsDoc(n);
     this.put("function "); this.rec(n.id); this.put("("); this.arr(n.params, ", "); this.put(") ");
     this.put("{}");
+  }
+  TSModuleDeclaration(n: TSModuleDeclaration) {
+    if (!n.global) throw "Not implemented";
+    if (!this.djs) throw "Not supported yet";
+    this.rec(n.body);
   }
 
   // JS Expressions

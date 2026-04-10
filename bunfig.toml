@@ -1,3 +1,0 @@
-preload = ["./kdts/util/bunPlugin.js"]
-[test]
-preload = ["./kdts/util/bunPlugin.js"]

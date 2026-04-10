@@ -185,6 +185,19 @@ export interface TSExpressionWithTypeArguments extends Node {
   typeParameters?: TSTypeParameterInstantiation;
 }
 
+export interface TSModuleBlock extends Node {
+  type: "TSModuleBlock";
+  body: Node[];
+}
+
+export interface TSModuleDeclaration extends Node {
+  type: "TSModuleDeclaration";
+  id: Identifier | Literal;
+  body?: TSModuleBlock | TSModuleDeclaration;
+  declare?: boolean;
+  global?: boolean;
+}
+
 export interface TSEnumMember extends Node {
   type: "TSEnumMember";
   id: Identifier | Literal;
@@ -250,6 +263,7 @@ export interface TSDeclareFunction extends Node {
 }
 
 export type TSDeclaration =
+  | TSModuleDeclaration
   | TSEnumDeclaration
   | TSTypeAliasDeclaration
   | TSInterfaceDeclaration
@@ -280,6 +294,7 @@ export type TSNode =
   | TSTypeParameterInstantiation
   | TSTypeReference
   | TSExpressionWithTypeArguments
+  | TSModuleBlock
   | TSDeclaration
   | TSInterfaceBody
   | TSMethodSignature
