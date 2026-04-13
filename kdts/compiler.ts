@@ -51,8 +51,10 @@ const finalize = async (
 
   console.log(`Uglified size:  ${uglifiedCode.length}`);
   console.log(`SWC size:       ${swcOutput.code.length}`);
-  if (args.isTrue("print"))
-    console.log("UglifyJS output:\n", uglifiedCode, "\nSWC output:\n", swcOutput.code);
+  if (args.isTrue("print")) {
+    console.log("UglifyJS output:\n", uglifiedCode);
+    console.log("SWC output:\n", swcOutput.code);
+  }
   const output = args.asStringOr("output", "");
   if (output)
     await write(output, result);

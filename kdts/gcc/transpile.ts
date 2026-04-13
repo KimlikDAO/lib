@@ -1,5 +1,5 @@
 import { SourcePath } from "../frontend/resolver";
-import { SourceSet } from "../frontend/sourceSet";
+import { SourceSet } from "../model/sourceSet";
 import { ModuleImports } from "../model/moduleImports";
 import { DtsParser, TsParser } from "../parser/tsParser";
 import { bindDts } from "../transform/bind";

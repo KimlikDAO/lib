@@ -1,5 +1,5 @@
-import { SourceId } from "../model/moduleImports";
-import { SourcePath } from "./resolver";
+import { SourceId } from "./moduleImports";
+import { SourcePath } from "../frontend/resolver";
 
 class SourceSet {
   private readonly bySource = new Map<SourceId, SourcePath>();

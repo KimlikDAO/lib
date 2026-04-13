@@ -1,3 +1,4 @@
+import { Node } from "acorn";
 import { isIdentifier } from "./guards";
 import { TSArrayType, TSTupleType, TSTypeReference } from "./types";
 

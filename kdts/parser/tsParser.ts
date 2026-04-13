@@ -1,5 +1,12 @@
 import * as acornNamespace from "acorn";
-import { Node, Options, Position, TokenType } from "acorn";
+import {
+  Expression as AcornExpression,
+  Node,
+  Options,
+  Position,
+  Program,
+  TokenType
+} from "acorn";
 import { DecoratorsError, TypeScriptError } from "./error";
 import generateParseDecorators from "./extentions/decorators";
 import generateParseImportAssertions from "./extentions/import-assertions";
@@ -5328,9 +5335,18 @@ const TsParser = acornNamespace.Parser.extend(tsPlugin());
 const TsxParser = acornNamespace.Parser.extend(tsPlugin({ jsx: true }));
 const DtsParser = acornNamespace.Parser.extend(tsPlugin({ dts: true }));
 
+type TsParserClass = typeof acornNamespace.Parser & {
+  parse(input: string, options?: Options): Program;
+  parseExpressionAt(input: string, pos: number, options: Options): AcornExpression;
+};
+
+const TypedTsParser = TsParser as TsParserClass;
+const TypedTsxParser = TsxParser as TsParserClass;
+const TypedDtsParser = DtsParser as TsParserClass;
+
 export {
-  DtsParser,
-  TsParser,
-  TsxParser,
+  TypedDtsParser as DtsParser,
+  TypedTsParser as TsParser,
+  TypedTsxParser as TsxParser,
   tsPlugin
 };

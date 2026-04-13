@@ -48,3 +48,13 @@ test("transpileOverridables only rewrites overridden bindings", () => {
     const B = 3;
   `));
 });
+
+test("transpileOverridables ignores non-Overridable satisfies expressions", () => {
+  expect(transpileOverridables(stripIndent(`
+    const PORT = 80 satisfies number;
+  `), {
+    PORT: 443,
+  })).toBe(stripIndent(`
+    const PORT = 80 satisfies number;
+  `));
+});

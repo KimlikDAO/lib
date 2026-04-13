@@ -1,12 +1,14 @@
 import {
   ArrayPattern,
   AssignmentPattern,
+  Expression as JsExpression,
   Identifier,
   Literal,
   MemberExpression,
   Node,
   ObjectPattern,
-  RestElement
+  RestElement,
+  VariableDeclarator as JsVariableDeclarator
 } from "acorn";
 import { Modifier } from "../model/modifier";
 import { SymbolRef } from "../model/symbolRef";
@@ -22,7 +24,8 @@ export type TSKeywordType =
   | "TSNullKeyword"
   | "TSUndefinedKeyword"
   | "TSObjectKeyword"
-  | "TSNeverKeyword";
+  | "TSNeverKeyword"
+  | "TSSymbolKeyword";
 
 export interface TSKeywordNode<T extends TSKeywordType = TSKeywordType> extends Node {
   type: T;
@@ -41,28 +44,35 @@ export type TSEntityName = Identifier | TSQualifiedName;
 
 export interface TSArrayType extends Node {
   type: "TSArrayType";
-  elementType: Node;
+  elementType: TypeNode;
 }
+
+export type Expression =
+  | JsExpression
+  | TSAsExpression
+  | TSSatisfiesExpression
+  | TSNonNullExpression
+  | TSTypeAssertion
+  | TSTypeCastExpression
+  | TSInstantiationExpression;
+
+export type TypeAnnotationValue = TypeNode | TSTypePredicate;
 
 export interface TSAsExpression extends Node {
   type: "TSAsExpression";
-  expression: Node;
-  typeAnnotation: Node;
-}
-
-export interface TSNamedTypeNode extends Node {
-  typeName?: { name?: string };
+  expression: Expression;
+  typeAnnotation: TypeNode;
 }
 
 export interface TSSatisfiesExpression extends Node {
   type: "TSSatisfiesExpression";
-  expression: Node;
-  typeAnnotation?: TSNamedTypeNode;
+  expression: Expression;
+  typeAnnotation: TypeNode;
 }
 
 export interface TSNonNullExpression extends Node {
   type: "TSNonNullExpression";
-  expression: Node;
+  expression: Expression;
 }
 
 export type TSParameter =
@@ -77,8 +87,8 @@ export type TSParameter =
 export interface TSTypeParameter extends Node {
   type: "TSTypeParameter";
   name: string;
-  constraint?: Node;
-  default?: Node;
+  constraint?: TypeNode;
+  default?: TypeNode;
 }
 
 export interface TSTypeParameterDeclaration extends Node {
@@ -88,61 +98,66 @@ export interface TSTypeParameterDeclaration extends Node {
 
 export interface TSTypeParameterInstantiation extends Node {
   type: "TSTypeParameterInstantiation";
-  params: Node[];
+  params: TypeNode[];
 }
 
 export interface TSTypeAnnotation extends Node {
   type: "TSTypeAnnotation";
-  typeAnnotation: Node;
+  typeAnnotation: TypeAnnotationValue;
 }
 
 export interface TSFunctionType extends Node {
   type: "TSFunctionType";
   parameters: TSParameter[];
-  typeAnnotation: Node;
+  typeAnnotation: TSTypeAnnotation;
   typeParameters?: TSTypeParameterDeclaration;
 }
 
 export interface TSConstructorType extends Node {
   type: "TSConstructorType";
   parameters: TSParameter[];
-  typeAnnotation: Node;
+  typeAnnotation: TSTypeAnnotation;
   typeParameters?: TSTypeParameterDeclaration;
 }
 
 export interface TSConditionalType extends Node {
   type: "TSConditionalType";
-  checkType: Node;
-  extendsType: Node;
-  trueType: Node;
-  falseType: Node;
+  checkType: TypeNode;
+  extendsType: TypeNode;
+  trueType: TypeNode;
+  falseType: TypeNode;
 }
 
 export interface TSLiteralType extends Node {
   type: "TSLiteralType";
-  literal: Literal;
+  literal: Literal | JsExpression;
 }
 
 export interface TSParenthesizedType extends Node {
   type: "TSParenthesizedType";
-  typeAnnotation: Node;
+  typeAnnotation: TypeNode;
 }
 
 export interface TSTupleType extends Node {
   type: "TSTupleType";
-  elementTypes: Node[];
+  elementTypes: TypeNode[];
 }
 
 export interface TSNamedTupleMember extends Node {
   type: "TSNamedTupleMember";
   label: Node;
-  elementType: Node;
+  elementType: TypeNode;
   optional?: boolean;
 }
 
 export interface TSUnionType extends Node {
   type: "TSUnionType";
-  types: Node[];
+  types: TypeNode[];
+}
+
+export interface TSIntersectionType extends Node {
+  type: "TSIntersectionType";
+  types: TypeNode[];
 }
 
 export type TSMappedModifier = boolean | "+" | "-";
@@ -151,25 +166,54 @@ export interface TSMappedType extends Node {
   type: "TSMappedType";
   readonly?: TSMappedModifier;
   optional?: TSMappedModifier;
-  typeParameter: Node;
-  nameType?: Node | null;
-  typeAnnotation?: Node;
+  typeParameter: TSTypeParameter;
+  nameType?: TypeNode | null;
+  typeAnnotation?: TypeNode;
 }
+
+export interface TSInferType extends Node {
+  type: "TSInferType";
+  typeParameter: TSTypeParameter;
+}
+
+export interface TSOptionalType extends Node {
+  type: "TSOptionalType";
+  typeAnnotation: TypeNode;
+}
+
+export interface TSRestType extends Node {
+  type: "TSRestType";
+  typeAnnotation: TypeNode;
+}
+
+export interface TSIndexedAccessType extends Node {
+  type: "TSIndexedAccessType";
+  objectType: TypeNode;
+  indexType: TypeNode;
+}
+
+export type TypeElement =
+  | TSCallSignatureDeclaration
+  | TSConstructSignatureDeclaration
+  | TSIndexSignature
+  | TSMethodSignature
+  | TSPropertySignature;
 
 export interface TSTypeLiteral extends Node {
   type: "TSTypeLiteral";
-  members: Node[];
+  members: TypeElement[];
 }
 
 export interface TSTypeOperator extends Node {
   type: "TSTypeOperator";
   operator: "keyof" | "readonly" | "unique";
-  typeAnnotation: Node;
+  typeAnnotation: TypeNode;
 }
 
 export interface TSTypeQuery extends Node {
   type: "TSTypeQuery";
-  exprName: Node;
+  exprName: TSEntityName | TSImportType;
+  typeArguments?: TSTypeParameterInstantiation;
 }
 
 export interface TSTypeReference extends Node {
@@ -178,12 +222,59 @@ export interface TSTypeReference extends Node {
   typeArguments?: TSTypeParameterInstantiation;
 }
 
+export interface TSImportType extends Node {
+  type: "TSImportType";
+  argument: JsExpression;
+  qualifier?: TSEntityName;
+  typeArguments?: TSTypeParameterInstantiation;
+}
+
+export interface TSThisType extends Node {
+  type: "TSThisType";
+}
+
+export interface TSTypePredicate extends Node {
+  type: "TSTypePredicate";
+  parameterName: TSIdentifier | TSThisType;
+  typeAnnotation: TSTypeAnnotation | null;
+  asserts: boolean;
+}
+
+export interface TSIntrinsicKeyword extends Node {
+  type: "TSIntrinsicKeyword";
+}
+
 export interface TSExpressionWithTypeArguments extends Node {
   type: "TSExpressionWithTypeArguments";
-  expression: Node;
+  expression: TSEntityName;
   typeArguments?: TSTypeParameterInstantiation;
   typeParameters?: TSTypeParameterInstantiation;
 }
+
+export type TypeNode =
+  | TSKeywordNode
+  | TSArrayType
+  | TSFunctionType
+  | TSConstructorType
+  | TSConditionalType
+  | TSLiteralType
+  | TSParenthesizedType
+  | TSTupleType
+  | TSNamedTupleMember
+  | TSUnionType
+  | TSIntersectionType
+  | TSMappedType
+  | TSInferType
+  | TSOptionalType
+  | TSRestType
+  | TSIndexedAccessType
+  | TSTypeLiteral
+  | TSTypeOperator
+  | TSTypeQuery
+  | TSTypeReference
+  | TSImportType
+  | TSThisType
+  | TSIntrinsicKeyword;
 
 export interface TSModuleBlock extends Node {
   type: "TSModuleBlock";
@@ -201,7 +292,7 @@ export interface TSModuleDeclaration extends Node {
 export interface TSEnumMember extends Node {
   type: "TSEnumMember";
   id: Identifier | Literal;
-  initializer?: Node;
+  initializer?: Expression;
 }
 
 export interface TSEnumDeclaration extends Node {
@@ -213,13 +304,13 @@ export interface TSEnumDeclaration extends Node {
 export interface TSTypeAliasDeclaration extends Node {
   type: "TSTypeAliasDeclaration";
   id: Identifier;
-  typeAnnotation: Node;
+  typeAnnotation: TypeNode;
   typeParameters?: TSTypeParameterDeclaration;
 }
 
 export interface TSInterfaceBody extends Node {
   type: "TSInterfaceBody";
-  body: Node[];
+  body: TypeElement[];
 }
 
 export interface TSInterfaceDeclaration extends Node {
@@ -235,8 +326,30 @@ export interface TSMethodSignature extends Node {
   key: Node;
   parameters: TSParameter[];
   modifiers: Modifier;
-  typeParameters?: TSTypeParameterDeclaration ;
+  typeParameters?: TSTypeParameterDeclaration;
   typeAnnotation?: TSTypeAnnotation;
+}
+
+export interface TSCallSignatureDeclaration extends Node {
+  type: "TSCallSignatureDeclaration";
+  parameters: TSParameter[];
+  typeParameters?: TSTypeParameterDeclaration;
+  typeAnnotation?: TSTypeAnnotation;
+}
+
+export interface TSConstructSignatureDeclaration extends Node {
+  type: "TSConstructSignatureDeclaration";
+  parameters: TSParameter[];
+  typeParameters?: TSTypeParameterDeclaration;
+  typeAnnotation?: TSTypeAnnotation;
+}
+
+export interface TSIndexSignature extends Node {
+  type: "TSIndexSignature";
+  parameters: TSParameter[];
+  typeAnnotation?: TSTypeAnnotation;
+  readonly?: boolean;
+  static?: boolean;
 }
 
 export interface TSPropertySignature extends Node {
@@ -262,12 +375,54 @@ export interface TSDeclareFunction extends Node {
   typeParameters?: TSTypeParameterDeclaration;
 }
 
+export interface TSExternalModuleReference extends Node {
+  type: "TSExternalModuleReference";
+  expression: JsExpression;
+}
+
+export type TSModuleReference =
+  | TSEntityName
+  | TSExternalModuleReference;
+
+export interface TSImportEqualsDeclaration extends Node {
+  type: "TSImportEqualsDeclaration";
+  id: Identifier;
+  moduleReference: TSModuleReference;
+  importKind?: "type" | "value";
+  isExport?: boolean;
+}
+
+export interface TSInstantiationExpression extends Node {
+  type: "TSInstantiationExpression";
+  expression: Expression;
+  typeArguments: TSTypeParameterInstantiation;
+}
+
+export interface TSTypeAssertion extends Node {
+  type: "TSTypeAssertion";
+  typeAnnotation: TypeNode;
+  expression: Expression;
+}
+
+export interface TSTypeCastExpression extends Node {
+  type: "TSTypeCastExpression";
+  expression: Expression;
+  typeAnnotation: TSTypeAnnotation;
+}
+
 export type TSDeclaration =
   | TSModuleDeclaration
   | TSEnumDeclaration
   | TSTypeAliasDeclaration
   | TSInterfaceDeclaration
+  | TSImportEqualsDeclaration
   | TSDeclareFunction;
+
+export type VariableDeclarator =
+  Omit<JsVariableDeclarator, "init"> & {
+    init?: Expression | null;
+    modifiers?: Modifier;
+  };
 
 export type TSNode =
   | TSKeywordNode
@@ -275,6 +430,9 @@ export type TSNode =
   | TSAsExpression
   | TSSatisfiesExpression
   | TSNonNullExpression
+  | TSTypeAssertion
+  | TSTypeCastExpression
+  | TSInstantiationExpression
   | TSFunctionType
   | TSConstructorType
   | TSConditionalType
@@ -283,7 +441,12 @@ export type TSNode =
   | TSTupleType
   | TSNamedTupleMember
   | TSUnionType
+  | TSIntersectionType
   | TSMappedType
+  | TSInferType
+  | TSOptionalType
+  | TSRestType
+  | TSIndexedAccessType
   | TSQualifiedName
   | TSTypeAnnotation
   | TSTypeLiteral
@@ -292,18 +455,22 @@ export type TSNode =
   | TSTypeParameter
   | TSTypeParameterDeclaration
   | TSTypeParameterInstantiation
+  | TSTypePredicate
   | TSTypeReference
+  | TSImportType
+  | TSThisType
+  | TSIntrinsicKeyword
   | TSExpressionWithTypeArguments
+  | TSExternalModuleReference
   | TSModuleBlock
   | TSDeclaration
   | TSInterfaceBody
   | TSMethodSignature
+  | TSCallSignatureDeclaration
+  | TSConstructSignatureDeclaration
+  | TSIndexSignature
   | TSPropertySignature
   | TSParameterProperty;
-
-export interface TSTypeAnnotationNode extends Node {
-  typeAnnotation?: Node;
-}
 
 declare module "acorn" {
   interface Identifier {

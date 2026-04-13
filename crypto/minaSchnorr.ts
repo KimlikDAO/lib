@@ -141,10 +141,11 @@ const verifyMessage = (
 }
 
 export {
-  G, hashFields,
-  hashMessage, P, Pallas, Q, signFields,
+  G, P, Pallas, Q,
+  hashFields,
+  hashMessage,
+  signFields,
   signMessage,
   verifyFields,
   verifyMessage
 };
-

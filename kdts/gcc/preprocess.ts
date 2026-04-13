@@ -2,7 +2,7 @@ import { file, write } from "bun";
 import { CliArgs } from "../../util/cli";
 import { combine, getDir } from "../../util/paths";
 import { resolveRootPath } from "../frontend/resolver";
-import { SourceSet } from "../frontend/sourceSet";
+import { SourceSet } from "../model/sourceSet";
 import { ModuleImports } from "../model/moduleImports";
 import { transpileJs } from "./gccFromKdjs";
 import { transpileDts, transpileTs } from "./transpile";

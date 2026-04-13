@@ -4,20 +4,19 @@ import {
   Identifier,
   ImportDeclaration,
   Node,
-  Program,
-  VariableDeclarator
+  Program
 } from "acorn";
 import { getExt } from "../../util/paths";
-import { isIdentifier, isSatisfiesExpression } from "../ast/guards";
+import { isIdentifier, isSatisfiesExpression, typeReferenceName } from "../ast/guards";
 import {
   probeArrayLikeElementType,
   probeExpressionType,
   probeTypeReferenceArg
 } from "../ast/probe";
-import { TSTypeOperator, TSTypeReference } from "../ast/types";
+import { TSTypeOperator, TSTypeReference, VariableDeclarator } from "../ast/types";
 import { Mutator } from "../ast/walk";
 import { resolvePath, SourcePath } from "../frontend/resolver";
-import { SourceSet } from "../frontend/sourceSet";
+import { SourceSet } from "../model/sourceSet";
 import { Modifier } from "../model/modifier";
 import { ModuleImports } from "../model/moduleImports";
 import {
@@ -85,7 +84,7 @@ class GccJsTransform extends GccTransform {
       }
       return;
     }
-    const marker = init.typeAnnotation?.typeName?.name;
+    const marker = typeReferenceName(init.typeAnnotation);
     if (marker == "LargeConstant") {
       n.modifiers = (n.modifiers ?? 0) | Modifier.NoInline;
       n.init = init.expression;

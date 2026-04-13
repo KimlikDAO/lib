@@ -168,6 +168,10 @@ const bindDts = (ast: DtsProgram, currentSource: SourcePath): void => {
         bindIdentifier(node.typeName, scope);
         bindTypeNode(node.typeArguments, scope);
         return;
+      case "TSImportType":
+        bindIdentifier(node.qualifier, scope);
+        bindTypeNode(node.typeArguments, scope);
+        return;
       case "TSExpressionWithTypeArguments":
         bindIdentifier(node.expression, scope);
         bindTypeNode(node.typeArguments || node.typeParameters, scope);
@@ -179,25 +183,40 @@ const bindDts = (ast: DtsProgram, currentSource: SourcePath): void => {
       case "TSArrayType":
       case "TSParenthesizedType":
       case "TSTypeOperator":
+      case "TSOptionalType":
+      case "TSRestType":
         bindTypeNode(node.elementType || node.typeAnnotation, scope);
         return;
       case "TSTypeQuery":
-        bindIdentifier(node.exprName, scope);
+        if (node.exprName?.type == "TSImportType")
+          bindTypeNode(node.exprName, scope);
+        else
+          bindIdentifier(node.exprName, scope);
         return;
       case "TSUnionType":
       case "TSIntersectionType":
         for (const type of node.types)
           bindTypeNode(type, scope);
         return;
+      case "TSNamedTupleMember":
+        bindTypeNode(node.elementType, scope);
+        return;
       case "TSTypeLiteral":
       case "TSInterfaceBody":
         for (const member of node.members || node.body)
           bindDeclaration(member, scope);
         return;
+      case "TSCallSignatureDeclaration":
+      case "TSConstructSignatureDeclaration":
       case "TSMethodSignature":
       case "TSFunctionType":
       case "TSConstructorType":
         bindFunctionLike(node, scope);
+        return;
+      case "TSIndexSignature":
+        for (const param of node.parameters || [])
+          bindParam(param, scope);
+        bindTypeNode(node.typeAnnotation, scope);
         return;
       case "TSPropertySignature":
       case "PropertyDefinition":
@@ -212,6 +231,13 @@ const bindDts = (ast: DtsProgram, currentSource: SourcePath): void => {
         bindTypeNode(node.extendsType, scope);
         bindTypeNode(node.trueType, scope);
         bindTypeNode(node.falseType, scope);
+        return;
+      case "TSTypePredicate":
+        bindIdentifier(node.parameterName, scope);
+        bindTypeNode(node.typeAnnotation, scope);
+        return;
+      case "TSInferType":
+        bindTypeNode(node.typeParameter?.constraint, scope);
         return;
       case "TSMappedType": {
         const mappedScope = node.typeParameter

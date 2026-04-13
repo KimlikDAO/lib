@@ -61,7 +61,7 @@ import {
   WhileStatement
 } from "acorn";
 import { partition } from "../../util/arrays";
-import { isIdentifier } from "../ast/guards";
+import { isIdentifier, typeReferenceName } from "../ast/guards";
 import {
   TSArrayType,
   TSAsExpression,
@@ -180,11 +180,6 @@ enum EmitMode {
   JsDocParamType
 };
 
-type KdjsImportSpecifier = ImportSpecifier & { imported: Identifier; local: Identifier };
-type KdjsExportSpecifier = ExportSpecifier & { local: Identifier; exported: Identifier };
-type KdjsProperty =
-  | (Property & { method: true; value: FunctionExpression })
-  | (Property & { method: false; value: Node });
 type JsDocTypeTarget = { typeAnnotation?: TSTypeAnnotation | null; value?: Node | null; };
 type JsDocTarget = {
   params?: TSParameter[];
@@ -247,6 +242,7 @@ class GccGenerator extends Generator {
   TSUndefinedKeyword() { this.put("undefined"); }
   TSObjectKeyword() { this.put("Object"); }
   TSNeverKeyword() { this.put("void"); }
+  TSSymbolKeyword() { this.put("symbol"); }
 
   // TS Type expressions
   TSArrayType(n: TSArrayType) { this.put("!Array<"); this.rec(n.elementType); this.put(">"); }
@@ -256,7 +252,7 @@ class GccGenerator extends Generator {
     this.put(")");
   }
   TSSatisfiesExpression(n: TSSatisfiesExpression) {
-    if (n.typeAnnotation?.typeName?.name == "PureExpr") {
+    if (typeReferenceName(n.typeAnnotation) == "PureExpr") {
       this.put("/** @pureOrBreakMyCode */("); this.rec(n.expression); this.put(")");
     } else
       this.rec(n.expression);
@@ -271,7 +267,9 @@ class GccGenerator extends Generator {
     this.arr(n.parameters, ", ", EmitMode.JsDocParamType);
   }
   TSConditionalType() { this.put("RETURN"); }
-  TSLiteralType(n: TSLiteralType) { this.put(typeof n.literal.value); }
+  TSLiteralType(n: TSLiteralType) {
+    this.put(n.literal.type == "Literal" ? typeof n.literal.value : "string");
+  }
   TSParenthesizedType(n: TSParenthesizedType) {
     this.put("("); this.rec(n.typeAnnotation); this.put(")");
   }
@@ -279,9 +277,10 @@ class GccGenerator extends Generator {
   TSUnionType(n: TSUnionType) { this.put("("); this.arr(n.types, "|"); this.put(")"); }
   TSQualifiedName(n: TSQualifiedName) { this.rec(n.left); this.put("." + n.right.name); }
   TSTypeAnnotation(n: TSTypeAnnotation) { this.rec(n.typeAnnotation); }
-  TSTypeLiteral(n: TSTypeLiteral) {
+  TSTypeLiteral(n: TSTypeLiteral, emitMode = EmitMode.BindingTs) {
+    const sep = emitMode == EmitMode.BindingTs ? "," : "";
     this.put("{");
-    this.inc(); this.arrLines(n.members, ","); this.dec(); this.ret();
+    this.inc(); this.arrLines(n.members, sep, emitMode); this.dec(); this.ret();
     this.put("}");
   }
   TSTypeOperator(n: TSTypeOperator) { this.put(n.operator + " "); this.rec(n.typeAnnotation); }
@@ -306,6 +305,7 @@ class GccGenerator extends Generator {
   }
   TSEnumMember(n: TSEnumMember) { this.rec(n.id); this.put(": "); this.rec(n.initializer); }
   TSTypeAliasDeclaration(n: TSTypeAliasDeclaration) {
+    if (n.typeParameters) { this.StructuralInterfaceDeclaration(n); return; }
     this.doc(); this.ret();
     this.put("@typedef {"); this.rec(n.typeAnnotation); this.put("}");
     this.cod();
@@ -328,9 +328,18 @@ class GccGenerator extends Generator {
         grouped.push(param.name);
     flush();
   }
+  StructuralInterfaceDeclaration(n: TSTypeAliasDeclaration) {
+    console.log(n);
+    this.doc();
+    this.put("@record", true);
+    this.rec(n.typeParameters);
+    this.cod();
+    this.put("class "); this.rec(n.id); this.put(" ");
+    this.rec(n.typeAnnotation, ";");
+  }
   TSInterfaceDeclaration(n: TSInterfaceDeclaration) {
-    this.doc(); this.ret();
-    this.put("@interface");
+    this.doc();
+    this.put("@interface", true);
     if (n.extends)
       for (const iface of n.extends) {
         this.ret(); this.put("@extends {"); this.rec(iface); this.put("}")
@@ -342,7 +351,7 @@ class GccGenerator extends Generator {
   TSInterfaceBody(n: TSInterfaceBody) {
     this.put("{");
     this.inc();
-    this.arrLines(n.body, "", /* inInterface */ true);
+    this.arrLines(n.body, "", EmitMode.BindingJsDoc);
     this.dec(); if (n.body.length) this.ret();
     this.put("}");
   }
@@ -350,15 +359,15 @@ class GccGenerator extends Generator {
     this.jsDoc(n, n.modifiers);
     this.rec(n.key); this.put("("); this.arr(n.parameters, ", "); this.put(") {}");
   }
-  TSPropertySignature(n: TSPropertySignature, inInterface?: boolean) {
-    if (inInterface) {
+  TSPropertySignature(n: TSPropertySignature, emitMode: EmitMode) {
+    if (emitMode == EmitMode.BindingJsDoc) {
       this.jsDocType(n, 0); this.rec(n.key); this.put(";");
     } else {
       this.rec(n.key); this.put(": ");
       if (n.optional) this.put("("); this.rec(n.typeAnnotation); if (n.optional) this.put("|undefined)");
     }
   }
-  TSParameterProperty(n: TSParameterProperty, emitMode?: EmitMode) { this.rec(n.parameter, emitMode); }
+  TSParameterProperty(n: TSParameterProperty, emitMode: EmitMode) { this.rec(n.parameter, emitMode); }
   TSDeclareFunction(n: TSDeclareFunction) {
     this.jsDoc(n);
     this.put("function "); this.rec(n.id); this.put("("); this.arr(n.params, ", "); this.put(") ");
@@ -452,18 +461,19 @@ class GccGenerator extends Generator {
     this.put("("); this.rec(n.left); this.put(` ${n.operator} `); this.rec(n.right); this.put(")");
   }
   SequenceExpression(n: SequenceExpression) { this.arr(n.expressions, ", "); }
-  ObjectExpression(n: ObjectExpression, _?: unknown, wrapped?: boolean) {
+  ObjectExpression(n: ObjectExpression, _: EmitMode, wrapped: boolean) {
     if (wrapped) this.put("("); this.put("{");
     this.inc(); this.arrLines(n.properties, ","); this.dec();
     if (n.properties.length) this.ret();
     this.put("}"); if (wrapped) this.put(")");
   }
-  Property(n: KdjsProperty) {
+  Property(n: Property) {
     if (n.method) {
-      this.jsDoc(n.value);
-      if (n.value.async) this.put("async "); this.rec(n.key);
-      this.put("("); this.arr(n.value.params, ", "); this.put(") ");
-      this.rec(n.value.body);
+      const method = n.value as FunctionExpression;
+      this.jsDoc(method);
+      if (method.async) this.put("async "); this.rec(n.key);
+      this.put("("); this.arr(method.params, ", "); this.put(") ");
+      this.rec(method.body);
     } else if (!n.shorthand) {
       if (n.computed) {
         this.put("["); this.rec(n.key); this.put("]");
@@ -538,8 +548,10 @@ class GccGenerator extends Generator {
     }
     this.put(" from "); this.rec(n.source); this.put(";");
   }
-  ImportSpecifier(n: KdjsImportSpecifier) {
-    if (n.imported.name != n.local.name) { this.rec(n.imported); this.put(" as "); }
+  ImportSpecifier(n: ImportSpecifier) {
+    if (n.imported.type == "Identifier" && n.imported.name != n.local.name) {
+      this.rec(n.imported); this.put(" as ");
+    }
     this.rec(n.local);
   }
   ImportDefaultSpecifier(n: ImportDefaultSpecifier) { this.rec(n.local); }
@@ -554,9 +566,11 @@ class GccGenerator extends Generator {
       this.put("};");
     }
   }
-  ExportSpecifier(n: KdjsExportSpecifier) {
+  ExportSpecifier(n: ExportSpecifier) {
     this.rec(n.local);
-    if (n.local.name != n.exported.name) { this.put(" as "); this.rec(n.exported); }
+    if (n.local.type == "Identifier"
+      && n.exported.type == "Identifier"
+      && n.local.name != n.exported.name) { this.put(" as "); this.rec(n.exported); }
   }
   ExportDefaultDeclaration(n: ExportDefaultDeclaration) { this.put("export default "); this.rec(n.declaration); }
   ClassDeclaration(n: ClassDeclaration | ClassExpression) {

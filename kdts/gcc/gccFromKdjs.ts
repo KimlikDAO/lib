@@ -1,7 +1,7 @@
 import { Comment, parse } from "acorn";
 import { getExt } from "../../util/paths";
 import { SourcePath, resolvePath } from "../frontend/resolver";
-import { SourceSet } from "../frontend/sourceSet";
+import { SourceSet } from "../model/sourceSet";
 import { ModuleImports } from "../model/moduleImports";
 import { parseTypePrefix } from "../parser/typeParser";
 import { CodeUpdater } from "../util/textual";
