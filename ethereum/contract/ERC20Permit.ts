@@ -9,9 +9,9 @@ import { ERC20 } from "./ERC20";
 
 /**
  * 3x256 bit packed permit data.
- *  96 bits: deadline
- * 160 bits: {@link PackedAddress}
- * 512 bits: {@link Signature}
+ *    96 bits: {@link abi.uint96} deadline
+ *   160 bits: {@link PackedAddress}
+ *   512 bits: {@link Signature}
  */
 type PermitData = string;
 
@@ -22,16 +22,10 @@ class ERC20Permit extends ERC20 {
     readonly name: string,
     readonly version: number,
     decimals?: number
-  ) {
-    super(chainId, contract, decimals);
-  }
+  ) { super(chainId, contract, decimals); }
+
   nonces(provider: Provider, owner: Address): Promise<string> {
-    return provider
-      .read({
-        chainId: this.chainId,
-        to: this.contract,
-        data: "0x7ecebe00" + abi.address(owner)
-      }) as Promise<string>;
+    return this.read(provider, "0x7ecebe00" + abi.address(owner));
   }
   createPermit(
     provider: Provider,

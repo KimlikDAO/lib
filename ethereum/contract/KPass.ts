@@ -2,6 +2,7 @@ import abi from "../abi";
 import { Address } from "../address.d";
 import { ChainId } from "../chains";
 import { Provider, RemoteProvider } from "../provider";
+import { TransactionRequest } from "../transaction";
 import { TransactionHash } from "../transaction.d";
 import { Tokens } from "./tokens";
 
@@ -34,16 +35,14 @@ const KPass = {
     KPass.provider = provider;
   },
   handleOf(chainId: ChainId, address: Address): Promise<string> {
-    return KPass.provider.read({
+    return KPass.read({
       chainId,
-      to: KPass.contract,
-      data: "0xc50a1514" + abi.address(address),
+      data: "0xc50a1514" + abi.address(address)
     });
   },
   revokesRemaining(chainId: ChainId, sender: Address): Promise<number> {
-    return KPass.provider.read({
+    return KPass.read({
       chainId,
-      to: KPass.contract,
       data: "0x165c44f3" + abi.address(sender),
     }).then((revokes) => parseInt(revokes.slice(-6), 16));
   },
@@ -52,9 +51,8 @@ const KPass = {
     address: Address,
     deltaWeight: number,
   ): Promise<TransactionHash> {
-    return KPass.provider.write({
+    return KPass.write({
       chainId,
-      to: KPass.contract,
       from: address,
       data: "0xab505b1c" + abi.uint256(deltaWeight),
       gas: maybeGasLimit(chainId, 22_000),
@@ -66,9 +64,8 @@ const KPass = {
     deltaWeight: number,
     revokerAddress: Address,
   ): Promise<TransactionHash> {
-    return KPass.provider.write({
+    return KPass.write({
       chainId,
-      to: KPass.contract,
       from: address,
       data:
         "0xf02b3297" +
@@ -78,9 +75,8 @@ const KPass = {
     });
   },
   revoke(chainId: ChainId, address: Address): Promise<TransactionHash> {
-    return KPass.provider.write({
+    return KPass.write({
       chainId,
-      to: KPass.contract,
       from: address,
       data: "0xb6549f75",
       gas: maybeGasLimit(chainId, 53_000),
@@ -91,9 +87,8 @@ const KPass = {
     address: Address,
     friend: Address,
   ): Promise<TransactionHash> {
-    return KPass.provider.write({
+    return KPass.write({
       chainId,
-      to: KPass.contract,
       from: address,
       data: "0x3a2c82c7" + abi.address(friend),
       gas: maybeGasLimit(chainId, 80_000),
@@ -120,9 +115,8 @@ const KPass = {
             chainId,
             70_000 + 25_000 * Object.keys(revokers).length,
           );
-      return KPass.provider.write({
+      return KPass.write({
         chainId,
-        to: KPass.contract,
         from: address,
         value: price,
         data,
@@ -152,9 +146,8 @@ const KPass = {
           chainId,
           180_000 + 25_000 * Object.keys(revokers).length,
         );
-    return KPass.provider.write({
+    return KPass.write({
       chainId,
-      to: KPass.contract,
       from: address,
       value: 0,
       data,
@@ -187,14 +180,19 @@ const KPass = {
           chainId,
           160_000 + 25_000 * Object.keys(revokers).length,
         );
-    return KPass.provider.write({
+    return KPass.write({
       chainId,
-      to: KPass.contract,
       from: address,
       value: 0,
       data,
       gas,
     });
+  },
+  read(tx: TransactionRequest): Promise<string> {
+    return KPass.provider.read({ to: KPass.contract, ...tx })
+  },
+  write(tx: TransactionRequest): Promise<string> {
+    return KPass.provider.write({ to: KPass.contract, ...tx })
   },
   priceIn(chainId: ChainId, token: number): Promise<[number, number]> {
     if (chainId == ChainId.x38 && token == 0)
