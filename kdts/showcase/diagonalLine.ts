@@ -5,8 +5,8 @@ interface Point {
 
 class LinePoint implements Point {
   constructor(public x: number, public y: number) { }
-  static pointAtX(x: number): Point { return { x, y: 0 } as Point; }
-  static pointAtY(y: number): Point { return { x: 0, y } as Point; }
+  static pointAtX(x: number): Point { return { x, y: 0 }; }
+  static pointAtY(y: number): Point { return { x: 0, y }; }
   static yIntercept: Point;
   static xIntercept: Point;
 }
@@ -27,4 +27,3 @@ const DiagLine10 = makeDiagonalLine({ y0: 10 });
 
 console.log(DiagLine10.pointAtY(12));
 console.log(DiagLine10.xIntercept);
-

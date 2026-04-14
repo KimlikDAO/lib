@@ -21,7 +21,7 @@ const serialize = (req: TransactionRequest): Transaction => {
     chainId: req.chainId ?? "0x0",
     gas: req.gas == null ? "0x0" : hex(req.gas),
     value: req.value == null ? "0x0" : hex(req.value),
-  } as Transaction;
+  };
 };
 
 export { serialize, TransactionRequest };

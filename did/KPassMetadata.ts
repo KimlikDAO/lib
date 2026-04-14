@@ -25,7 +25,7 @@ Bu mesajı imzaladığınızda, bağlı uygulama KPass’inizin
   ${sectionText}
 
 bölüm${sections.length == 1 ? "ü" : "leri"}ne erişebilecek. Bu mesajı sadece bu bilgileri paylaşmak istiyorsanız imzalayın.\n\n\n`,
-  } as I18nString;
+  };
 }
 
 const sectionGroup = (sections: string[], chainId: ChainId): SectionGroup => ({

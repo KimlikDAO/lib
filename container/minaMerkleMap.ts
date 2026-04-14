@@ -66,7 +66,7 @@ class MinaMerkleMap implements MerkleMap<Field, Value> {
       witness[d] = { isLeft, sibling } as Witness<Value>;
     }
     const root = this.nodes[""] ?? this.zeros[0];
-    return { value, witness, root } as Witnessed<Value>;
+    return { value, witness, root };
   }
 }
 

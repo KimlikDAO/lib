@@ -103,6 +103,22 @@ describe("FunctionExpression", () => {
       const validate = function (data, signature) {};
     `);
   });
+
+  test("generator syntax", () => {
+    expectEmit(`
+      const ids = function*(limit: number): Generator<number> {
+        yield limit;
+      }
+    `, `
+      /**
+       * @param {number} limit
+       * @return {!Generator<number>}
+       */
+      const ids = function* (limit) {
+        yield limit;
+      };
+    `);
+  });
 });
 
 describe("FunctionDeclaration", ()=>{
@@ -138,6 +154,38 @@ describe("FunctionDeclaration", ()=>{
        */
       function arr(x) {
         return (Array.isArray(x) ? x : [x]);
+      }
+    `);
+  });
+
+  test("generator syntax", () => {
+    expectEmit(`
+      function* ids(limit: number): Generator<number> {
+        yield limit;
+      }
+    `, `
+      /**
+       * @param {number} limit
+       * @return {!Generator<number>}
+       */
+      function* ids(limit) {
+        yield limit;
+      }
+    `);
+  });
+
+  test("async generator syntax", () => {
+    expectEmit(`
+      async function* load(p: Promise<number[]>): AsyncGenerator<number> {
+        yield* await p;
+      }
+    `, `
+      /**
+       * @param {!Promise<!Array<number>>} p
+       * @return {!AsyncGenerator<number>}
+       */
+      async function* load(p) {
+        yield* await p;
       }
     `);
   });

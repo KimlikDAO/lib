@@ -1,6 +1,9 @@
 import {
+  ArrowFunctionExpression,
   ExportDefaultDeclaration,
   ExportNamedDeclaration,
+  FunctionDeclaration,
+  FunctionExpression,
   Identifier,
   ImportDeclaration,
   Node,
@@ -13,7 +16,15 @@ import {
   probeExpressionType,
   probeTypeReferenceArg
 } from "../ast/probe";
-import { TSTypeOperator, TSTypeReference, VariableDeclarator } from "../ast/types";
+import {
+  Expression,
+  ReturnStatement,
+  TSAsExpression,
+  TSTypeAnnotation,
+  TSTypeOperator,
+  TSTypeReference,
+  VariableDeclarator
+} from "../ast/types";
 import { Mutator } from "../ast/walk";
 import { resolvePath, SourcePath } from "../frontend/resolver";
 import { SourceSet } from "../model/sourceSet";
@@ -64,6 +75,8 @@ class GccTransform extends Mutator {
 }
 
 class GccJsTransform extends GccTransform {
+  private readonly returnTypes: (TSTypeReference | undefined)[] = [];
+
   constructor(
     source: SourcePath,
     sources: SourceSet,
@@ -71,34 +84,73 @@ class GccJsTransform extends GccTransform {
     private readonly unlinkedImports: ModuleImports
   ) { super(source, sources); }
 
+  private declaredReturnType(
+    n: { async?: boolean; returnType?: TSTypeAnnotation }
+  ): TSTypeReference | undefined {
+    if (n.async)
+      return;
+    const type = n.returnType?.typeAnnotation;
+    return type?.type == "TSTypeReference" ? type : undefined;
+  }
+  private wrapWithReturnType(n: Expression | null | undefined): Expression | null | undefined {
+    const returnType = this.returnTypes[this.returnTypes.length - 1];
+    if (!returnType || n?.type != "ObjectExpression")
+      return n;
+    return {
+      type: "TSAsExpression",
+      expression: n as Expression,
+      typeAnnotation: returnType
+    } as TSAsExpression;
+  }
+  private withDeclaredReturnType(
+    n: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression
+  ): true {
+    this.returnTypes.push(this.declaredReturnType(n));
+    if (n.type == "ArrowFunctionExpression" && n.body.type == "ObjectExpression")
+      n.body = this.wrapWithReturnType(n.body) as ArrowFunctionExpression["body"];
+    this.mutChildren(n);
+    this.returnTypes.pop();
+    return true;
+  }
+
+  FunctionDeclaration(n: FunctionDeclaration) {
+    return this.withDeclaredReturnType(n);
+  }
+  FunctionExpression(n: FunctionExpression) {
+    return this.withDeclaredReturnType(n);
+  }
+  ArrowFunctionExpression(n: ArrowFunctionExpression) {
+    return this.withDeclaredReturnType(n);
+  }
+  ReturnStatement(n: ReturnStatement) {
+    n.argument = this.wrapWithReturnType(n.argument);
+    return false;
+  }
   VariableDeclarator(n: VariableDeclarator) {
     const init: Node | null | undefined = n.init;
     const explicitType = n.id.typeAnnotation?.typeAnnotation;
-    if (!isSatisfiesExpression(init)) {
-      if (explicitType && init?.type == "ObjectExpression") {
+
+    if (isSatisfiesExpression(init)) {
+      const marker = typeReferenceName(init.typeAnnotation);
+      if (marker == "LargeConstant") {
+        n.modifiers = (n.modifiers ?? 0) | Modifier.NoInline;
+        n.init = init.expression;
+      } else if (marker == "Overridable" && isIdentifier(n.id)) {
+        if (!Object.hasOwn(this.overrides, n.id.name)) return;
+        const type = explicitType || probeExpressionType(init.expression);
         n.init = {
           type: "TSAsExpression",
-          expression: init,
-          typeAnnotation: explicitType
+          expression: synthJsonValue(this.overrides[n.id.name]),
+          typeAnnotation: type
         } as unknown as VariableDeclarator["init"];
       }
-      return;
+    } else if (explicitType && init?.type == "ObjectExpression") {
+      n.init = {
+        type: "TSAsExpression",
+        expression: init,
+        typeAnnotation: explicitType
+      } as unknown as VariableDeclarator["init"];
     }
-    const marker = typeReferenceName(init.typeAnnotation);
-    if (marker == "LargeConstant") {
-      n.modifiers = (n.modifiers ?? 0) | Modifier.NoInline;
-      n.init = init.expression;
-      return;
-    }
-    if (marker != "Overridable" || !isIdentifier(n.id) ||
-      !Object.hasOwn(this.overrides, n.id.name))
-      return;
-    const type = explicitType || probeExpressionType(init.expression);
-    n.init = {
-      type: "TSAsExpression",
-      expression: synthJsonValue(this.overrides[n.id.name]),
-      typeAnnotation: type
-    } as unknown as VariableDeclarator["init"];
   }
   Program(n: Program) {
     let lastImportStatement = -1;

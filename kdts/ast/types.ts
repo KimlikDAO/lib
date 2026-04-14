@@ -8,6 +8,7 @@ import {
   Node,
   ObjectPattern,
   RestElement,
+  ReturnStatement as JsReturnStatement,
   VariableDeclarator as JsVariableDeclarator
 } from "acorn";
 import { Modifier } from "../model/modifier";
@@ -422,6 +423,11 @@ export type VariableDeclarator =
   Omit<JsVariableDeclarator, "init"> & {
     init?: Expression | null;
     modifiers?: Modifier;
+  };
+
+export type ReturnStatement =
+  Omit<JsReturnStatement, "argument"> & {
+    argument?: Expression | null;
   };
 
 export type TSNode =

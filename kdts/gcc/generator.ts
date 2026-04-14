@@ -45,7 +45,6 @@ import {
   Property,
   PropertyDefinition,
   RestElement,
-  ReturnStatement,
   SequenceExpression,
   SpreadElement,
   SwitchCase,
@@ -58,7 +57,8 @@ import {
   UpdateExpression,
   VariableDeclaration,
   VariableDeclarator,
-  WhileStatement
+  WhileStatement,
+  YieldExpression
 } from "acorn";
 import { partition } from "../../util/arrays";
 import { isIdentifier, typeReferenceName } from "../ast/guards";
@@ -82,6 +82,7 @@ import {
   TSParenthesizedType,
   TSPropertySignature,
   TSQualifiedName,
+  ReturnStatement,
   TSSatisfiesExpression,
   TSTupleType,
   TSTypeAliasDeclaration,
@@ -391,6 +392,10 @@ class GccGenerator extends Generator {
     this.put("]");
   }
   AwaitExpression(n: AwaitExpression) { this.put("await "); this.rec(n.argument); }
+  YieldExpression(n: YieldExpression) {
+    this.put(n.delegate ? "yield*" : "yield");
+    if (n.argument) { this.put(" "); this.rec(n.argument); }
+  }
   BinaryExpression(n: BinaryExpression) {
     this.put("("); this.rec(n.left); this.put(` ${n.operator} `); this.rec(n.right); this.put(")");
   }
@@ -450,7 +455,7 @@ class GccGenerator extends Generator {
       this.put(`/** ${effects}@return {`); this.rec(n.returnType); this.put("} */ ");
     }
     if (n.async) this.put("async ");
-    this.put(arrow ? "(" : "function (");
+    this.put(arrow ? "(" : (n.generator ? "function* (" : "function ("));
     this.arr(n.params, ", ", emitMode);
     this.put(arrow ? ") => " : ") ");
     this.rec(n.body, null, /* wrapped */ true)
@@ -471,7 +476,8 @@ class GccGenerator extends Generator {
     if (n.method) {
       const method = n.value as FunctionExpression;
       this.jsDoc(method);
-      if (method.async) this.put("async "); this.rec(n.key);
+      if (method.async) this.put("async "); if (method.generator) this.put("*");
+      this.rec(n.key);
       this.put("("); this.arr(method.params, ", "); this.put(") ");
       this.rec(method.body);
     } else if (!n.shorthand) {
@@ -604,7 +610,9 @@ class GccGenerator extends Generator {
     n.value.modifiers |= n.modifiers | (n.override ? Modifier.Override : 0);
     n.value.typeParameters ||= n.typeParameters;
     this.jsDoc(n.value, n.value.modifiers);
-    if (n.static) this.put("static "); if (n.value.async) this.put("async ");
+    if (n.static) this.put("static ");
+    if (n.value.async) this.put("async ");
+    if (n.value.generator) this.put("*");
     this.rec(n.key); this.put("("); this.arr(n.value.params, ", "); this.put(") ");
     if (n.value.body) this.rec(n.value.body); else this.put("{}");
   }
@@ -649,7 +657,8 @@ class GccGenerator extends Generator {
   }
   FunctionDeclaration(n: FunctionDeclaration) {
     this.jsDoc(n, n.modifiers);
-    this.put("function "); this.rec(n.id); this.put("("); this.arr(n.params, ", "); this.put(") ");
+    if (n.async) this.put("async "); this.put(n.generator ? "function* " : "function ");
+    this.rec(n.id); this.put("("); this.arr(n.params, ", "); this.put(") ");
     this.rec(n.body);
   }
   ArrayPattern(n: ArrayPattern, emitMode: EmitMode = EmitMode.Binding) {

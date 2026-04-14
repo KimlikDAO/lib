@@ -19,7 +19,7 @@ const signFields = (
   return {
     signer: address.fromPoint(A),
     signature: signature.fromUnpacked(sig)
-  } as SignerSignature;
+  };
 }
 
 /** @satisfies {PureFn} */
@@ -29,7 +29,7 @@ const signMessage = (message: string, privKey: bigint): SignerSignature => {
   return {
     signer: address.fromPoint(A),
     signature: signature.fromUnpacked(sig)
-  } as SignerSignature;
+  };
 }
 
 /** @satisfies {PureFn} */
