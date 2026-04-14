@@ -41,7 +41,7 @@ test("ERC20Permit create and verify permit", async () => {
     "value": value,
     "nonce": 0,
     "deadline": BigInt("0x" + deadlineHex)
-  } ;
+  };
 
   const digestHex = ethers.TypedDataEncoder.hash(domain, types, message);
   const recovered = signerAddress(digestHex.slice(2), sig);

@@ -9,11 +9,11 @@
   "dependencies": {
     "@swc/core": "^1.15.24",
     "acorn": "^8.16.0",
-    "google-closure-compiler": "^20260407.0.0",
+    "google-closure-compiler": "^20260412.0.0",
     "uglify-js": "3.19.3"
   },
   "devDependencies": {
-    "@types/bun": "^1.3.11",
+    "@types/bun": "^1.3.12",
     "@types/uglify-js": "^3.17.5"
   },
   "bin": {

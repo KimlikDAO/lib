@@ -1,6 +1,11 @@
 import { expect, test } from "bun:test";
+import { transpileTs } from "../transpile";
 import { stripIndent } from "../../util/testing/source";
-import { transpileOverridables } from "../overridable";
+
+const transpileOverridables = (
+  content: string,
+  overrides: Record<string, unknown>
+): string => transpileTs(content, overrides);
 
 test("transpileOverridables replaces matching overridable initializer", () => {
   expect(transpileOverridables(stripIndent(`

@@ -1,8 +1,25 @@
-import { build, Transpiler } from "bun";
+import { build, PluginBuilder, Transpiler } from "bun";
 import { readFileSync } from "node:fs";
 import { CliArgs } from "../../util/cli";
 import { combine, getDir } from "../../util/paths";
-import { makeKdtsOverridablePlugin } from "../util/plugin";
+import { transpileTs } from "./transpile";
+
+const makeKdtsOverridablePlugin = (
+  overrides: Record<string, unknown>
+) => ({
+  name: "kdts-fast-bun",
+  setup(build: PluginBuilder) {
+    build.onLoad({ filter: /\.ts$/ }, (args) => {
+      const contents = readFileSync(args.path, "utf8");
+      if (args.path.endsWith(".d.ts"))
+        return { contents, loader: "ts" };
+      return {
+        contents: transpileTs(contents, overrides),
+        loader: "ts"
+      };
+    });
+  }
+});
 
 const collectDeps = (entry: string): string[] => {
   const allFiles = new Set<string>();

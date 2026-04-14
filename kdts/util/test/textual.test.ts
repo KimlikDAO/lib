@@ -30,3 +30,8 @@ test("inserts at same position preserve call order", () => {
   const out = updater.apply("xy");
   expect(out).toBe("xABy");
 });
+
+test("noop", () => {
+  const updater = new CodeUpdater();
+  expect(updater.apply("hi werlt")).toBe("hi werlt");
+});

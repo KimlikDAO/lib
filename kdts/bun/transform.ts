@@ -3,14 +3,15 @@ import {
   isSatisfiesExpression,
   typeReferenceName
 } from "../ast/guards";
-import { VariableDeclarator } from "../ast/types";
+import { TSSatisfiesExpression, VariableDeclarator } from "../ast/types";
 import { Mutator } from "../ast/walk";
-import { TsParser } from "../parser/tsParser";
 import { CodeUpdater } from "../util/textual";
 
 class BunTransform extends Mutator {
+  updater = new CodeUpdater();
+
   constructor(
-    private readonly updater: CodeUpdater,
+    private readonly content: string,
     private readonly overrides: Record<string, unknown>
   ) { super(); }
 
@@ -25,22 +26,17 @@ class BunTransform extends Mutator {
     }
     return false;
   }
+  TSSatisfiesExpression(n: TSSatisfiesExpression) {
+    if (typeReferenceName(n.typeAnnotation) == "PureExpr") {
+      const expr = this.content.slice(n.expression.start, n.expression.end);
+      this.updater.replace(n, `/*#__PURE__*/(()=>(${expr}))()`);
+      return true;
+    }
+    return false;
+  }
+  apply(): string {
+    return this.updater.apply(this.content);
+  }
 }
 
-const transpileOverridables = (
-  content: string,
-  overrides: Record<string, unknown>
-): string => {
-  if (!content.includes("Overridable") || !Object.keys(overrides).length)
-    return content;
-
-  const ast = TsParser.parse(content);
-  const updater = new CodeUpdater();
-  new BunTransform(updater, overrides).mut(ast);
-  return updater.updates.length ? updater.apply(content) : content;
-};
-
-export {
-  BunTransform,
-  transpileOverridables
-};
+export { BunTransform };
