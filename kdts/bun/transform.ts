@@ -29,7 +29,11 @@ class BunTransform extends Mutator {
   TSSatisfiesExpression(n: TSSatisfiesExpression) {
     if (typeReferenceName(n.typeAnnotation) == "PureExpr") {
       const expr = this.content.slice(n.expression.start, n.expression.end);
-      this.updater.replace(n, `/*#__PURE__*/(()=>(${expr}))()`);
+      const wrapped = (n.expression.type == "CallExpression" || n.expression.type == "NewExpression")
+        ? `/*#__PURE__*/${expr}`
+        : `/*#__PURE__*/(()=>(${expr}))()`;
+
+      this.updater.replace(n, wrapped);
       return true;
     }
     return false;

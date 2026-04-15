@@ -1,10 +1,6 @@
 {
   "compilerOptions": {
-    "plugins": [
-      {
-        "name": "@kimlikdao/lib/kdts/util/vscodePlugin"
-      }
-    ],
+    "allowArbitraryExtensions": true,
     "target": "esnext",
     "module": "esnext",
     "lib": [
@@ -14,13 +10,14 @@
     "allowJs": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
-    "checkJs": true,
-    "downlevelIteration": true,
+    "checkJs": false,
     "exactOptionalPropertyTypes": false,
     "forceConsistentCasingInFileNames": true,
+    "moduleDetection": "force",
     "moduleResolution": "bundler",
     "noEmit": true,
     "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noPropertyAccessFromIndexSignature": true,
@@ -30,12 +27,18 @@
     "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": true,
-    "strictPropertyInitialization": true
+    "strictPropertyInitialization": true,
+    "paths": {
+      "uglify-js": [
+        "./kdts/@types/uglify-js"
+      ]
+    }
   },
   "include": [
     "./**/*.js",
     "./**/*.jsx",
     "./**/*.ts",
+    "./**/*.d.ts",
     "./**/*.tsx"
   ],
   "exclude": [
@@ -43,5 +46,9 @@
     "**/.kdts_isolate",
     "**/build",
     "kastro/**",
+    "kdts/@types",
+    // Transformer tests have ambient declaration examples
+    "kdts/transformer/test",
+    "kdts/parser/test",
   ]
 }

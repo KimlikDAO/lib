@@ -7,6 +7,7 @@ import { compile as compileWithBun } from "./bun/compile";
 import { compile as compileWithGcc } from "./gcc/compile";
 
 const UglifyOptions: MinifyOptions = {
+  annotations: true,
   mangle: { toplevel: true },
   toplevel: true,
   compress: {
@@ -106,10 +107,15 @@ const compile = async (
   const target = params.asList("target");
   params.setIfMissing("entry", target[0] == "compile" ? target[1] : target[0]);
   params.setIfMissing("output", replaceExt(params.asStringOr("entry", ""), ".out.js"));
-  const compiled = await (params.isTrue("fast")
+  const fast = params.isTrue("fast");
+  const compiled = await (fast
     ? compileWithBun(params, checkFreshFn)
     : compileWithGcc(params, checkFreshFn, transpileFn));
   if (!compiled) return;
+  if (params.isTrue("printBackendOut")) {
+    console.log(fast ? "Bun backend output" : "GCC backend output");
+    console.log(compiled);
+  }
   return finalize(compiled, params);
 };
 

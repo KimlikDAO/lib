@@ -54,10 +54,9 @@ const compile = async (
     format: "esm",
     target: "bun",
     packages: "external",
+    emitDCEAnnotations: true,
     minify: true,
-    plugins: Object.keys(overrides).length
-      ? [makeKdtsOverridablePlugin(overrides)]
-      : [],
+    plugins: [makeKdtsOverridablePlugin(overrides)],
   });
   if (!result.success) {
     const messages = result.logs.map((l) => l.message).join("\n");

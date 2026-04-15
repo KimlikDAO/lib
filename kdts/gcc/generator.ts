@@ -379,6 +379,7 @@ class GccGenerator extends Generator {
     if (!this.djs) throw "Not supported yet";
     this.rec(n.body);
   }
+  TSModuleBlock() { }
 
   // JS Expressions
   Literal(n: Literal) { this.put(n.raw ?? ""); }

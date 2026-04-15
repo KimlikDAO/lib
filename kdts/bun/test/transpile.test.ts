@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { stripIndent } from "../../util/testing/source";
 import { transpileTs } from "../transpile";
 
-test("transpileTs lowers satisfies PureExpr to a pure arrow iife", () => {
+test("transpileTs lowers PureExpr call expressions to direct pure annotations", () => {
   expect(transpileTs(stripIndent(`
     import { PureExpr } from "@kimlikdao/kdts";
 
@@ -10,7 +10,7 @@ test("transpileTs lowers satisfies PureExpr to a pure arrow iife", () => {
   `), {})).toBe(stripIndent(`
     import { PureExpr } from "@kimlikdao/kdts";
 
-    const Uint256Max = /*#__PURE__*/(()=>("f".repeat(64)))();
+    const Uint256Max = /*#__PURE__*/"f".repeat(64);
   `));
 });
 
