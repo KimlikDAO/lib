@@ -1,8 +1,7 @@
 import { spawn } from "bun";
-import { existsSync, mkdirSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
-import { write } from "bun";
-import { SourceProgram } from "../model/sourceProgram";
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
+import { DiskProgram } from "../model/sourceProgram";
 
 const NodeModulesDirs = [
   "node_modules",
@@ -54,28 +53,11 @@ const getJavaJarPath = (): string => {
   return javaJarPath;
 };
 
-const materializeProgram = async (
-  program: SourceProgram,
-  isolateDir: string
-): Promise<string[]> => {
-  const files = Object.keys(program.sources).sort();
-  const writes: Promise<number>[] = [];
-
-  for (const path of files) {
-    const outFile = join(isolateDir, path);
-    mkdirSync(dirname(outFile), { recursive: true });
-    writes.push(write(outFile, program.sources[path]!));
-  }
-  await Promise.all(writes);
-  return files;
-};
-
 const createCompilerArgs = (
-  program: SourceProgram,
-  files: string[],
+  program: DiskProgram,
   params: ClosureCompilerParams
 ): string[] => {
-  const args = files.slice();
+  const args = program.sources.slice();
   args.push(
     "--compilation_level=ADVANCED",
     "--charset=utf-8",
@@ -102,14 +84,13 @@ const createCompilerArgs = (
 };
 
 const createClosureCompilerCommand = (
-  program: SourceProgram,
-  files: string[],
+  program: DiskProgram,
   params: ClosureCompilerParams,
 ): {
   cmd: string[];
   platform: "native" | "java";
 } => {
-  const args = createCompilerArgs(program, files, params);
+  const args = createCompilerArgs(program, params);
   const nativeImagePath = getNativeImagePath();
   if (nativeImagePath)
     return {
@@ -127,27 +108,25 @@ const prependCommand = (cmd: string[], message: string): string =>
   `${cmd.join(" ")}\n\n${message}\n\n`;
 
 interface ClosureCompilerParams {
-  isolateDir: string;
   jsCompErrors: string[];
   jsCompWarnings: string[];
 }
 
 const compileWithClosureCompiler = async (
-  program: SourceProgram,
+  program: DiskProgram,
   params: ClosureCompilerParams,
 ): Promise<string> => {
-  const files = await materializeProgram(program, params.isolateDir);
-  const { cmd, platform } = createClosureCompilerCommand(program, files, params);
+  const { cmd, platform } = createClosureCompilerCommand(program, params);
   console.info(
     "GCC isolate:   ",
-    params.isolateDir,
+    program.isolateDir,
     `(for ${program.entry})`
   );
   console.info("GCC platform:  ", platform);
 
   const proc = spawn({
     cmd,
-    cwd: params.isolateDir,
+    cwd: program.isolateDir,
     stdout: "pipe",
     stderr: "pipe",
   });

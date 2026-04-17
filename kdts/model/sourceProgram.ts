@@ -3,9 +3,13 @@ import { ModuleImports } from "./moduleImports";
 
 interface SourceProgram {
   entry: string;
-  sources: Record<string, string>;
+  sources: string[];
   imports: ModuleImports;
   exports: ModuleExports;
 }
 
-export { SourceProgram };
+interface DiskProgram extends SourceProgram {
+  isolateDir: string;
+}
+
+export { DiskProgram, SourceProgram };

@@ -23,8 +23,13 @@ const compile = async (
     getDir(args.asStringOr("output", "build/" + entry)),
     args.asStringOr("isolateDir", ".kdts_isolate")
   );
-  const program = await GccProgram.from(entry, args.asRecord("overrides"), args.asList("externs"));
-  if (checkFreshFn && await checkFreshFn(Object.keys(program.sources).sort().map((f) => "/" + f)))
+  const program = await GccProgram.from(
+    entry,
+    args.asRecord("overrides"),
+    args.asList("externs"),
+    isolateDir
+  );
+  if (checkFreshFn && await checkFreshFn(program.sources.map((f) => "/" + f)))
     return;
 
   const jsCompErrors = [
@@ -40,7 +45,6 @@ const compile = async (
     jsCompErrors.pop();
 
   let output = await compileWithClosureCompiler(program, {
-    isolateDir,
     jsCompErrors,
     jsCompWarnings,
   });

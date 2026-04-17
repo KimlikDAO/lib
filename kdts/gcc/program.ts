@@ -1,27 +1,38 @@
-import { file } from "bun";
+import { file, write } from "bun";
+import { mkdirSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { ModuleExports } from "../model/moduleExports";
 import { ModuleImports } from "../model/moduleImports";
 import { SourceSet } from "../model/sourceSet";
-import { SourceProgram } from "../model/sourceProgram";
+import { DiskProgram } from "../model/sourceProgram";
 import { resolveRootPath } from "../frontend/resolver";
 import { transpileJs } from "./gccFromKdjs";
 import { transpileDts, transpileTs } from "./transpile";
 
-class GccProgram implements SourceProgram {
+class GccProgram implements DiskProgram {
   constructor(
     readonly entry: string,
-    readonly sources: Record<string, string> = {},
+    readonly isolateDir: string,
+    readonly sources: string[] = [],
     readonly imports = new ModuleImports(),
     readonly exports = new ModuleExports()
   ) { }
 
+  private async writeSource(path: string, content: string): Promise<void> {
+    const outFile = join(this.isolateDir, path);
+    mkdirSync(dirname(outFile), { recursive: true });
+    await write(outFile, content);
+    this.sources.push(path);
+  }
+
   static async from(
     entry: string,
     overrides: Record<string, unknown> = {},
-    externs: string[] = []
+    externs: string[] = [],
+    isolateDir = ".kdts_isolate"
   ): Promise<GccProgram> {
     const sourceSet = new SourceSet();
-    const program = new GccProgram(entry);
+    const program = new GccProgram(entry, isolateDir);
 
     sourceSet.add(resolveRootPath(entry));
     for (const extern of externs)
@@ -38,8 +49,9 @@ class GccProgram implements SourceProgram {
         content = transpileJs(source, content, sourceSet, program.imports);
       else throw "Provide transpile function";
 
-      program.sources[source.path] = content;
+      await program.writeSource(source.path, content);
     }
+    program.sources.sort();
     return program;
   }
 }
