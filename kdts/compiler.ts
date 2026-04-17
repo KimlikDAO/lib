@@ -6,6 +6,10 @@ import { replaceExt } from "../util/paths";
 import { compile as compileWithBun } from "./bun/compile";
 import { compile as compileWithGcc } from "./gcc/compile";
 
+interface TranspileFn {
+  (content: string, file: string, isEntry?: boolean): string | null;
+}
+
 const UglifyOptions: MinifyOptions = {
   annotations: true,
   mangle: { toplevel: true },
@@ -62,11 +66,6 @@ const finalize = async (
   return result;
 };
 
-type CompileParams = Record<string, CliArgValue> | CliArgs;
-
-type TranspileFn = (content: string, file: string, isEntry?: boolean) =>
-  string | null;
-
 const parseOverrideValue = (value: string): unknown => {
   try {
     return JSON.parse(value);
@@ -97,7 +96,7 @@ const normalizeCompileArgs = (args: CliArgs): CliArgs => {
 };
 
 const compile = async (
-  params: CompileParams,
+  params: Record<string, CliArgValue> | CliArgs,
   checkFreshFn?: (deps: string[]) => Promise<boolean>,
   transpileFn?: TranspileFn
 ): Promise<string | void> => {
@@ -119,4 +118,4 @@ const compile = async (
   return finalize(compiled, params);
 };
 
-export { compile, normalizeCompileArgs, TranspileFn };
+export { compile, normalizeCompileArgs };

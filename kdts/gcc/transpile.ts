@@ -2,7 +2,7 @@ import { SourcePath } from "../frontend/resolver";
 import { DtsParser, TsParser } from "../parser/tsParser";
 import { bindDts } from "../transform/bind";
 import { generate, generateAliasImports } from "./generator";
-import type { GccProgram } from "./program";
+import { GccProgram } from "./program";
 import { GccExternTransform, GccJsTransform } from "./transform";
 
 const transpileTs = (

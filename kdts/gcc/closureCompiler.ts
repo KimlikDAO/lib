@@ -1,7 +1,7 @@
 import { spawn } from "bun";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
-import type { GccProgram } from "./program";
+import { GccProgram } from "./program";
 
 const NodeModulesDirs = [
   "node_modules",

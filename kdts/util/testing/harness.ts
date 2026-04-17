@@ -2,24 +2,22 @@ import { expect } from "bun:test";
 import { SourcePath } from "../../frontend/resolver";
 import { SourceSet } from "../../model/sourceSet";
 import { ModuleImports } from "../../model/moduleImports";
-import { createGccProgram, GccProgram } from "../../gcc/program";
+import { GccProgram } from "../../gcc/program";
 import { stripIndent } from "./source";
 
-type TranspileSourceFn = (
-  source: SourcePath,
-  content: string,
-  program: GccProgram
-) => string;
+interface TranspileSourceFn {
+  (source: SourcePath, content: string, program: GccProgram): string;
+}
 
-type TranspileDeclarationFn = (
-  source: SourcePath,
-  content: string,
-  program: GccProgram
-) => string;
+interface TranspileDeclarationFn {
+  (source: SourcePath, content: string, program: GccProgram): string;
+}
 
-type ExpectEmitFn = (src: string, emit: string) => void;
+interface ExpectEmitFn {
+  (src: string, emit: string): void;
+}
 
-type HarnessSourceOptions = {
+interface HarnessSourceOptions {
   overrides?: Record<string, unknown>,
   unlinkedImports?: ModuleImports
 }
@@ -34,7 +32,7 @@ const harnessSourceFn = (
         path: "/test.ts"
       },
       src,
-      createGccProgram(
+      new GccProgram(
         new SourceSet(),
         options.overrides || {},
         options.unlinkedImports || new ModuleImports()
@@ -51,7 +49,7 @@ const harnessDeclarationFn = (
     const out = transpileDeclarationFn({
       source: "module:test.d",
       path: "/test.d.ts"
-    }, src, createGccProgram(new SourceSet()));
+    }, src, new GccProgram(new SourceSet()));
     expect(out).toBe(stripIndent(emit));
   }
 }

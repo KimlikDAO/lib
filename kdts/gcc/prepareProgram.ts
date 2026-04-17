@@ -4,11 +4,12 @@ import { combine, getDir } from "../../util/paths";
 import { resolveRootPath } from "../frontend/resolver";
 import { SourceSet } from "../model/sourceSet";
 import { transpileJs } from "./gccFromKdjs";
-import { createGccProgram, GccProgram } from "./program";
+import { GccProgram } from "./program";
 import { transpileDts, transpileTs } from "./transpile";
 
-type TranspileFn = (content: string, file: string, isEntry?: boolean) =>
-  string | null;
+interface TranspileFn {
+  (content: string, file: string, isEntry?: boolean): string | null;
+}
 
 const prepareGccProgram = async (
   args: CliArgs,
@@ -21,7 +22,7 @@ const prepareGccProgram = async (
   );
   const entry = resolveRootPath(entryArg);
   const sourceSet = new SourceSet(entry, isolateDir);
-  const program = createGccProgram(sourceSet, args.asRecord("overrides"));
+  const program = new GccProgram(sourceSet, args.asRecord("overrides"));
   const writePromises: Promise<number>[] = [];
 
   sourceSet.add(entry);
@@ -45,4 +46,4 @@ const prepareGccProgram = async (
   return program;
 };
 
-export { prepareGccProgram, TranspileFn };
+export { prepareGccProgram };

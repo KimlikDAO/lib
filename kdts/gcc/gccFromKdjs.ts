@@ -5,7 +5,7 @@ import { ModuleImports } from "../model/moduleImports";
 import { parseTypePrefix } from "../parser/typeParser";
 import { CodeUpdater } from "../util/textual";
 import { generateAliasImports } from "./generator";
-import type { GccProgram } from "./program";
+import { GccProgram } from "./program";
 
 const DECL_FILE = /\.(d|e)\.(js|ts)$/;
 

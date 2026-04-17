@@ -30,7 +30,7 @@ import { resolvePath, SourcePath } from "../frontend/resolver";
 import { SourceSet } from "../model/sourceSet";
 import { Modifier } from "../model/modifier";
 import { ModuleImports } from "../model/moduleImports";
-import type { GccProgram } from "./program";
+import { GccProgram } from "./program";
 import {
   synthAliasImports,
   synthComment,
