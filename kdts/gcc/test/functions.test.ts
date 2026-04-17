@@ -138,9 +138,9 @@ describe("FunctionDeclaration", ()=>{
     `);
   });
 
-  test("emits requireInlining for requireInlining declarations", () => {
+  test("emits requireInlining for InlineFn declarations", () => {
     expectEmit(`
-      /** @requireInlining */
+      /** @satisfies {InlineFn} */
       function arr<T>(x: T[] | T): T[] {
         return Array.isArray(x) ? x : [x];
       }
@@ -149,6 +149,26 @@ describe("FunctionDeclaration", ()=>{
        * @suppress {reportUnknownTypes}
        * @template T
        * @requireInlining
+       * @param {(!Array<!T>|!T)} x
+       * @return {!Array<!T>}
+       */
+      function arr(x) {
+        return (Array.isArray(x) ? x : [x]);
+      }
+    `);
+  });
+
+  test("emits encourageInlining for InlineFriendlyFn declarations", () => {
+    expectEmit(`
+      /** @satisfies {InlineFriendlyFn} */
+      function arr<T>(x: T[] | T): T[] {
+        return Array.isArray(x) ? x : [x];
+      }
+    `, `
+      /**
+       * @suppress {reportUnknownTypes}
+       * @template T
+       * @encourageInlining
        * @param {(!Array<!T>|!T)} x
        * @return {!Array<!T>}
        */
