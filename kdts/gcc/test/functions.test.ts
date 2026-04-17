@@ -138,9 +138,9 @@ describe("FunctionDeclaration", ()=>{
     `);
   });
 
-  test("emits requireInlining for requireInlining declarations", () => {
+  test("emits requireInlining for InlineFn declarations", () => {
     expectEmit(`
-      /** @requireInlining */
+      /** @satisfies {InlineFn} */
       function arr<T>(x: T[] | T): T[] {
         return Array.isArray(x) ? x : [x];
       }

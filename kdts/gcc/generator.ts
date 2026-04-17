@@ -802,7 +802,7 @@ class GccGenerator extends Generator {
       this.put("@noinline", true);
     if (hasAll(modifiers, Modifier.SideEffectFree))
       this.put("@nosideeffects", true);
-    if (modifiers & Modifier.RequireInline)
+    if (modifiers & Modifier.Inline)
       this.put("@requireInlining", true);
 
     let i = 0;

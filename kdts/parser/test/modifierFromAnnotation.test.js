@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
 import { Modifier } from "../../model/modifier";
+import { modifiersFromJsDoc } from "../jsdocParser";
 import { parseSource } from "./utils";
 
 test("modifier from JSDoc attaches to statement-level VariableDeclaration, not nested one", () => {
@@ -36,9 +37,20 @@ test("Function modifiers attach on ArrowFunctionExpressions", () => {
   expect(innerFn.modifiers).toBe(Modifier.Pure);
 });
 
-test("AlwaysInline modifiers attach on FunctionDeclarations", () => {
+test("modifiersFromJsDoc ORs @satisfies entries and ignores unknown modifiers", () => {
+  const modifiers = modifiersFromJsDoc(`
+    * @satisfies {DeterministicFn & InlineFn & UnknownFn}
+    * @satisfies {InlineFriendlyFn}
+  `);
+
+  expect(modifiers).toBe(
+    Modifier.Deterministic | Modifier.Inline | Modifier.InlineFriendly
+  );
+});
+
+test("Inline modifiers attach on FunctionDeclarations", () => {
   const ast = parseSource(`
-    /** @requireInlining */
+    /** @satisfies {InlineFn} */
     function arr<T>(x: T[] | T): T[] {
       return Array.isArray(x) ? x : [x];
     }
@@ -46,7 +58,22 @@ test("AlwaysInline modifiers attach on FunctionDeclarations", () => {
   const stmt = ast.body[0];
   expect(stmt.type).toBe("FunctionDeclaration");
   expect(stmt.id.name).toBe("arr");
-  expect(stmt.modifiers).toBe(Modifier.RequireInline);
+  expect(stmt.modifiers).toBe(Modifier.Inline);
+});
+
+test("multiple @satisfies tags accumulate on the parsed node", () => {
+  const ast = parseSource(`
+    /**
+     * @satisfies {DeterministicFn & InlineFn}
+     * @satisfies {InlineFriendlyFn & UnknownFn}
+     */
+    const run = () => 1;
+  `);
+  const stmt = ast.body[0];
+  expect(stmt.type).toBe("VariableDeclaration");
+  expect(stmt.modifiers).toBe(
+    Modifier.Deterministic | Modifier.Inline | Modifier.InlineFriendly
+  );
 });
 
 test("Function modifiers attach on parenthesized destructuring ArrowFunctionExpressions", () => {

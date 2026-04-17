@@ -11,11 +11,11 @@ import { DecoratorsError, TypeScriptError } from "./error";
 import generateParseDecorators from "./extentions/decorators";
 import generateParseImportAssertions from "./extentions/import-assertions";
 import generateJsxParser from "./extentions/jsx";
+import { modifiersFromJsDoc } from "./jsdocParser";
 import { AcornParseClass } from "./middleware";
 import { checkKeyName, DestructuringErrors, isPrivateNameConflicted } from "./parseutil";
 import { TS_SCOPE_OTHER, TS_SCOPE_TS_MODULE } from "./scopeflags";
 import { generateAcornTypeScript } from "./tokenType";
-import { modifiersFromJsDoc } from "../model/modifier";
 import {
   Accessibility,
   LookaheadState,
