@@ -1,7 +1,8 @@
 import { CliArgs } from "../../util/cli";
+import { combine, getDir } from "../../util/paths";
 import { compileWithClosureCompiler } from "./closureCompiler";
 import { postprocess } from "./postprocess";
-import { prepareGccProgram } from "./prepareProgram";
+import { GccProgram } from "./program";
 
 interface TranspileFn {
   (content: string, file: string, isEntry?: boolean): string | null;
@@ -17,8 +18,13 @@ const compile = async (
   checkFreshFn?: (deps: string[]) => Promise<boolean>,
   transpileFn?: TranspileFn
 ): Promise<string | void> => {
-  const program = await prepareGccProgram(args, transpileFn);
-  if (checkFreshFn && await checkFreshFn(program.sourceSet.getPaths().map((f) => "/" + f)))
+  const entry = args.asStringOr("entry", "");
+  const isolateDir = combine(
+    getDir(args.asStringOr("output", "build/" + entry)),
+    args.asStringOr("isolateDir", ".kdts_isolate")
+  );
+  const program = await GccProgram.from(entry, args.asRecord("overrides"), args.asList("externs"));
+  if (checkFreshFn && await checkFreshFn(Object.keys(program.sources).sort().map((f) => "/" + f)))
     return;
 
   const jsCompErrors = [
@@ -34,10 +40,11 @@ const compile = async (
     jsCompErrors.pop();
 
   let output = await compileWithClosureCompiler(program, {
+    isolateDir,
     jsCompErrors,
     jsCompWarnings,
   });
-  output = postprocess(output, program.unlinkedImports);
+  output = postprocess(output, program.imports);
   console.log(`GCC size:       ${output.length}`);
   return output;
 }

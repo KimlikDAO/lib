@@ -1,7 +1,8 @@
 import { spawn } from "bun";
-import { existsSync } from "node:fs";
-import { resolve } from "node:path";
-import { GccProgram } from "./program";
+import { existsSync, mkdirSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { write } from "bun";
+import { SourceProgram } from "../model/sourceProgram";
 
 const NodeModulesDirs = [
   "node_modules",
@@ -14,16 +15,6 @@ const JavaRuntimeArgs = [
   "-XX:+IgnoreUnrecognizedVMOptions",
   "--sun-misc-unsafe-memory-access=allow",
 ];
-
-interface ClosureCompilerParams {
-  jsCompErrors: string[];
-  jsCompWarnings: string[];
-}
-
-interface ClosureCompilerCommand {
-  cmd: string[];
-  platform: "native" | "java";
-}
 
 const resolveInstalledPath = (
   packagePath: string,
@@ -63,11 +54,28 @@ const getJavaJarPath = (): string => {
   return javaJarPath;
 };
 
+const materializeProgram = async (
+  program: SourceProgram,
+  isolateDir: string
+): Promise<string[]> => {
+  const files = Object.keys(program.sources).sort();
+  const writes: Promise<number>[] = [];
+
+  for (const path of files) {
+    const outFile = join(isolateDir, path);
+    mkdirSync(dirname(outFile), { recursive: true });
+    writes.push(write(outFile, program.sources[path]!));
+  }
+  await Promise.all(writes);
+  return files;
+};
+
 const createCompilerArgs = (
-  program: GccProgram,
+  program: SourceProgram,
+  files: string[],
   params: ClosureCompilerParams
 ): string[] => {
-  const args = program.sourceSet.getPaths();
+  const args = files.slice();
   args.push(
     "--compilation_level=ADVANCED",
     "--charset=utf-8",
@@ -87,17 +95,21 @@ const createCompilerArgs = (
     args.push(`--jscomp_error=${error}`);
   for (const warning of params.jsCompWarnings)
     args.push(`--jscomp_warning=${warning}`);
-  if (program.sourceSet.entry)
-    args.push(`--entry_point=${program.sourceSet.entry.path}`);
+  if (program.entry)
+    args.push(`--entry_point=${program.entry}`);
 
   return args;
 };
 
 const createClosureCompilerCommand = (
-  program: GccProgram,
+  program: SourceProgram,
+  files: string[],
   params: ClosureCompilerParams,
-): ClosureCompilerCommand => {
-  const args = createCompilerArgs(program, params);
+): {
+  cmd: string[];
+  platform: "native" | "java";
+} => {
+  const args = createCompilerArgs(program, files, params);
   const nativeImagePath = getNativeImagePath();
   if (nativeImagePath)
     return {
@@ -114,21 +126,28 @@ const createClosureCompilerCommand = (
 const prependCommand = (cmd: string[], message: string): string =>
   `${cmd.join(" ")}\n\n${message}\n\n`;
 
+interface ClosureCompilerParams {
+  isolateDir: string;
+  jsCompErrors: string[];
+  jsCompWarnings: string[];
+}
+
 const compileWithClosureCompiler = async (
-  program: GccProgram,
+  program: SourceProgram,
   params: ClosureCompilerParams,
 ): Promise<string> => {
-  const { cmd, platform } = createClosureCompilerCommand(program, params);
+  const files = await materializeProgram(program, params.isolateDir);
+  const { cmd, platform } = createClosureCompilerCommand(program, files, params);
   console.info(
     "GCC isolate:   ",
-    program.sourceSet.isolateDir,
-    `(for ${program.sourceSet.entry?.path || ""})`
+    params.isolateDir,
+    `(for ${program.entry})`
   );
   console.info("GCC platform:  ", platform);
 
   const proc = spawn({
     cmd,
-    cwd: program.sourceSet.isolateDir,
+    cwd: params.isolateDir,
     stdout: "pipe",
     stderr: "pipe",
   });
@@ -139,12 +158,11 @@ const compileWithClosureCompiler = async (
   ]);
 
   if (exitCode || errors)
-    throw prependCommand(cmd, errors);
+    throw prependCommand(cmd, errors || String(exitCode));
   return output;
 };
 
 export {
-  ClosureCompilerParams,
   compileWithClosureCompiler,
   createClosureCompilerCommand,
   getJavaJarPath,

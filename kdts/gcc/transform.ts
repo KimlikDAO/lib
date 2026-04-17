@@ -30,7 +30,6 @@ import { resolvePath, SourcePath } from "../frontend/resolver";
 import { SourceSet } from "../model/sourceSet";
 import { Modifier } from "../model/modifier";
 import { ModuleImports } from "../model/moduleImports";
-import { GccProgram } from "./program";
 import {
   synthAliasImports,
   synthComment,
@@ -80,8 +79,10 @@ class GccJsTransform extends GccTransform {
 
   constructor(
     source: SourcePath,
-    private readonly program: GccProgram
-  ) { super(source, program.sourceSet); }
+    sources: SourceSet,
+    private readonly overrides: Record<string, unknown>,
+    private readonly imports: ModuleImports
+  ) { super(source, sources); }
 
   private declaredReturnType(
     n: { async?: boolean; returnType?: TSTypeAnnotation }
@@ -135,11 +136,11 @@ class GccJsTransform extends GccTransform {
         n.modifiers = (n.modifiers ?? 0) | Modifier.NoInline;
         n.init = init.expression;
       } else if (marker == "Overridable" && isIdentifier(n.id)) {
-        if (!Object.hasOwn(this.program.overrides, n.id.name)) return;
+        if (!Object.hasOwn(this.overrides, n.id.name)) return;
         const type = explicitType || probeExpressionType(init.expression);
         n.init = {
           type: "TSAsExpression",
-          expression: synthJsonValue(this.program.overrides[n.id.name]),
+          expression: synthJsonValue(this.overrides[n.id.name]),
           typeAnnotation: type
         } as unknown as VariableDeclarator["init"];
       }
@@ -170,7 +171,7 @@ class GccJsTransform extends GccTransform {
     this.sources.add(resolvedImport);
 
     if (resolvedImport.source.startsWith("package:"))
-      this.program.unlinkedImports.add(n, resolvedImport.source);
+      this.imports.add(n, resolvedImport.source);
     if (resolvedImport.path.endsWith(".d.ts")) {
       this.typeOnlyImports.add(n, resolvedImport.source);
       const comment = synthComment("gcc-js: import is replaced by alias import");

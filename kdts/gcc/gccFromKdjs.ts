@@ -2,10 +2,10 @@ import { Comment, parse } from "acorn";
 import { getExt } from "../../util/paths";
 import { SourcePath, resolvePath } from "../frontend/resolver";
 import { ModuleImports } from "../model/moduleImports";
+import { SourceSet } from "../model/sourceSet";
 import { parseTypePrefix } from "../parser/typeParser";
 import { CodeUpdater } from "../util/textual";
 import { generateAliasImports } from "./generator";
-import { GccProgram } from "./program";
 
 const DECL_FILE = /\.(d|e)\.(js|ts)$/;
 
@@ -91,7 +91,8 @@ const transpileJsDoc = (comment: Comment, fileName: string): string => {
 const transpileJs = (
   source: SourcePath,
   content: string,
-  program: GccProgram
+  sources: SourceSet,
+  imports: ModuleImports
 ): string => {
   const comments: Comment[] = [];
   const updater = new CodeUpdater();
@@ -114,11 +115,11 @@ const transpileJs = (
         lastImportDeclaration = node;
         const importSource = "" + node.source.value;
         const resolvedImport = resolvePath(source.path, importSource);
-        program.sourceSet.add(resolvedImport);
+        sources.add(resolvedImport);
         const importExt = "." + getExt(resolvedImport.path);
 
         if (resolvedImport.source.startsWith("package"))
-          program.unlinkedImports.add(node, resolvedImport.source);
+          imports.add(node, resolvedImport.source);
         if (DECL_FILE.test(resolvedImport.path)) {
           updater.replace(node, "; // gcc-js: declaration imports are replaced by type alias imports");
           typeOnlyImports.add(node, resolvedImport.source);
