@@ -1,6 +1,7 @@
 import { spawn } from "bun";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
+import type { GccProgram } from "./program";
 
 const NodeModulesDirs = [
   "node_modules",
@@ -14,10 +15,7 @@ const JavaRuntimeArgs = [
   "--sun-misc-unsafe-memory-access=allow",
 ];
 
-interface CompileParams {
-  allFiles: string[];
-  entryPoint: string;
-  isolateDir: string;
+interface ClosureCompilerParams {
   jsCompErrors: string[];
   jsCompWarnings: string[];
 }
@@ -65,8 +63,11 @@ const getJavaJarPath = (): string => {
   return javaJarPath;
 };
 
-const createCompilerArgs = (params: CompileParams): string[] => {
-  const args = params.allFiles;
+const createCompilerArgs = (
+  program: GccProgram,
+  params: ClosureCompilerParams
+): string[] => {
+  const args = program.sourceSet.getPaths();
   args.push(
     "--compilation_level=ADVANCED",
     "--charset=utf-8",
@@ -86,14 +87,17 @@ const createCompilerArgs = (params: CompileParams): string[] => {
     args.push(`--jscomp_error=${error}`);
   for (const warning of params.jsCompWarnings)
     args.push(`--jscomp_warning=${warning}`);
-  if (params.entryPoint)
-    args.push(`--entry_point=${params.entryPoint}`);
+  if (program.sourceSet.entry)
+    args.push(`--entry_point=${program.sourceSet.entry.path}`);
 
   return args;
 };
 
-const createClosureCompilerCommand = (params: CompileParams,): ClosureCompilerCommand => {
-  const args = createCompilerArgs(params);
+const createClosureCompilerCommand = (
+  program: GccProgram,
+  params: ClosureCompilerParams,
+): ClosureCompilerCommand => {
+  const args = createCompilerArgs(program, params);
   const nativeImagePath = getNativeImagePath();
   if (nativeImagePath)
     return {
@@ -111,15 +115,20 @@ const prependCommand = (cmd: string[], message: string): string =>
   `${cmd.join(" ")}\n\n${message}\n\n`;
 
 const compileWithClosureCompiler = async (
-  params: CompileParams,
+  program: GccProgram,
+  params: ClosureCompilerParams,
 ): Promise<string> => {
-  const { cmd, platform } = createClosureCompilerCommand(params);
-  console.info("GCC isolate:   ", params.isolateDir, `(for ${params.entryPoint})`);
+  const { cmd, platform } = createClosureCompilerCommand(program, params);
+  console.info(
+    "GCC isolate:   ",
+    program.sourceSet.isolateDir,
+    `(for ${program.sourceSet.entry?.path || ""})`
+  );
   console.info("GCC platform:  ", platform);
 
   const proc = spawn({
     cmd,
-    cwd: params.isolateDir,
+    cwd: program.sourceSet.isolateDir,
     stdout: "pipe",
     stderr: "pipe",
   });
@@ -135,7 +144,7 @@ const compileWithClosureCompiler = async (
 };
 
 export {
-  CompileParams,
+  ClosureCompilerParams,
   compileWithClosureCompiler,
   createClosureCompilerCommand,
   getJavaJarPath,

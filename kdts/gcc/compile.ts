@@ -1,7 +1,7 @@
 import { CliArgs } from "../../util/cli";
 import { compileWithClosureCompiler } from "./closureCompiler";
 import { postprocess } from "./postprocess";
-import { preprocessAndIsolate, TranspileFn } from "./preprocess";
+import { prepareGccProgram, TranspileFn } from "./program";
 
 /**
  * Resolves to the compiled code or void if it determines that the code
@@ -13,13 +13,8 @@ const compile = async (
   checkFreshFn?: (deps: string[]) => Promise<boolean>,
   transpileFn?: TranspileFn
 ): Promise<string | void> => {
-  const {
-    unlinkedImports,
-    allFiles,
-    isolateDir,
-    ignoreUnusedLocals
-  } = await preprocessAndIsolate(args, transpileFn);
-  if (checkFreshFn && await checkFreshFn(allFiles.map(f => "/" + f)))
+  const program = await prepareGccProgram(args, transpileFn);
+  if (checkFreshFn && await checkFreshFn(program.sourceSet.getPaths().map((f) => "/" + f)))
     return;
 
   const jsCompErrors = [
@@ -33,17 +28,12 @@ const compile = async (
     jsCompWarnings.push("reportUnknownTypes");
   if (args.isTrue("loose"))
     jsCompErrors.pop();
-  if (ignoreUnusedLocals)
-    jsCompErrors.shift();
 
-  let output = await compileWithClosureCompiler({
-    allFiles,
-    entryPoint: args.asStringOr("entry", ""),
-    isolateDir,
+  let output = await compileWithClosureCompiler(program, {
     jsCompErrors,
     jsCompWarnings,
   });
-  output = postprocess(output, unlinkedImports);
+  output = postprocess(output, program.unlinkedImports);
   console.log(`GCC size:       ${output.length}`);
   return output;
 }

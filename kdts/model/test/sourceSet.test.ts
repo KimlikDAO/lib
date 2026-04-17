@@ -1,3 +1,6 @@
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { expect, test } from "bun:test";
 import { SourceSet } from "../sourceSet";
 
@@ -53,4 +56,20 @@ test("getPaths returns all resolved paths in sorted order", () => {
   );
 
   expect(sources.getPaths()).toEqual(["a.ts", "pkg/b.d.ts", "z.ts"]);
+});
+
+test("tracks entry metadata and writes isolated sources", async () => {
+  const entry = { path: "lib/a.ts", source: "module:lib/a" } as const;
+  const isolateDir = await mkdtemp(join(tmpdir(), "kdts-source-set-"));
+  const sources = new SourceSet(entry, isolateDir);
+
+  try {
+    expect(sources.entry).toEqual(entry);
+    expect(sources.isolateDir).toBe(isolateDir);
+
+    await sources.writeIsolated(entry, "export {};\n");
+    expect(await readFile(join(isolateDir, "lib/a.ts"), "utf8")).toBe("export {};\n");
+  } finally {
+    await rm(isolateDir, { recursive: true, force: true });
+  }
 });
