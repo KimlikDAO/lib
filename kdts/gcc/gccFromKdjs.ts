@@ -1,11 +1,11 @@
 import { Comment, parse } from "acorn";
 import { getExt } from "../../util/paths";
 import { SourcePath, resolvePath } from "../frontend/resolver";
-import { SourceSet } from "../model/sourceSet";
 import { ModuleImports } from "../model/moduleImports";
 import { parseTypePrefix } from "../parser/typeParser";
 import { CodeUpdater } from "../util/textual";
 import { generateAliasImports } from "./generator";
+import type { GccProgram } from "./program";
 
 const DECL_FILE = /\.(d|e)\.(js|ts)$/;
 
@@ -85,17 +85,13 @@ const transpileJsDoc = (comment: Comment, fileName: string): string => {
  *
  * @param source
  * @param content 
- * @param sources
- * @param globals 
- * @param unlinkedImports 
+ * @param program
  * @returns 
  */
 const transpileJs = (
   source: SourcePath,
   content: string,
-  sources: SourceSet,
-  _globals: Record<string, unknown>,
-  unlinkedImports: ModuleImports
+  program: GccProgram
 ): string => {
   const comments: Comment[] = [];
   const updater = new CodeUpdater();
@@ -118,11 +114,11 @@ const transpileJs = (
         lastImportDeclaration = node;
         const importSource = "" + node.source.value;
         const resolvedImport = resolvePath(source.path, importSource);
-        sources.add(resolvedImport);
+        program.sourceSet.add(resolvedImport);
         const importExt = "." + getExt(resolvedImport.path);
 
         if (resolvedImport.source.startsWith("package"))
-          unlinkedImports.add(node, resolvedImport.source);
+          program.unlinkedImports.add(node, resolvedImport.source);
         if (DECL_FILE.test(resolvedImport.path)) {
           updater.replace(node, "; // gcc-js: declaration imports are replaced by type alias imports");
           typeOnlyImports.add(node, resolvedImport.source);

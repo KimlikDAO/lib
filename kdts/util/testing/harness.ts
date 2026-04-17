@@ -2,23 +2,20 @@ import { expect } from "bun:test";
 import { SourcePath } from "../../frontend/resolver";
 import { SourceSet } from "../../model/sourceSet";
 import { ModuleImports } from "../../model/moduleImports";
+import { createGccProgram, GccProgram } from "../../gcc/program";
 import { stripIndent } from "./source";
 
 type TranspileSourceFn = (
   source: SourcePath,
   content: string,
-  sources: SourceSet,
-  globals: Record<string, unknown>,
-  unlinkedImports: ModuleImports
+  program: GccProgram
 ) => string;
 
 type TranspileDeclarationFn = (
   source: SourcePath,
   content: string,
-  sources: SourceSet
+  program: GccProgram
 ) => string;
-
-type TranspileFn = TranspileSourceFn | TranspileDeclarationFn;
 
 type ExpectEmitFn = (src: string, emit: string) => void;
 
@@ -37,9 +34,11 @@ const harnessSourceFn = (
         path: "/test.ts"
       },
       src,
-      new SourceSet(),
-      options.overrides || {},
-      options.unlinkedImports || new ModuleImports()
+      createGccProgram(
+        new SourceSet(),
+        options.overrides || {},
+        options.unlinkedImports || new ModuleImports()
+      )
     );
     expect(out).toBe(stripIndent(emit));
   }
@@ -52,16 +51,13 @@ const harnessDeclarationFn = (
     const out = transpileDeclarationFn({
       source: "module:test.d",
       path: "/test.d.ts"
-    }, src, new SourceSet());
+    }, src, createGccProgram(new SourceSet()));
     expect(out).toBe(stripIndent(emit));
   }
 }
 
-const harness = (transpileFn: TranspileFn): ExpectEmitFn => {
-  if (transpileFn.length == 3)
-    return harnessDeclarationFn(transpileFn as TranspileDeclarationFn);
-  return harnessSourceFn(transpileFn as TranspileSourceFn);
-}
+const harness = (transpileFn: TranspileSourceFn): ExpectEmitFn =>
+  harnessSourceFn(transpileFn);
 
 export {
   harness,

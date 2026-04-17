@@ -1,32 +1,29 @@
 import { SourcePath } from "../frontend/resolver";
-import { SourceSet } from "../model/sourceSet";
-import { ModuleImports } from "../model/moduleImports";
 import { DtsParser, TsParser } from "../parser/tsParser";
 import { bindDts } from "../transform/bind";
 import { generate, generateAliasImports } from "./generator";
+import type { GccProgram } from "./program";
 import { GccExternTransform, GccJsTransform } from "./transform";
 
 const transpileTs = (
   source: SourcePath,
   content: string,
-  sources: SourceSet,
-  overrides: Record<string, unknown> = {},
-  unlinkedImports: ModuleImports
+  program: GccProgram
 ): string => {
   const ast = TsParser.parse(content);
-  new GccJsTransform(source, sources, overrides, unlinkedImports).mut(ast);
+  new GccJsTransform(source, program).mut(ast);
   return generate(ast);
 }
 
 const transpileDts = (
   source: SourcePath,
   content: string,
-  sources: SourceSet
+  program: GccProgram
 ): string => {
   const ast = DtsParser.parse(content);
   bindDts(ast, source);
 
-  const transform = new GccExternTransform(source, sources);
+  const transform = new GccExternTransform(source, program.sourceSet);
   transform.mut(ast);
 
   let output = "/** @fileoverview @externs */\n";

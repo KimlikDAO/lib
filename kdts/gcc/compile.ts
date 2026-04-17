@@ -1,7 +1,7 @@
 import { CliArgs } from "../../util/cli";
 import { compileWithClosureCompiler } from "./closureCompiler";
 import { postprocess } from "./postprocess";
-import { prepareGccProgram, TranspileFn } from "./program";
+import { prepareGccProgram, TranspileFn } from "./prepareProgram";
 
 /**
  * Resolves to the compiled code or void if it determines that the code
