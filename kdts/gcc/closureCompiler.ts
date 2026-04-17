@@ -1,7 +1,7 @@
 import { spawn } from "bun";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
-import { DiskProgram } from "../model/sourceProgram";
+import { DiskProgram } from "../model/program";
 
 const NodeModulesDirs = [
   "node_modules",
@@ -104,9 +104,6 @@ const createClosureCompilerCommand = (
   };
 };
 
-const prependCommand = (cmd: string[], message: string): string =>
-  `${cmd.join(" ")}\n\n${message}\n\n`;
-
 interface ClosureCompilerParams {
   jsCompErrors: string[];
   jsCompWarnings: string[];
@@ -137,7 +134,7 @@ const compileWithClosureCompiler = async (
   ]);
 
   if (exitCode || errors)
-    throw prependCommand(cmd, errors || String(exitCode));
+    throw `${cmd.join(" ")}\n\n${errors || String(exitCode)}\n\n`;
   return output;
 };
 
