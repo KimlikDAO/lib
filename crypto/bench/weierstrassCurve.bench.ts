@@ -24,5 +24,5 @@ bench("secp256k1 multiply ×100 (input ← P.proj().x)", {
   "weierstrass": weierstrass,
 }, {
   repeat: 10,
-  dataset: [{ args: [k], expected: arf(k) }],
+  dataset: [{ input: k, output: arf(k) }],
 });

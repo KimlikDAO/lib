@@ -1,22 +1,46 @@
-import { shuffle } from "../util/arrays";
-import { assertEq } from "../util/assert";
+import { shuffle } from "./util/arrays";
+import { assertEq } from "./util/assert";
 
-const bench = <A, T>(
+/**
+ * Runs a correctness-checked benchmark for alternative implementations of
+ * the same operation.
+ *
+ * Each function is executed `repeat` times for every dataset item and its
+ * result is compared against the expected output with `assertEq`.
+ * Implementations are shuffled for each input to reduce order bias, then
+ * reported from fastest to slowest together with their slowdown relative to
+ * the fastest one.
+ *
+ * @example
+ * ```ts
+ * bench("sum", {
+ *   loop: sumLoop,
+ *   reduce: sumReduce,
+ * }, {
+ *   repeat: 10_000,
+ *   dataset: [
+ *     { input: [1, 2, 3], output: 6 },
+ *     { input: [5, 8], output: 13 },
+ *   ],
+ * });
+ * ```
+ */
+const bench = <I, O>(
   description: string,
-  fns: Record<string, (...args: A[]) => T>,
-  options: { repeat: number, dataset: { args: A[], expected: T }[] },
+  fns: Record<string, (input: I) => O>,
+  options: { repeat: number, dataset: { input: I, output: O }[] },
 ): void => {
   const names = Object.keys(fns);
   const times: Record<string, number> = {};
   for (const name of names) times[name] = 0;
   for (const data of options.dataset) {
-    const { args, expected } = data;
+    const { input, output } = data;
     shuffle(names);
     for (const name of names) {
       const fn = fns[name];
       const t0 = performance.now();
       for (let i = 0, r = options.repeat; i < r; ++i)
-        assertEq(fn(...args), expected);
+        assertEq(fn(input), output);
       times[name] += performance.now() - t0;
     }
   }
@@ -29,7 +53,9 @@ const bench = <A, T>(
     const slower = name == names[0]
       ? "      (fastest)"
       : `  ${pct.toFixed(1).padStart(5)}% slower`;
-    console.log(`  ${name.padEnd(maxNameLen)}  ${times[name].toFixed(2)} ms${slower}`);
+    console.log(
+      `  ${name.padEnd(maxNameLen)}  ${times[name].toFixed(2)} ms${slower}`
+    );
   }
 }
 

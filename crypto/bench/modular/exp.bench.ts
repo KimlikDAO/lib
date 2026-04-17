@@ -4,13 +4,16 @@ import { exp } from "../../modular";
 const Q = 0xDAD19B08F618992D3A5367F0E730B97C6DD113B6A2A493C9EDB0B68DBB1AEC020FB2A64C9644397AB016ABA5B40FA22655060824D9F308984D6734E2439BA08Fn;
 const R = (Q - 1n) >> 1n;
 
+type Input = { a: bigint, x: bigint };
+
 bench(`Compares various exp() algorithms and their implementations.
 
   Currently the best way to implement montgomery ladder is through toString(2)
   and not bit shifting bigint.
 `, {
-  "current implementation": exp,
-  "expLTRBinary": (a: bigint, x: bigint, M: bigint): bigint => {
+  "current implementation": ({ a, x }: Input) => exp(a, x, Q),
+  "expLTRBinary": ({ a, x }: Input): bigint => {
+    const M = Q;
     const xBits = x.toString(2);
     a %= M;
     let r = xBits[0] == '1' ? a : 1n;
@@ -20,7 +23,8 @@ bench(`Compares various exp() algorithms and their implementations.
     }
     return r;
   },
-  "expLTRBinary2": (a: bigint, x: bigint, M: bigint): bigint => {
+  "expLTRBinary2": ({ a, x }: Input): bigint => {
+    const M = Q;
     const xBits = x.toString(2);
     a %= M;
     let r = xBits[0] == '1' ? a : 1n;
@@ -33,7 +37,8 @@ bench(`Compares various exp() algorithms and their implementations.
     }
     return r;
   },
-  "expRTLBinary": (a: bigint, x: bigint, M: bigint): bigint => {
+  "expRTLBinary": ({ a, x }: Input): bigint => {
+    const M = Q;
     const xBits = x.toString(2);
     a %= M;
     let r = 1n;
@@ -43,7 +48,8 @@ bench(`Compares various exp() algorithms and their implementations.
     }
     return r;
   },
-  "expViaBigInt": (a: bigint, x: bigint, M: bigint): bigint => {
+  "expViaBigInt": ({ a, x }: Input): bigint => {
+    const M = Q;
     let res = 1n;
     a %= M;
     for (; x; x >>= 1n) {
@@ -52,7 +58,9 @@ bench(`Compares various exp() algorithms and their implementations.
     }
     return res;
   },
-}, { repeat: 1000, dataset: [
-  { args: [2n, Q - 1n, Q], expected: 1n },
-  { args: [R, Q - 1n, Q], expected: 1n },
-] });
+}, {
+  repeat: 1000, dataset: [
+    { input: { a: 2n, x: Q - 1n }, output: 1n },
+    { input: { a: R, x: Q - 1n }, output: 1n },
+  ]
+});

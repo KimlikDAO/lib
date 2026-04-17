@@ -68,5 +68,5 @@ bench("w-ary scalar multiplication", {
   "base-8 (3-bit window)": m8,
 }, {
   repeat: 1000,
-  dataset: [{ args: [k], expected: pr_kG }],
+  dataset: [{ input: k, output: pr_kG }],
 });

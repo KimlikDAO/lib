@@ -73,7 +73,5 @@ bench("sha3 scratchTape: f(s) only, Array(50) vs Uint32Array(50)", {
   "Uint32Array(50) reuse": benchUint32Reuse,
 }, {
   repeat: REPEAT,
-  dataset: [
-    { args: [], expected: eArr },
-  ],
+  dataset: [{ input: undefined, output: eArr }]
 });

@@ -69,13 +69,13 @@ bench("keccak256", {
 }, {
   repeat: 100,
   dataset: [{
-    args: [Encoder.encode(Text1)],
-    expected: keccak256Uint8(Encoder.encode(Text1))
+    input: Encoder.encode(Text1),
+    output: keccak256Uint8(Encoder.encode(Text1))
   }, {
-    args: [Encoder.encode(Text2)],
-    expected: keccak256Uint8(Encoder.encode(Text2))
+    input: Encoder.encode(Text2),
+    output: keccak256Uint8(Encoder.encode(Text2))
   }, {
-    args: [Encoder.encode(Text3)],
-    expected: keccak256Uint8(Encoder.encode(Text3))
+    input: Encoder.encode(Text3),
+    output: keccak256Uint8(Encoder.encode(Text3))
   }],
 });

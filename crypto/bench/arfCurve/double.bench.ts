@@ -133,8 +133,5 @@ bench("Compare various double() formulas", {
   "doubleGPT()": makeFunc(doubleGPT),
 }, {
   repeat: 10,
-  dataset: [{
-    args: [],
-    expected: A,
-  }],
+  dataset: [{ input: undefined, output: A }],
 });

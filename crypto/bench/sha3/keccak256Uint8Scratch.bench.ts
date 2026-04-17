@@ -61,12 +61,12 @@ const hashUint32Scratch = (): Uint8Array => {
   return new Uint8Array(s.buffer, 0, 32);
 };
 
-const expected = hashArray();
+const output = hashArray();
 
 bench("keccak256Uint8-equivalent: Array(50) vs Uint32Array(50) scratch", {
   "Array(50) + manual 32-byte out": hashArray,
   "Uint32Array(50) + Uint8Array(buffer) out": hashUint32Scratch,
 }, {
   repeat: 120,
-  dataset: [{ args: [], expected }],
+  dataset: [{ input: undefined, output }],
 });

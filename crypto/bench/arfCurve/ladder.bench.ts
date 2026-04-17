@@ -39,10 +39,10 @@ bench("Scalar ladder: bigint (bit) vs string (base-4 multiply)", {
 }, {
   repeat: 30,
   dataset: [
-    { args: [999n], expected: O },
-    { args: [Q / 2n], expected: O },
-    { args: [kMid], expected: O },
-    { args: [kRand1], expected: O },
-    { args: [kRand2], expected: O },
+    { input: 999n, output: O },
+    { input: Q / 2n, output: O },
+    { input: kMid, output: O },
+    { input: kRand1, output: O },
+    { input: kRand2, output: O },
   ],
 });

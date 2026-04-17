@@ -15,8 +15,8 @@ bench("x³ mod P (secp256k1-size), x ≈ P/2", {
 }, {
   repeat: 1000,
   dataset: [{
-    args: [a, P],
-    expected: a * a * a % P
+    input: a,
+    output: a * a * a % P
   }],
 });
 
@@ -26,7 +26,7 @@ bench("x³ mod Q (Pallas-size), x ≈ Q/2", {
 }, {
   repeat: 1000,
   dataset: [{
-    args: [b, Q],
-    expected: b * b * b % Q
+    input: b,
+    output: b * b * b % Q
   }],
 });

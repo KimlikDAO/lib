@@ -24,13 +24,18 @@ const expTimesExpViaBigIntMask = (a: bigint, x: bigint, b: bigint, y: bigint, M:
 const Q = 0xDAD19B08F618992D3A5367F0E730B97C6DD113B6A2A493C9EDB0B68DBB1AEC020FB2A64C9644397AB016ABA5B40FA22655060824D9F308984D6734E2439BA08Fn;
 const M = (Q - 1n) >> 1n;
 
+type Input = { a: bigint, x: bigint, b: bigint, y: bigint };
+
 bench("a^x b^y (mod M): two exp() vs single-call impls", {
-  "two exp()": (a: bigint, x: bigint, b: bigint, y: bigint, M: bigint) => exp(a, x, M) * exp(b, y, M) % M,
-  "expTimesExpViaBigIntMask": expTimesExpViaBigIntMask,
-  "expTimesExp (current implementation)": expTimesExp,
+  "two exp()":
+    ({ a, x, b, y }: Input) => exp(a, x, Q) * exp(b, y, Q) % Q,
+  "expTimesExpViaBigIntMask":
+    ({ a, x, b, y}: Input) => expTimesExpViaBigIntMask(a, x, b, y, Q),
+  "expTimesExp (current implementation)":
+    ({ a, x, b, y}: Input) => expTimesExp(a, x, b, y, Q)
 }, {
   repeat: 1000,
   dataset: [
-    { args: [123n, Q - 1n, 15129n, M, Q], expected: 1n },
+    { input: { a: 123n, x: Q - 1n, b: 15129n, y: M }, output: 1n },
   ]
 });

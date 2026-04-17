@@ -58,12 +58,12 @@ bench("keccak256Uint32: Uint32Array vs number[] scratch tape.", {
 }, {
   repeat: 100,
   dataset: [{
-    args: [Uint32Array.from("123456")], expected: 14435971454
+    input: Uint32Array.from("123456"), output: 14435971454
   }, {
-    args: [Uint32Array.from("654321")], expected: 16036270301
+    input: Uint32Array.from("654321"), output: 16036270301
   },{
-    args: [Uint32Array.from("364125")], expected: 14650777862
+    input: Uint32Array.from("364125"), output: 14650777862
   },{
-    args: [Uint32Array.from("164325")], expected: 14414650566
+    input: Uint32Array.from("164325"), output: 14414650566
   }],
 });

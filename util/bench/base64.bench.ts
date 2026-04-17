@@ -11,9 +11,7 @@ bench("base64.fromBigInt", {
   "viaHex": fromBigIntViaHex,
 }, {
   repeat: 10,
-  dataset: [{
-    args: [123456789n], expected: "B1vNFQ=="
-  }],
+  dataset: [{ input: 123456789n, output: "B1vNFQ==" }],
 });
 
 const output = "U29tZSBiYXNlNjQgZGF0YS4=";
@@ -51,7 +49,5 @@ bench("base64.from (bytes → base64)", {
   "joinLoop": fromJoinLoop,
 }, {
   repeat: 1000,
-  dataset: [{
-    args: [input], expected: output
-  }],
+  dataset: [{ input, output }],
 });

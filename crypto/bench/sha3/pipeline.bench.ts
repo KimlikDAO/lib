@@ -18,8 +18,8 @@ bench("sha3 pipeline: string → hash (orig vs TextEncoder+keccak256Uint8)", {
 }, {
   repeat: REPEAT,
   dataset: [
-    { args: [S1], expected: sumHexHead(keccak256(S1)) },
-    { args: [S2], expected: sumHexHead(keccak256(S2)) },
-    { args: [S3], expected: sumHexHead(keccak256(S3)) },
+    { input: S1, output: sumHexHead(keccak256(S1)) },
+    { input: S2, output: sumHexHead(keccak256(S2)) },
+    { input: S3, output: sumHexHead(keccak256(S3)) },
   ],
 });

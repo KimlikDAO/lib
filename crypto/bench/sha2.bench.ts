@@ -20,7 +20,7 @@ bench("SHA256 compression: 4-round unroll vs 1-round (single block).", {
   },
 }, {
   repeat: 1000,
-  dataset: [{ args: [], expected: 588650447 }],
+  dataset: [{ input: undefined, output: 588650447 }]
 });
 
 bench("Simulated state shift: Uint32Array.set(subarray) vs scalar variables (63 iterations).", {
@@ -58,7 +58,7 @@ bench("Simulated state shift: Uint32Array.set(subarray) vs scalar variables (63 
   },
 }, {
   repeat: 100,
-  dataset: [{ args: [] as never[], expected: 1240 }],
+  dataset: [{ input: undefined, output: 1240 }],
 });
 
 bench("Copy 20 words × 100 iters: element loop vs .set().", {
@@ -79,5 +79,5 @@ bench("Copy 20 words × 100 iters: element loop vs .set().", {
   },
 }, {
   repeat: 100,
-  dataset: [{ args: [], expected: 9 }],
+  dataset: [{ input: undefined, output: 9 }],
 });

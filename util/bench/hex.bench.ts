@@ -15,8 +15,8 @@ const hexFromLoop = (bytes: Uint8Array): string => {
 const hexFromArrayFrom = (bytes: Uint8Array): string =>
   Array.from(bytes, (i) => FromUint8[i as number]).join("");
 
-const input = Uint8Array.from("0123123123123980123");
-const output = hex.from(input);
+const Arr = Uint8Array.from("0123123123123980123");
+const Hex = hex.from(Arr);
 
 bench("hex.from (bytes → hex string)", {
   "arrayFrom": hexFromArrayFrom,
@@ -24,9 +24,7 @@ bench("hex.from (bytes → hex string)", {
   "native": hex.from,
 }, {
   repeat: 1000,
-  dataset: [{
-    args: [input], expected: output
-  }],
+  dataset: [{ input: Arr, output: Hex }],
 });
 
 /** @satisfies {PureFn} */
@@ -58,6 +56,6 @@ bench("hex → Uint8Array", {
 }, {
   repeat: 10000,
   dataset: [{
-    args: [output], expected: input
+    input: Hex, output: Arr
   }],
 });

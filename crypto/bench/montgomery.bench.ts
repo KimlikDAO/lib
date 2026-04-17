@@ -28,7 +28,7 @@ bench("Montgomery mul vs bigint mul (2000-chain)", {
 }, {
   repeat: 100,
   dataset: [{
-    args: [],
-    expected: 0x13dfc7db048bc93eea32afc4dd4d265317c86a81075c6282e46d8a65df912100n
+    input: undefined,
+    output: 0x13dfc7db048bc93eea32afc4dd4d265317c86a81075c6282e46d8a65df912100n
   }],
 });
