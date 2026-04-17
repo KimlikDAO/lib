@@ -158,6 +158,26 @@ describe("FunctionDeclaration", ()=>{
     `);
   });
 
+  test("emits encourageInlining for InlineFriendlyFn declarations", () => {
+    expectEmit(`
+      /** @satisfies {InlineFriendlyFn} */
+      function arr<T>(x: T[] | T): T[] {
+        return Array.isArray(x) ? x : [x];
+      }
+    `, `
+      /**
+       * @suppress {reportUnknownTypes}
+       * @template T
+       * @encourageInlining
+       * @param {(!Array<!T>|!T)} x
+       * @return {!Array<!T>}
+       */
+      function arr(x) {
+        return (Array.isArray(x) ? x : [x]);
+      }
+    `);
+  });
+
   test("generator syntax", () => {
     expectEmit(`
       function* ids(limit: number): Generator<number> {
