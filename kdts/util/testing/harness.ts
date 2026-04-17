@@ -18,6 +18,16 @@ interface TranspileDeclarationFn {
   (source: SourcePath, content: string, sources: SourceSet): string;
 }
 
+interface TranspileFn {
+  (
+    source: SourcePath,
+    content: string,
+    sources: SourceSet,
+    overrides?: Record<string, unknown>,
+    imports?: ModuleImports
+  ): string;
+}
+
 interface ExpectEmitFn {
   (src: string, emit: string): void;
 }
@@ -57,8 +67,11 @@ const harnessDeclarationFn = (
   }
 }
 
-const harness = (transpileFn: TranspileSourceFn): ExpectEmitFn =>
-  harnessSourceFn(transpileFn);
+const harness = (transpileFn: TranspileFn): ExpectEmitFn => {
+  if (transpileFn.length <= 3)
+    return harnessDeclarationFn(transpileFn as TranspileDeclarationFn);
+  return harnessSourceFn(transpileFn as TranspileSourceFn);
+}
 
 export {
   harness,

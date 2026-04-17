@@ -1,8 +1,8 @@
 import { test } from "bun:test";
-import { harnessDeclarationFn } from "../../util/testing/harness";
+import { harness } from "../../util/testing/harness";
 import { transpileDts } from "../transpile";
 
-const expectEmit = harnessDeclarationFn(transpileDts);
+const expectEmit = harness(transpileDts);
 
 test("externs serialize type-only imports as alias imports", () => {
   expectEmit(`
