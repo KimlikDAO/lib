@@ -63,6 +63,12 @@ import {
 import { partition } from "../../util/arrays";
 import { isIdentifier, typeReferenceName } from "../ast/guards";
 import {
+  probeArrayLikeElementType,
+  probeEnumType,
+  probeExpressionType
+} from "../ast/probe";
+import {
+  ReturnStatement,
   TSArrayType,
   TSAsExpression,
   TSConstructorType,
@@ -82,7 +88,6 @@ import {
   TSParenthesizedType,
   TSPropertySignature,
   TSQualifiedName,
-  ReturnStatement,
   TSSatisfiesExpression,
   TSTupleType,
   TSTypeAliasDeclaration,
@@ -98,12 +103,8 @@ import {
 } from "../ast/types";
 import { Generator } from "../ast/walk";
 import { Modifier, hasAll } from "../model/modifier";
-import { ModuleImports, SourceId } from "../model/moduleImports";
-import {
-  probeArrayLikeElementType,
-  probeEnumType,
-  probeExpressionType
-} from "../ast/probe";
+import { ModuleImports } from "../model/moduleImports";
+import { SourceId } from "../model/source";
 import { conditionalType } from "./ttlGenerator";
 
 const toIdentifier = (source: SourceId, name: string): string => {

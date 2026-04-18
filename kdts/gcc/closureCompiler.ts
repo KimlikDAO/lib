@@ -1,6 +1,7 @@
 import { spawn } from "bun";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
+import { DiskProgram } from "../model/program";
 
 const NodeModulesDirs = [
   "node_modules",
@@ -13,19 +14,6 @@ const JavaRuntimeArgs = [
   "-XX:+IgnoreUnrecognizedVMOptions",
   "--sun-misc-unsafe-memory-access=allow",
 ];
-
-interface CompileParams {
-  allFiles: string[];
-  entryPoint: string;
-  isolateDir: string;
-  jsCompErrors: string[];
-  jsCompWarnings: string[];
-}
-
-interface ClosureCompilerCommand {
-  cmd: string[];
-  platform: "native" | "java";
-}
 
 const resolveInstalledPath = (
   packagePath: string,
@@ -65,8 +53,11 @@ const getJavaJarPath = (): string => {
   return javaJarPath;
 };
 
-const createCompilerArgs = (params: CompileParams): string[] => {
-  const args = params.allFiles;
+const createCompilerArgs = (
+  program: DiskProgram,
+  params: ClosureCompilerParams
+): string[] => {
+  const args = program.sources.slice();
   args.push(
     "--compilation_level=ADVANCED",
     "--charset=utf-8",
@@ -86,14 +77,20 @@ const createCompilerArgs = (params: CompileParams): string[] => {
     args.push(`--jscomp_error=${error}`);
   for (const warning of params.jsCompWarnings)
     args.push(`--jscomp_warning=${warning}`);
-  if (params.entryPoint)
-    args.push(`--entry_point=${params.entryPoint}`);
+  if (program.entry)
+    args.push(`--entry_point=${program.entry}`);
 
   return args;
 };
 
-const createClosureCompilerCommand = (params: CompileParams,): ClosureCompilerCommand => {
-  const args = createCompilerArgs(params);
+const createClosureCompilerCommand = (
+  program: DiskProgram,
+  params: ClosureCompilerParams,
+): {
+  cmd: string[];
+  platform: "native" | "java";
+} => {
+  const args = createCompilerArgs(program, params);
   const nativeImagePath = getNativeImagePath();
   if (nativeImagePath)
     return {
@@ -107,19 +104,26 @@ const createClosureCompilerCommand = (params: CompileParams,): ClosureCompilerCo
   };
 };
 
-const prependCommand = (cmd: string[], message: string): string =>
-  `${cmd.join(" ")}\n\n${message}\n\n`;
+type ClosureCompilerParams = {
+  jsCompErrors: string[];
+  jsCompWarnings: string[];
+}
 
 const compileWithClosureCompiler = async (
-  params: CompileParams,
+  program: DiskProgram,
+  params: ClosureCompilerParams,
 ): Promise<string> => {
-  const { cmd, platform } = createClosureCompilerCommand(params);
-  console.info("GCC isolate:   ", params.isolateDir, `(for ${params.entryPoint})`);
+  const { cmd, platform } = createClosureCompilerCommand(program, params);
+  console.info(
+    "GCC isolate:   ",
+    program.isolateDir,
+    `(for ${program.entry})`
+  );
   console.info("GCC platform:  ", platform);
 
   const proc = spawn({
     cmd,
-    cwd: params.isolateDir,
+    cwd: program.isolateDir,
     stdout: "pipe",
     stderr: "pipe",
   });
@@ -130,14 +134,13 @@ const compileWithClosureCompiler = async (
   ]);
 
   if (exitCode || errors)
-    throw prependCommand(cmd, errors);
+    throw `${cmd.join(" ")}\n\n${errors || exitCode}\n\n`;
   return output;
 };
 
 export {
-  CompileParams,
   compileWithClosureCompiler,
   createClosureCompilerCommand,
   getJavaJarPath,
-  getNativeImagePath,
+  getNativeImagePath
 };

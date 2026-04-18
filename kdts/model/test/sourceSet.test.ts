@@ -1,9 +1,8 @@
 import { expect, test } from "bun:test";
-import { SourceSet } from "../sourceSet";
+import { SourceSet } from "../source";
+import { Source } from "../source";
 
-type ResolvedSource = Parameters<SourceSet["add"]>[0];
-
-const createSourceSet = (...resolvedSources: ResolvedSource[]) => {
+const createSourceSet = (...resolvedSources: Source[]) => {
   const sources = new SourceSet();
 
   for (const resolvedSource of resolvedSources)
@@ -14,9 +13,9 @@ const createSourceSet = (...resolvedSources: ResolvedSource[]) => {
 
 test("dedupes by source id and keeps the first resolved path", () => {
   const sources = createSourceSet(
-    { path: "lib/a.ts", source: "module:lib/a" },
-    { path: "symlinked/a.ts", source: "module:lib/a" },
-    { path: "node_modules/@kimlikdao/kdts/@types/bun/index.d.ts", source: "package:bun" },
+    { path: "lib/a.ts", id: "module:lib/a" },
+    { path: "symlinked/a.ts", id: "module:lib/a" },
+    { path: "node_modules/@kimlikdao/kdts/@types/bun/index.d.ts", id: "package:bun" },
   );
 
   expect(sources.getPaths()).toEqual([
@@ -27,29 +26,29 @@ test("dedupes by source id and keeps the first resolved path", () => {
 
 test("pop returns pending sources in reverse insertion order", () => {
   const sources = createSourceSet(
-    { path: "lib/a.ts", source: "module:lib/a" },
-    { path: "lib/b.ts", source: "module:lib/b" },
+    { path: "lib/a.ts", id: "module:lib/a" },
+    { path: "lib/b.ts", id: "module:lib/b" },
   );
 
-  expect(sources.pop()).toEqual({ path: "lib/b.ts", source: "module:lib/b" });
-  expect(sources.pop()).toEqual({ path: "lib/a.ts", source: "module:lib/a" });
+  expect(sources.pop()).toEqual({ path: "lib/b.ts", id: "module:lib/b" });
+  expect(sources.pop()).toEqual({ path: "lib/a.ts", id: "module:lib/a" });
   expect(sources.pop()).toBeUndefined();
 });
 
 test("getPaths retains resolved paths after pending sources are popped", () => {
   const sources = createSourceSet(
-    { path: "lib/a.ts", source: "module:lib/a" },
+    { path: "lib/a.ts", id: "module:lib/a" },
   );
 
-  expect(sources.pop()).toEqual({ path: "lib/a.ts", source: "module:lib/a" });
+  expect(sources.pop()).toEqual({ path: "lib/a.ts", id: "module:lib/a" });
   expect(sources.getPaths()).toEqual(["lib/a.ts"]);
 });
 
 test("getPaths returns all resolved paths in sorted order", () => {
   const sources = createSourceSet(
-    { path: "z.ts", source: "module:z" },
-    { path: "a.ts", source: "module:a" },
-    { path: "pkg/b.d.ts", source: "package:b" },
+    { path: "z.ts", id: "module:z" },
+    { path: "a.ts", id: "module:a" },
+    { path: "pkg/b.d.ts", id: "package:b" },
   );
 
   expect(sources.getPaths()).toEqual(["a.ts", "pkg/b.d.ts", "z.ts"]);

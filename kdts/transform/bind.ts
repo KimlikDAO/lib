@@ -5,7 +5,8 @@ import {
   ImportSpecifier,
   Program,
 } from "acorn";
-import { resolvePath, SourcePath } from "../frontend/resolver";
+import { resolvePath } from "../frontend/resolver";
+import { Source } from "../model/source";
 import { SymbolRef } from "../model/symbolRef";
 
 type BoundIdentifier = Identifier & {
@@ -138,7 +139,7 @@ const collectExportMap = (ast: DtsProgram): Map<string, string> => {
   return exportMap;
 };
 
-const bindDts = (ast: DtsProgram, currentSource: SourcePath): void => {
+const bindDts = (ast: DtsProgram, currentSource: Source): void => {
   const exportMap = collectExportMap(ast);
   const bindings = new Map<string, SymbolRef>();
 
@@ -400,7 +401,7 @@ const bindDts = (ast: DtsProgram, currentSource: SourcePath): void => {
 
   for (const node of ast.body) {
     if (isImportDeclaration(node)) {
-      const source = resolvePath(currentSource.path, String(node.source.value)).source;
+      const source = resolvePath(currentSource.path, String(node.source.value)).id;
 
       for (const specifier of node.specifiers) {
         if (isImportDefaultSpecifier(specifier) || isImportNamespaceSpecifier(specifier)) {
@@ -421,7 +422,7 @@ const bindDts = (ast: DtsProgram, currentSource: SourcePath): void => {
     if (declaration.type == "VariableDeclaration") {
       for (const id of getDeclarationIds(declaration)) {
         const ref: SymbolRef = {
-          source: currentSource.source,
+          source: currentSource.id,
           exportedName: exportMap.get(id.name) || id.name
         };
         id.symbolRef = ref;
@@ -434,7 +435,7 @@ const bindDts = (ast: DtsProgram, currentSource: SourcePath): void => {
     if (!id) continue;
 
     const ref: SymbolRef = {
-      source: currentSource.source,
+      source: currentSource.id,
       exportedName: exportMap.get(id.name) || id.name
     };
     id.symbolRef = ref;

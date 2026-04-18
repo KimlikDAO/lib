@@ -1,7 +1,11 @@
 import { CliArgs } from "../../util/cli";
+import { combine, getDir } from "../../util/paths";
 import { compileWithClosureCompiler } from "./closureCompiler";
+import { GccProgram } from "./gccProgram";
 import { postprocess } from "./postprocess";
-import { preprocessAndIsolate, TranspileFn } from "./preprocess";
+
+type TranspileFn = (content: string, file: string, isEntry?: boolean) =>
+  string | null;
 
 /**
  * Resolves to the compiled code or void if it determines that the code
@@ -11,15 +15,20 @@ import { preprocessAndIsolate, TranspileFn } from "./preprocess";
 const compile = async (
   args: CliArgs,
   checkFreshFn?: (deps: string[]) => Promise<boolean>,
-  transpileFn?: TranspileFn
+  _transpileFn?: TranspileFn
 ): Promise<string | void> => {
-  const {
-    unlinkedImports,
-    allFiles,
-    isolateDir,
-    ignoreUnusedLocals
-  } = await preprocessAndIsolate(args, transpileFn);
-  if (checkFreshFn && await checkFreshFn(allFiles.map(f => "/" + f)))
+  const entry = args.asStringOr("entry", "");
+  const isolateDir = combine(
+    getDir(args.asStringOr("output", "build/" + entry)),
+    args.asStringOr("isolateDir", ".kdts_isolate")
+  );
+  const program = await GccProgram.from(
+    entry,
+    args.asRecord("overrides"),
+    args.asList("externs"),
+    isolateDir
+  );
+  if (checkFreshFn && await checkFreshFn(program.sources))
     return;
 
   const jsCompErrors = [
@@ -33,17 +42,14 @@ const compile = async (
     jsCompWarnings.push("reportUnknownTypes");
   if (args.isTrue("loose"))
     jsCompErrors.pop();
-  if (ignoreUnusedLocals)
+  if (program.flowTransformed)
     jsCompErrors.shift();
 
-  let output = await compileWithClosureCompiler({
-    allFiles,
-    entryPoint: args.asStringOr("entry", ""),
-    isolateDir,
+  let output = await compileWithClosureCompiler(program, {
     jsCompErrors,
     jsCompWarnings,
   });
-  output = postprocess(output, unlinkedImports);
+  output = postprocess(output, program.imports);
   console.log(`GCC size:       ${output.length}`);
   return output;
 }

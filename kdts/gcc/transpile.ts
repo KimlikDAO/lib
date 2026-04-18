@@ -1,25 +1,25 @@
-import { SourcePath } from "../frontend/resolver";
-import { SourceSet } from "../model/sourceSet";
 import { ModuleImports } from "../model/moduleImports";
+import { SourceSet } from "../model/source";
+import { Source } from "../model/source";
 import { DtsParser, TsParser } from "../parser/tsParser";
 import { bindDts } from "../transform/bind";
 import { generate, generateAliasImports } from "./generator";
 import { GccExternTransform, GccJsTransform } from "./transform";
 
 const transpileTs = (
-  source: SourcePath,
+  source: Source,
   content: string,
   sources: SourceSet,
-  overrides: Record<string, unknown> = {},
-  unlinkedImports: ModuleImports
+  overrides: Record<string, unknown>,
+  imports: ModuleImports
 ): string => {
   const ast = TsParser.parse(content);
-  new GccJsTransform(source, sources, overrides, unlinkedImports).mut(ast);
+  new GccJsTransform(source, sources, overrides, imports).mut(ast);
   return generate(ast);
 }
 
 const transpileDts = (
-  source: SourcePath,
+  source: Source,
   content: string,
   sources: SourceSet
 ): string => {

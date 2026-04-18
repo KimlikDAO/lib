@@ -14,8 +14,8 @@ import { assertEq } from "./util/assert";
  * @example
  * ```ts
  * bench("sum", {
- *   loop: sumLoop,
- *   reduce: sumReduce,
+ *   "loop": sumLoop,
+ *   "reduce": sumReduce,
  * }, {
  *   repeat: 10_000,
  *   dataset: [
