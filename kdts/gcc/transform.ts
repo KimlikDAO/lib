@@ -26,8 +26,9 @@ import {
   VariableDeclarator
 } from "../ast/types";
 import { Mutator } from "../ast/walk";
-import { resolvePath, SourcePath } from "../frontend/resolver";
-import { SourceSet } from "../model/sourceSet";
+import { resolvePath } from "../frontend/resolver";
+import { SourceSet } from "../model/source";
+import { Source } from "../model/source";
 import { Modifier } from "../model/modifier";
 import { ModuleImports } from "../model/moduleImports";
 import {
@@ -50,7 +51,7 @@ class GccTransform extends Mutator {
   readonly typeOnlyImports = new ModuleImports();
 
   constructor(
-    protected readonly source: SourcePath,
+    protected readonly source: Source,
     protected readonly sources: SourceSet,
   ) { super(); }
 
@@ -78,7 +79,7 @@ class GccJsTransform extends GccTransform {
   private readonly returnTypes: (TSTypeReference | undefined)[] = [];
 
   constructor(
-    source: SourcePath,
+    source: Source,
     sources: SourceSet,
     private readonly overrides: Record<string, unknown>,
     private readonly imports: ModuleImports
@@ -170,10 +171,10 @@ class GccJsTransform extends GccTransform {
     const resolvedImport = resolvePath(this.source.path, importSource);
     this.sources.add(resolvedImport);
 
-    if (resolvedImport.source.startsWith("package:"))
-      this.imports.add(n, resolvedImport.source);
+    if (resolvedImport.id.startsWith("package:"))
+      this.imports.add(n, resolvedImport.id);
     if (resolvedImport.path.endsWith(".d.ts")) {
-      this.typeOnlyImports.add(n, resolvedImport.source);
+      this.typeOnlyImports.add(n, resolvedImport.id);
       const comment = synthComment("gcc-js: import is replaced by alias import");
       this.replaceNode(n, comment, "specifiers", "source", "importKind", "attributes");
     } else {
@@ -213,7 +214,7 @@ class GccExternTransform extends GccTransform {
     if (resolvedImport.path.endsWith(".ts") && !resolvedImport.path.endsWith(".d.ts"))
       throw "d.ts importing .ts is banned";
     this.sources.add(resolvedImport);
-    this.typeOnlyImports.add(n, resolvedImport.source);
+    this.typeOnlyImports.add(n, resolvedImport.id);
     return false;
   }
   ExportNamedDeclaration(n: ExportNamedDeclaration) { console.log(n); }
@@ -222,7 +223,7 @@ class GccExternTransform extends GccTransform {
       n,
       synthVariableDeclaration(
         synthIdentifier("default", {
-          source: this.source.source,
+          source: this.source.id,
           exportedName: "default",
         }),
         n.declaration,

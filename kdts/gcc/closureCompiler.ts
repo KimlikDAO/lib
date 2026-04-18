@@ -104,7 +104,7 @@ const createClosureCompilerCommand = (
   };
 };
 
-interface ClosureCompilerParams {
+type ClosureCompilerParams = {
   jsCompErrors: string[];
   jsCompWarnings: string[];
 }
@@ -134,7 +134,7 @@ const compileWithClosureCompiler = async (
   ]);
 
   if (exitCode || errors)
-    throw `${cmd.join(" ")}\n\n${errors || String(exitCode)}\n\n`;
+    throw `${cmd.join(" ")}\n\n${errors || exitCode}\n\n`;
   return output;
 };
 
@@ -142,5 +142,5 @@ export {
   compileWithClosureCompiler,
   createClosureCompilerCommand,
   getJavaJarPath,
-  getNativeImagePath,
+  getNativeImagePath
 };

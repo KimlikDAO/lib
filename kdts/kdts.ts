@@ -3,6 +3,7 @@
 import process from "node:process";
 import { CliArgs } from "../util/cli";
 import { compile } from "./compiler";
+import pkg from "./package.json";
 import { run } from "./runner";
 
 const args = CliArgs.fromArgv(process.argv, "target", {
@@ -15,7 +16,7 @@ const args = CliArgs.fromArgv(process.argv, "target", {
 });
 
 function usage() {
-  console.log(`kdts 0.0.x
+  console.log(`kdts ${pkg.version}
 
 Usage:
   kdts <entry> [options]
@@ -73,7 +74,7 @@ Examples:
 
 const verb = args.asStringOr("target", "");
 
-if(args.isTrue("help"))
+if (args.isTrue("help"))
   usage();
 
 if (verb == "compile" || verb.endsWith(".js") || verb.endsWith(".ts"))

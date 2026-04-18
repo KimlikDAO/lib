@@ -1,13 +1,12 @@
 import { file, write } from "bun";
-import { mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
+import { resolveRootPath } from "../frontend/resolver";
 import { ModuleExports } from "../model/moduleExports";
 import { ModuleImports } from "../model/moduleImports";
-import { SourceSet } from "../model/sourceSet";
 import { DiskProgram } from "../model/program";
-import { resolveRootPath } from "../frontend/resolver";
-import { transpileJs } from "./gccFromKdjs";
+import { SourceSet } from "../model/source";
 import { transpileDts, transpileTs } from "./transpile";
+import { transpileJs } from "./transpileJs";
 
 class GccProgram implements DiskProgram {
   flowTransformed = false;
@@ -26,7 +25,6 @@ class GccProgram implements DiskProgram {
     writes: Promise<number>[]
   ) {
     const outFile = join(this.isolateDir, path);
-    mkdirSync(dirname(outFile), { recursive: true });
     writes.push(write(outFile, content));
     this.sources.push(path);
   }
@@ -53,7 +51,7 @@ class GccProgram implements DiskProgram {
       else if (source.path.endsWith(".ts"))
         content = transpileTs(source, content, sourceSet, overrides, program.imports);
       else if (source.path.endsWith(".js"))
-        content = transpileJs(source, content, sourceSet, program.imports);
+        content = transpileJs(source, content, sourceSet, overrides, program.imports);
       else throw "Provide transpile function";
 
       program.writeSource(source.path, content, writes);

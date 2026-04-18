@@ -1,13 +1,8 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { combine, getDir, replaceExt } from "../../util/paths";
-import { SourceId } from "../model/moduleImports";
+import { SourceId, Source } from "../model/source";
 
 const KDTS_TYPES = "node_modules/@kimlikdao/kdts/@types";
-
-type SourcePath = {
-  source: SourceId
-  path: string,
-};
 
 type PackageJson = {
   main?: string;
@@ -80,9 +75,9 @@ const resolveRootImport = (packageDir: string, packageJson: PackageJson): string
   return resolveDeclaration(combine(packageDir, declarationPath));
 }
 
-const moduleAtPath = (path: string): SourcePath => ({
+const moduleAtPath = (path: string): Source => ({
   path,
-  source: `module:${stripJsLikeExt(path)}`
+  id: `module:${stripJsLikeExt(path)}`
 });
 
 const resolvePackage = (
@@ -104,7 +99,7 @@ const resolvePackage = (
     : resolveRootImport(packageDir, packageJson);
 }
 
-const resolvePath = (importer: string, path: string): SourcePath => {
+const resolvePath = (importer: string, path: string): Source => {
   switch (path[0]) {
     case ".":
       return moduleAtPath(resolveExt(combine(getDir(importer), path)));
@@ -112,11 +107,11 @@ const resolvePath = (importer: string, path: string): SourcePath => {
       return moduleAtPath(resolveExt(path.slice(1)));
     default:
       const packagePath = path;
-      const source: SourceId = `package:${packagePath}`;
+      const id: SourceId = `package:${packagePath}`;
       for (const nodeModulesPath of [KDTS_TYPES, "node_modules"]) {
         const resolvedPath = resolvePackage(nodeModulesPath, packagePath);
         if (resolvedPath)
-          return { path: resolvedPath, source };
+          return { path: resolvedPath, id };
       }
       throw Error(`No types for package ${packagePath} found!`);
   }
@@ -125,7 +120,6 @@ const resolvePath = (importer: string, path: string): SourcePath => {
 const resolveRootPath = (path: string) => resolvePath("", "./" + path);
 
 export {
-  SourcePath,
   resolvePath,
   resolveRootPath
 };

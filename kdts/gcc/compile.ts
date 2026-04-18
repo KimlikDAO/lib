@@ -1,12 +1,11 @@
 import { CliArgs } from "../../util/cli";
 import { combine, getDir } from "../../util/paths";
 import { compileWithClosureCompiler } from "./closureCompiler";
+import { GccProgram } from "./gccProgram";
 import { postprocess } from "./postprocess";
-import { GccProgram } from "./program";
 
-interface TranspileFn {
-  (content: string, file: string, isEntry?: boolean): string | null;
-}
+type TranspileFn = (content: string, file: string, isEntry?: boolean) =>
+  string | null;
 
 /**
  * Resolves to the compiled code or void if it determines that the code
@@ -16,7 +15,7 @@ interface TranspileFn {
 const compile = async (
   args: CliArgs,
   checkFreshFn?: (deps: string[]) => Promise<boolean>,
-  transpileFn?: TranspileFn
+  _transpileFn?: TranspileFn
 ): Promise<string | void> => {
   const entry = args.asStringOr("entry", "");
   const isolateDir = combine(
@@ -29,7 +28,7 @@ const compile = async (
     args.asList("externs"),
     isolateDir
   );
-  if (checkFreshFn && await checkFreshFn(program.sources.map((f) => "/" + f)))
+  if (checkFreshFn && await checkFreshFn(program.sources))
     return;
 
   const jsCompErrors = [
@@ -43,6 +42,8 @@ const compile = async (
     jsCompWarnings.push("reportUnknownTypes");
   if (args.isTrue("loose"))
     jsCompErrors.pop();
+  if (program.flowTransformed)
+    jsCompErrors.shift();
 
   let output = await compileWithClosureCompiler(program, {
     jsCompErrors,

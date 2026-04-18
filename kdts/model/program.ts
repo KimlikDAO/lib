@@ -10,6 +10,7 @@ interface SourceProgram {
 
 interface DiskProgram extends SourceProgram {
   isolateDir: string;
+  flowTransformed: boolean;
 }
 
 export { DiskProgram, SourceProgram };

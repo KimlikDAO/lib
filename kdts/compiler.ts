@@ -6,9 +6,8 @@ import { replaceExt } from "../util/paths";
 import { compile as compileWithBun } from "./bun/compile";
 import { compile as compileWithGcc } from "./gcc/compile";
 
-interface TranspileFn {
-  (content: string, file: string, isEntry?: boolean): string | null;
-}
+type TranspileFn = (content: string, file: string, isEntry?: boolean) =>
+  string | null;
 
 const UglifyOptions: MinifyOptions = {
   annotations: true,

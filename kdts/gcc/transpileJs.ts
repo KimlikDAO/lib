@@ -1,8 +1,9 @@
 import { Comment, parse } from "acorn";
 import { getExt } from "../../util/paths";
-import { SourcePath, resolvePath } from "../frontend/resolver";
+import { resolvePath } from "../frontend/resolver";
 import { ModuleImports } from "../model/moduleImports";
-import { SourceSet } from "../model/sourceSet";
+import { SourceSet } from "../model/source";
+import { Source } from "../model/source";
 import { parseTypePrefix } from "../parser/typeParser";
 import { CodeUpdater } from "../util/textual";
 import { generateAliasImports } from "./generator";
@@ -82,16 +83,12 @@ const transpileJsDoc = (comment: Comment, fileName: string): string => {
  *  - Every import at our link boundary should be replaced by alias imports and
  *    recorded for re-inclusion into the output module.
  *  - Jsdoc type expressions should be converted from ts to gcc.
- *
- * @param source
- * @param content 
- * @param program
- * @returns 
  */
 const transpileJs = (
-  source: SourcePath,
+  source: Source,
   content: string,
   sources: SourceSet,
+  _overrides: Record<string, unknown>,
   imports: ModuleImports
 ): string => {
   const comments: Comment[] = [];
@@ -118,12 +115,12 @@ const transpileJs = (
         sources.add(resolvedImport);
         const importExt = "." + getExt(resolvedImport.path);
 
-        if (resolvedImport.source.startsWith("package"))
-          imports.add(node, resolvedImport.source);
+        if (resolvedImport.id.startsWith("package"))
+          imports.add(node, resolvedImport.id);
         if (DECL_FILE.test(resolvedImport.path)) {
           updater.replace(node, "; // gcc-js: declaration imports are replaced by type alias imports");
-          typeOnlyImports.add(node, resolvedImport.source);
-        } else if (resolvedImport.source.startsWith("module") && !importSource.endsWith(importExt))
+          typeOnlyImports.add(node, resolvedImport.id);
+        } else if (resolvedImport.id.startsWith("module") && !importSource.endsWith(importExt))
           updater.replace(node.source, `"${importSource}${importExt}"`)
         break;
     }

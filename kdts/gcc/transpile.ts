@@ -1,13 +1,13 @@
-import { SourcePath } from "../frontend/resolver";
 import { ModuleImports } from "../model/moduleImports";
-import { SourceSet } from "../model/sourceSet";
+import { SourceSet } from "../model/source";
+import { Source } from "../model/source";
 import { DtsParser, TsParser } from "../parser/tsParser";
 import { bindDts } from "../transform/bind";
 import { generate, generateAliasImports } from "./generator";
 import { GccExternTransform, GccJsTransform } from "./transform";
 
 const transpileTs = (
-  source: SourcePath,
+  source: Source,
   content: string,
   sources: SourceSet,
   overrides: Record<string, unknown>,
@@ -19,7 +19,7 @@ const transpileTs = (
 }
 
 const transpileDts = (
-  source: SourcePath,
+  source: Source,
   content: string,
   sources: SourceSet
 ): string => {

@@ -1,36 +1,32 @@
 import { expect } from "bun:test";
-import { SourcePath } from "../../frontend/resolver";
-import { SourceSet } from "../../model/sourceSet";
 import { ModuleImports } from "../../model/moduleImports";
+import { SourceSet } from "../../model/source";
+import { Source } from "../../model/source";
 import { stripIndent } from "./source";
 
-interface TranspileSourceFn {
-  (
-    source: SourcePath,
-    content: string,
-    sources: SourceSet,
-    overrides: Record<string, unknown>,
-    imports: ModuleImports
-  ): string;
-}
+type TranspileSourceFn = (
+  source: Source,
+  content: string,
+  sources: SourceSet,
+  overrides: Record<string, unknown>,
+  imports: ModuleImports
+) => string;
 
-interface TranspileDeclarationFn {
-  (source: SourcePath, content: string, sources: SourceSet): string;
-}
+type TranspileDeclarationFn = (
+  source: Source,
+  content: string,
+  sources: SourceSet
+) => string;
 
-interface TranspileFn {
-  (
-    source: SourcePath,
-    content: string,
-    sources: SourceSet,
-    overrides?: Record<string, unknown>,
-    imports?: ModuleImports
-  ): string;
-}
+type TranspileFn = (
+  source: Source,
+  content: string,
+  sources: SourceSet,
+  overrides?: Record<string, unknown>,
+  imports?: ModuleImports
+) => string;
 
-interface ExpectEmitFn {
-  (src: string, emit: string): void;
-}
+type ExpectEmitFn = (src: string, emit: string) => void;
 
 interface HarnessSourceOptions {
   overrides?: Record<string, unknown>,
@@ -41,11 +37,10 @@ const harnessSourceFn = (
   transpileSourceFn: TranspileSourceFn
 ): (src: string, emit: string, options?: HarnessSourceOptions) => void => {
   return (src: string, emit: string, options: HarnessSourceOptions = {}) => {
-    const out = transpileSourceFn(
-      {
-        source: "module:test",
-        path: "/test.ts"
-      },
+    const out = transpileSourceFn({
+      id: "module:test",
+      path: "/test.ts"
+    },
       src,
       new SourceSet(),
       options.overrides || {},
@@ -60,15 +55,18 @@ const harnessDeclarationFn = (
 ): ExpectEmitFn => {
   return (src: string, emit: string) => {
     const out = transpileDeclarationFn({
-      source: "module:test.d",
+      id: "module:test.d",
       path: "/test.d.ts"
-    }, src, new SourceSet());
+    },
+      src,
+      new SourceSet()
+    );
     expect(out).toBe(stripIndent(emit));
   }
 }
 
 const harness = (transpileFn: TranspileFn): ExpectEmitFn => {
-  if (transpileFn.length <= 3)
+  if (transpileFn.length == 3)
     return harnessDeclarationFn(transpileFn as TranspileDeclarationFn);
   return harnessSourceFn(transpileFn as TranspileSourceFn);
 }
