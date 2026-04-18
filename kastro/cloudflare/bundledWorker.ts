@@ -1,16 +1,17 @@
+import { Overridable } from "@kimlikdao/kdts";
 import { CompressedMimes, Mimes } from "../workers/mimes";
 import { BundledWorkerEnv } from "./bundledWorker.d";
 import { CfRequest, ModuleWorker } from "./moduleWorker.d";
 
-/** @define */
-const HOST_URL: string = "";
-/** @define */
-const ETAGS: Record<string, string> = {};
+const HOST_URL = "https://example.com" satisfies Overridable;
+const ETAGS: Record<string, string> = {} satisfies Overridable;
 
 const PAGE_CACHE_CONTROL = "max-age=100,public,no-transform";
 const STATIC_CACHE_CONTROL = "max-age=29000000,public,immutable,no-transform";
 
-const Worker = {
+type AssetModule = { default: ArrayBuffer };
+
+const Worker: ModuleWorker = {
   fetch(
     req: CfRequest,
     env: BundledWorkerEnv,
@@ -58,10 +59,10 @@ const Worker = {
     const assetName = resolvedPath + ext.slice(0, 3);
     return import(assetName)
       .then(
-        ({ default: arrBuff }) => serve(arrBuff),
+        ({ default: arrBuff }: AssetModule) => serve(arrBuff),
         () => env.K.get(assetName, "arrayBuffer").then(serve))
       .catch(() => Response.redirect(HOST_URL));
-  },
-} as ModuleWorker;
+  }
+};
 
 export default Worker;

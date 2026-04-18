@@ -28,7 +28,7 @@ const write = async (
 ): Promise<TargetMarker> => {
   const marker: Marker = {
     contentHash: hash.toStr(target.contentHash)
-  } as Marker;
+  };
   if (target.depHash != undefined)
     marker.depHash = hash.toStr(target.depHash);
   await writeFile(markerPath(targetName), JSON.stringify(marker));

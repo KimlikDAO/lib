@@ -1,6 +1,6 @@
 import { file, serve } from "bun";
 import process from "node:process";
-import { parseArgs } from "../util/cli";
+import { CliArgs } from "../util/cli";
 import { fromTarget } from "./compiler/bundleReport";
 import compiler from "./compiler/compiler";
 import { getPageTargets, setupKastro } from "./compiler/crate";
@@ -72,14 +72,14 @@ const deployCrate = async (
   { targetName = "cloudflare", ...props }: Props
 ) => {
   const [{ default: deployer }, crateTarget, config] = await Promise.all([
-    import(`@kimlikdao/lib/kastro/${targetName}/${targetName}`),
+    import(`@kimlikdao/kastro/${targetName}/${targetName}`),
     buildCrate(crateName, props),
     import("/deployerConfig")
   ]);
   return deployer.deploy(fromTarget(crateTarget), config.default[targetName]);
 }
 
-const args = parseArgs(process.argv.slice(2), "command");
+const args = CliArgs.fromArgv(process.argv, "command", {});
 const [command, crate = ""] = args.asList("command");
 const crateName = `${crate}/mpa`;
 

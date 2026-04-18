@@ -28,8 +28,8 @@ This means:
 ## Quick Example
 
 ```jsx
-import dom from "@kimlikdao/util/dom";
-import { LangCode } from "@kimlikdao/util/i18n";
+import dom from "@kimlikdao/kastro/dom";
+import { LangCode } from "@kimlikdao/lib/util/i18n";
 import Css from "./Button.css";
 
 /**
@@ -115,16 +115,13 @@ compared to dynamically creating elements one by one via JavaScript like many
 other frameworks do.
 
 ## Quick example
-```jsx:LandingPage.jsx
-import dom from "@kimlikdao/util/dom";
-import { LangCode } from "@kimlikdao/util/i18n";
+```tsx:LandingPage.tsx
+import dom from "@kimlikdao/kastro/dom";
+import { LangCode } from "@kimlikdao/lib/util/i18n";
 import ArrowSvg from "./arrow.svg";
 import Css from "./LandingPage.css";
 
-/**
- * @param {{ Lang: LangCode }} props
- */
-const LandingPage = ({ Lang }) => {
+const LandingPage = ({ Lang }: { Lang: LangCode }) => {
   const Button = dom.button(Css.Button);
   const Text = dom.span(Css.Text);
 

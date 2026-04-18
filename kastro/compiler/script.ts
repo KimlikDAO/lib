@@ -1,4 +1,4 @@
-import { compile } from "../../kdts/compile";
+import { compile } from "@kimlikdao/kdts/compiler";
 import type { Props } from "../props";
 import { filterGlobalProps, filterOutGlobalProps } from "../props";
 import { transpile } from "../transpiler/transpiler";

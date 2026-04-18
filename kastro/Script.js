@@ -30,7 +30,7 @@ const Worker = (props) => {
 
   return Promise.all([].concat(props.children ?? [])).then(() =>
     compiler.bundleTarget(targetName, {
-      printGccOutput: true,
+      printBackedOutput: true,
       dynamicDeps: true,
       childTargets: ["/" + props.src], // Used in BuildMode.Dev only
       externs: ["node_modules/@kimlikdao/lib/kdts/externs/worker.d.js"],

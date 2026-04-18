@@ -166,7 +166,7 @@ const setupKastro = (): void => {
     async setup(build: any) {
       const tsconfig = {
         compilerOptions: {
-          jsxImportSource: "@kimlikdao/lib/kastro/transpiler",
+          jsxImportSource: "@kimlikdao/kastro/transpiler",
         },
       };
       const tsxTranspiler = new Transpiler({
@@ -187,7 +187,7 @@ const setupKastro = (): void => {
           return;
         return { namespace: "kastro", path: resolvePath(importer, path) };
       });
-      build.onResolve({ filter: /\.svg$/ }, ({ path, importer }: ResolveArgs) => {
+      build.onResolve({ filter: /\.svg$/ }, ({ importer, path }: ResolveArgs) => {
         if (!(path.startsWith(".") || path.startsWith("/")))
           return;
         const svgTsxPath = resolvePath(importer, path) + ".tsx";
@@ -195,34 +195,34 @@ const setupKastro = (): void => {
         return { path: svgTsxPath };
       });
       build.onLoad({ filter: /\.svg\.tsx$/ }, (args: LoadArgs) => {
-        const code = `import { SvgTsxImage } from "@kimlikdao/lib/kastro/Image";\n` +
+        const code = `import { SvgTsxImage } from "@kimlikdao/kastro/Image";\n` +
           `export default (props) => SvgTsxImage({...props, src: "${rel(args)}" });`;
-        return { contents: code, loader: "js" as const };
+        return { contents: code, loader: "js" };
       });
       build.onLoad({ filter: /\.(t|j)sx$/ }, (args: LoadArgs) => {
         const contents = tsxTranspiler.transformSync(readFileSync(rel(args), "utf8"));
-        return { contents, loader: "js" as const };
+        return { contents, loader: "js" };
       });
       build.onLoad({ filter: /\.(svg|png|webp)$/ }, (args: LoadArgs) => {
-        const code = `import Image from "@kimlikdao/lib/kastro/Image";\n` +
+        const code = `import Image from "@kimlikdao/kastro/Image";\n` +
           `export default (props) => Image({...props, src: "${rel(args)}" });`;
-        return { contents: code, loader: "js" as const };
+        return { contents: code, loader: "js" };
       });
       build.onLoad({ filter: /\.css$/ }, (args: LoadArgs) => {
-        const code = `import { makeStyleSheet } from "@kimlikdao/lib/kastro/StyleSheet";\n` +
+        const code = `import { makeStyleSheet } from "@kimlikdao/kastro/StyleSheet";\n` +
           `import { readFileSync } from "node:fs";\n` +
           `export default makeStyleSheet("${rel(args)}", readFileSync("${rel(args)}", "utf-8"));`;
-        return { contents: code, loader: "js" as const };
+        return { contents: code, loader: "js" };
       });
       build.onLoad({ filter: /\.ttf$/ }, (args: LoadArgs) => {
-        const code = `import Font from "@kimlikdao/lib/kastro/Font";\n` +
+        const code = `import Font from "@kimlikdao/kastro/Font";\n` +
           `export default (props) => Font({...props, href: "${rel(args)}" });`;
-        return { contents: code, loader: "js" as const };
+        return { contents: code, loader: "js" };
       });
       build.onLoad({ filter: /\.(js|ts)$/, namespace: "kastro" }, (args: LoadArgs) => {
-        const code = `import { Worker } from "@kimlikdao/lib/kastro/Script";\n` +
+        const code = `import { Worker } from "@kimlikdao/kastro/Script";\n` +
           `export default (props) => Worker({...props, src: "${rel(args)}" });`;
-        return { contents: code, loader: "js" as const };
+        return { contents: code, loader: "js" };
       });
     },
   });

@@ -1,18 +1,16 @@
+import { Overridable } from "@kimlikdao/kdts";
 import { LangCode, localize } from "../util/i18n";
 import { TextElement } from "./dom.d";
 
-/** @define */
-const GEN: boolean = true;
-
-/** @define */
-const Lang: LangCode = LangCode.EN;
+const GEN: boolean = true satisfies Overridable;
+const Lang: LangCode = LangCode.EN satisfies Overridable;
 
 const IsChrome = navigator.userAgent.toLowerCase().includes("chrome");
 
-/** @pure */
+/** @satisfies {PureFn} */
 const i18n = <T>(i18ned: Record<LangCode, T>): T => i18ned[Lang];
 
-/** @pure @noinline */
+/** @satisfies {PureFn} @noinline */
 const byId = (id: string): HTMLElement =>
   document.getElementById(id) as HTMLElement;
 
@@ -92,11 +90,11 @@ const showPopup = (url: string, width: number, height: number) => {
   if (p) p.focus();
 }
 
-/** @pure */
+/** @satisfies {PureFn} */
 const renderCurrency = (amount: number): string =>
   (amount / 1_000_000).toLocaleString(Lang);
 
-/** @pure */
+/** @satisfies {PureFn} */
 const renderPhone = (phone: string): string =>
   phone.slice(0, 3) + " (" + phone.slice(3, 6) + ") " + phone.slice(6, 9) + " " +
   phone.slice(9, 11) + " " + phone.slice(11);
@@ -107,52 +105,52 @@ const create = (id: string, name: string): HTMLElement => {
   return el as HTMLElement;
 }
 
-/** @pure */
+/** @satisfies {PureFn} */
 const a = (id: string): HTMLAnchorElement => ((GEN && "GEN" in globalThis)
   ? create(id, "a")
   : byId(id)) as HTMLAnchorElement;
 
-/** @pure */
+/** @satisfies {PureFn} */
 const button = (id: string): HTMLButtonElement => ((GEN && "GEN" in globalThis)
   ? create(id, "button")
   : byId(id)) as HTMLButtonElement;
 
-/** @pure */
+/** @satisfies {PureFn} */
 const form = (id: string): HTMLFormElement => ((GEN && "GEN" in globalThis)
   ? create(id, "form")
   : byId(id)) as HTMLFormElement;
 
-/** @pure */
+/** @satisfies {PureFn} */
 const span = (id: string): HTMLSpanElement => ((GEN && "GEN" in globalThis)
   ? create(id, "span")
   : byId(id)) as HTMLSpanElement;
 
-/** @pure */
+/** @satisfies {PureFn} */
 const div = (id: string): HTMLDivElement => ((GEN && "GEN" in globalThis)
   ? create(id, "div")
   : byId(id)) as HTMLDivElement;
 
-/** @pure */
+/** @satisfies {PureFn} */
 const img = (id: string): HTMLImageElement => ((GEN && "GEN" in globalThis)
   ? create(id, "img")
   : byId(id)) as HTMLImageElement;
 
-/** @pure */
+/** @satisfies {PureFn} */
 const ul = (id: string): HTMLUListElement => ((GEN && "GEN" in globalThis)
   ? create(id, "ul")
   : byId(id)) as HTMLUListElement;
 
-/** @pure */
+/** @satisfies {PureFn} */
 const li = (id: string): HTMLLIElement => ((GEN && "GEN" in globalThis)
   ? create(id, "li")
   : byId(id)) as HTMLLIElement;
 
-/** @pure */
+/** @satisfies {PureFn} */
 const td = (id: string): HTMLTableCellElement => ((GEN && "GEN" in globalThis)
   ? create(id, "td")
   : byId(id)) as HTMLTableCellElement;
 
-/** @pure */
+/** @satisfies {PureFn} */
 const input = (id: string): HTMLInputElement => ((GEN && "GEN" in globalThis)
   ? create(id, "input")
   : byId(id)) as HTMLInputElement;

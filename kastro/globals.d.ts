@@ -41,7 +41,7 @@ interface KastroStyleSheetProps extends KastroAssetProps {
 type KastroStyleSheetComponent =
   (props?: KastroStyleSheetProps) => KastroComponentResult;
 
-// CSS modules are typed via generated sibling `*.d.css.ts` files.
+// CSS modules are typed via generated `build/.../*.d.css.ts` sidecars.
 
 declare module "*.svg" {
   const SvgComponent: (props?: KastroSvgProps) => KastroComponentResult;

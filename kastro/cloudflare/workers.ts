@@ -6,7 +6,7 @@ import { WorkerUploadMetadata } from "./workers.d";
 const upload = (
   auth: Auth,
   name: string,
-  code: string | Uint8Array,
+  code: string | Uint8Array<ArrayBuffer>,
   kvBindings: KvBinding[],
   bundleFiles: Record<string, ArrayBuffer>
 ): Promise<ApiResponse> => {

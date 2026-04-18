@@ -28,7 +28,7 @@ const Font = async ({
   }
   const fontBase = href.slice(0, -4);
   const cssTarget = `/build/${fontBase}-${Lang}.css`;
-  if (BuildMode === 0) {
+  if (BuildMode == 0) {
     addStyleSheet(shared, {
       targetName: cssTarget,
       content: `@font-face {

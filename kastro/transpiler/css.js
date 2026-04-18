@@ -1,6 +1,5 @@
 import * as csstree from "css-tree";
 import { splitFullExt } from "../../util/paths";
-import { DomIdMapper } from "./domIdMapper";
 
 /**
  * @typedef {{

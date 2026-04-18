@@ -15,7 +15,7 @@ ts/js compiler with type aware optimizations.
 
 🪁 [`kastro`](./kastro): Our compile-time focused web-framework
 
-  - React-like .jsx components at zero runtime cost
+  - React-like .tsx components at zero runtime cost
   - Import css, fonts or images using es6 imports and receive an asset component
 
 ⚙️ [`kdts`](./kdts): KimlikDAO TypeScript compiler

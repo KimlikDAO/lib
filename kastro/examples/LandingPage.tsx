@@ -1,4 +1,4 @@
-import dom from "@kimlikdao/lib/kastro/dom";
+import dom from "@kimlikdao/kastro/dom";
 import { LangCode } from "@kimlikdao/lib/util/i18n";
 import ArrowSvg from "./arrow.svg";
 import Css from "./LandingPage.css";

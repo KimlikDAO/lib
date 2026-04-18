@@ -1,9 +1,5 @@
 import { Parser } from "acorn";
 import acornJsx from "acorn-jsx";
-import {
-  ImportStatement, writeImportStatement
-} from "../../kdts/util/modules";
-import { Update, update } from "../../kdts/util/textual";
 import { getExt, getDir, combine } from "../../util/paths";
 import css from "./css";
 import { DomIdMapper } from "./domIdMapper";
@@ -516,7 +512,7 @@ const transpile = (isEntry, file, content, domIdMapper, globals) => {
   if (isEntry)
     initializeEntry();
 
-  return update(content, updates);
+  return content;
 };
 
 export default { transpile };

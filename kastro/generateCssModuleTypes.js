@@ -1,7 +1,7 @@
-import { readdir, readFile, writeFile } from "node:fs/promises";
-import { extname, join, relative, resolve } from "node:path";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, extname, join, relative, resolve } from "node:path";
 import process from "node:process";
-import css from "./transpiler/css.js";
+import css from "./transpiler/css";
 
 const IgnoredDirs = new Set([
   ".git",
@@ -47,8 +47,9 @@ const writeDeclaration = async (rootDir, cssPath) => {
   const content = await readFile(cssPath, "utf8");
   const relativePath = relative(rootDir, cssPath);
   const declaration = getDeclaration(relativePath, content);
-  const declarationPath = getDeclarationPath(cssPath);
+  const declarationPath = resolve(rootDir, "build", getDeclarationPath(relativePath));
 
+  await mkdir(dirname(declarationPath), { recursive: true });
   await writeFile(declarationPath, declaration);
   return relative(rootDir, declarationPath);
 };

@@ -1,0 +1,21 @@
+{
+  "name": "@kimlikdao/kastro",
+  "description": "KimlikDAO web framework",
+  "author": "KimlikDAO <dao@kimlikdao.org>",
+  "version": "0.0.1",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@kimlikdao/kdts": "0.0.1",
+    "css-tree": "^3.2.1",
+    "csso": "^5.0.5",
+    "html-minifier": "^4.0.0",
+    "sax": "^1.6.0",
+    "svgo": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/css-tree": "^2.3.11",
+    "@types/sax": "^1.2.7",
+    "@types/uglify-js": "^3.17.5"
+  }
+}
