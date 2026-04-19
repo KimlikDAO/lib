@@ -6,8 +6,8 @@ import { inverse, prepareSqrt } from "./modular";
  *
  * A function `sqrt` can be provided to compute square roots in 𝔽ₚ. If not
  * provided, Tonelli-Shanks parameters for the given P will be computed at
- * construction time and `sqrt(x)` (needed for `pointFrom()`) will be calculated
- * using the Tonelli-Shanks algorithm with these parameters.
+ * construction time and `sqrt(x)` (needed for `pointFrom()`) will be
+ * calculated using the Tonelli-Shanks algorithm with these parameters.
  *
  * This implementation uses the Renes Costello and Batina homogenous lifting of
  * the y² = x³ + ax + b curve:

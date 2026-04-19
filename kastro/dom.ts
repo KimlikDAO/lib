@@ -10,21 +10,21 @@ const IsChrome = navigator.userAgent.toLowerCase().includes("chrome");
 /** @satisfies {PureFn} */
 const i18n = <T>(i18ned: Record<LangCode, T>): T => i18ned[Lang];
 
-/** @satisfies {PureFn} @noinline */
+/** @satisfies {PureFn & NoInlineFn} */
 const byId = (id: string): HTMLElement =>
   document.getElementById(id) as HTMLElement;
 
-/** @noinline */
+/** @satisfies {NoInlineFn} */
 const hide = (element: Element) => {
   (element as HTMLElement).style.display = "none";
 }
 
-/** @noinline */
+/** @satisfies {NoInlineFn} */
 const show = (element: Element, show = true) => {
   (element as HTMLElement).style.display = show ? "" : "none";
 }
 
-/** @noinline */
+/** @satisfies {NoInlineFn} */
 const hideById = (id: string) => { byId(id).style.display = "none"; }
 
 const showById = (id: string, isVisible?: boolean) => show(byId(id), isVisible);

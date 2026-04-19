@@ -2,7 +2,7 @@
   "name": "@kimlikdao/kdts",
   "description": "KimlikDAO TypeScript compiler",
   "author": "KimlikDAO <dao@kimlikdao.org>",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -19,11 +19,11 @@
   },
   "types": "./kdts.d.ts",
   "scripts": {
-    "build": "rm -rf ./build && mkdir -p ./build/util && cp ./package.json ./kdts.d.ts ./bench.ts ./build/ && cp ./util/assert.ts ./util/arrays.ts ./util/cli.ts ./build/util/ && bun kdts.ts kdts.ts --fast -o ./build/kdts.js",
+    "build": "rm -rf build && mkdir -p build/util && cp package.json kdts.d.ts bench.ts README.md build/ && cp util/assert.ts util/arrays.ts util/cli.ts build/util/ && bun kdts.ts kdts.ts --fast -o build/kdts.js",
     "release": "npm run build && npm publish ./build"
   },
   "dependencies": {
-    "@swc/core": "^1.15.26",
+    "@swc/core": "^1.15.30",
     "acorn": "^8.16.0",
     "google-closure-compiler": "^20260415.0.0",
     "uglify-js": "3.19.3"
