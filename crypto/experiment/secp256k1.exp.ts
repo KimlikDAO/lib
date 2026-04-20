@@ -5,7 +5,7 @@
 import { assertIs } from "../../util/assert";
 import bigints from "../../util/bigints";
 import { arfCurve } from "../arfCurve";
-import { CompressedPoint, Curve, Point } from "../ellipticCurve";
+import { Point } from "../ellipticCurve";
 import { P, Q, sqrt } from "../secp256k1";
 
 const R = (1n << 256n) - 0x1f90dcfcda9f17c1ec7159037a804b86cn;
@@ -20,14 +20,7 @@ assertIs(2n * 2n * 3n * 20412485227n
  * corresponding to the b=7 equivalence class.
  * So this curve mentioned in the article is not interesting or suprising.
  */
-const Purve = Object.assign(arfCurve(P), {
-  pointFrom({ x, yParity }: CompressedPoint): Point | null {
-    const y2 = (x * x * x + 1n) % P;
-    const y = sqrt(y2);
-    if (y == null) return null;
-    return new Purve(x, (y & 1n) == (yParity as unknown as bigint) ? y : P - y, 1n);
-  }
-}) as Curve;
+const Curve = arfCurve(P, 1n, sqrt);
 
 /**
  * Returns a random point uniformly supported on some size (Q-1)/2 subset of
@@ -40,15 +33,15 @@ const random = (): Point => {
     const y2 = (x * x * x + 1n) % P;
     const y = sqrt(y2);
     if (y == null) continue;
-    return Purve.pointFromAffine({ x, y });
+    return Curve.pointFromAffine({ x, y });
   }
 }
 
 console.log(Q % 4n, P % 4n);
 console.log(P % 3n, Q % 3n);
 
-const G1 = Purve.pointFromAffine({ x: 1n, y: 0n });
-const G2 = Purve.pointFromAffine({ x: P - 1n, y: 0n });
+const G1 = Curve.pointFromAffine({ x: 1n, y: 0n });
+const G2 = Curve.pointFromAffine({ x: P - 1n, y: 0n });
 const G3 = random().multiply(R / 3n);
 const G4 = random().multiply(R / 20412485227n);
 const G5 = random().multiply(2n * 2n * 3n * 20412485227n);

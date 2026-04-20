@@ -4,7 +4,6 @@ import { keccak256 } from "../../crypto/sha3";
 import address from "../address";
 import signature from "../signature";
 import { personalDigest, sign, signerAddress } from "../signer";
-import { recoverSigner } from "../../crypto/secp256k1";
 
 describe("personalDigest()", () => {
   it("returns keccak256 of EIP-191 message prefix plus message", () => {
