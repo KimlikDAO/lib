@@ -23,6 +23,7 @@ import {
   TSTypeAnnotation,
   TSTypeOperator,
   TSTypeReference,
+  TypeNode,
   VariableDeclarator
 } from "../ast/types";
 import { Mutator } from "../ast/walk";
@@ -76,7 +77,7 @@ class GccTransform extends Mutator {
 }
 
 class GccJsTransform extends GccTransform {
-  private readonly returnTypes: (TSTypeReference | undefined)[] = [];
+  private readonly returnTypes: (TypeNode | undefined)[] = [];
 
   constructor(
     source: Source,
@@ -87,11 +88,11 @@ class GccJsTransform extends GccTransform {
 
   private declaredReturnType(
     n: { async?: boolean; returnType?: TSTypeAnnotation }
-  ): TSTypeReference | undefined {
+  ): TypeNode | undefined {
     if (n.async)
       return;
     const type = n.returnType?.typeAnnotation;
-    return type?.type == "TSTypeReference" ? type : undefined;
+    return type?.type == "TSTypePredicate" ? undefined : type;
   }
   private wrapWithReturnType(n: Expression | null | undefined): Expression | null | undefined {
     const returnType = this.returnTypes[this.returnTypes.length - 1];

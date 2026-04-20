@@ -61,7 +61,7 @@ import {
   YieldExpression
 } from "acorn";
 import { partition } from "../../util/arrays";
-import { isIdentifier, typeReferenceName } from "../ast/guards";
+import { typeReferenceName } from "../ast/guards";
 import {
   probeArrayLikeElementType,
   probeEnumType,
@@ -77,18 +77,28 @@ import {
   TSEnumMember,
   TSExpressionWithTypeArguments,
   TSFunctionType,
+  TSImportType,
+  TSIndexedAccessType,
+  TSInferType,
+  TSIntersectionType,
   TSInterfaceBody,
   TSInterfaceDeclaration,
+  TSIntrinsicKeyword,
   TSLiteralType,
+  TSMappedType,
   TSMethodSignature,
   TSModuleDeclaration,
+  TSNamedTupleMember,
   TSNonNullExpression,
+  TSOptionalType,
   TSParameter,
   TSParameterProperty,
   TSParenthesizedType,
   TSPropertySignature,
   TSQualifiedName,
+  TSRestType,
   TSSatisfiesExpression,
+  TSThisType,
   TSTupleType,
   TSTypeAliasDeclaration,
   TSTypeAnnotation,
@@ -97,6 +107,7 @@ import {
   TSTypeParameter,
   TSTypeParameterDeclaration,
   TSTypeParameterInstantiation,
+  TSTypePredicate,
   TSTypeQuery,
   TSTypeReference,
   TSUnionType
@@ -105,16 +116,8 @@ import { Generator } from "../ast/walk";
 import { Modifier, hasAll } from "../model/modifier";
 import { ModuleImports } from "../model/moduleImports";
 import { SourceId } from "../model/source";
-import { conditionalType } from "./ttlGenerator";
-
-const toIdentifier = (source: SourceId, name: string): string => {
-  const text = `kdts$$${source}$${name == "*" ? "star" : name}`;
-  const value = text.replaceAll(
-    /[^A-Za-z0-9_$]/g,
-    (char) => (char == "." || char == "-") ? "_" : "$"
-  );
-  return (value[0] >= "0" && value[0] <= "9") ? "_" + value : value;
-};
+import { entityNameText, toIdentifier } from "./names";
+import { conditionalType, renderClosureType } from "./ttlGenerator";
 
 const removeOrigin = (source: SourceId): string =>
   source.slice(source.indexOf(":") + 1);
@@ -211,9 +214,6 @@ const wrapExpression = (expr?: Node | null) =>
 const needsParensForMemberObject = (node?: Node | null) =>
   node?.type == "AssignmentExpression" || node?.type == "SequenceExpression";
 
-const entityNameText = (node: Identifier | TSQualifiedName): string =>
-  isIdentifier(node) ? node.name : `${entityNameText(node.left)}.${node.right.name}`;
-
 const isFreshValueConstraint = (node?: Node): boolean => {
   if (node?.type != "TSTypeReference")
     return false;
@@ -231,7 +231,38 @@ const jsDocParamName = (param: TSParameter): Identifier | null => {
 };
 
 class GccGenerator extends Generator {
+  private readonly templateScopes: string[][] = [];
+
   constructor(readonly djs: boolean = false) { super(); }
+
+  private withTemplateScope<T>(
+    params: TSTypeParameterDeclaration | null | undefined,
+    fn: () => T
+  ): T {
+    const names = params?.params.map((param) => param.name);
+    if (!names?.length)
+      return fn();
+    this.templateScopes.push(names);
+    try {
+      return fn();
+    } finally {
+      this.templateScopes.pop();
+    }
+  }
+
+  private currentTemplateNames(params?: TSTypeParameterDeclaration | null): string[] {
+    return [
+      ...this.templateScopes.flat(),
+      ...(params?.params.map((param) => param.name) || [])
+    ];
+  }
+
+  private putRenderedType(node: Node | null | undefined) {
+    this.put(renderClosureType(node as TSTypeAnnotation["typeAnnotation"], {
+      djs: this.djs,
+      templateNames: this.currentTemplateNames()
+    }));
+  }
 
   TSStringKeyword() { this.put("string"); }
   TSNumberKeyword() { this.put("number"); }
@@ -264,10 +295,7 @@ class GccGenerator extends Generator {
     this.put("function("); this.arr(n.parameters, ",", EmitMode.JsDocParamType); this.put("):");
     this.rec(n.typeAnnotation);
   }
-  TSConstructorType(n: TSConstructorType) {
-    this.put("function(new:"); this.rec(n.typeAnnotation); this.put(", ");
-    this.arr(n.parameters, ", ", EmitMode.JsDocParamType);
-  }
+  TSConstructorType(n: TSConstructorType) { this.putRenderedType(n); }
   TSConditionalType() { this.put("RETURN"); }
   TSLiteralType(n: TSLiteralType) {
     this.put(n.literal.type == "Literal" ? typeof n.literal.value : "string");
@@ -275,8 +303,10 @@ class GccGenerator extends Generator {
   TSParenthesizedType(n: TSParenthesizedType) {
     this.put("("); this.rec(n.typeAnnotation); this.put(")");
   }
-  TSTupleType(n: TSTupleType) { this.put("!Array<"); this.rec(n.elementTypes[0]); this.put(">"); }
+  TSTupleType(n: TSTupleType) { this.putRenderedType(n); }
+  TSNamedTupleMember(n: TSNamedTupleMember) { this.putRenderedType(n); }
   TSUnionType(n: TSUnionType) { this.put("("); this.arr(n.types, "|"); this.put(")"); }
+  TSIntersectionType(n: TSIntersectionType) { this.putRenderedType(n); }
   TSQualifiedName(n: TSQualifiedName) { this.rec(n.left); this.put("." + n.right.name); }
   TSTypeAnnotation(n: TSTypeAnnotation) { this.rec(n.typeAnnotation); }
   TSTypeLiteral(n: TSTypeLiteral, emitMode = EmitMode.BindingTs) {
@@ -285,8 +315,17 @@ class GccGenerator extends Generator {
     this.inc(); this.arrLines(n.members, sep, emitMode); this.dec(); this.ret();
     this.put("}");
   }
-  TSTypeOperator(n: TSTypeOperator) { this.put(n.operator + " "); this.rec(n.typeAnnotation); }
+  TSMappedType(n: TSMappedType) { this.putRenderedType(n); }
+  TSInferType(n: TSInferType) { this.putRenderedType(n); }
+  TSOptionalType(n: TSOptionalType) { this.putRenderedType(n); }
+  TSRestType(n: TSRestType) { this.putRenderedType(n); }
+  TSIndexedAccessType(n: TSIndexedAccessType) { this.putRenderedType(n); }
+  TSTypeOperator(n: TSTypeOperator) { this.putRenderedType(n); }
   TSTypeQuery(n: TSTypeQuery) { this.put("typeof "); this.rec(n.exprName); }
+  TSImportType(n: TSImportType) { this.putRenderedType(n); }
+  TSTypePredicate(n: TSTypePredicate) { this.putRenderedType(n); }
+  TSThisType(n: TSThisType) { this.putRenderedType(n); }
+  TSIntrinsicKeyword(n: TSIntrinsicKeyword) { this.putRenderedType(n); }
   TSTypeParameter(n: TSTypeParameter) { this.put(n.name); }
   TSTypeParameterInstantiation(n: TSTypeParameterInstantiation) {
     this.put("<"); this.arr(n.params, ", "); this.put(">");
@@ -336,7 +375,9 @@ class GccGenerator extends Generator {
     this.rec(n.typeParameters);
     this.cod();
     this.put("class "); this.rec(n.id); this.put(" ");
-    this.rec(n.typeAnnotation, EmitMode.BindingJsDoc);
+    this.withTemplateScope(n.typeParameters, () =>
+      this.rec(n.typeAnnotation, EmitMode.BindingJsDoc)
+    );
   }
   TSInterfaceDeclaration(n: TSInterfaceDeclaration) {
     this.doc();
@@ -347,7 +388,8 @@ class GccGenerator extends Generator {
       }
     this.rec(n.typeParameters);
     this.cod();
-    this.put("class "); this.rec(n.id); this.put(" "); this.rec(n.body);
+    this.put("class "); this.rec(n.id); this.put(" ");
+    this.withTemplateScope(n.typeParameters, () => this.rec(n.body));
   }
   TSInterfaceBody(n: TSInterfaceBody) {
     this.put("{");
@@ -603,7 +645,8 @@ class GccGenerator extends Generator {
     }
     this.put("class "); this.rec(n.id);
     if (n.superClass) { this.put(" extends "); this.rec(n.superClass); }
-    this.put(" "); this.rec(n.body);
+    this.put(" ");
+    this.withTemplateScope(n.typeParameters, () => this.rec(n.body));
   }
   ClassExpression(n: ClassExpression) {
     this.put("("); this.inc(); this.ret();
@@ -806,7 +849,10 @@ class GccGenerator extends Generator {
       this.put("@suppress {reportUnknownTypes}", true);
     this.rec(n.typeParameters);
     if (n.returnType?.typeAnnotation?.type == "TSConditionalType")
-      this.put(`@template RETURN := ${conditionalType(n.returnType, { djs: this.djs })} =:`, true)
+      this.put(`@template RETURN := ${conditionalType(n.returnType, {
+        djs: this.djs,
+        templateNames: this.currentTemplateNames(n.typeParameters)
+      })} =:`, true)
     if (modifiers & Modifier.Override)
       this.put("@override", true);
     if (modifiers & Modifier.NoInline)
