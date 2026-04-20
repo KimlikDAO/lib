@@ -32,7 +32,7 @@
     "css-tree": "^3.2.1",
     "ethers": "^6.16.0",
     "js-sha256": "0.11.1",
-    "mina-signer": "^3.1.0"
+    "mina-signer": "^4.0.0"
   },
   "dependencies": {
     "svg-pathdata": "^9.0.0"

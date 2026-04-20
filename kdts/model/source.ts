@@ -5,4 +5,7 @@ type Source = {
   path: string
 }
 
-export { Source, SourceId };
+const removeOrigin = (source: SourceId): string =>
+  source.slice(source.indexOf(":") + 1);
+
+export { Source, SourceId, removeOrigin };

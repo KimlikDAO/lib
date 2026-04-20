@@ -1,5 +1,5 @@
 import { CallExpression, ExpressionStatement, Node, parse, Program } from "acorn";
-import { ModuleImports } from "../model/moduleImports";
+import { SourceProgram } from "../model/program";
 import { CodeUpdater } from "../util/textual";
 import {
   isIdentifierName,
@@ -10,6 +10,9 @@ import { generateEsmImports } from "./generator";
 
 const isNode = (value: Node | unknown): value is Node =>
   !!value && typeof value == "object" && typeof (value as Node).type == "string";
+
+const hasSingleDefaultExport = (program: SourceProgram): boolean =>
+  program.exports.names.length == 1 && program.exports.names[0] == "default";
 
 const parseExportMarker = (
   node: Node | null | undefined
@@ -40,7 +43,10 @@ const parseExportMarker = (
   };
 }
 
-const rewriteExports = (content: string): string => {
+const rewriteExports = (
+  content: string,
+  program: SourceProgram
+): string => {
   const ast = parse(content, {
     ecmaVersion: "latest",
     sourceType: "module",
@@ -48,13 +54,18 @@ const rewriteExports = (content: string): string => {
   const updater = new CodeUpdater();
   const bindings = new Set<string>();
   const exports: string[] = [];
+  const singleDefaultExport = hasSingleDefaultExport(program);
 
   for (const node of ast.body) {
     const marker = parseExportMarker(node);
     if (!marker)
       continue;
-    const binding = toMarkerBinding("__kdts_export_", marker.exportName, bindings, content);
     const value = content.slice(marker.value.start, marker.value.end);
+    if (singleDefaultExport && marker.exportName == "default") {
+      updater.replace(marker.statement, `export default ${value};`);
+      continue;
+    }
+    const binding = toMarkerBinding("__kdts_export_", marker.exportName, bindings, content);
     updater.replace(marker.statement, `const ${binding} = ${value};`);
     exports.push(`${binding} as ${marker.exportName}`);
   }
@@ -62,17 +73,15 @@ const rewriteExports = (content: string): string => {
   let output = updater.apply(content);
   if (!exports.length)
     return output;
-  if (!output.endsWith("\n"))
-    output += "\n";
-  output += `export { ${exports.join(", ")} };`;
+  output += `export{${exports.join(",")}}`;
   return output;
 }
 
 const postprocess = (
   content: string,
-  unlinkedImports: ModuleImports
+  program: SourceProgram
 ): string => {
-  return generateEsmImports(unlinkedImports) + rewriteExports(content);
+  return generateEsmImports(program.imports) + rewriteExports(content, program);
 };
 
 export { postprocess };

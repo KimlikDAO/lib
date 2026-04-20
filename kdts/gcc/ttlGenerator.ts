@@ -6,7 +6,7 @@ import {
   TSTypeAnnotation,
   TSTypeReference
 } from "../ast/types";
-import { toIdentifier } from "./generator";
+import { toIdentifier } from "./names";
 
 const entityNameText = (node: TSEntityName): string =>
   isIdentifier(node) ? node.name : `${entityNameText(node.left)}.${node.right.name}`;

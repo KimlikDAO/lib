@@ -14,7 +14,7 @@ import { TSTypeReference } from "../ast/types";
 import { Modifier } from "../model/modifier";
 import { ModuleImports } from "../model/moduleImports";
 import { SymbolRef } from "../model/symbolRef";
-import { toIdentifier } from "./generator";
+import { toIdentifier } from "./names";
 
 const synthIdentifier = (name: string, symbolRef?: SymbolRef): Identifier => {
   const id = { type: "Identifier", name } as Identifier & { symbolRef?: SymbolRef };

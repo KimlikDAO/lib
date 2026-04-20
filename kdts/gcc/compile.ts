@@ -49,7 +49,7 @@ const compile = async (
     jsCompErrors,
     jsCompWarnings,
   });
-  output = postprocess(output, program.imports);
+  output = postprocess(output, program);
   console.log(`GCC size:       ${output.length}`);
   return output;
 }

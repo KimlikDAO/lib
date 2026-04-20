@@ -104,20 +104,9 @@ import {
 import { Generator } from "../ast/walk";
 import { Modifier, hasAll } from "../model/modifier";
 import { ModuleImports } from "../model/moduleImports";
-import { SourceId } from "../model/source";
+import { removeOrigin, SourceId } from "../model/source";
+import { toIdentifier } from "./names";
 import { conditionalType } from "./ttlGenerator";
-
-const toIdentifier = (source: SourceId, name: string): string => {
-  const text = `kdts$$${source}$${name == "*" ? "star" : name}`;
-  const value = text.replaceAll(
-    /[^A-Za-z0-9_$]/g,
-    (char) => (char == "." || char == "-") ? "_" : "$"
-  );
-  return (value[0] >= "0" && value[0] <= "9") ? "_" + value : value;
-};
-
-const removeOrigin = (source: SourceId): string =>
-  source.slice(source.indexOf(":") + 1);
 
 const generateAliasImports = (moduleImports: ModuleImports): string => {
   let out = "";
@@ -865,6 +854,5 @@ export {
   GccGenerator,
   generate,
   generateAliasImports,
-  generateEsmImports,
-  toIdentifier
+  generateEsmImports
 };
