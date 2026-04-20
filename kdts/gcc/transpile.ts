@@ -1,6 +1,6 @@
 import { ModuleImports } from "../model/moduleImports";
-import { SourceSet } from "../model/source";
 import { Source } from "../model/source";
+import { SourceSet } from "../frontend/sourceSet";
 import { DtsParser, TsParser } from "../parser/tsParser";
 import { bindDts } from "../transform/bind";
 import { generate, generateAliasImports } from "./generator";

@@ -331,13 +331,12 @@ class GccGenerator extends Generator {
     flush();
   }
   StructuralInterfaceDeclaration(n: TSTypeAliasDeclaration) {
-    console.log(n);
     this.doc();
     this.put("@record", true);
     this.rec(n.typeParameters);
     this.cod();
     this.put("class "); this.rec(n.id); this.put(" ");
-    this.rec(n.typeAnnotation, ";");
+    this.rec(n.typeAnnotation, EmitMode.BindingJsDoc);
   }
   TSInterfaceDeclaration(n: TSInterfaceDeclaration) {
     this.doc();
@@ -564,7 +563,13 @@ class GccGenerator extends Generator {
   }
   ImportDefaultSpecifier(n: ImportDefaultSpecifier) { this.rec(n.local); }
   ExportNamedDeclaration(n: ExportNamedDeclaration) {
-    if (this.djs && n.declaration) { this.rec(n.declaration); return; }
+    if (n.declaration) {
+      if (this.djs) { this.rec(n.declaration); return; }
+      this.ret();
+      this.put("export ");
+      this.rec(n.declaration);
+      return;
+    }
     this.ret();
     if (n.specifiers.length < 3) {
       this.put("export { "); this.arr(n.specifiers, ", "); this.put(" };");
@@ -580,7 +585,12 @@ class GccGenerator extends Generator {
       && n.exported.type == "Identifier"
       && n.local.name != n.exported.name) { this.put(" as "); this.rec(n.exported); }
   }
-  ExportDefaultDeclaration(n: ExportDefaultDeclaration) { this.put("export default "); this.rec(n.declaration); }
+  ExportDefaultDeclaration(n: ExportDefaultDeclaration) {
+    this.put("export default ");
+    this.rec(n.declaration);
+    if (!n.declaration.type.endsWith("Declaration"))
+      this.put(";");
+  }
   ClassDeclaration(n: ClassDeclaration | ClassExpression) {
     if (n.implements || n.typeParameters) {
       this.doc();

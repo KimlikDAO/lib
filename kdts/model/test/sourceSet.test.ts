@@ -1,5 +1,7 @@
 import { expect, test } from "bun:test";
-import { SourceSet } from "../source";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { combine } from "../../../util/paths";
+import { SourceSet } from "../../frontend/sourceSet";
 import { Source } from "../source";
 
 const createSourceSet = (...resolvedSources: Source[]) => {
@@ -10,6 +12,11 @@ const createSourceSet = (...resolvedSources: Source[]) => {
 
   return sources;
 };
+
+const moduleSource = (path: string): Source => ({
+  path,
+  id: `module:${path.replace(/\.(tsx|jsx|ts|mjs|js)$/, "")}`
+});
 
 test("dedupes by source id and keeps the first resolved path", () => {
   const sources = createSourceSet(
@@ -52,4 +59,23 @@ test("getPaths returns all resolved paths in sorted order", () => {
   );
 
   expect(sources.getPaths()).toEqual(["a.ts", "pkg/b.d.ts", "z.ts"]);
+});
+
+test("materialize tracks sources and writes them to the isolate", async () => {
+  mkdirSync("tmp", { recursive: true });
+  const dir = mkdtempSync("tmp/source-set-");
+  const isolateDir = combine(dir, ".kdts_isolate");
+  const sourcePath = combine(dir, "entry.ts");
+
+  try {
+    const sources = new SourceSet(isolateDir);
+    const source = moduleSource(sourcePath);
+    await sources.materialize(source, "console.log(1);\n");
+
+    expect(sources.getPaths()).toEqual([sourcePath]);
+    expect(existsSync(combine(isolateDir, sourcePath))).toBe(true);
+    expect(readFileSync(combine(isolateDir, sourcePath), "utf8")).toBe("console.log(1);\n");
+  } finally {
+    rmSync(dir, { force: true, recursive: true });
+  }
 });

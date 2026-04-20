@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { combine, getDir, replaceExt } from "../../util/paths";
 import { SourceId, Source } from "../model/source";
+import { JsLikeExt, moduleAtPath } from "./sourcePath";
 
 const KDTS_TYPES = "node_modules/@kimlikdao/kdts/@types";
 
@@ -9,18 +10,6 @@ type PackageJson = {
   types?: string;
   typings?: string;
 };
-
-/**
- * To be consistent with bun, we guess the extension in the following order:
- *  - tsx
- *  - jsx
- *  - ts
- *  - mjs
- *  - js
- * 
- * we do not support .cjs currently; all files are assumed to be modules.
- */
-const JsLikeExt: readonly string[] = [".tsx", ".jsx", ".ts", ".mjs", ".js"];
 
 const isFile = (path: string): boolean => {
   try {
@@ -35,12 +24,6 @@ const resolveExt = (path: string): string => {
   for (const ext of JsLikeExt)
     if (isFile(path + ext)) return path + ext;
   return "";
-}
-
-const stripJsLikeExt = (path: string): string => {
-  for (const ext of JsLikeExt)
-    if (path.endsWith(ext)) return path.slice(0, -ext.length);
-  return path;
 }
 
 const resolveDeclaration = (path: string): string => {
@@ -74,11 +57,6 @@ const resolveRootImport = (packageDir: string, packageJson: PackageJson): string
     || "index";
   return resolveDeclaration(combine(packageDir, declarationPath));
 }
-
-const moduleAtPath = (path: string): Source => ({
-  path,
-  id: `module:${stripJsLikeExt(path)}`
-});
 
 const resolvePackage = (
   modulesPath: string,

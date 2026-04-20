@@ -27,8 +27,8 @@ import {
 } from "../ast/types";
 import { Mutator } from "../ast/walk";
 import { resolvePath } from "../frontend/resolver";
-import { SourceSet } from "../model/source";
 import { Source } from "../model/source";
+import { SourceSet } from "../frontend/sourceSet";
 import { Modifier } from "../model/modifier";
 import { ModuleImports } from "../model/moduleImports";
 import {

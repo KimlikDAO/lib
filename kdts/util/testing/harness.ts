@@ -1,6 +1,6 @@
 import { expect } from "bun:test";
+import { SourceSet } from "../../frontend/sourceSet";
 import { ModuleImports } from "../../model/moduleImports";
-import { SourceSet } from "../../model/source";
 import { Source } from "../../model/source";
 import { stripIndent } from "./source";
 

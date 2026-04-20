@@ -5,6 +5,9 @@ import { CliArgs } from "../util/cli";
 import { compile } from "./compiler";
 import pkg from "./package.json";
 import { run } from "./runner";
+import { Overridable } from "./kdts.d";
+
+const Source = "local" satisfies Overridable;
 
 const args = CliArgs.fromArgv(process.argv, "target", {
   "-o": "output",
@@ -16,7 +19,7 @@ const args = CliArgs.fromArgv(process.argv, "target", {
 });
 
 function usage() {
-  console.log(`kdts ${pkg.version}
+  console.log(`kdts ${pkg.version}-${Source}
 
 Usage:
   kdts <entry> [options]

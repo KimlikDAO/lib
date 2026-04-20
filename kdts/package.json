@@ -2,7 +2,7 @@
   "name": "@kimlikdao/kdts",
   "description": "KimlikDAO TypeScript compiler",
   "author": "KimlikDAO <dao@kimlikdao.org>",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -19,7 +19,8 @@
   },
   "types": "./kdts.d.ts",
   "scripts": {
-    "build": "rm -rf build && mkdir -p build/util && cp package.json kdts.d.ts bench.ts README.md build/ && cp util/assert.ts util/arrays.ts util/cli.ts build/util/ && bun kdts.ts kdts.ts --fast -o build/kdts.js",
+    "build:local": "rm -rf build && mkdir -p build/util && cp package.json kdts.d.ts bench.ts README.md build/ && cp util/assert.ts util/arrays.ts util/cli.ts build/util/ && bun kdts.ts kdts.ts --fast -o build/kdts.js && chmod +x build/kdts.js",
+    "build": "rm -rf build && mkdir -p build/util && cp package.json kdts.d.ts bench.ts README.md build/ && cp util/assert.ts util/arrays.ts util/cli.ts build/util/ && bun kdts.ts kdts.ts --fast -o build/kdts.js --override Source=npm && chmod +x build/kdts.js",
     "release": "npm run build && npm publish ./build"
   },
   "dependencies": {
