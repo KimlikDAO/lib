@@ -114,7 +114,7 @@ test("Concise arrow object literal returns are wrapped with the declared return 
   `);
 });
 
-test("Inline object return types are wrapped with the declared return type", () => {
+test("Inline object return types are left structural", () => {
   expectEmit(`
     function makeUser(): { name: string } {
       return {
@@ -128,11 +128,9 @@ test("Inline object return types are wrapped with the declared return type", () 
      * }}
      */
     function makeUser() {
-      return /** @type {{
-        name: string
-      }} */({
+      return {
         name: "Ada"
-      });
+      };
     }
   `);
 });
