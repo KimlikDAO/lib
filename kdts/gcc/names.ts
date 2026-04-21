@@ -2,6 +2,9 @@ import { Identifier } from "acorn";
 import { TSQualifiedName } from "../ast/types";
 import { SourceId } from "../model/source";
 
+const isIdentifierName = (name: string): boolean =>
+  /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name);
+
 const toIdentifier = (source: SourceId, name: string): string => {
   const text = `kdts$$${source}$${name == "*" ? "star" : name}`;
   const value = text.replaceAll(
@@ -16,5 +19,6 @@ const entityNameText = (node: Identifier | TSQualifiedName): string =>
 
 export {
   entityNameText,
+  isIdentifierName,
   toIdentifier
 };

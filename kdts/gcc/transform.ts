@@ -7,7 +7,8 @@ import {
   Identifier,
   ImportDeclaration,
   Node,
-  Program
+  Program,
+  VariableDeclaration
 } from "acorn";
 import { getExt } from "../../util/paths";
 import { isIdentifier, isSatisfiesExpression, typeReferenceName } from "../ast/guards";
@@ -27,10 +28,10 @@ import {
 } from "../ast/types";
 import { Mutator } from "../ast/walk";
 import { resolvePath } from "../frontend/resolver";
-import { Source } from "../model/source";
 import { SourceSet } from "../frontend/sourceSet";
 import { Modifier } from "../model/modifier";
 import { ModuleImports } from "../model/moduleImports";
+import { Source } from "../model/source";
 import {
   synthAliasImports,
   synthComment,
@@ -127,7 +128,12 @@ class GccJsTransform extends GccTransform {
     n.argument = this.wrapWithReturnType(n.argument);
     return false;
   }
-  VariableDeclarator(n: VariableDeclarator) {
+  VariableDeclaration(n: VariableDeclaration) {
+    for (const declaration of n.declarations)
+      this.mut(declaration, n.kind);
+    return true;
+  }
+  VariableDeclarator(n: VariableDeclarator, declarationKind?: VariableDeclaration["kind"]) {
     const init: Node | null | undefined = n.init;
     const explicitType = n.id.typeAnnotation?.typeAnnotation;
 
@@ -137,6 +143,8 @@ class GccJsTransform extends GccTransform {
         n.modifiers = (n.modifiers ?? 0) | Modifier.NoInline;
         n.init = init.expression;
       } else if (marker == "Overridable" && isIdentifier(n.id)) {
+        if (declarationKind != "const")
+          throw "Overridable declarations must use const";
         if (!Object.hasOwn(this.overrides, n.id.name)) return;
         const type = explicitType || probeExpressionType(init.expression);
         n.init = {

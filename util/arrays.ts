@@ -11,7 +11,10 @@ const shuffle = <T>(arr: T[]): T[] => {
 };
 
 /**
- * Splits an array into chunks of size n.
+ * Partitions the array into chunks of size n, except for the last chunk which
+ * can be smaller, but not empty.
+ *
+ * For n ≤ 0, returns []
  *
  * @satisfies {PureFn}
  */

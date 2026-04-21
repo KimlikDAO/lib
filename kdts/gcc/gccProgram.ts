@@ -8,15 +8,29 @@ import { ModuleExports } from "../model/moduleExports";
 import { ModuleImports } from "../model/moduleImports";
 import { DiskProgram } from "../model/program";
 import { Source } from "../model/source";
-import {
-  KdtsExportExtern,
-  KdtsExportName,
-  toMarkerBinding
-} from "./exportMarker";
 import { transpileDts, transpileTs } from "./transpile";
 import { transpileJs } from "./transpileJs";
 
 const SourceScanner = new Transpiler({ loader: "ts" });
+const KdtsExportName = "__kdts_export__";
+const KdtsExportExtern = `/** @fileoverview @externs */
+function ${KdtsExportName}(name, value) {}
+`;
+
+const toMarkerBinding = (
+  prefix: string,
+  name: string,
+  used = new Set<string>(),
+  content = ""
+): string => {
+  let binding = `${prefix}${name}`.replaceAll(/[^A-Za-z0-9_$]/g, "_");
+  if (binding[0] >= "0" && binding[0] <= "9")
+    binding = "_" + binding;
+  while (used.has(binding) || (content && content.includes(binding)))
+    binding += "_";
+  used.add(binding);
+  return binding;
+}
 
 const entryImportPath = (path: string): string =>
   "./" + basename(path);
@@ -117,4 +131,4 @@ class GccProgram implements DiskProgram {
   }
 }
 
-export { GccProgram };
+export { GccProgram, KdtsExportExtern, KdtsExportName, toMarkerBinding };

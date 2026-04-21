@@ -1,12 +1,9 @@
 import { CallExpression, ExpressionStatement, Node, parse, Program } from "acorn";
 import { SourceProgram } from "../model/program";
 import { CodeUpdater } from "../util/textual";
-import {
-  isIdentifierName,
-  KdtsExportName,
-  toMarkerBinding
-} from "./exportMarker";
+import { KdtsExportName, toMarkerBinding } from "./gccProgram";
 import { generateEsmImports } from "./generator";
+import { isIdentifierName } from "./names";
 
 const isNode = (value: Node | unknown): value is Node =>
   !!value && typeof value == "object" && typeof (value as Node).type == "string";

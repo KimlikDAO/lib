@@ -2,7 +2,7 @@
   "name": "@kimlikdao/kdts",
   "description": "KimlikDAO TypeScript compiler",
   "author": "KimlikDAO <dao@kimlikdao.org>",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "license": "MIT",
   "keywords": [
     "typescript",
@@ -18,7 +18,7 @@
     "url": "git+https://github.com/KimlikDAO/kimlikdao-lib.git",
     "directory": "kdts"
   },
-  "homepage": "https://github.com/KimlikDAO/kimlikdao-lib/tree/ana/kdts",
+  "homepage": "https://docs.kimlikdao.org",
   "bugs": {
     "url": "https://github.com/KimlikDAO/kimlikdao-lib/issues"
   },
@@ -35,7 +35,7 @@
   "dependencies": {
     "@swc/core": "^1.15.30",
     "acorn": "^8.16.0",
-    "google-closure-compiler": "^20260415.0.0",
+    "google-closure-compiler": "^20260419.0.0",
     "uglify-js": "3.19.3"
   },
   "devDependencies": {
