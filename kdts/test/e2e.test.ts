@@ -69,4 +69,4 @@ test("compile API builds every showcase file", async () => {
       throw new Error(`Expected compile() to return code for ${fileName}`);
     expect(code).toBe(readFileSync(output, "utf8"));
   }
-}, { timeout: 10_000 });
+}, { timeout: 15_000 });

@@ -2,8 +2,17 @@
   "name": "@kimlikdao/kdts",
   "description": "KimlikDAO TypeScript compiler",
   "author": "KimlikDAO <dao@kimlikdao.org>",
-  "version": "0.0.8",
+  "version": "0.1.1",
   "license": "MIT",
+  "keywords": [
+    "typescript",
+    "compiler",
+    "transpiler",
+    "type-aware",
+    "optimization",
+    "bun",
+    "closure-compiler"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/KimlikDAO/kimlikdao-lib.git",

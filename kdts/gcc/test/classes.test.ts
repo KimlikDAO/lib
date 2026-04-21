@@ -9,6 +9,7 @@ test("classes", () => {
     class Z<A, B> {}
   `, `
     /**
+     * @suppress {reportUnknownTypes}
      * @template A, B
      */
     class Z {}
@@ -17,6 +18,7 @@ test("classes", () => {
     class Z<A, B, C extends string, D, E, F, G extends number> {}
   `, `
     /**
+     * @suppress {reportUnknownTypes}
      * @template A, B
      * @template {string} C
      * @template D, E, F
@@ -28,6 +30,7 @@ test("classes", () => {
     class Z<A = string, B extends string = "x", C = number, D extends number = 0> {}
   `, `
     /**
+     * @suppress {reportUnknownTypes}
      * @template A
      * @template {string} B
      * @template C
@@ -39,6 +42,7 @@ test("classes", () => {
     class Z<A extends FreshValue, B, C extends string, D extends FreshValue, E> {}
   `, `
     /**
+     * @suppress {reportUnknownTypes}
      * @template A, B
      * @template {string} C
      * @template D, E

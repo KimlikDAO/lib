@@ -587,6 +587,8 @@ class GccGenerator extends Generator {
         for (const iface of n.implements) {
           this.ret(); this.put("@implements {"); this.rec(iface); this.put("}");
         }
+      if (n.typeParameters && !this.djs)
+        this.put("@suppress {reportUnknownTypes}", true);
       this.rec(n.typeParameters);
       this.cod();
     }
