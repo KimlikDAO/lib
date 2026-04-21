@@ -2,12 +2,9 @@
   "name": "@kimlikdao/lib",
   "description": "KimlikDAO TypeScript library",
   "author": "KimlikDAO <dao@kimlikdao.org>",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "license": "MIT",
   "type": "module",
-  "workspaces": [
-    "kdts"
-  ],
   "files": [
     "README.md",
     "container/",
@@ -20,12 +17,13 @@
     "util/"
   ],
   "scripts": {
-    "postinstall": "mkdir -p ./node_modules/@kimlikdao && ln -sfn ../../kastro ./node_modules/@kimlikdao/kastro && ln -sfn ../../kdts ./node_modules/@kimlikdao/kdts && ln -sfn ../../util ./node_modules/@kimlikdao/util",
-    "test": "bun kdts/kdts.ts test",
-    "bench": "bun kdts/kdts.ts bench",
+    "postinstall": "mkdir -p ./node_modules/@kimlikdao && ln -sfn ../../kastro ./node_modules/@kimlikdao/kastro && ln -sfn ../../util ./node_modules/@kimlikdao/util",
+    "test": "kdts test",
+    "bench": "kdts bench",
     "clear": "rm -rf build && clear"
   },
   "devDependencies": {
+    "@kimlikdao/kdts": "0.1.11",
     "@ethereumjs/evm": "^10.1.1",
     "@noble/secp256k1": "^3.1.0",
     "@types/bun": "^1.3.12",

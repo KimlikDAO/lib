@@ -138,4 +138,4 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: |
           bun i
-          bun kdts/kdts.js kdts/kdts.js
+          bun run kdts kdts/kdts.js
