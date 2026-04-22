@@ -1,8 +1,8 @@
 import * as swc from "@swc/core";
 import { write } from "bun";
 import UglifyJS, { CompressOptions, MinifyOptions } from "uglify-js";
-import { CliArgs, CliArgValue, Red, Clear } from "../util/cli";
-import { replaceExt } from "../util/paths";
+import { CliArgs, CliArgValue, Red, Clear } from "./util/cli";
+import { replaceExt } from "./util/paths";
 import { compile as compileWithBun } from "./bun/compile";
 import { compile as compileWithGcc } from "./gcc/compile";
 

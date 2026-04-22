@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { combine } from "../../../util/paths";
+import { combine } from "../../util/paths";
 import { SourceSet } from "../../frontend/sourceSet";
 import { Source } from "../source";
 

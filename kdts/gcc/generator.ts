@@ -60,7 +60,7 @@ import {
   WhileStatement,
   YieldExpression
 } from "acorn";
-import { partition } from "../../util/arrays";
+import { partition } from "../util/arrays";
 import { isIdentifier, typeReferenceName } from "../ast/guards";
 import {
   probeArrayLikeElementType,

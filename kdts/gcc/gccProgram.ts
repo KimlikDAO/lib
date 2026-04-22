@@ -1,6 +1,6 @@
 import { file, Transpiler } from "bun";
 import { basename } from "node:path";
-import { replaceExt } from "../../util/paths";
+import { replaceExt } from "../util/paths";
 import { resolveRootPath } from "../frontend/resolver";
 import { moduleAtPath } from "../frontend/sourcePath";
 import { SourceSet } from "../frontend/sourceSet";

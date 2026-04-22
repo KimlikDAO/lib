@@ -1,5 +1,5 @@
 import { file, write } from "bun";
-import { combine } from "../../util/paths";
+import { combine } from "../util/paths";
 import { Source, SourceId } from "../model/source";
 
 class SourceSet {

@@ -26,7 +26,7 @@
     "@kimlikdao/kdts": "0.1.16",
     "@ethereumjs/evm": "^10.1.1",
     "@noble/secp256k1": "^3.1.0",
-    "@types/bun": "^1.3.12",
+    "@types/bun": "^1.3.13",
     "css-tree": "^3.2.1",
     "ethers": "^6.16.0",
     "js-sha256": "0.11.1",

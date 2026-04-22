@@ -1,6 +1,6 @@
 import { build, write } from "bun";
-import { CliArgs } from "../../util/cli";
-import { combine, getDir } from "../../util/paths";
+import { CliArgs } from "../util/cli";
+import { combine, getDir } from "../util/paths";
 import { compileWithClosureCompiler } from "./closureCompiler";
 import { GccProgram } from "./gccProgram";
 import { postprocess } from "./postprocess";

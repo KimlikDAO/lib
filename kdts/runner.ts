@@ -5,9 +5,9 @@ import {
   CliArgs,
   Green,
   Red
-} from "../util/cli";
-import { replaceExt } from "../util/paths";
-import { Throttle } from "../util/promises";
+} from "./util/cli";
+import { replaceExt } from "./util/paths";
+import { Throttle } from "./util/promises";
 import { compile, normalizeCompileArgs } from "./compiler";
 
 const compileAndRunMatching = async (

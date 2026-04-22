@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import process from "node:process";
-import { CliArgs } from "../util/cli";
+import { CliArgs } from "./util/cli";
 import { compile } from "./compiler";
 import pkg from "./package.json";
 import { run } from "./runner";

@@ -7,7 +7,7 @@ import {
 } from "node:fs";
 import { relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { combine, replaceExt } from "../../util/paths";
+import { combine, replaceExt } from "../util/paths";
 import { compile } from "../compiler";
 import { compileEntry } from "../util/testing/e2e";
 

@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { relative } from "node:path";
-import { combine } from "../../../util/paths";
+import { combine } from "../../util/paths";
 import { GccProgram } from "../gccProgram";
 
 test("plain entries stay unchanged", async () => {

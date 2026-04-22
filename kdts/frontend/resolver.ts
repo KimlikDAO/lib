@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
-import { combine, getDir, replaceExt } from "../../util/paths";
+import { combine, getDir, replaceExt } from "../util/paths";
 import { SourceId, Source } from "../model/source";
 import { JsLikeExt, moduleAtPath } from "./sourcePath";
 

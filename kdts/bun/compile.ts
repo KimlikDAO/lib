@@ -1,7 +1,7 @@
 import { build, PluginBuilder, Transpiler } from "bun";
 import { readFileSync } from "node:fs";
-import { CliArgs } from "../../util/cli";
-import { combine, getDir } from "../../util/paths";
+import { CliArgs } from "../util/cli";
+import { combine, getDir } from "../util/paths";
 import { transpileTs } from "./transpile";
 
 const makeKdtsOverridablePlugin = (

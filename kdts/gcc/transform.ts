@@ -10,7 +10,7 @@ import {
   Program,
   VariableDeclaration
 } from "acorn";
-import { getExt } from "../../util/paths";
+import { getExt } from "../util/paths";
 import { isIdentifier, isSatisfiesExpression, typeReferenceName } from "../ast/guards";
 import {
   probeArrayLikeElementType,

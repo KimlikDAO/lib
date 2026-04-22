@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { CliArgs } from "../../util/cli";
+import { CliArgs } from "../util/cli";
 import { normalizeCompileArgs } from "../compiler";
 
 test("normalizeCompileArgs merges --overrides and repeated --override flags", () => {
