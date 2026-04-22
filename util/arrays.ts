@@ -1,5 +1,5 @@
 /**
- * Shufles the array uniformly at random in place.
+ * Shuffles the array uniformly at random in place.
  * @satisfies {InPlaceRandFn}
  */
 const shuffle = <T>(arr: T[]): T[] => {

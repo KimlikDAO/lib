@@ -21,13 +21,13 @@ const bundle = async (
     target: "bun",
     packages: "bundle",
     external,
+    minify: true,
   });
   if (!result.success) {
     const messages = result.logs.map((l) => l.message).join("\n");
     throw `Bun build failed: ${messages}`;
   }
   const text = await result.outputs[0].text();
-  console.log(text);
   console.log(`Bun bundle size:${text.length}`);
   return text;
 }

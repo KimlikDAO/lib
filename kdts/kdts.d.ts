@@ -19,8 +19,8 @@
 type PureExpr = any;
 
 /**
- * `Overridable` marks a variable initializer whose default value may be
- * overridden by kdts during compilation.
+ * `Overridable` marks a constant variable initializer whose default value may
+ * be overridden by kdts during compilation.
  *
  * Use it with the `satisfies` operator when you want to keep a normal
  * in-source default value while still allowing build-specific values to be
@@ -117,7 +117,7 @@ declare global {
    *
    * @example
    * ```ts
-   * /** @satisfies {DeterminisiticFn} *\/
+   * /** @satisfies {DeterministicFn} *\/
    * const sum = (a: number, b: number) => a + b;
    * ```
    */
@@ -128,7 +128,7 @@ declare global {
    * function can still read mutable external state.
    * @example
    * ```ts
-   * /** @satisfies {SideEffectFn} *\/
+   * /** @satisfies {SideEffectFreeFn} *\/
    * const rand = () => Math.random();
    * ```
    */
@@ -195,7 +195,7 @@ declare global {
    * @example
    * ```ts
    * /** @satisfies {NoInlineFn} *\/
-   * const getById = (x: string): HTMLElement => document.getElementById();
+   * const getById = (x: string): HTMLElement => document.getElementById(x);
    * ```
    * Here, we ensured that `getById()` is not inlined thus instead of using the
    * longer name `document.getElementById("domId")`, the call sites will have
