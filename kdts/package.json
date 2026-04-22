@@ -2,7 +2,7 @@
   "name": "@kimlikdao/kdts",
   "description": "KimlikDAO TypeScript compiler",
   "author": "KimlikDAO <dao@kimlikdao.org>",
-  "version": "0.1.12",
+  "version": "0.1.14",
   "license": "MIT",
   "keywords": [
     "typescript",

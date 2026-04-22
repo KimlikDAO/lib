@@ -1,7 +1,7 @@
 import * as swc from "@swc/core";
 import { write } from "bun";
 import UglifyJS, { CompressOptions, MinifyOptions } from "uglify-js";
-import { CliArgs, CliArgValue } from "../util/cli";
+import { CliArgs, CliArgValue, Red, Clear } from "../util/cli";
 import { replaceExt } from "../util/paths";
 import { compile as compileWithBun } from "./bun/compile";
 import { compile as compileWithGcc } from "./gcc/compile";
@@ -94,6 +94,12 @@ const normalizeCompileArgs = (args: CliArgs): CliArgs => {
   });
 };
 
+const PackageWarning = `
+${Red}Warning${Clear}: --packages bundle is a convenience mode. Bundled npm
+packages are passed through kdts's aggressive optimization pipeline, which is
+tuned for kdts output and may be unsafe for arbitrary third-party code.
+`;
+
 const compile = async (
   params: Record<string, CliArgValue> | CliArgs,
   checkFreshFn?: (deps: string[]) => Promise<boolean>,
@@ -105,6 +111,8 @@ const compile = async (
   const target = params.asList("target");
   params.setIfMissing("entry", target[0] == "compile" ? target[1] : target[0]);
   params.setIfMissing("output", replaceExt(params.asStringOr("entry", ""), ".out.js"));
+  if (params.asStringOr("packages", "external") == "bundle")
+    console.warn(PackageWarning);
   const fast = params.isTrue("fast");
   const compiled = await (fast
     ? compileWithBun(params, checkFreshFn)

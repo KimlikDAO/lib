@@ -47,13 +47,16 @@ const compile = async (
 ): Promise<string | void> => {
   const entry = args.asStringOr("entry", "");
   const overrides = args.asRecord("overrides");
+  const packages = args.asStringOr("packages", "external") as "external" | "bundle";
+  const external = packages == "bundle" ? args.asList("external") : [];
   if (checkFreshFn && await checkFreshFn(collectDeps(entry)))
     return;
   const result = await build({
     entrypoints: [entry],
     format: "esm",
     target: "bun",
-    packages: "external",
+    packages,
+    external,
     emitDCEAnnotations: true,
     minify: true,
     plugins: [makeKdtsOverridablePlugin(overrides)],

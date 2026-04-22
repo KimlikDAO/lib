@@ -46,9 +46,6 @@
     "**/.kdts_isolate",
     "**/build",
     "kastro/**",
-    "kdts/@types",
-    // Transformer tests have ambient declaration examples
-    "kdts/transformer/test",
-    "kdts/parser/test",
+    "kdts/**"
   ]
 }

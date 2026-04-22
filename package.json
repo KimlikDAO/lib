@@ -34,5 +34,8 @@
   },
   "dependencies": {
     "svg-pathdata": "^9.0.0"
+  },
+  "kdts": {
+    "sources": "."
   }
 }

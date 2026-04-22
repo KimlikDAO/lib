@@ -39,6 +39,20 @@ type PureExpr = any;
  */
 type Overridable = any;
 
+/**
+ * `LargeConstant` marks a constant initializer that should stay behind a
+ * binding instead of being duplicated into use sites.
+ *
+ * Use it for large tables, object literals, or other bulky constant values
+ * where code size would get worse if the value were inlined aggressively.
+ *
+ * @example
+ * ```ts
+ * import { LargeConstant } from "@kimlikdao/kdts"
+ *
+ * const Table = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] satisfies LargeConstant;
+ * ```
+ */
 type LargeConstant = any;
 
 /**
@@ -47,7 +61,7 @@ type LargeConstant = any;
  *
  * @example
  * ```ts
- * [1, 2, 3]
+ * [1, 2, 3] satisfies FreshValue;
  * { odd: [1n, 3n, 5n], even: [2n, 4n, 6n] }
  * { name: "John", age: 30 }
  * new Uint8Array([1, 2, 3])
@@ -69,10 +83,9 @@ declare global {
    *
    * @example
    * ```ts
+   * /** @satisfies {InPlaceFn} *\/
    * const writeInPlace = (bytes: Uint8Array, hex: string) =>
    *   bytes.setFromHex(hex);
-   *
-   * writeInPlace satisfies InPlaceFn;
    * ```
    */
   type InPlaceFn = Function;
@@ -90,19 +103,33 @@ declare global {
    * ```ts
    * class Counter {
    *   c = 0;
+   *   /** @satisfies {MethodFn} *\/
    *   inc() { ++this.c; }
    * }
-   * Counter.prototype.inc satisfies MethodFn;
    * ```
    */
   type MethodFn = Function;
+
+  /**
+   * A function that does not depend on mutable external state and is therefore
+   * deterministic. This alone does not imply the function is side-effect free
+   * or that it returns a fresh value.
+   *
+   * @example
+   * ```ts
+   * /** @satisfies {DeterminisiticFn} *\/
+   * const sum = (a: number, b: number) => a + b;
+   * ```
+   */
+  type DeterministicFn = Function;
 
   /**
    * A function that has no observable mutations to external state. Such
    * function can still read mutable external state.
    * @example
    * ```ts
-   * Math.random satisfies SideEffectFreeFn;
+   * /** @satisfies {SideEffectFn} *\/
+   * const rand = () => Math.random();
    * ```
    */
   type SideEffectFreeFn = Function;
@@ -113,14 +140,12 @@ declare global {
    * 
    * @example
    * ```ts
+   * /** @satisfies {PureAliasFn} *\/
    * const id = (x: unknown) => x;
    * 
-   * id satisfies PureAliasFn;
-   *
+   * /** @satisfies {PureAliasFn} *\/
    * const longer = (a: number[], b: number[]): number[] => a.length > b.length
    *   ? a : b;
-   *
-   * longer satisfies PureAliasFn;
    * ```
    */
   type PureAliasFn = Function;
@@ -137,16 +162,28 @@ declare global {
   type PureFn = Function;
 
   /**
+   * A function the compiler is encouraged to inline when profitable, but
+   * unlike {@link InlineFn} it is not required to inline every call site.
+   *
+   * @example
+   * ```ts
+   * /** @satisfies {InlineFriendlyFn} *\/
+   * const ensureArray = <T>(x: T | T[]): T[] => Array.isArray(x) ? x : [x];
+   * ```
+   */
+  type InlineFriendlyFn = Function;
+
+  /**
    * An inline function is one whose body is copied to each call site.
    * InlineFn's cannot be used as runtime values except in a satisfies
    * expression.
    *
    * @example
    * ```ts
+   * /** @satisfies {InlineFn} *\/
    * function arr<T>(x: T[] | T): T[] {
    *   return Array.isArray(x) ? x : [x];
    * }
-   * arr satisfies InlineFn;
    * ```
    */
   type InlineFn = Function;
@@ -157,7 +194,7 @@ declare global {
    *
    * @example
    * ```ts
-   * /** @satisfies {NoInlineFn} %/
+   * /** @satisfies {NoInlineFn} *\/
    * const getById = (x: string): HTMLElement => document.getElementById();
    * ```
    * Here, we ensured that `getById()` is not inlined thus instead of using the

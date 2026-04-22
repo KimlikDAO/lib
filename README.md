@@ -21,9 +21,8 @@ ts/js compiler with type aware optimizations.
 ⚙️ [`kdts`](./kdts): KimlikDAO TypeScript compiler
 
   - A TypeScript compiler that leverages type information to perform advanced optimizations.
-  - Seamless js/ts interoperability, including the type system
   - Uses the [Google Closure Compiler](https://github.com/google/closure-compiler)
-    as a backend with additional optimization passes.
+    as a backend with additional optimization capabilities.
 
 🗝️ [`crypto`](./crypto): Cryptographic functions and libraries
 

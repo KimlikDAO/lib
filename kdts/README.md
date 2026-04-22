@@ -1,9 +1,9 @@
 # kdts
 
-`kdts` is an optimization-first TypeScript compiler.
-
-Instead of erasing types as early as possible, `kdts` keeps type information
-available during compilation so it can make stronger optimization decisions.
+`kdts` is an optimization-first TypeScript compiler. Instead of erasing types
+as early as possible, it uses them throughout the compilation to direct
+optimizations, achieving transformations that would not have been possible were
+the types not known.
 
 ## Install
 

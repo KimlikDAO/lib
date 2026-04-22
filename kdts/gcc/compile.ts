@@ -1,3 +1,4 @@
+import { build, write } from "bun";
 import { CliArgs } from "../../util/cli";
 import { combine, getDir } from "../../util/paths";
 import { compileWithClosureCompiler } from "./closureCompiler";
@@ -6,6 +7,30 @@ import { postprocess } from "./postprocess";
 
 type TranspileFn = (content: string, file: string, isEntry?: boolean) =>
   string | null;
+
+const bundle = async (
+  code: string,
+  isolateDir: string,
+  external: string[]
+): Promise<string> => {
+  const entry = combine(isolateDir, "__kdts_bundle_entry__.js");
+  await write(entry, code);
+  const result = await build({
+    entrypoints: [entry],
+    format: "esm",
+    target: "bun",
+    packages: "bundle",
+    external,
+  });
+  if (!result.success) {
+    const messages = result.logs.map((l) => l.message).join("\n");
+    throw `Bun build failed: ${messages}`;
+  }
+  const text = await result.outputs[0].text();
+  console.log(text);
+  console.log(`Bun bundle size:${text.length}`);
+  return text;
+}
 
 /**
  * Resolves to the compiled code or void if it determines that the code
@@ -51,6 +76,8 @@ const compile = async (
   });
   output = postprocess(output, program);
   console.log(`GCC size:       ${output.length}`);
+  if (args.asStringOr("packages", "external") == "bundle")
+    output = await bundle(output, isolateDir, args.asList("external"));
   return output;
 }
 
