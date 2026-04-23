@@ -2,9 +2,9 @@ name: Test
 
 on:
   push:
-    branches: ["ana", "prod"]
+    branches: ["ana", "main"]
   pull_request:
-    branches: ["ana", "prod"]
+    branches: ["ana", "main"]
 
 jobs:
   bun_unit_tests:
