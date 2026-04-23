@@ -40,6 +40,5 @@
     "**/node_modules",
     "**/.kdts_isolate",
     "**/build",
-    "kastro/**",
   ]
 }

@@ -13,17 +13,17 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
+      - run: bun i
+      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
       - name: Run crypto benchmarks
-        run: |
-          bun i
-          bun bench crypto --strict
+        run: kdts bench crypto --strict
   benchmark_util:
     name: util benches
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
+      - run: bun i
+      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
       - name: Run util benchmarks
-        run: |
-          bun i
-          bun bench util --strict
+        run: kdts bench util --strict

@@ -23,9 +23,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - run: |
-          bun i
-          bun run test --fast --filter kdts/ kastro/
+      - run: bun i
+      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
+      - run: kdts test --fast
 
   kdts_unit_tests_container:
     name: kdts unit tests, container
@@ -33,9 +33,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - run: |
-          bun i
-          bun run test container --strict
+      - run: bun i
+      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
+      - run: kdts test container --strict
 
   kdts_unit_tests_crosschain:
     name: kdts unit tests, crosschain
@@ -43,9 +43,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - run: |
-          bun i
-          bun run test crosschain --strict
+      - run: bun i
+      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
+      - run: kdts test crosschain --strict
 
   kdts_unit_tests_crypto:
     name: kdts unit tests, crypto
@@ -53,9 +53,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - run: |
-          bun i
-          bun run test crypto --strict
+      - run: bun i
+      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
+      - run: kdts test crypto --strict
 
   kdts_unit_tests_did:
     name: kdts unit tests, did
@@ -63,9 +63,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - run: |
-          bun i
-          bun run test did --strict
+      - run: bun i
+      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
+      - run: kdts test did --strict
 
   kdts_unit_tests_ethereum:
     name: kdts unit tests, ethereum
@@ -73,20 +73,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - run: |
-          bun i
-          bun run test ethereum
-
-  kdts_unit_tests_kastro:
-    name: kdts unit tests, kastro
-    runs-on: ubuntu-latest
-    if: false # pending on css-tree typing
-    steps:
-      - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-      - run: |
-          bun i
-          bun run test kastro
+      - run: bun i
+      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
+      - run: kdts test ethereum
 
   kdts_unit_tests_kdts:
     name: kdts unit tests, kdts
@@ -95,9 +84,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - run: |
-          bun i
-          bun run test kdts
+      - run: bun i
+      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
+      - run: kdts test kdts
 
   kdts_unit_tests_mina:
     name: kdts unit tests, mina
@@ -105,9 +94,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - run: |
-          bun i
-          bun run test mina --strict
+      - run: bun i
+      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
+      - run: kdts test mina --strict
 
   kdts_unit_tests_protocol:
     name: kdts unit tests, protocol
@@ -115,9 +104,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - run: |
-          bun i
-          bun run test protocol
+      - run: bun i
+      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
+      - run: kdts test protocol
 
   kdts_unit_tests_util:
     name: kdts unit tests, util
@@ -125,6 +114,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - run: |
-          bun i
-          bun run test util --strict
+      - run: bun i
+      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
+      - run: kdts test util --strict
