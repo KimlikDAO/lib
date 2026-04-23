@@ -1,28 +1,17 @@
-<h1><img src="https://raw.githubusercontent.com/KimlikDAO/dapp/ana/components/icon.svg" align="top" height="44"> kimlikdao-lib</a></h1>
+<h1><img src="https://raw.githubusercontent.com/KimlikDAO/dapp/ana/components/icon.svg" align="top" height="44"> @kimlikdao/lib</a></h1>
 
-[![Tests](https://img.shields.io/github/actions/workflow/status/KimlikDAO/kimlikdao-js/test.yml?branch=ana)](https://github.com/KimlikDAO/kimlikdao-js/actions/workflows/test.yml)
+[![Tests](https://img.shields.io/github/actions/workflow/status/KimlikDAO/lib/test.yml?branch=main)](https://github.com/KimlikDAO/lib/actions/workflows/test.yml)
 [![npm version](https://img.shields.io/npm/v/@kimlikdao/lib.svg)](https://www.npmjs.com/package/@kimlikdao/lib)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![KimlikDAO](https://img.shields.io/badge/Kimlik-DAO-blue)](https://kimlikdao.org)
 
-kimlikdao-lib is a repository containing TypeScript modules essential to KimlikDAO projects.
-Both our js and ts modules are fully typed using ts type expressions and compiled using [`kdts`](./kdts), our
+@kimlikdao/lib is a repository containing TypeScript modules essential to KimlikDAO projects.
+Both our js and ts modules are fully typed using ts type expressions and compiled using [`kdts`](https://github.com/KimlikDAO/kdts), our
 ts/js compiler with type aware optimizations.
 
 ## 🗂️ Features
 
 ### Highlights
-
-🪁 [`kastro`](./kastro): Our compile-time focused web-framework
-
-  - React-like .tsx components at zero runtime cost
-  - Import css, fonts or images using es6 imports and receive an asset component
-
-⚙️ [`kdts`](./kdts): KimlikDAO TypeScript compiler
-
-  - A TypeScript compiler that leverages type information to perform advanced optimizations.
-  - Uses the [Google Closure Compiler](https://github.com/google/closure-compiler)
-    as a backend with additional optimization capabilities.
 
 🗝️ [`crypto`](./crypto): Cryptographic functions and libraries
 
@@ -31,6 +20,12 @@ ts/js compiler with type aware optimizations.
   - [`wesolowski`](./crypto/wesolowski.ts): Our Wesolowski VDF implementation
 
 🪪 [`did`](./did): Definitions of DID and KPass by KimlikDAO
+
+🪁 [`kastro`](./kastro): Our compile-time focused web-framework
+
+  - React-like .tsx components at zero runtime cost
+  - Import css, fonts or images using es6 imports and receive an asset component
+
 
 ### Other goodies
 
@@ -49,9 +44,10 @@ ts/js compiler with type aware optimizations.
 ## 👩‍💻 Development
 
 ```shell
-git clone https://github.com/KimlikDAO/kimlikdao-lib
-cd kimlikdao-lib
+git clone https://github.com/KimlikDAO/lib
+cd lib
 bun i
+bun add -g @kimlikdao/kdts
 ```
 
 These commands will clone the repository into your local development

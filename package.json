@@ -17,7 +17,7 @@
     "util/"
   ],
   "scripts": {
-    "postinstall": "mkdir -p ./node_modules/@kimlikdao && ln -sfn ../../kastro ./node_modules/@kimlikdao/kastro && ln -sfn ../../util ./node_modules/@kimlikdao/util",
+    "postinstall": "mkdir -p ./node_modules/@kimlikdao && ln -sfn ../../kastro ./node_modules/@kimlikdao/kastro",
     "test": "kdts test",
     "bench": "kdts bench",
     "clear": "rm -rf build && clear"

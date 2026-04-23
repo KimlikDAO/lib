@@ -1,1 +1,0 @@
-const test = (name: string, age?: number) => 42

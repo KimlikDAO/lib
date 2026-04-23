@@ -1,3 +1,0 @@
-class A {
-    override c() {}
-}

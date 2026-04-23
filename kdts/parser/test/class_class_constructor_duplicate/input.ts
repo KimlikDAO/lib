@@ -1,4 +1,0 @@
-class Student {
- constructor() {}
- constructor() {}
-}

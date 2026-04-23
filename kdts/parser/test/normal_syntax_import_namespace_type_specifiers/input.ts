@@ -1,1 +1,0 @@
-import test, { name, type age, school as school1 } from './index.js'

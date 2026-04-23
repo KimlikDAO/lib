@@ -1,1 +1,0 @@
-import { test as test1 } from './index.js'

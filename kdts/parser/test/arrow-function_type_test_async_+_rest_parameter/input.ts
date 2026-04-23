@@ -1,1 +1,0 @@
-const f = async (...args: any) => {}

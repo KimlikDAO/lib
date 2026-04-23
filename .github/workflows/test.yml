@@ -128,14 +128,3 @@ jobs:
       - run: |
           bun i
           bun run test util --strict
-
-  compile_kdts_with_kdts:
-    name: Compile `kdts` with `kdts`
-    runs-on: ubuntu-latest
-    if: false # Temporarily disabled
-    steps:
-      - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-      - run: |
-          bun i
-          bun run kdts kdts/kdts.js

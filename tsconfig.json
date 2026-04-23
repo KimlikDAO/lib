@@ -27,12 +27,7 @@
     "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": true,
-    "strictPropertyInitialization": true,
-    "paths": {
-      "uglify-js": [
-        "./kdts/@types/uglify-js"
-      ]
-    }
+    "strictPropertyInitialization": true
   },
   "include": [
     "./**/*.js",
@@ -46,6 +41,5 @@
     "**/.kdts_isolate",
     "**/build",
     "kastro/**",
-    "kdts/**"
   ]
 }

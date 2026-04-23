@@ -1,1 +1,0 @@
-let test: string | number = 123

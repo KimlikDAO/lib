@@ -1,2 +1,0 @@
-@decorator
-abstract class ExampleClass {}

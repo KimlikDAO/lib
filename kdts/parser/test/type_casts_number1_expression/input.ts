@@ -1,1 +1,0 @@
-foo(<number>1)

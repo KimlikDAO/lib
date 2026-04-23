@@ -1,4 +1,0 @@
-{
-  "name": "@noble/secp256k1",
-  "types": "./index.d.ts"
-}
