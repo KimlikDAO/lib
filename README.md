@@ -1,11 +1,11 @@
-<h1><img src="https://raw.githubusercontent.com/KimlikDAO/dapp/ana/components/icon.svg" align="top" height="44"> kimlikdao/lib</a></h1>
+<h1><img src="https://raw.githubusercontent.com/KimlikDAO/dapp/ana/components/icon.svg" align="center" height="44"> kimlikdao/lib</a></h1>
 
 [![Tests](https://img.shields.io/github/actions/workflow/status/KimlikDAO/lib/test.yml?branch=main)](https://github.com/KimlikDAO/lib/actions/workflows/test.yml)
 [![npm version](https://img.shields.io/npm/v/@kimlikdao/lib.svg)](https://www.npmjs.com/package/@kimlikdao/lib)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![KimlikDAO](https://img.shields.io/badge/Kimlik-DAO-blue)](https://kimlikdao.org)
 
-@kimlikdao/lib is a repository containing TypeScript modules essential to KimlikDAO projects.
+`@kimlikdao/lib` is a repository containing TypeScript modules essential to KimlikDAO projects.
 Both our js and ts modules are fully typed using ts type expressions and compiled using [`kdts`](https://github.com/KimlikDAO/kdts), our
 ts/js compiler with type aware optimizations.
 
@@ -15,25 +15,19 @@ ts/js compiler with type aware optimizations.
 
 🗝️ [`crypto`](./crypto): Cryptographic functions and libraries
 
-  - [`arfCurve`](./crypto/arfCurve.ts): An efficient Arf Curve ($y^2 = x^3 + b$) class factory
-  - [`weierstrassCurve`](./crypto/weierstrassCurve.ts): A constant time Weierstrass Curve ($y^2 = x^3 + ax + b$) implementation
-  - [`wesolowski`](./crypto/wesolowski.ts): Our Wesolowski VDF implementation
+- [`arfCurve`](./crypto/arfCurve.ts): An efficient Arf Curve ($y^2 = x^3 + b$) class factory
+- [`weierstrassCurve`](./crypto/weierstrassCurve.ts): A constant time Weierstrass Curve ($y^2 = x^3 + ax + b$) implementation
+- [`wesolowski`](./crypto/wesolowski.ts): Our Wesolowski VDF implementation
 
 🪪 [`did`](./did): Definitions of DID and KPass by KimlikDAO
 
-🪁 [`kastro`](./kastro): Our compile-time focused web-framework
-
-  - React-like .tsx components at zero runtime cost
-  - Import css, fonts or images using es6 imports and receive an asset component
-
+💎 [`ethereum`](./ethereum): Tools for interacting with Ethereum nodes
 
 ### Other goodies
 
 🫙 `container`: Cryptographic containers such as Merkle Trees
 
 🧬 `crosschain`: Definitions and structures valid across all blockchains
-
-💎 `ethereum`: Tools for interacting with Ethereum nodes
 
 🪶 `mina`: Tools for working with Mina dApps and nodes.
 
@@ -79,6 +73,7 @@ The tests can be run in two different modes:
   ```
 
 To run tests in a specific directory, say `crypto`, you can also do
+
 ```shell
 bun test crypto # uncompiled
 kdts test crypto # compiled, --fast param available
@@ -87,10 +82,13 @@ kdts test crypto # compiled, --fast param available
 ## ⏱️ Benchmarks
 
 You can run a single benchmark directly
+
 ```shell
 kdts bench crypto/bench/arfCurve/ladder.bench.ts # --fast param available
 ```
+
 or compile all of them and benchmark the compiled modules:
+
 ```shell
 kdts bench
 ```
