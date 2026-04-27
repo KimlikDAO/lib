@@ -15,7 +15,7 @@ const packedAddress = (addr: Address): string => addr.slice(2);
  * @satisfies {PureFn}
  */
 const uint256 = (value: number | bigint | string): string => {
-  return (typeof value == "string" ? BigInt(value) : (value as bigint))
+  return (typeof value == "string" ? BigInt(value) : value)
     .toString(16).padStart(64, "0");
 };
 

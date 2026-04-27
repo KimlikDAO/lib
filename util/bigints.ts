@@ -23,7 +23,7 @@ const intoBytesBE = (
   n: bigint | number,
   start: number
 ): number => {
-  const str = (n as bigint).toString(16);
+  const str = n.toString(16);
   let j = start - 1;
   for (let i = str.length; i > 0; --j, i -= 2)
     bytes[j] = parseInt(str.substring(i - 2, i), 16);
@@ -50,7 +50,7 @@ const intoBytesLE = (
   n: bigint | number,
   start = 0
 ): void => {
-  const str = (n as bigint).toString(16);
+  const str = n.toString(16);
   for (let i = str.length, j = start; i > 0; i -= 2, ++j)
     bytes[j] = parseInt(str.substring(i - 2, i), 16);
 };

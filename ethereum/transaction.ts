@@ -10,7 +10,7 @@ type TransactionRequest = {
   gas?: number;
 };
 
-const hex = (v: number | bigint): string => "0x" + (v as bigint).toString(16);
+const hex = (v: number | bigint): string => "0x" + v.toString(16);
 
 /** @satisfies {PureFn} */
 const serialize = (req: TransactionRequest): Transaction => {
