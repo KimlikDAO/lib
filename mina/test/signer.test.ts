@@ -13,7 +13,8 @@ test("to/from Point", () => {
 
 describe("sign/verify fields", () => {
   test("smoke tests", () => {
-    const s = parsePrivateKey("EKF5WGqhkg3yQyiRU2gWC1W1KLw2xLuRgwtQNEbZ5qWqGYpktw8S");
+    const s = parsePrivateKey(
+      "EKF5WGqhkg3yQyiRU2gWC1W1KLw2xLuRgwtQNEbZ5qWqGYpktw8S");
     const A = G.copy().multiply(s).proj();
     const sig = signFields([1n, 31n, 1337n], s);
     expect(sig.signer).toBe(address.fromPoint(A));

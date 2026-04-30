@@ -1,7 +1,7 @@
 /**
  * A string of length 132, starting with 0x.
  */
-type WideSignature = string;
+type WideSignature = `0x${string}`;
 
 /**
  * A string of length 128 denoting a compact signature where s and yParity are
@@ -10,7 +10,4 @@ type WideSignature = string;
  */
 type Signature = string;
 
-export {
-  Signature,
-  WideSignature
-};
+export { Signature, WideSignature };

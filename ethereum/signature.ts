@@ -28,7 +28,7 @@ const fromUnpacked = (sig: UnpackedSignature): Signature =>
 
 /** @satisfies {PureFn} */
 const toWideFromUnpacked = (sig: UnpackedSignature): WideSignature =>
-  "0x" + abi.uint256(sig.r) + abi.uint256(sig.s) + (27 + +sig.yParity).toString(16);
+  `0x${abi.uint256(sig.r) + abi.uint256(sig.s) + (27 + +sig.yParity).toString(16)}`;
 
 /**
  * Converts a compact EIP2098 signature to wide format.
@@ -41,7 +41,7 @@ const toWide = (sig: Signature): WideSignature => {
   const s = yParity
     ? (highNibble - 8).toString(16) + sig.slice(65)
     : sig.slice(64);
-  return "0x" + sig.slice(0, 64) + s + (yParity ? "1c" : "1b");
+  return `0x${sig.slice(0, 64) + s + (yParity ? "1c" : "1b")}`;
 };
 
 export { UnpackedSignature };

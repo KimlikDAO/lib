@@ -3,7 +3,7 @@ import { Signer } from "../../crosschain/signer";
 import abi from "../abi";
 import { Address } from "../address.d";
 import signature from "../signature";
-import { Signature } from "../signature.d";
+import { Signature, WideSignature } from "../signature.d";
 
 const Encoder = new TextEncoder();
 
@@ -20,7 +20,7 @@ class EthersSigner implements Signer {
     if (this.wallet.address.toLowerCase() != address.toLowerCase())
       return Promise.reject();
     return this.wallet.signMessage(message)
-      .then((sig) => signature.fromWide(sig));
+      .then((sig) => signature.fromWide(sig as WideSignature));
   }
   getAddress(): Address {
     return this.wallet.address;
