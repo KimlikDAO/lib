@@ -6,7 +6,7 @@ const infer = (arg: Arg, type: EvmType): Combinable => {
   if (arg instanceof StackRef)
     arg.bindType(type);
   else if (!(arg instanceof Fragment))
-    arg = Fragment.fromArg(arg, type);
+    arg = Fragment.fromLit(arg, type);
   return arg;
 }
 

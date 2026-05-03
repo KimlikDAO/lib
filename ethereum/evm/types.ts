@@ -1,7 +1,7 @@
 import bigints from "../../util/bigints";
 import { Address } from "../address.d";
 import { parseEther } from "../denominations";
-import { Op, OpData, dupN, pushN } from "./opcodes";
+import { Op, OpData, pushN } from "./opcodes";
 
 const InspectCustom = Symbol.for("nodejs.util.inspect.custom");
 
@@ -63,14 +63,30 @@ class Bool extends Word {
   static override name = "Bool";
 }
 
-type WeisArg = Fragment | StackRef | bigint | string;
-type LocnArg = Fragment | StackRef | bigint | number;
-type SizeArg = Fragment | StackRef | bigint | number;
-type UintArg = Fragment | StackRef | bigint | number;
-type AddrArg = Fragment | StackRef | Address | Bytes | bigint;
-type BoolArg = Fragment | StackRef | boolean;
-type WordArg = Fragment | StackRef | Bytes | number | bigint | string;
-type Arg = Fragment | StackRef | Bytes | boolean | number | bigint | string;
+type WeisLit = bigint | string;
+type LocnLit = bigint | number;
+type SizeLit = bigint | number;
+type UintLit = bigint | number;
+type AddrLit = Address | Bytes | bigint;
+type BoolLit = boolean;
+type WordLit = Bytes | number | bigint | string;
+type Lit =
+  | WeisLit
+  | LocnLit
+  | SizeLit
+  | UintLit
+  | AddrLit
+  | BoolLit
+  | WordLit;
+
+type WeisArg = WeisLit | Fragment | StackRef;
+type LocnArg = LocnLit | Fragment | StackRef;
+type SizeArg = SizeLit | Fragment | StackRef;
+type UintArg = UintLit | Fragment | StackRef;
+type AddrArg = AddrLit | Fragment | StackRef;
+type BoolArg = BoolLit | Fragment | StackRef;
+type WordArg = WordLit | Fragment | StackRef;
+type Arg = Lit | Fragment | StackRef;
 
 type ExpectList = readonly (EvmType | undefined)[];
 type EnsureList = readonly EvmType[];
@@ -122,112 +138,52 @@ class Fragment {
     code: FlatCode
   }) { return new Fragment(expect, ensure, pop, code); }
 
-  /**
-   * Creates a fragment out of a single StackRef. An {@link EvmType} must be
-   * provided, which will be expected at the referred stack position and
-   * and will be ensured at the output.
-   *
-   * The signatures are as follows:
-   *   {@link StackRefMode.Get}: (,,,type) → type|0
-   *                             copy the value to tos.
-   *   {@link StackRefMode.Eat}: (,,,type) → type|pos
-   *                             pop until the value, and output the value
-   *   {@link StackRefMode.Use}: (,,,type) → type|pos if pos ≤ 2
-   *                             (,,,type) → type|0   otherwise
-   */
-  static fromStackRef(sref: StackRef, type: EvmType): Fragment {
-    const pos = sref.pos;
-    const expect = Array(pos);
-    expect[pos - 1] = type; // (,,,,type)
-    const ensure = [type];
-    const mode = sref.mode == StackRefMode.Use
-      ? pos <= 2 ? StackRefMode.Eat : StackRefMode.Get
-      : sref.mode;
-    switch (mode) {
-      case StackRefMode.Get:
-        return new Fragment(expect, ensure, 0, [dupN(sref.pos)]);
-      case StackRefMode.Eat:
-        const code = new Array<Op>(pos - 1).fill(Op.POP);
-        return new Fragment(expect, ensure, pos, code);
-      default: throw "unreachable"
-    }
+  static fromBoolLit(lit: BoolLit): Fragment {
+    return new Fragment([], [Bool], 0, pushNumber(+lit));
   }
-  static fromBoolArg(arg: BoolArg): Fragment {
-    if (arg instanceof Fragment) return arg;
-    if (arg instanceof StackRef)
-      return Fragment.fromStackRef(arg, Bool)
-    switch (typeof arg) {
-      case "boolean": return new Fragment([], [Bool], 0, pushNumber(+arg));
-      default:
-        throw `Invalid literal for BoolArg: ${arg}`;
-    }
+  private static fromUintLikeLit(lit: UintLit, type: EvmType): Fragment {
+    return new Fragment([], [type], 0, pushNumber(lit));
   }
-  private static fromUintArg(arg: UintArg, type: EvmType): Fragment {
-    if (arg instanceof Fragment) return arg;
-    if (arg instanceof StackRef) return Fragment.fromStackRef(arg, type);
-    switch (typeof arg) {
-      case "bigint":
-      case "number":
-        return new Fragment([], [type], 0, pushNumber(arg));
-      default:
-        throw `Invalid literal for ${type.name}Arg: ${arg}`;
-    }
+  static fromUintLit(lit: UintLit): Fragment {
+    return Fragment.fromUintLikeLit(lit, Uint);
   }
-  static fromArg(arg: Arg, type: EvmType): Fragment {
+  static fromLit(lit: Lit, type: EvmType): Fragment {
     switch (type) {
-      case Size: return Fragment.fromUintArg(arg as SizeArg, Size);
-      case Locn: return Fragment.fromUintArg(arg as LocnArg, Size);
-      case Weis: return Fragment.fromWeisArg(arg as WeisArg);
-      case Uint: return Fragment.fromUintArg(arg as UintArg, Uint);
-      case Bool: return Fragment.fromBoolArg(arg as BoolArg);
-      case Addr: return Fragment.fromAddrArg(arg as AddrArg);
-      default: return Fragment.fromWordArg(arg as WordArg);
+      case Size: return Fragment.fromSizeLit(lit as SizeLit);
+      case Locn: return Fragment.fromLocnLit(lit as LocnLit);
+      case Weis: return Fragment.fromWeisLit(lit as WeisLit);
+      case Uint: return Fragment.fromUintLit(lit as UintLit);
+      case Bool: return Fragment.fromBoolLit(lit as BoolLit);
+      case Addr: return Fragment.fromAddrLit(lit as AddrLit);
+      default: return Fragment.fromWordLit(lit as WordLit);
     }
   }
-  static fromSizeArg(arg: SizeArg): Fragment {
-    return Fragment.fromUintArg(arg, Size);
+  static fromSizeLit(lit: SizeLit): Fragment {
+    return Fragment.fromUintLikeLit(lit, Size);
   }
-  static fromLocnArg(arg: LocnArg): Fragment {
-    return Fragment.fromUintArg(arg, Locn);
+  static fromLocnLit(lit: LocnLit): Fragment {
+    return Fragment.fromUintLikeLit(lit, Locn);
   }
-  static fromWeisArg(arg: WeisArg): Fragment {
-    if (arg instanceof Fragment) return arg;
-    if (arg instanceof StackRef) return Fragment.fromStackRef(arg, Weis);
-    switch (typeof arg) {
-      case "string":
-        const parsed = parseEther(arg);
-        assert(parsed != -1n, `Invalid wei amount: ${arg}`);
-        arg = parsed;
-      case "bigint":
-        return new Fragment([], [Weis], 0, pushNumber(arg));
-      default:
-        throw `Invalid literal for WeisArg: ${arg}`;
+  static fromWeisLit(lit: WeisLit): Fragment {
+    if (typeof lit == "string") {
+      const parsed = parseEther(lit);
+      assert(parsed != -1n, `Invalid wei amount: ${lit}`);
+      lit = parsed;
     }
+    return new Fragment([], [Weis], 0, pushNumber(lit));
   }
-  static fromAddrArg(arg: AddrArg): Fragment {
-    if (arg instanceof Fragment) return arg;
-    if (arg instanceof StackRef) return Fragment.fromStackRef(arg, Addr);
-    if (arg instanceof Uint8Array) {
-      assert(arg.length == 20, `Byte length must be 20 for AddrArg: ${arg}`);
-      return new Fragment([], [Addr], 0, [Op.PUSH20, arg]);
+  static fromAddrLit(lit: AddrLit): Fragment {
+    if (lit instanceof Uint8Array) {
+      assert(lit.length == 20, `Byte length must be 20 for AddrLit: ${lit}`);
+      return new Fragment([], [Addr], 0, [Op.PUSH20, lit]);
     }
-    switch (typeof arg) {
-      case "bigint":
-      case "string":
-        return new Fragment([], [Addr], 0, [Op.PUSH20, address(arg)]);
-      default:
-        throw `Invalid literal for AddrArg: ${arg}`;
-    }
+    return new Fragment([], [Addr], 0, [Op.PUSH20, address(lit)]);
   }
-  static fromWordArg(arg: WordArg): Fragment {
-    if (arg instanceof Fragment) return arg;
-    if (arg instanceof StackRef) return Fragment.fromStackRef(arg, Word);
-    if (arg instanceof Uint8Array)
-      return new Fragment([], [Word], 0, pushBytes(arg));
-    switch (typeof arg) {
-      case "string":
-    }
-    throw `Invalid literal for WordArg: ${arg}`;
+  static fromWordLit(lit: WordLit): Fragment {
+    if (lit instanceof Uint8Array)
+      return new Fragment([], [Word], 0, pushBytes(lit));
+    const code = typeof lit == "string" ? pushHex(lit) : pushNumber(lit);
+    return new Fragment([], [Word], 0, code);
   }
 }
 
@@ -245,6 +201,14 @@ const pushNumber = (n: bigint | number): FlatCode => {
   const opData = Uint8Array.fromHex(hexValue);
   return [pushN(opData.byteLength), opData];
 };
+
+const pushHex = (hex: string): FlatCode => {
+  if (hex.startsWith("0x")) hex = hex.slice(2);
+  if (hex.length & 1) hex = "0" + hex;
+  const bytes = Uint8Array.fromHex(hex);
+  assert(bytes.length <= 32, `WordLit hex literal exceeds 32 bytes: ${hex}`);
+  return pushBytes(bytes);
+}
 
 enum StackRefMode {
   Use = 0,
@@ -308,7 +272,7 @@ class Data {
     return this.label.ref();
   }
   len(): Fragment {
-    return Fragment.fromSizeArg(this.data.length);
+    return Fragment.fromSizeLit(this.data.length);
   }
 }
 
@@ -350,9 +314,11 @@ const eat = (n: number): StackRef => new StackRef(n, StackRefMode.Eat);
 export {
   Addr,
   AddrArg,
+  AddrLit,
   Arg,
   Bool,
   BoolArg,
+  BoolLit,
   Bytes,
   Code,
   Data,
@@ -361,17 +327,25 @@ export {
   Fragment,
   Label,
   LabelRef,
+  Lit,
   Locn,
   LocnArg,
+  LocnLit,
   Signature,
   Size,
   SizeArg,
+  SizeLit,
   StackRef,
   StackRefMode,
+  Uint,
+  UintArg,
+  UintLit,
   Weis,
   WeisArg,
+  WeisLit,
   Word,
   WordArg,
+  WordLit,
   address,
   data,
   eat,

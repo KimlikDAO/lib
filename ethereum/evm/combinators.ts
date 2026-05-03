@@ -3,11 +3,11 @@ import { Op } from "./opcodes";
 import { Ops } from "./ops";
 import {
   Addr, AddrArg,
-  Arg,
   Bool,
   BoolArg,
   EvmType,
   Fragment, Label,
+  Lit,
   Locn, LocnArg,
   Size, SizeArg,
   Weis, WeisArg,
@@ -16,11 +16,15 @@ import {
   label,
 } from "./types";
 
+const address = (): Fragment => Ops[Op.ADDRESS]!;
+
+const balance = (): Fragment => Ops[Op.BALANCE]!;
+
 const gas = (): Fragment => Ops[Op.GAS]!;
 
 const pop = (): Fragment => Ops[Op.POP]!;
 
-const push = (arg: Arg, type: EvmType): Fragment => Fragment.fromArg(arg, type);
+const push = (lit: Lit, type: EvmType): Fragment => Fragment.fromLit(lit, type);
 
 const calldataSize = (): Fragment => Ops[Op.CALLDATASIZE]!;
 
@@ -147,6 +151,8 @@ const unrollFor = <T>(
 }
 
 export {
+  address,
+  balance,
   Ops,
   call,
   calldataCopy,

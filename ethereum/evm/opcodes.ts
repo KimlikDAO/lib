@@ -31,15 +31,7 @@ enum Op {
   CALLER = 0x33,
   CALLVALUE = 0x34,
   CALLDATALOAD = 0x35,
-  /**
-   * GAS: 2
-   * [] -> [size]
-   */
   CALLDATASIZE = 0x36,
-  /**
-   * GAS: 3 * word_size + memory_cost
-   * [destOffset, offset, size] -> []
-   */
   CALLDATACOPY = 0x37,
   CODESIZE = 0x38,
   CODECOPY = 0x39, // destOffset, offset, length
@@ -105,7 +97,7 @@ enum Op {
   SELFDESTRUCT = 0xFF,
 }
 
-type OpData = Uint8Array;
+type OpData = Uint8Array<ArrayBuffer>;
 
 /**
  * Copies the nth item on the stack to top of the stack.

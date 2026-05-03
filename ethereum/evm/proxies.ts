@@ -27,7 +27,7 @@ const upgradableProxy = (slot: Bytes): Program =>
 const deployUpgradableProxy = (
   implAddress: Address,
   implSlot: Bytes,
-): Uint8Array => {
+): Program => {
   const runtime = data(upgradableProxy(implSlot));
 
   return assemble(
