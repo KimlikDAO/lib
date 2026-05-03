@@ -1,7 +1,7 @@
-import { EVM } from "@ethereumjs/evm";
+import { createEVM } from "@ethereumjs/evm";
 
-const simulate = async (program) => {
-  const evm = new EVM();
+const simulate = async (program: Uint8Array) => {
+  const evm = await createEVM();
 
   evm.events.on("step", (data) => {
     console.log("memory:\t", data.memory);

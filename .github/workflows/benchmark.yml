@@ -7,23 +7,22 @@ on:
     branches: ["ana", "main"]
 
 jobs:
-  benchmark_crypto:
-    name: crypto benches
+  benchmark:
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: crypto benches
+            cmd: kdts bench crypto --strict
+          - name: util benches
+            cmd: kdts bench util --strict
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - run: bun i
-      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
-      - name: Run crypto benchmarks
-        run: kdts bench crypto --strict
-  benchmark_util:
-    name: util benches
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-      - run: bun i
-      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
-      - name: Run util benchmarks
-        run: kdts bench util --strict
+      - run: |
+          bun install --no-save
+          bunx ${{ matrix.cmd }}

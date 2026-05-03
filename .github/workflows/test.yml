@@ -2,9 +2,9 @@ name: Test
 
 on:
   push:
-    branches: ["ana", "main"]
+    branches: ["main"]
   pull_request:
-    branches: ["ana", "main"]
+    branches: ["main"]
 
 jobs:
   bun_unit_tests:
@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
       - run: |
-          bun i
+          bun install --no-save
           bun test
 
   kdts_fast_unit_tests:
@@ -23,97 +23,36 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - run: bun i
-      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
-      - run: kdts test --fast
+      - run: |
+          bun install --no-save
+          bunx kdts test --fast
 
-  kdts_unit_tests_container:
-    name: kdts unit tests, container
+  kdts_unit_tests:
+    name: kdts unit tests, ${{ matrix.name }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: container
+            cmd: kdts test container --strict
+          - name: crosschain
+            cmd: kdts test crosschain --strict
+          - name: crypto
+            cmd: kdts test crypto --strict
+          - name: did
+            cmd: kdts test did --strict
+          - name: ethereum
+            cmd: kdts test ethereum/test --strict
+          - name: mina
+            cmd: kdts test mina --strict
+          - name: protocol
+            cmd: kdts test protocol
+          - name: util
+            cmd: kdts test util --strict
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
-      - run: bun i
-      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
-      - run: kdts test container --strict
-
-  kdts_unit_tests_crosschain:
-    name: kdts unit tests, crosschain
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-      - run: bun i
-      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
-      - run: kdts test crosschain --strict
-
-  kdts_unit_tests_crypto:
-    name: kdts unit tests, crypto
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-      - run: bun i
-      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
-      - run: kdts test crypto --strict
-
-  kdts_unit_tests_did:
-    name: kdts unit tests, did
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-      - run: bun i
-      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
-      - run: kdts test did --strict
-
-  kdts_unit_tests_ethereum:
-    name: kdts unit tests, ethereum
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-      - run: bun i
-      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
-      - run: kdts test ethereum
-
-  kdts_unit_tests_kdts:
-    name: kdts unit tests, kdts
-    runs-on: ubuntu-latest
-    if: false # Temporarily disabled
-    steps:
-      - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-      - run: bun i
-      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
-      - run: kdts test kdts
-
-  kdts_unit_tests_mina:
-    name: kdts unit tests, mina
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-      - run: bun i
-      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
-      - run: kdts test mina --strict
-
-  kdts_unit_tests_protocol:
-    name: kdts unit tests, protocol
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-      - run: bun i
-      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
-      - run: kdts test protocol
-
-  kdts_unit_tests_util:
-    name: kdts unit tests, util
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-      - run: bun i
-      - run: echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
-      - run: kdts test util --strict
+      - run: |
+          bun install --no-save
+          bunx ${{ matrix.cmd }}
