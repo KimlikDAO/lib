@@ -81,11 +81,12 @@ type DataArg = DataLit | Fragment | StackRef;
 type Arg = Lit | Fragment | StackRef;
 
 type TypeList = readonly EvmType[];
+type Ensures = TypeList | "⊣" | "⊥" | "⊤";
 
 class Signature {
   constructor(
     readonly expect: TypeList,
-    readonly ensure: TypeList | null,
+    readonly ensure: Ensures,
     readonly pop: number,
   ) { }
 
@@ -93,8 +94,10 @@ class Signature {
     return types.map((type) => type.name).join(", ");
   }
   toString(): string {
-    return `(${Signature.args(this.expect)}) → ` +
-      `${this.pop}|${this.ensure ? Signature.args(this.ensure) : "⊥"}`;
+    return `(${Signature.args(this.expect)}) → ${this.pop}|` + (
+      typeof this.ensure == "string"
+        ? this.ensure : Signature.args(this.ensure)
+    );
   }
   [InspectCustom](): string {
     return this.toString();
@@ -114,7 +117,7 @@ type Code = readonly (CodeAtom | Fragment)[];
 class Fragment {
   constructor(
     readonly expect: TypeList,
-    readonly ensure: TypeList | null,
+    readonly ensure: Ensures,
     readonly pop: number,
     readonly code: FlatCode,
   ) { }
@@ -292,6 +295,7 @@ export {
   Data,
   DataArg,
   DataLit,
+  Ensures,
   EvmType,
   FlatCode,
   Fragment,

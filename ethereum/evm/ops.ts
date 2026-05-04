@@ -3,6 +3,7 @@ import {
   Addr,
   Bool,
   Data,
+  Ensures,
   EvmType,
   Fragment,
   Locn,
@@ -15,16 +16,16 @@ import {
 const op = (
   op: Op,
   expect: readonly EvmType[],
-  ensure: readonly EvmType[] | null,
+  ensure: Ensures,
 ): Fragment => new Fragment(
   expect.slice().reverse(),
-  ensure && ensure.slice().reverse(),
+  typeof ensure == "string" ? ensure : ensure.slice().reverse(),
   expect.length,
   [op],
 );
 
 const Ops: Partial<Record<Op, Fragment>> = {
-  [Op.STOP]: op(Op.STOP, [], null),
+  [Op.STOP]: op(Op.STOP, [], "⊤"),
   [Op.ADD]: op(Op.ADD, [Uint, Uint], [Uint]),
   [Op.MUL]: op(Op.MUL, [Uint, Uint], [Uint]),
   [Op.SUB]: op(Op.SUB, [Uint, Uint], [Uint]),
@@ -106,12 +107,13 @@ const Ops: Partial<Record<Op, Fragment>> = {
   [Op.CREATE]: op(Op.CREATE, [Weis, Locn, Size], [Addr]),
   [Op.CALL]: op(Op.CALL,
     [Uint, Addr, Weis, Locn, Size, Locn, Size], [Bool]),
-  [Op.RETURN]: op(Op.RETURN, [Locn, Size], null),
+  [Op.RETURN]: op(Op.RETURN, [Locn, Size], "⊤"),
   [Op.DELEGATECALL]: op(Op.DELEGATECALL,
     [Uint, Addr, Locn, Size, Locn, Size], [Bool]),
   [Op.CREATE2]: op(Op.CREATE2, [Weis, Locn, Size, Data], [Addr]),
-  [Op.REVERT]: op(Op.REVERT, [Locn, Size], null),
-  [Op.SELFDESTRUCT]: op(Op.SELFDESTRUCT, [Addr], null),
+  [Op.REVERT]: op(Op.REVERT, [Locn, Size], "⊣"),
+  [Op.INVALID]: op(Op.INVALID, [], "⊥"),
+  [Op.SELFDESTRUCT]: op(Op.SELFDESTRUCT, [Addr], "⊤"),
 };
 
 export { Ops };

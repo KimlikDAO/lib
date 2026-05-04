@@ -37,8 +37,8 @@ const infer = (arg: Arg, type: EvmType): Combinable => {
 
 const composePair = (left: Fragment, right: Fragment): Fragment => {
   const code = left.code.concat(right.code);
-  if (left.ensure == null)
-    return new Fragment(left.expect, null, left.pop, code);
+  if (typeof left.ensure == "string")
+    return new Fragment(left.expect, left.ensure, left.pop, code);
 
   const expect = left.expect.slice();
   const leftEnsures = left.ensure.length;
@@ -59,8 +59,8 @@ const composePair = (left: Fragment, right: Fragment): Fragment => {
   }
 
   const pop = left.pop + Math.max(0, right.pop - leftEnsures);
-  const ensure = right.ensure == null
-    ? null
+  const ensure = typeof right.ensure == "string"
+    ? right.ensure
     : left.ensure
       .slice(0, Math.max(0, leftEnsures - right.pop))
       .concat(right.ensure);

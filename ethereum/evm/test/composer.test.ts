@@ -6,6 +6,7 @@ import {
   Addr,
   Bool,
   Data,
+  Ensures,
   EvmType,
   FlatCode,
   Fragment,
@@ -17,7 +18,7 @@ import {
 
 const fragment = (
   expect: readonly EvmType[],
-  ensure: readonly EvmType[] | null,
+  ensure: Ensures,
   pop: number,
   code: FlatCode = [],
 ): Fragment => new Fragment(expect, ensure, pop, code);
@@ -81,11 +82,11 @@ test("accepts subtype outputs for specialized opcode expectations", () => {
 
 test("termination preserves following code without changing signature", () => {
   const out = compose(
-    fragment([Size, Locn], null, 2, [Op.RETURN]),
+    fragment([Size, Locn], "⊤", 2, [Op.RETURN]),
     fragment([], [Addr], 0, [Op.ADDRESS]),
   );
 
-  expect(String(out.signature())).toBe("(Size, Locn) → 2|⊥");
+  expect(String(out.signature())).toBe("(Size, Locn) → 2|⊤");
   expect(out.code).toEqual([Op.RETURN, Op.ADDRESS]);
 });
 

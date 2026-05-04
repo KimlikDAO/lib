@@ -27,7 +27,14 @@ test("stringifies Word expectations as gaps", () => {
 });
 
 test("stringifies terminating signatures", () => {
-  expect(String(new Signature([Locn, Size], null, 2)))
+  expect(String(new Signature([Locn, Size], "⊣", 2)))
+    .toBe("(Locn, Size) → 2|⊣");
+  expect(String(new Signature([], "⊥", 0))).toBe("() → 0|⊥");
+  expect(String(new Signature([], "⊤", 0))).toBe("() → 0|⊤");
+});
+
+test("stringifies failing signatures", () => {
+  expect(String(new Signature([Locn, Size], "⊥", 2)))
     .toBe("(Locn, Size) → 2|⊥");
 });
 

@@ -8,11 +8,12 @@ test("opcode fragments print with top of stack on the right", () => {
     .toBe("(Size, Locn, Size, Locn, Weis, Addr, Uint) → 7|Bool");
 });
 
-test("halting opcode fragments have null ensure", () => {
-  expect(String(Ops[Op.STOP]!.signature())).toBe("() → 0|⊥");
-  expect(String(Ops[Op.RETURN]!.signature())).toBe("(Size, Locn) → 2|⊥");
-  expect(String(Ops[Op.REVERT]!.signature())).toBe("(Size, Locn) → 2|⊥");
-  expect(String(Ops[Op.SELFDESTRUCT]!.signature())).toBe("(Addr) → 1|⊥");
+test("terminal opcode fragments have symbolic ensures", () => {
+  expect(String(Ops[Op.STOP]!.signature())).toBe("() → 0|⊤");
+  expect(String(Ops[Op.RETURN]!.signature())).toBe("(Size, Locn) → 2|⊤");
+  expect(String(Ops[Op.REVERT]!.signature())).toBe("(Size, Locn) → 2|⊣");
+  expect(String(Ops[Op.INVALID]!.signature())).toBe("() → 0|⊥");
+  expect(String(Ops[Op.SELFDESTRUCT]!.signature())).toBe("(Addr) → 1|⊤");
 });
 
 test("opcode fragments specialize known word kinds", () => {
