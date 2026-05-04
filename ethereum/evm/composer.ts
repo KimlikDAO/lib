@@ -1,5 +1,4 @@
-import { Arg, EvmType, Fragment, StackRef } from "./types";
-import { Word } from "./types";
+import { Arg, EvmType, Fragment, StackRef, Word } from "./types";
 
 type Combinable = Fragment | StackRef;
 
@@ -8,7 +7,8 @@ const assertAssignable = (
   expected: EvmType,
   context: string,
 ) => {
-  if (found != expected && expected != Word)
+  if (found != expected && expected != Word &&
+    !(found.prototype instanceof expected))
     throw new TypeError(
       `${context}: expected ${expected.name}, found ${found.name}`,
     );
@@ -16,15 +16,15 @@ const assertAssignable = (
 
 const mergeExpect = (
   expect: EvmType[],
-  pos: number,
+  depth: number,
   type: EvmType,
 ) => {
-  while (expect.length < pos) expect.push(Word);
-  const found = expect[pos];
+  while (expect.length <= depth) expect.unshift(Word);
+  const pos = expect.length - 1 - depth;
+  const found = expect[pos]!;
   if (found == Word) expect[pos] = type;
   else if (type == Word) return;
-  else if (found) assertAssignable(found, type, `conflicting expectation at stack position ${pos + 1}`);
-  else expect[pos] = type;
+  else assertAssignable(found, type, `conflicting expectation at stack position ${depth + 1}`);
 }
 
 const infer = (arg: Arg, type: EvmType): Combinable => {
@@ -36,28 +36,43 @@ const infer = (arg: Arg, type: EvmType): Combinable => {
 }
 
 const composePair = (left: Fragment, right: Fragment): Fragment => {
+  const code = left.code.concat(right.code);
+  if (left.ensure == null)
+    return new Fragment(left.expect, null, left.pop, code);
+
   const expect = left.expect.slice();
+  const leftEnsures = left.ensure.length;
+  const rightExpects = right.expect.length;
+  const translated = Math.max(0, rightExpects - leftEnsures);
 
-  for (let i = 0; i < right.expect.length; ++i) {
-    const type = right.expect[i];
-
-    if (i < left.ensure.length)
-      assertAssignable(left.ensure[i]!, type,
-        `fragment output at stack position ${i + 1}`);
-    else
-      mergeExpect(expect, left.pop + i - left.ensure.length, type);
+  for (let i = 0; i < translated; ++i) {
+    const depth = left.pop + translated - 1 - i;
+    mergeExpect(expect, depth, right.expect[i]!);
   }
 
-  const pop = left.pop + Math.max(0, right.pop - left.ensure.length);
-  const ensure = right.ensure.concat(left.ensure.slice(right.pop));
-  const code = left.code.concat(right.code);
+  const producedExpects = right.expect.slice(translated);
+  const producedEnsures = left.ensure.slice(leftEnsures - producedExpects.length);
+  for (let i = 0; i < producedExpects.length; ++i) {
+    const depth = producedExpects.length - 1 - i;
+    assertAssignable(producedEnsures[i]!, producedExpects[i]!,
+      `fragment output at stack position ${depth + 1}`);
+  }
+
+  const pop = left.pop + Math.max(0, right.pop - leftEnsures);
+  const ensure = right.ensure == null
+    ? null
+    : left.ensure
+      .slice(0, Math.max(0, leftEnsures - right.pop))
+      .concat(right.ensure);
   return new Fragment(expect, ensure, pop, code);
 }
 
 const compose = (...frags: Fragment[]): Fragment => {
+  if (!frags.length) return new Fragment([], [], 0, []);
+
   let out = new Fragment([], [], 0, []);
-  for (const frag of frags)
-    out = composePair(out, frag);
+  for (const fragment of frags)
+    out = composePair(out, fragment);
   return out;
 }
 

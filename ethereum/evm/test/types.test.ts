@@ -13,17 +13,22 @@ import {
 } from "../types";
 
 test("stringifies empty signatures", () => {
-  expect(String(new Signature([], [], 0))).toBe("() → |0");
+  expect(String(new Signature([], [], 0))).toBe("() → 0|");
 });
 
 test("stringifies all stack types", () => {
-  expect(String(new Signature([], [Word, Data, Weis, Addr, Locn, Size, Bool], 0)))
-    .toBe("() → , Data, Weis, Addr, Locn, Size, Bool|0");
+  expect(String(new Signature([], [Bool, Size, Locn, Addr, Weis, Data, Word], 0)))
+    .toBe("() → 0|Bool, Size, Locn, Addr, Weis, Data, ");
 });
 
 test("stringifies Word expectations as gaps", () => {
-  expect(String(new Signature([Bool, Word, Word, Locn], [Addr, Size], 1)))
-    .toBe("(Bool, , , Locn) → Addr, Size|1");
+  expect(String(new Signature([Locn, Word, Word, Bool], [Size, Addr], 1)))
+    .toBe("(Locn, , , Bool) → 1|Size, Addr");
+});
+
+test("stringifies terminating signatures", () => {
+  expect(String(new Signature([Locn, Size], null, 2)))
+    .toBe("(Locn, Size) → 2|⊥");
 });
 
 test("address byte literals emit the shortest push", () => {

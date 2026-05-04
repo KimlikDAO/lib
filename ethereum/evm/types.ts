@@ -85,7 +85,7 @@ type TypeList = readonly EvmType[];
 class Signature {
   constructor(
     readonly expect: TypeList,
-    readonly ensure: TypeList,
+    readonly ensure: TypeList | null,
     readonly pop: number,
   ) { }
 
@@ -94,7 +94,7 @@ class Signature {
   }
   toString(): string {
     return `(${Signature.args(this.expect)}) → ` +
-      `${Signature.args(this.ensure)}|${this.pop}`;
+      `${this.pop}|${this.ensure ? Signature.args(this.ensure) : "⊥"}`;
   }
   [InspectCustom](): string {
     return this.toString();
@@ -114,21 +114,13 @@ type Code = readonly (CodeAtom | Fragment)[];
 class Fragment {
   constructor(
     readonly expect: TypeList,
-    readonly ensure: TypeList,
+    readonly ensure: TypeList | null,
     readonly pop: number,
     readonly code: FlatCode,
   ) { }
 
   signature(): Signature {
     return new Signature(this.expect, this.ensure, this.pop);
-  }
-  static from({ expect, ensure, pop, code }: {
-    expect: TypeList,
-    ensure: TypeList,
-    pop: number,
-    code: FlatCode
-  }) {
-    return new Fragment(expect, ensure, pop, code);
   }
   static fromLit(lit: Lit, type: EvmType): Fragment {
     switch (type) {
@@ -291,10 +283,10 @@ export {
   AddrArg,
   AddrLit,
   Arg,
+  Blob,
   Bool,
   BoolArg,
   BoolLit,
-  Blob,
   Bytes,
   Code,
   Data,
