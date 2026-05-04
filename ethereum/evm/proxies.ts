@@ -4,7 +4,6 @@ import {
   calldataCopy,
   calldataSize,
   codeCopy,
-  data,
   delegateCall,
   gas,
   ret,
@@ -14,7 +13,7 @@ import {
   sload,
   sstore,
 } from "./combinators";
-import { Bytes, get, use } from "./types";
+import { blob, Bytes, get, use } from "./types";
 
 const upgradableProxy = (slot: Bytes): Program =>
   assemble(
@@ -24,11 +23,11 @@ const upgradableProxy = (slot: Bytes): Program =>
     returnOrRevert(get(1), 0, returndataSize()),
   );
 
-const deployUpgradableProxy = (
+const createUpgradableProxy = (
   implAddress: Address,
   implSlot: Bytes,
 ): Program => {
-  const runtime = data(upgradableProxy(implSlot));
+  const runtime = blob(upgradableProxy(implSlot));
 
   return assemble(
     sstore(implSlot, implAddress),
@@ -39,4 +38,4 @@ const deployUpgradableProxy = (
   );
 };
 
-export { deployUpgradableProxy, upgradableProxy };
+export { createUpgradableProxy, upgradableProxy };

@@ -5,14 +5,15 @@ import {
   Addr, AddrArg,
   Bool,
   BoolArg,
+  Data, DataArg,
   EvmType,
   Fragment, Label,
   Lit,
   Locn, LocnArg,
   Size, SizeArg,
+  Uint, UintArg,
   Weis, WeisArg,
-  Word, WordArg,
-  data,
+  blob,
   label,
 } from "./types";
 
@@ -41,14 +42,14 @@ const jumpi = (target: Label, cond: BoolArg): Fragment => combine(
   Ops[Op.JUMPI]!
 );
 
-const sload = (key: WordArg): Fragment => combine(
-  infer(key, Word),
+const sload = (key: DataArg): Fragment => combine(
+  infer(key, Data),
   Ops[Op.SLOAD]!
 );
 
-const sstore = (key: WordArg, value: WordArg): Fragment => combine(
-  infer(value, Word),
-  infer(key, Word),
+const sstore = (key: DataArg, value: DataArg): Fragment => combine(
+  infer(value, Data),
+  infer(key, Data),
   Ops[Op.SSTORE]!
 );
 
@@ -83,7 +84,7 @@ const codeCopy = (
 ): Fragment => copy(Op.CODECOPY, dest, source, size);
 
 const delegateCall = (
-  gasAmount: WordArg,
+  gasAmount: UintArg,
   addr: AddrArg,
   argsOffset: LocnArg,
   argsSize: SizeArg,
@@ -95,12 +96,12 @@ const delegateCall = (
   infer(argsSize, Size),
   infer(argsOffset, Locn),
   infer(addr, Addr),
-  infer(gasAmount, Word),
+  infer(gasAmount, Uint),
   Ops[Op.DELEGATECALL]!
 );
 
 const call = (
-  gasAmount: WordArg,
+  gasAmount: UintArg,
   addr: AddrArg,
   value: WeisArg,
   argsOffset: LocnArg,
@@ -114,7 +115,7 @@ const call = (
   infer(argsOffset, Locn),
   infer(value, Weis),
   infer(addr, Addr),
-  infer(gasAmount, Word),
+  infer(gasAmount, Uint),
   Ops[Op.CALL]!
 );
 
@@ -158,7 +159,7 @@ export {
   calldataCopy,
   calldataSize,
   codeCopy,
-  data,
+  blob,
   delegateCall,
   gas,
   jump,

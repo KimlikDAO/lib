@@ -7,6 +7,16 @@ on:
     branches: ["main"]
 
 jobs:
+  typecheck:
+    name: typescript typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+      - run: |
+          bun install --no-save
+          bunx --no-install tsc -p .
+
   bun_unit_tests:
     name: bun unit tests
     runs-on: ubuntu-latest
