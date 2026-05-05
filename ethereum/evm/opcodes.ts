@@ -110,6 +110,15 @@ const dupN = (n: number): Op => {
 }
 
 /**
+ * Swaps the top of the stack with the nth item below it.
+ */
+const swapN = (n: number): Op => {
+  if (n < 1 || n > 16)
+    throw new RangeError(`SWAP expects 1..16, received ${n}`);
+  return (0x8f + n) as Op;
+}
+
+/**
  * Pushes an n-byte immediate onto the stack.
  */
 const pushN = (n: number): Op => {
@@ -123,4 +132,5 @@ export {
   Op,
   OpData,
   pushN,
+  swapN,
 };

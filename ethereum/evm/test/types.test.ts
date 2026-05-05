@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { Op, pushN } from "../opcodes";
+import { Op, pushN, swapN } from "../opcodes";
 import {
   Addr,
   Bool,
@@ -26,16 +26,17 @@ test("stringifies Word expectations as gaps", () => {
     .toBe("(Locn, , , Bool) → 1|Size, Addr");
 });
 
-test("stringifies terminating signatures", () => {
-  expect(String(new Signature([Locn, Size], "⊣", 2)))
+test("stringifies halted signatures", () => {
+  expect(String(new Signature([Locn, Size], [], 2, "⊣")))
     .toBe("(Locn, Size) → 2|⊣");
-  expect(String(new Signature([], "⊥", 0))).toBe("() → 0|⊥");
-  expect(String(new Signature([], "⊤", 0))).toBe("() → 0|⊤");
+  expect(String(new Signature([], [], 0, "⊥"))).toBe("() → 0|⊥");
+  expect(String(new Signature([], [], 0, "⊤"))).toBe("() → 0|⊤");
+  expect(String(new Signature([], [], 0, "⊢"))).toBe("() → 0|⊢");
 });
 
-test("stringifies failing signatures", () => {
-  expect(String(new Signature([Locn, Size], "⊥", 2)))
-    .toBe("(Locn, Size) → 2|⊥");
+test("stringifies halted signatures with ensured values", () => {
+  expect(String(new Signature([], [Addr], 0, "⊢")))
+    .toBe("() → 0|Addr, ⊢");
 });
 
 test("address byte literals emit the shortest push", () => {
@@ -75,4 +76,10 @@ test("address string literals must still be 20 bytes", () => {
 test("data byte literals emit the shortest push", () => {
   expect(Fragment.fromLit(Uint8Array.from([0, 0, 0x12]), Data).code)
     .toEqual([Op.PUSH1, Uint8Array.from([0x12])]);
+});
+
+test("swap helper derives SWAP opcode", () => {
+  expect(swapN(1)).toBe(Op.SWAP1);
+  expect(swapN(16)).toBe(Op.SWAP16);
+  expect(() => swapN(17)).toThrow("SWAP expects 1..16");
 });

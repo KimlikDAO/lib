@@ -6,22 +6,24 @@ import {
   Addr,
   Bool,
   Data,
-  Ensures,
   EvmType,
   FlatCode,
   Fragment,
+  HaltState,
   Locn,
   Size,
+  TypeList,
   Weis,
   Word,
 } from "../types";
 
 const fragment = (
   expect: readonly EvmType[],
-  ensure: Ensures,
+  ensure: TypeList,
   pop: number,
   code: FlatCode = [],
-): Fragment => new Fragment(expect, ensure, pop, code);
+  halt?: HaltState,
+): Fragment => new Fragment(expect, pop, ensure, code, halt);
 
 test("composes no fragments into an identity fragment", () => {
   const out = compose();
@@ -82,7 +84,7 @@ test("accepts subtype outputs for specialized opcode expectations", () => {
 
 test("termination preserves following code without changing signature", () => {
   const out = compose(
-    fragment([Size, Locn], "⊤", 2, [Op.RETURN]),
+    fragment([Size, Locn], [], 2, [Op.RETURN], "⊤"),
     fragment([], [Addr], 0, [Op.ADDRESS]),
   );
 

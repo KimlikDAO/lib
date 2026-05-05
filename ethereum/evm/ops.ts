@@ -3,11 +3,11 @@ import {
   Addr,
   Bool,
   Data,
-  Ensures,
-  EvmType,
   Fragment,
+  HaltState,
   Locn,
   Size,
+  TypeList,
   Uint,
   Weis,
   Word,
@@ -15,14 +15,18 @@ import {
 
 const op = (
   op: Op,
-  expect: readonly EvmType[],
-  ensure: Ensures,
-): Fragment => new Fragment(
-  expect.slice().reverse(),
-  typeof ensure == "string" ? ensure : ensure.slice().reverse(),
-  expect.length,
-  [op],
-);
+  expect: TypeList,
+  out: TypeList | HaltState,
+): Fragment => {
+  const [ensure, halt] = typeof out == "string" ? [[], out] : [out, undefined];
+  return new Fragment(
+    expect.toReversed(),
+    expect.length,
+    ensure,
+    [op],
+    halt
+  );
+}
 
 const Ops: Partial<Record<Op, Fragment>> = {
   [Op.STOP]: op(Op.STOP, [], "⊤"),

@@ -1,6 +1,6 @@
 import { Address } from "../address.d";
 import { assemble, Program } from "./assembler";
-import { call, pop, push, unrollFor } from "./combinators";
+import { call, pop, push, unrollFor } from "./builtins";
 import { get, Weis } from "./types";
 
 type Recipient = { address: Address; amount: bigint };

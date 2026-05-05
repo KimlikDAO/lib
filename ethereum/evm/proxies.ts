@@ -12,7 +12,7 @@ import {
   returnOrRevert,
   sload,
   sstore,
-} from "./combinators";
+} from "./builtins";
 import { blob, Bytes, get, use } from "./types";
 
 const upgradableProxy = (slot: Bytes): Program =>

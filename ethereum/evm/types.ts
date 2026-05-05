@@ -81,23 +81,47 @@ type DataArg = DataLit | Fragment | StackRef;
 type Arg = Lit | Fragment | StackRef;
 
 type TypeList = readonly EvmType[];
-type Ensures = TypeList | "⊣" | "⊥" | "⊤";
+type HaltState = "⊣" | "⊥" | "⊤" | "⊢";
+
+const isSubtype = (sub: EvmType, sup: EvmType): boolean =>
+  sub === sup || sub.prototype instanceof sup;
+
+const assertAssignable = (
+  found: EvmType,
+  expected: EvmType,
+  context: string,
+) => {
+  if (!isSubtype(found, expected))
+    throw new TypeError(`${context}: ${found.name} is not ${expected.name}`);
+}
+
+const narrowType = (
+  a: EvmType,
+  b: EvmType,
+  context = "conflicting expectation",
+): EvmType => {
+  if (isSubtype(b, a)) return b;
+  if (isSubtype(a, b)) return a;
+  throw new TypeError(`${context}: ${a.name} vs ${b.name}`);
+}
 
 class Signature {
   constructor(
     readonly expect: TypeList,
-    readonly ensure: Ensures,
+    readonly ensure: TypeList,
     readonly pop: number,
+    readonly halt?: HaltState
   ) { }
 
   static args(types: TypeList): string {
     return types.map((type) => type.name).join(", ");
   }
   toString(): string {
-    return `(${Signature.args(this.expect)}) → ${this.pop}|` + (
-      typeof this.ensure == "string"
-        ? this.ensure : Signature.args(this.ensure)
-    );
+    const halt = this.halt
+      ? this.ensure.length ? ", " + this.halt : this.halt
+      : "";
+    return `(${Signature.args(this.expect)}) → ${this.pop}|` +
+      Signature.args(this.ensure) + halt;
   }
   [InspectCustom](): string {
     return this.toString();
@@ -117,19 +141,20 @@ type Code = readonly (CodeAtom | Fragment)[];
 class Fragment {
   constructor(
     readonly expect: TypeList,
-    readonly ensure: Ensures,
     readonly pop: number,
+    readonly ensure: TypeList,
     readonly code: FlatCode,
+    readonly halt?: HaltState,
   ) { }
 
   signature(): Signature {
-    return new Signature(this.expect, this.ensure, this.pop);
+    return new Signature(this.expect, this.ensure, this.pop, this.halt);
   }
   static fromLit(lit: Lit, type: EvmType): Fragment {
     switch (type) {
-      case Size: return new Fragment([], [Size], 0, pushNumber(lit as SizeLit));
-      case Locn: return new Fragment([], [Locn], 0, pushNumber(lit as LocnLit));
-      case Uint: return new Fragment([], [Uint], 0, pushNumber(lit as UintLit));
+      case Size: return new Fragment([], 0, [Size], pushNumber(lit as SizeLit));
+      case Locn: return new Fragment([], 0, [Locn], pushNumber(lit as LocnLit));
+      case Uint: return new Fragment([], 0, [Uint], pushNumber(lit as UintLit));
       case Weis: {
         let value = lit as WeisLit;
         if (typeof value == "string") {
@@ -137,18 +162,18 @@ class Fragment {
           assert(parsed != -1n, `Invalid wei amount: ${value}`);
           value = parsed;
         }
-        return new Fragment([], [Weis], 0, pushNumber(value));
+        return new Fragment([], 0, [Weis], pushNumber(value));
       }
       case Bool:
-        return new Fragment([], [Bool], 0, pushNumber(+(lit as BoolLit)));
+        return new Fragment([], 0, [Bool], pushNumber(+(lit as BoolLit)));
       case Addr:
-        return new Fragment([], [Addr], 0, pushAddress(lit as AddrLit));
+        return new Fragment([], 0, [Addr], pushAddress(lit as AddrLit));
       case Data: {
         const value = lit as DataLit;
         const code = value instanceof Uint8Array
           ? pushBytes(value)
           : typeof value == "string" ? pushHex(value) : pushNumber(value);
-        return new Fragment([], [Data], 0, code);
+        return new Fragment([], 0, [Data], code);
       }
       default: throw "Word is not constructible from literals";
     }
@@ -232,10 +257,10 @@ class Label {
   }
 
   ref(jump = false): Fragment {
-    return new Fragment([], [Locn], 0, [new LabelRef(this.id, jump)]);
+    return new Fragment([], 0, [Locn], [new LabelRef(this.id, jump)]);
   }
   dest(): Fragment {
-    return new Fragment([], [], 0, [this, Op.JUMPDEST]);
+    return new Fragment([], 0, [], [this, Op.JUMPDEST]);
   }
 }
 
@@ -292,13 +317,14 @@ export {
   BoolLit,
   Bytes,
   Code,
+  CodeAtom,
   Data,
   DataArg,
   DataLit,
-  Ensures,
   EvmType,
   FlatCode,
   Fragment,
+  HaltState,
   Label,
   LabelRef,
   Lit,
@@ -311,16 +337,19 @@ export {
   SizeLit,
   StackRef,
   StackRefMode,
-  Uint,
+  TypeList, Uint,
   UintArg,
   UintLit,
   Weis,
   WeisArg,
   WeisLit,
   Word,
+  assertAssignable,
   blob,
   eat,
   get,
+  isSubtype,
   label,
-  use
+  narrowType,
+  use,
 };

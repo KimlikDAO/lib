@@ -1,83 +1,62 @@
-import { Arg, EvmType, Fragment, StackRef, Word } from "./types";
+import {
+  CodeAtom,
+  EvmType,
+  Fragment,
+  HaltState,
+  TypeList,
+  Word,
+  narrowType,
+} from "./types";
 
-type Combinable = Fragment | StackRef;
-
-const assertAssignable = (
-  found: EvmType,
-  expected: EvmType,
-  context: string,
-) => {
-  if (found != expected && expected != Word &&
-    !(found.prototype instanceof expected))
-    throw new TypeError(
-      `${context}: expected ${expected.name}, found ${found.name}`,
-    );
-}
-
-const mergeExpect = (
-  expect: EvmType[],
-  depth: number,
-  type: EvmType,
-) => {
-  while (expect.length <= depth) expect.unshift(Word);
-  const pos = expect.length - 1 - depth;
-  const found = expect[pos]!;
-  if (found == Word) expect[pos] = type;
-  else if (type == Word) return;
-  else assertAssignable(found, type, `conflicting expectation at stack position ${depth + 1}`);
-}
-
-const infer = (arg: Arg, type: EvmType): Combinable => {
-  if (arg instanceof StackRef)
-    arg.bindType(type);
-  else if (!(arg instanceof Fragment))
-    arg = Fragment.fromLit(arg, type);
-  return arg;
-}
-
-const composePair = (left: Fragment, right: Fragment): Fragment => {
-  const code = left.code.concat(right.code);
-  if (typeof left.ensure == "string")
-    return new Fragment(left.expect, left.ensure, left.pop, code);
-
-  const expect = left.expect.slice();
-  const leftEnsures = left.ensure.length;
-  const rightExpects = right.expect.length;
-  const translated = Math.max(0, rightExpects - leftEnsures);
-
-  for (let i = 0; i < translated; ++i) {
-    const depth = left.pop + translated - 1 - i;
-    mergeExpect(expect, depth, right.expect[i]!);
+const peek = (frags: Fragment[]) => {
+  let pos = 0;
+  let len = 0;
+  let pop = 0;
+  for (const frag of frags) {
+    len = Math.max(len, frag.expect.length - pos);
+    pos -= frag.pop;
+    pop = Math.max(pop, -pos);
+    pos += frag.ensure.length;
+    if (frag.halt) break;
   }
-
-  const producedExpects = right.expect.slice(translated);
-  const producedEnsures = left.ensure.slice(leftEnsures - producedExpects.length);
-  for (let i = 0; i < producedExpects.length; ++i) {
-    const depth = producedExpects.length - 1 - i;
-    assertAssignable(producedEnsures[i]!, producedExpects[i]!,
-      `fragment output at stack position ${depth + 1}`);
-  }
-
-  const pop = left.pop + Math.max(0, right.pop - leftEnsures);
-  const ensure = typeof right.ensure == "string"
-    ? right.ensure
-    : left.ensure
-      .slice(0, Math.max(0, leftEnsures - right.pop))
-      .concat(right.ensure);
-  return new Fragment(expect, ensure, pop, code);
+  return { len, pop };
 }
 
 const compose = (...frags: Fragment[]): Fragment => {
-  if (!frags.length) return new Fragment([], [], 0, []);
+  const { len, pop } = peek(frags)
+  const expect = Array<EvmType>(len).fill(Word);
+  const ensure: EvmType[] = [];
+  const code: CodeAtom[] = [];
+  let halt: HaltState | undefined;
 
-  let out = new Fragment([], [], 0, []);
-  for (const fragment of frags)
-    out = composePair(out, fragment);
-  return out;
+  let pos = 0; // Position relative to tos.
+  let poc = 0; // max pop so far. -pos <= poc <= pop
+
+  const narrowWith = (list: TypeList) => {
+    const n = list.length;
+    const ns = poc + pos; // length of ensure
+    const nx = len + pos; // length of expect
+    for (let i = 1; i <= n; ++i)
+      if (i <= ns)
+        ensure[ns - i] = narrowType(ensure[ns - i], list[n - i],
+          `fragment output at stack position ${i}`);
+      else
+        expect[nx - i] = narrowType(expect[nx - i], list[n - i],
+          `conflicting expectation at stack position ${len - (nx - i)}`);
+  }
+
+  for (const frag of frags) {
+    code.push(...frag.code);
+    if (halt) continue;
+    narrowWith(frag.expect);
+    pos -= frag.pop;
+    ensure.length = Math.max(0, ensure.length - frag.pop);
+    poc = Math.max(poc, -pos);
+    ensure.push(...frag.ensure);
+    pos += frag.ensure.length;
+    halt = frag.halt;
+  }
+  return new Fragment(expect, pop, ensure, code, halt);
 }
 
-const combine = (..._combs: Combinable[]): Fragment => {
-  return new Fragment([], [], 0, []);
-}
-
-export { combine, compose, infer };
+export { compose };

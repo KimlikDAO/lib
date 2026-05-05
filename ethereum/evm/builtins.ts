@@ -1,18 +1,21 @@
-import { combine, compose, infer } from "./composer";
+import { bind } from "./binder";
+import { compose } from "./composer";
 import { Op } from "./opcodes";
 import { Ops } from "./ops";
 import {
-  Addr, AddrArg,
+  AddrArg,
   Bool,
   BoolArg,
-  Data, DataArg,
+  DataArg,
   EvmType,
   Fragment, Label,
   Lit,
-  Locn, LocnArg,
-  Size, SizeArg,
-  Uint, UintArg,
-  Weis, WeisArg,
+  Locn,
+  LocnArg,
+  Size,
+  SizeArg,
+  UintArg,
+  WeisArg,
   blob,
   label,
 } from "./types";
@@ -40,36 +43,21 @@ const jump = (target: Label): Fragment => compose(
 );
 
 /** @satisfies {ReverseCombinator} */
-const jumpi = (target: Label, cond: BoolArg): Fragment => combine(
-  infer(cond, Bool),
-  target.ref(true),
-  Ops[Op.JUMPI]!
-);
+const jumpi = (target: Label, cond: BoolArg): Fragment =>
+  bind([cond, target.ref(true)], Ops[Op.JUMPI]!);
 
-const sload = (key: DataArg): Fragment => combine(
-  infer(key, Data),
-  Ops[Op.SLOAD]!
-);
+const sload = (key: DataArg): Fragment => bind([key], Ops[Op.SLOAD]!);
 
 /** @satisfies {ReverseCombinator} */
-const sstore = (key: DataArg, value: DataArg): Fragment => combine(
-  infer(value, Data),
-  infer(key, Data),
-  Ops[Op.SSTORE]!
-);
+const sstore = (key: DataArg, value: DataArg): Fragment =>
+  bind([value, key], Ops[Op.SSTORE]!);
 
-/** @satisfies {ReverseCombinator} */
 const copy = (
   op: Op,
   dest: LocnArg,
   source: LocnArg,
   size: SizeArg,
-): Fragment => combine(
-  infer(size, Size),
-  infer(source, Locn),
-  infer(dest, Locn),
-  Ops[op]!,
-);
+): Fragment => bind([size, source, dest], Ops[op]!);
 
 /** @satisfies {ReverseCombinator} */
 const calldataCopy = (
@@ -100,15 +88,14 @@ const delegateCall = (
   argsSize: SizeArg,
   retOffset: LocnArg,
   retSize: SizeArg,
-): Fragment => combine(
-  infer(retSize, Size),
-  infer(retOffset, Locn),
-  infer(argsSize, Size),
-  infer(argsOffset, Locn),
-  infer(addr, Addr),
-  infer(gasAmount, Uint),
-  Ops[Op.DELEGATECALL]!
-);
+): Fragment => bind([
+  retSize,
+  retOffset,
+  argsSize,
+  argsOffset,
+  addr,
+  gasAmount,
+], Ops[Op.DELEGATECALL]!);
 
 /** @satisfies {ReverseCombinator} */
 const call = (
@@ -119,23 +106,19 @@ const call = (
   argsSize: SizeArg,
   retOffset: LocnArg,
   retSize: SizeArg,
-): Fragment => combine(
-  infer(retSize, Size),
-  infer(retOffset, Locn),
-  infer(argsSize, Size),
-  infer(argsOffset, Locn),
-  infer(value, Weis),
-  infer(addr, Addr),
-  infer(gasAmount, Uint),
-  Ops[Op.CALL]!
-);
+): Fragment => bind([
+  retSize,
+  retOffset,
+  argsSize,
+  argsOffset,
+  value,
+  addr,
+  gasAmount,
+], Ops[Op.CALL]!);
 
 /** @satisfies {ReverseCombinator} */
-const ret = (offset: LocnArg, size: SizeArg): Fragment => combine(
-  infer(size, Size),
-  infer(offset, Locn),
-  Ops[Op.RETURN]!
-);
+const ret = (offset: LocnArg, size: SizeArg): Fragment =>
+  bind([size, offset], Ops[Op.RETURN]!);
 
 /** @satisfies {ReverseCombinator} */
 const returnOrRevert = (
@@ -144,14 +127,13 @@ const returnOrRevert = (
   size: SizeArg,
 ): Fragment => {
   const ok = label("returnOrRevert-ok");
-  return combine(
-    infer(size, Size),
-    infer(offset, Locn),
-    jumpi(ok, cond),
-    Ops[Op.REVERT]!,
-    ok.dest(),
-    Ops[Op.RETURN]!
-  );
+  return bind([size, offset, cond], new Fragment(
+    [Size, Locn, Bool],
+    3,
+    [],
+    [...ok.ref(true).code, Op.JUMPI, Op.REVERT, ...ok.dest().code, Op.RETURN],
+    "⊢"
+  ));
 }
 
 const unrollFor = <T>(
@@ -165,15 +147,16 @@ const unrollFor = <T>(
 }
 
 export {
+  Combinator,
+  Ops,
+  ReverseCombinator,
   address,
   balance,
-  Ops,
-  Combinator,
+  blob,
   call,
   calldataCopy,
   calldataSize,
   codeCopy,
-  blob,
   delegateCall,
   gas,
   jump,
@@ -182,7 +165,6 @@ export {
   push,
   ret,
   returnOrRevert,
-  ReverseCombinator,
   returndataCopy,
   returndataSize,
   sload,
