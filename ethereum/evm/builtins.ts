@@ -20,9 +20,6 @@ import {
   label,
 } from "./types";
 
-type Combinator = (...args: unknown[]) => Fragment;
-type ReverseCombinator = Combinator;
-
 const address = (): Fragment => Ops[Op.ADDRESS]!;
 
 const balance = (): Fragment => Ops[Op.BALANCE]!;
@@ -39,7 +36,6 @@ const returndataSize = (): Fragment => Ops[Op.RETURNDATASIZE]!;
 
 const sload = (key: DataArg): Fragment => bind([key], Ops[Op.SLOAD]!);
 
-/** @satisfies {ReverseCombinator} */
 const sstore = (key: DataArg, value: DataArg): Fragment =>
   bind([value, key], Ops[Op.SSTORE]!);
 
@@ -50,28 +46,24 @@ const copy = (
   size: SizeArg,
 ): Fragment => bind([size, source, dest], Ops[op]!);
 
-/** @satisfies {ReverseCombinator} */
 const calldataCopy = (
   dest: LocnArg,
   source: LocnArg = 0,
   size: SizeArg = calldataSize(),
 ): Fragment => copy(Op.CALLDATACOPY, dest, source, size);
 
-/** @satisfies {ReverseCombinator} */
 const returndataCopy = (
   dest: LocnArg,
   source: LocnArg = 0,
   size: SizeArg = returndataSize(),
 ): Fragment => copy(Op.RETURNDATACOPY, dest, source, size);
 
-/** @satisfies {ReverseCombinator} */
 const codeCopy = (
   dest: LocnArg,
   source: LocnArg,
   size: SizeArg,
 ): Fragment => copy(Op.CODECOPY, dest, source, size);
 
-/** @satisfies {ReverseCombinator} */
 const delegateCall = (
   gasAmount: UintArg,
   addr: AddrArg,
@@ -88,7 +80,6 @@ const delegateCall = (
   gasAmount,
 ], Ops[Op.DELEGATECALL]!);
 
-/** @satisfies {ReverseCombinator} */
 const call = (
   gasAmount: UintArg,
   addr: AddrArg,
@@ -107,11 +98,9 @@ const call = (
   gasAmount,
 ], Ops[Op.CALL]!);
 
-/** @satisfies {ReverseCombinator} */
 const ret = (offset: LocnArg, size: SizeArg): Fragment =>
   bind([size, offset], Ops[Op.RETURN]!);
 
-/** @satisfies {ReverseCombinator} */
 const returnOrRevert = (
   cond: BoolArg,
   offset: LocnArg,
@@ -151,9 +140,7 @@ const unrollFor = <T>(
 }
 
 export {
-  Combinator,
   Ops,
-  ReverseCombinator,
   address,
   balance,
   blob,
