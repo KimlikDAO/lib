@@ -1,8 +1,9 @@
-import { Op } from "./opcodes";
+import { Op, DUPN } from "./opcodes";
 import {
   Addr,
   Bool,
   Data,
+  EvmType,
   Fragment,
   HaltState,
   Locn,
@@ -88,8 +89,6 @@ const Ops: Partial<Record<Op, Fragment>> = {
   [Op.MSTORE8]: op(Op.MSTORE8, [Locn, Data], []),
   [Op.SLOAD]: op(Op.SLOAD, [Data], [Data]),
   [Op.SSTORE]: op(Op.SSTORE, [Data, Data], []),
-  [Op.JUMP]: op(Op.JUMP, [Locn], []),
-  [Op.JUMPI]: op(Op.JUMPI, [Locn, Bool], []),
   [Op.PC]: op(Op.PC, [], [Locn]),
   [Op.MSIZE]: op(Op.MSIZE, [], [Size]),
   [Op.GAS]: op(Op.GAS, [], [Uint]),
@@ -120,4 +119,10 @@ const Ops: Partial<Record<Op, Fragment>> = {
   [Op.SELFDESTRUCT]: op(Op.SELFDESTRUCT, [Addr], "⊤"),
 };
 
-export { Ops };
+const dupN = (n: number, type: EvmType): Fragment => {
+  const expect = Array<EvmType>(n).fill(Word);
+  expect[0] = type;
+  return new Fragment(expect, 0, [type], [DUPN(n)]);
+}
+
+export { Ops, dupN };

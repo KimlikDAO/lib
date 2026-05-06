@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { Op, pushN, swapN } from "../opcodes";
+import { Op, PUSHN, SWAPN } from "../opcodes";
 import {
   Addr,
   Bool,
@@ -39,13 +39,22 @@ test("stringifies halted signatures with ensured values", () => {
     .toBe("() → 0|Addr, ⊢");
 });
 
+test("fragment constructor validates pop invariants", () => {
+  expect(() => new Fragment([], 0.5, [], []))
+    .toThrow("Fragment pop must be an integer, received 0.5");
+  expect(() => new Fragment([], -2, [], []))
+    .toThrow("Fragment pop must be -1 or non-negative, received -2");
+  expect(() => new Fragment([Word], 2, [], []))
+    .toThrow("Fragment pop 2 exceeds expect length 1");
+});
+
 test("address byte literals emit the shortest push", () => {
   const bytes = new Uint8Array(20);
   const suffix = Uint8Array.fromHex("11111111111111111111111111111111");
   bytes.set(suffix, 4);
 
   expect(Fragment.fromLit(bytes, Addr).code)
-    .toEqual([pushN(16), suffix]);
+    .toEqual([PUSHN(16), suffix]);
 });
 
 test("address string literals emit the shortest push", () => {
@@ -53,7 +62,7 @@ test("address string literals emit the shortest push", () => {
     "0x0000000011111111111111111111111111111111",
     Addr,
   ).code).toEqual([
-    pushN(16),
+    PUSHN(16),
     Uint8Array.fromHex("11111111111111111111111111111111"),
   ]);
 });
@@ -79,7 +88,7 @@ test("data byte literals emit the shortest push", () => {
 });
 
 test("swap helper derives SWAP opcode", () => {
-  expect(swapN(1)).toBe(Op.SWAP1);
-  expect(swapN(16)).toBe(Op.SWAP16);
-  expect(() => swapN(17)).toThrow("SWAP expects 1..16");
+  expect(SWAPN(1)).toBe(Op.SWAP1);
+  expect(SWAPN(16)).toBe(Op.SWAP16);
+  expect(() => SWAPN(17)).toThrow("SWAP expects 1..16");
 });

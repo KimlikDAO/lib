@@ -8,7 +8,7 @@ import {
   BoolArg,
   DataArg,
   EvmType,
-  Fragment, Label,
+  Fragment,
   Lit,
   Locn,
   LocnArg,
@@ -36,15 +36,6 @@ const push = (lit: Lit, type: EvmType): Fragment => Fragment.fromLit(lit, type);
 const calldataSize = (): Fragment => Ops[Op.CALLDATASIZE]!;
 
 const returndataSize = (): Fragment => Ops[Op.RETURNDATASIZE]!;
-
-const jump = (target: Label): Fragment => compose(
-  target.ref(true),
-  Ops[Op.JUMP]!
-);
-
-/** @satisfies {ReverseCombinator} */
-const jumpi = (target: Label, cond: BoolArg): Fragment =>
-  bind([cond, target.ref(true)], Ops[Op.JUMPI]!);
 
 const sload = (key: DataArg): Fragment => bind([key], Ops[Op.SLOAD]!);
 
@@ -136,6 +127,19 @@ const returnOrRevert = (
   ));
 }
 
+const ifThen = (cond: BoolArg, then: Fragment): Fragment => {
+  void cond;
+  void then;
+  throw new TypeError("ifThen is not implemented yet");
+}
+
+const ifElse = (cond: BoolArg, t: Fragment, f: Fragment): Fragment => {
+  void cond;
+  void t;
+  void f;
+  throw new TypeError("ifElse is not implemented yet");
+}
+
 const unrollFor = <T>(
   init: Fragment | Fragment[],
   arr: T[],
@@ -159,8 +163,8 @@ export {
   codeCopy,
   delegateCall,
   gas,
-  jump,
-  jumpi,
+  ifElse,
+  ifThen,
   pop,
   push,
   ret,

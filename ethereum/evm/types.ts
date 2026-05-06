@@ -1,12 +1,9 @@
 import { Address } from "../address.d";
 import { parseEther } from "../denominations";
-import { Op, OpData, pushN } from "./opcodes";
+import { Op, OpData, PUSHN } from "./opcodes";
+import { assert } from "./util";
 
 const InspectCustom = Symbol.for("nodejs.util.inspect.custom");
-
-const assert = (expr: boolean, message: string = "no good") => {
-  if (!expr) throw message;
-}
 
 type EvmType =
   | typeof Word
@@ -83,25 +80,16 @@ type Arg = Lit | Fragment | StackRef;
 type TypeList = readonly EvmType[];
 type HaltState = "⊣" | "⊥" | "⊤" | "⊢";
 
-const isSubtype = (sub: EvmType, sup: EvmType): boolean =>
-  sub === sup || sub.prototype instanceof sup;
-
-const assertAssignable = (
-  found: EvmType,
-  expected: EvmType,
-  context: string,
-) => {
-  if (!isSubtype(found, expected))
-    throw new TypeError(`${context}: ${found.name} is not ${expected.name}`);
-}
+const isAssignable = (sup: EvmType, sub: EvmType): boolean =>
+  sub === sup || sup.isPrototypeOf(sub);
 
 const narrowType = (
   a: EvmType,
   b: EvmType,
   context = "conflicting expectation",
 ): EvmType => {
-  if (isSubtype(b, a)) return b;
-  if (isSubtype(a, b)) return a;
+  if (isAssignable(a, b)) return b;
+  if (isAssignable(b, a)) return a;
   throw new TypeError(`${context}: ${a.name} vs ${b.name}`);
 }
 
@@ -120,7 +108,8 @@ class Signature {
     const halt = this.halt
       ? this.ensure.length ? ", " + this.halt : this.halt
       : "";
-    return `(${Signature.args(this.expect)}) → ${this.pop}|` +
+    const pop = this.pop < 0 ? "*" : "" + this.pop;
+    return `(${Signature.args(this.expect)}) → ${pop}|` +
       Signature.args(this.ensure) + halt;
   }
   [InspectCustom](): string {
@@ -145,7 +134,14 @@ class Fragment {
     readonly ensure: TypeList,
     readonly code: FlatCode,
     readonly halt?: HaltState,
-  ) { }
+  ) {
+    assert(Number.isInteger(pop),
+      `Fragment pop must be an integer, received ${pop}`);
+    assert(-1 <= pop,
+      `Fragment pop must be -1 or non-negative, received ${pop}`);
+    assert(pop <= expect.length,
+      `Fragment pop ${pop} exceeds expect length ${expect.length}`);
+  }
 
   signature(): Signature {
     return new Signature(this.expect, this.ensure, this.pop, this.halt);
@@ -185,7 +181,7 @@ const pushBytes = (bytes: Bytes): FlatCode => {
   assert(len <= 32, `Bytes literal exceeds 32 bytes: ${bytes}`);
   let start = 0;
   while (len && bytes[start] == 0) { ++start; --len; }
-  return len ? [pushN(len), bytes.subarray(start)] : [Op.PUSH0];
+  return len ? [PUSHN(len), bytes.subarray(start)] : [Op.PUSH0];
 }
 
 const pushNumber = (n: bigint | number, maxLength = 32): FlatCode => {
@@ -196,7 +192,7 @@ const pushNumber = (n: bigint | number, maxLength = 32): FlatCode => {
   const opData = Uint8Array.fromHex(hexValue);
   assert(opData.length <= maxLength,
     `Number literal ${n} exceeds ${maxLength} bytes`);
-  return [pushN(opData.length), opData];
+  return [PUSHN(opData.length), opData];
 };
 
 const pushHex = (hex: string): FlatCode => {
@@ -217,19 +213,17 @@ const pushAddress = (addr: AddrLit): FlatCode => {
 }
 
 enum StackRefMode {
-  Use = 0,
-  Get = 1,
-  Eat = 2,
+  Dup = 0,
+  Use = 1,
+  Get = 2,
+  Eat = 3,
 }
 
 class StackRef {
-  type: EvmType | undefined;
   constructor(
     readonly pos: number,
     readonly mode: StackRefMode,
-  ) { }
-
-  bindType(type: EvmType) { this.type = type; }
+  ) { assert(pos >= 1, `StackRef positions are 1 based: ${pos}`); }
 }
 
 class LabelRef {
@@ -290,6 +284,8 @@ const blob = (bytes: Bytes, name?: string): Blob => new Blob(bytes, name);
 
 const label = (name?: string): Label => new Label(name);
 
+const dup = (n: number): StackRef => new StackRef(n, StackRefMode.Dup);
+
 /**
  * Use value in stack position n. The caller is free to consume it.
  */
@@ -344,11 +340,11 @@ export {
   WeisArg,
   WeisLit,
   Word,
-  assertAssignable,
   blob,
+  dup,
   eat,
   get,
-  isSubtype,
+  isAssignable,
   label,
   narrowType,
   use,

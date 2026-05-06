@@ -103,7 +103,7 @@ type OpData = Uint8Array<ArrayBuffer>;
 /**
  * Copies the nth item on the stack to top of the stack.
  */
-const dupN = (n: number): Op => {
+const DUPN = (n: number): Op => {
   if (n < 1 || n > 16)
     throw new RangeError(`DUP expects 1..16, received ${n}`);
   return (127 + n) as Op;
@@ -112,7 +112,7 @@ const dupN = (n: number): Op => {
 /**
  * Swaps the top of the stack with the nth item below it.
  */
-const swapN = (n: number): Op => {
+const SWAPN = (n: number): Op => {
   if (n < 1 || n > 16)
     throw new RangeError(`SWAP expects 1..16, received ${n}`);
   return (0x8f + n) as Op;
@@ -121,16 +121,16 @@ const swapN = (n: number): Op => {
 /**
  * Pushes an n-byte immediate onto the stack.
  */
-const pushN = (n: number): Op => {
+const PUSHN = (n: number): Op => {
   if (n < 0 || n > 32)
     throw new RangeError(`PUSH expects 0..32 bytes, received ${n}`);
   return (95 + n) as Op;
 }
 
 export {
-  dupN,
+  DUPN,
   Op,
   OpData,
-  pushN,
-  swapN,
+  PUSHN,
+  SWAPN,
 };

@@ -1,7 +1,7 @@
 import { Address } from "../address.d";
 import { assemble, Program } from "./assembler";
 import { call, pop, push, unrollFor } from "./builtins";
-import { get, Weis } from "./types";
+import { dup, Weis } from "./types";
 
 type Recipient = { address: Address; amount: bigint };
 
@@ -22,7 +22,7 @@ const batchSendFixedAmount = (
     push(amount, Weis),
     recipients,
     (recipient) => [
-      call(0, recipient, get(1), 0, 0, 0, 0),
+      call(0, recipient, dup(1), 0, 0, 0, 0),
       pop()
     ]
   );
