@@ -1,7 +1,8 @@
 import { Address } from "../address.d";
 import { assemble, Program } from "./assembler";
-import { call, pop, push, unrollFor } from "./builtins";
-import { dup, Weis } from "./types";
+import { call, pop } from "./builtins";
+import { dup, set, unrollFor } from "./syntax";
+import { Weis } from "./types";
 
 type Recipient = { address: Address; amount: bigint };
 
@@ -11,7 +12,7 @@ const batchSend = (recipients: Recipient[]): Program => {
     recipients,
     ({ address, amount }: Recipient) => call(0, address, amount, 0, 0, 0, 0),
   );
-  return assemble(code);
+  return assemble(...code);
 };
 
 const batchSendFixedAmount = (
@@ -19,14 +20,14 @@ const batchSendFixedAmount = (
   amount: bigint,
 ): Program => {
   const code = unrollFor(
-    push(amount, Weis),
+    set("amount", Weis, amount),
     recipients,
     (recipient) => [
-      call(0, recipient, dup(1), 0, 0, 0, 0),
+      call(0, recipient, dup("amount"), 0, 0, 0, 0),
       pop()
     ]
   );
-  return assemble(code);
+  return assemble(...code);
 };
 
 export { batchSend, batchSendFixedAmount, Recipient };

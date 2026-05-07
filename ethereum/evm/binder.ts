@@ -1,15 +1,13 @@
 import { compose } from "./composer";
 import { DUPN, Op, SWAPN } from "./opcodes";
-import { dupN, Ops } from "./ops";
+import { Ops } from "./ops";
+import { Expression, StackRef, StackRefMode } from "./syntax";
+import type { Arg } from "./syntax";
 import {
-  Arg,
   CodeAtom,
   EvmType,
   Fragment,
   isAssignable,
-  narrowType,
-  StackRef,
-  StackRefMode,
   Word,
 } from "./types";
 import { assert } from "./util";
@@ -29,6 +27,32 @@ type SearchNode = {
 
 type SearchParent = readonly [number, readonly CodeAtom[]];
 
+function lowerExpression(expr: Expression): Fragment {
+  return bind(expr.args, expr.frag);
+}
+
+const materializeFragment = (
+  frag: Fragment,
+  index: number,
+  type: EvmType,
+): Fragment => {
+  if (frag.expect.length)
+    throw new TypeError(
+      `bound fragment at position ${index + 1} must have expect = []`);
+  if (frag.pop)
+    throw new TypeError(
+      `bound fragment at position ${index + 1} must have pop = 0`);
+  if (frag.ensure.length != 1)
+    throw new TypeError(
+      `bound fragment at position ${index + 1} must ensure one value`);
+  if (frag.halt)
+    throw new TypeError(
+      `bound fragment at position ${index + 1} must not halt`);
+  if (!isAssignable(type, frag.ensure[0]!))
+    throw new TypeError(`bound fragment at position ${index + 1}`);
+  return frag;
+}
+
 const materializeArg = (
   arg: BindArg,
   index: number,
@@ -36,24 +60,9 @@ const materializeArg = (
 ): Fragment | StackRef | undefined => {
   if (arg === undefined || arg instanceof StackRef)
     return arg;
-  if (arg instanceof Fragment) {
-    if (arg.expect.length)
-      throw new TypeError(
-        `bound fragment at position ${index + 1} must have expect = []`);
-    if (arg.pop)
-      throw new TypeError(
-        `bound fragment at position ${index + 1} must have pop = 0`);
-    if (arg.ensure.length != 1)
-      throw new TypeError(
-        `bound fragment at position ${index + 1} must ensure one value`);
-    if (arg.halt)
-      throw new TypeError(
-        `bound fragment at position ${index + 1} must not halt`);
-    if (!isAssignable(type, arg.ensure[0]!))
-      throw new TypeError(`bound fragment at position ${index + 1}`);
-    return arg;
-  }
-  return Fragment.fromLit(arg, type);
+  if (arg instanceof Expression)
+    return materializeFragment(lowerExpression(arg), index, type);
+  return materializeArg(Expression.fromLit(arg, type), index, type);
 }
 
 const countSymbol = (stack: readonly number[], symbol: number): number => {
@@ -109,13 +118,12 @@ const tryAllUse = (
   if (!args.every((arg) =>
     !(arg instanceof StackRef) || arg.mode == StackRefMode.Use))
     return null;
+  if (args.some((arg) => arg instanceof StackRef))
+    return null;
   if (args.length > MaxSearchArity)
     return null;
 
-  let maxUse = 0;
-  for (const arg of args)
-    if (arg instanceof StackRef)
-      maxUse = Math.max(maxUse, arg.pos);
+  const maxUse = 0;
   if (maxUse > MaxSearchArity)
     return null;
 
@@ -142,12 +150,7 @@ const tryAllUse = (
       continue;
     }
 
-    const pos = arg.pos;
-    const expectIndex = maxUse - pos;
-    expect[expectIndex] = narrowType(expect[expectIndex], f.expect[i],
-      `conflicting use(${pos}) expectation`);
-    target.push(pos);
-    required.set(pos, (required.get(pos) ?? 0) + 1);
+    return null;
   }
 
   const goal = (stack: readonly number[]): boolean =>
@@ -378,10 +381,9 @@ const tryAppendTrimUse = (
   if (!args.every((arg) =>
     !(arg instanceof StackRef) || arg.mode == StackRefMode.Use))
     return null;
-  let maxUse = 0;
-  for (const arg of args)
-    if (arg instanceof StackRef)
-      maxUse = Math.max(maxUse, arg.pos);
+  if (args.some((arg) => arg instanceof StackRef))
+    return null;
+  const maxUse = 0;
 
   const expect = Array<EvmType>(maxUse).fill(Word);
   const target: number[] = [];
@@ -399,11 +401,7 @@ const tryAppendTrimUse = (
       exprs.push(arg);
       continue;
     }
-    const pos = arg.pos;
-    const expectIndex = maxUse - pos;
-    expect[expectIndex] = narrowType(expect[expectIndex], f.expect[i],
-      `conflicting use(${pos}) expectation`);
-    target.push(pos);
+    return null;
   }
 
   const code: CodeAtom[] = [];
@@ -437,6 +435,8 @@ const tryAllDup = (
   if (!args.every((arg) =>
     !(arg instanceof StackRef) || arg.mode == StackRefMode.Dup))
     return null;
+  if (args.some((arg) => arg instanceof StackRef))
+    return null;
 
   const frags: Fragment[] = [];
   for (let i = 0; i < args.length; ++i) {
@@ -447,8 +447,7 @@ const tryAllDup = (
       frags.push(Ops[Op.PUSH0]!);
     } else if (arg instanceof Fragment)
       frags.push(arg);
-    else
-      frags.push(dupN(arg.pos + frags.length, f.expect[i]));
+    else return null;
   }
   return compose(...frags, f);
 }
@@ -459,6 +458,9 @@ const bind = (args: readonly BindArg[], f: Fragment): Fragment => {
       `bind expected ${f.expect.length} arguments, received ${args.length}`);
   const materialized = Array.from(args, (arg, i) =>
     materializeArg(arg, i, f.expect[i]));
+  for (const arg of materialized)
+    if (arg instanceof StackRef)
+      throw new TypeError("named stack refs are not implemented yet");
   const outF = tryAllUse(materialized, f) ??
     tryAppendTrimUse(materialized, f) ??
     tryAllDup(materialized, f);

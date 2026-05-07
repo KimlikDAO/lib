@@ -1,22 +1,19 @@
-import { bind } from "./binder";
 import { Op } from "./opcodes";
 import { Ops } from "./ops";
+import { Expression } from "./syntax";
+import type { AddrArg, BoolArg } from "./syntax";
 import {
-  Addr,
-  AddrArg,
-  AddrLit,
   Bool,
-  BoolArg,
   Fragment,
   label
 } from "./types";
 
-const addrEq = (lhs: AddrArg, rhs: AddrArg) =>
-  bind([lhs, rhs], new Fragment([Addr, Addr], 2, [Bool], [Op.EQ]));
+const addrEq = (lhs: AddrArg, rhs: AddrArg): Expression =>
+  new Expression([lhs, rhs], Ops[Op.EQ]!);
 
-const assert = (cond: BoolArg): Fragment => {
+const assert = (cond: BoolArg): Expression => {
   const ok = label("check-ok");
-  return bind([cond], new Fragment(
+  return new Expression([cond], new Fragment(
     [Bool],
     1,
     [],
@@ -30,7 +27,7 @@ const assert = (cond: BoolArg): Fragment => {
   ));
 }
 
-const assertCaller = (addr: AddrLit): Fragment =>
-  assert(addrEq(addr, Ops[Op.CALLER]!));
+const assertCaller = (addr: AddrArg): Expression =>
+  assert(addrEq(addr, Expression.fromFragment(Ops[Op.CALLER]!)));
 
 export { assert, assertCaller };

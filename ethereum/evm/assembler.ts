@@ -1,6 +1,8 @@
-import { Code } from "./types";
+import { Blob, Expression } from "./syntax";
+import { CodeAtom, Fragment } from "./types";
 
 type Program = Uint8Array<ArrayBuffer>;
+type ProgramPart = CodeAtom | Fragment | Expression | Blob;
 
 /*
 const layout = (code: FlatCode): Layout => {
@@ -53,7 +55,7 @@ const layout = (code: FlatCode): Layout => {
   }
 }; */
 
-const assemble = (..._code: Code): Program => {
+const assemble = (..._code: readonly ProgramPart[]): Program => {
   /*
   const { length, tokens } = layout(...parts);
   const out = new Uint8Array(length);

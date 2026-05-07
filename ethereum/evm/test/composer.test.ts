@@ -13,6 +13,7 @@ import {
   Locn,
   Size,
   TypeList,
+  Uint,
   Weis,
   Word,
 } from "../types";
@@ -23,7 +24,8 @@ const fragment = (
   pop: number,
   code: FlatCode = [],
   halt?: HaltState,
-): Fragment => new Fragment(expect, pop, ensure, code, halt);
+  ensureNames?: readonly (string |undefined)[],
+): Fragment => new Fragment(expect, pop, ensure, code, halt, ensureNames);
 
 test("composes no fragments into an identity fragment", () => {
   const out = compose();
@@ -39,6 +41,25 @@ test("uses produced stack values to satisfy later expectations", () => {
 
   expect(String(out.signature())).toBe("() → 0|Weis, Bool");
   expect(out.code).toEqual([Op.ADDRESS, Op.ISZERO]);
+});
+
+test("preserves names on surviving ensured stack items", () => {
+  const out = compose(
+    fragment([], [Weis, Addr], 0, [], undefined, ["value", "owner"]),
+    fragment([Addr], [Bool], 1, [Op.ISZERO]),
+  );
+
+  expect(String(out.signature())).toBe("() → 0|value: Weis, Bool");
+});
+
+test("appends ensured names correctly with holes on both sides", () => {
+  const out = compose(
+    fragment([], [Weis, Addr], 0, [], undefined, ["value", undefined]),
+    fragment([Addr], [Bool, Size], 1, [], undefined, [undefined, "len"]),
+  );
+
+  expect(out.ensureNames).toEqual(["value", undefined, "len"]);
+  expect(String(out.signature())).toBe("() → 0|value: Weis, Bool, len: Size");
 });
 
 test("translates later expectations through produced stack values", () => {
@@ -70,6 +91,13 @@ test("rejects expectations incompatible with produced values", () => {
   expect(() => compose(
     fragment([], [Addr], 0, []),
     fragment([Bool], [Word], 1, []),
+  )).toThrow("fragment output at stack position 1");
+});
+
+test("rejects narrower produced values where later code expects wider ones", () => {
+  expect(() => compose(
+    fragment([], [Uint, Uint], 0, []),
+    fragment([Locn, Size], [Bool], 2, []),
   )).toThrow("fragment output at stack position 1");
 });
 

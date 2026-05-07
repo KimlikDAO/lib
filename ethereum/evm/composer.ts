@@ -5,8 +5,10 @@ import {
   HaltState,
   TypeList,
   Word,
+  isAssignable,
   narrowType,
 } from "./types";
+import { assert } from "./util";
 
 const peek = (frags: Fragment[]) => {
   let pos = 0;
@@ -26,6 +28,7 @@ const compose = (...frags: Fragment[]): Fragment => {
   const { len, pop } = peek(frags)
   const expect = Array<EvmType>(len).fill(Word);
   const ensure: EvmType[] = [];
+  const ensureNames: (string | undefined)[] = [];
   const code: CodeAtom[] = [];
   let halt: HaltState | undefined;
 
@@ -38,7 +41,7 @@ const compose = (...frags: Fragment[]): Fragment => {
     const nx = len + pos; // length of expect
     for (let i = 1; i <= n; ++i)
       if (i <= ns)
-        ensure[ns - i] = narrowType(ensure[ns - i], list[n - i],
+        assert(isAssignable(list[n - i], ensure[ns - i]),
           `fragment output at stack position ${i}`);
       else
         expect[nx - i] = narrowType(expect[nx - i], list[n - i],
@@ -50,13 +53,14 @@ const compose = (...frags: Fragment[]): Fragment => {
     if (halt) continue;
     narrowWith(frag.expect);
     pos -= frag.pop;
-    ensure.length = Math.max(0, ensure.length - frag.pop);
+    ensure.length = ensureNames.length = Math.max(0, ensure.length - frag.pop);
     poc = Math.max(poc, -pos);
     ensure.push(...frag.ensure);
+    ensureNames.push(...frag.ensureNames);
     pos += frag.ensure.length;
     halt = frag.halt;
   }
-  return new Fragment(expect, pop, ensure, code, halt);
+  return new Fragment(expect, pop, ensure, code, halt, ensureNames);
 }
 
 export { compose };

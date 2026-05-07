@@ -1,68 +1,71 @@
-import { bind } from "./binder";
-import { compose } from "./composer";
 import { Op } from "./opcodes";
 import { Ops } from "./ops";
 import {
+  Blob,
+  Expression,
+  blob,
+} from "./syntax";
+import type {
   AddrArg,
-  Bool,
   BoolArg,
   DataArg,
-  EvmType,
-  Fragment,
-  Lit,
-  Locn,
   LocnArg,
-  Size,
   SizeArg,
   UintArg,
   WeisArg,
-  blob,
+} from "./syntax";
+import {
+  Bool,
+  Fragment,
+  Locn,
+  Size,
   label,
 } from "./types";
 
-const address = (): Fragment => Ops[Op.ADDRESS]!;
+const address = (): Expression => new Expression([], Ops[Op.ADDRESS]!);
 
-const balance = (): Fragment => Ops[Op.BALANCE]!;
+const balance = (addr: AddrArg): Expression =>
+  new Expression([addr], Ops[Op.BALANCE]!);
 
-const gas = (): Fragment => Ops[Op.GAS]!;
+const gas = (): Expression => new Expression([], Ops[Op.GAS]!);
 
 const pop = (): Fragment => Ops[Op.POP]!;
 
-const push = (lit: Lit, type: EvmType): Fragment => Fragment.fromLit(lit, type);
+const calldataSize = (): Expression => new Expression([], Ops[Op.CALLDATASIZE]!);
 
-const calldataSize = (): Fragment => Ops[Op.CALLDATASIZE]!;
+const returndataSize = (): Expression =>
+  new Expression([], Ops[Op.RETURNDATASIZE]!);
 
-const returndataSize = (): Fragment => Ops[Op.RETURNDATASIZE]!;
+const sload = (key: DataArg): Expression =>
+  new Expression([key], Ops[Op.SLOAD]!);
 
-const sload = (key: DataArg): Fragment => bind([key], Ops[Op.SLOAD]!);
-
-const sstore = (key: DataArg, value: DataArg): Fragment =>
-  bind([value, key], Ops[Op.SSTORE]!);
+const sstore = (key: DataArg, value: DataArg): Expression =>
+  new Expression([value, key], Ops[Op.SSTORE]!);
 
 const copy = (
   op: Op,
   dest: LocnArg,
   source: LocnArg,
   size: SizeArg,
-): Fragment => bind([size, source, dest], Ops[op]!);
+): Expression => new Expression([size, source, dest], Ops[op]!);
 
 const calldataCopy = (
   dest: LocnArg,
   source: LocnArg = 0,
   size: SizeArg = calldataSize(),
-): Fragment => copy(Op.CALLDATACOPY, dest, source, size);
+): Expression => copy(Op.CALLDATACOPY, dest, source, size);
 
 const returndataCopy = (
   dest: LocnArg,
   source: LocnArg = 0,
   size: SizeArg = returndataSize(),
-): Fragment => copy(Op.RETURNDATACOPY, dest, source, size);
+): Expression => copy(Op.RETURNDATACOPY, dest, source, size);
 
 const codeCopy = (
   dest: LocnArg,
   source: LocnArg,
   size: SizeArg,
-): Fragment => copy(Op.CODECOPY, dest, source, size);
+): Expression => copy(Op.CODECOPY, dest, source, size);
 
 const delegateCall = (
   gasAmount: UintArg,
@@ -71,7 +74,7 @@ const delegateCall = (
   argsSize: SizeArg,
   retOffset: LocnArg,
   retSize: SizeArg,
-): Fragment => bind([
+): Expression => new Expression([
   retSize,
   retOffset,
   argsSize,
@@ -88,7 +91,7 @@ const call = (
   argsSize: SizeArg,
   retOffset: LocnArg,
   retSize: SizeArg,
-): Fragment => bind([
+): Expression => new Expression([
   retSize,
   retOffset,
   argsSize,
@@ -98,49 +101,27 @@ const call = (
   gasAmount,
 ], Ops[Op.CALL]!);
 
-const ret = (offset: LocnArg, size: SizeArg): Fragment =>
-  bind([size, offset], Ops[Op.RETURN]!);
+const ret = (offset: LocnArg, size: SizeArg): Expression =>
+  new Expression([size, offset], Ops[Op.RETURN]!);
 
 const returnOrRevert = (
   cond: BoolArg,
   offset: LocnArg,
   size: SizeArg,
-): Fragment => {
+): Expression => {
   const ok = label("returnOrRevert-ok");
-  return bind([size, offset, cond], new Fragment(
+  return new Expression([size, offset, cond], new Fragment(
     [Size, Locn, Bool],
     3,
     [],
     [...ok.ref(true).code, Op.JUMPI, Op.REVERT, ...ok.dest().code, Op.RETURN],
-    "⊢"
+    "⊢",
   ));
-}
-
-const ifThen = (cond: BoolArg, then: Fragment): Fragment => {
-  void cond;
-  void then;
-  throw new TypeError("ifThen is not implemented yet");
-}
-
-const ifElse = (cond: BoolArg, t: Fragment, f: Fragment): Fragment => {
-  void cond;
-  void t;
-  void f;
-  throw new TypeError("ifElse is not implemented yet");
-}
-
-const unrollFor = <T>(
-  init: Fragment | Fragment[],
-  arr: T[],
-  fn: (elm: T) => Fragment | Fragment[]
-): Fragment => {
-  const frags = arr.flatMap(fn);
-  const initArr = Array.isArray(init) ? init : [init];
-  return compose(...initArr, ...frags);
 }
 
 export {
   Ops,
+  Blob,
   address,
   balance,
   blob,
@@ -150,15 +131,11 @@ export {
   codeCopy,
   delegateCall,
   gas,
-  ifElse,
-  ifThen,
   pop,
-  push,
   ret,
   returnOrRevert,
   returndataCopy,
   returndataSize,
   sload,
   sstore,
-  unrollFor
 };

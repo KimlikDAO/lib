@@ -13,14 +13,15 @@ import {
   sload,
   sstore,
 } from "./builtins";
-import { blob, Bytes, use, dup } from "./types";
+import { blob, dup, Expression, set, use } from "./syntax";
+import { Bytes } from "./types";
 
 const upgradableProxy = (slot: Bytes): Program =>
   assemble(
     calldataCopy(0),
-    delegateCall(gas(), sload(slot), 0, calldataSize(), 0, 0),
+    set("success", delegateCall(gas(), sload(slot), 0, calldataSize(), 0, 0)),
     returndataCopy(0),
-    returnOrRevert(dup(1), 0, returndataSize()),
+    returnOrRevert(dup("success"), 0, returndataSize()),
   );
 
 const createUpgradableProxy = (
@@ -31,9 +32,9 @@ const createUpgradableProxy = (
 
   return assemble(
     sstore(implSlot, implAddress),
-    runtime.len(),
-    codeCopy(0, runtime.beg(), dup(1)),
-    ret(0, use(1)),
+    set("x", runtime.len()),
+    codeCopy(0, Expression.fromFragment(runtime.beg()), dup("x")),
+    ret(0, use("x")),
     runtime,
   );
 };
