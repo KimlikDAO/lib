@@ -10,6 +10,7 @@ import {
   SizeLit,
   UintLit,
   WeisLit,
+  assertAssignable,
 } from "./types";
 import { assert } from "./util";
 
@@ -40,23 +41,32 @@ class Expression {
     args: readonly ExprArg[],
     readonly frag: Fragment,
   ) {
-    const children: ExprChild[] = [];
+    const { expect, pop } = frag.signature;
+    assert(pop == expect.length,
+      `Expression fragment pop ${pop} does not match expect length`
+      + ` ${expect.length}`);
+
+    const expected = expect.length;
     let arity = 0;
+    for (const arg of args)
+      arity += arg instanceof Expression ? arg.ensure.length : 1;
+
+    assert(arity == expected,
+      `Expression expected ${expected} child values, received ${arity}`);
+
+    const children: ExprChild[] = [];
+    let pos = 0;
     for (const arg of args)
       if (arg instanceof StackRef) {
         children.push(arg);
-        ++arity;
+        ++pos;
       } else if (arg instanceof Expression) {
         children.push(arg);
-        arity += arg.ensure.length;
-      } else {
-        children.push(
-          Expression.fromLiteral(arg, frag.signature.expect[arity]));
-        ++arity;
-      }
-    const expected = frag.signature.expect.length;
-    assert(arity == expected,
-      `Expression expected ${expected} child values, received ${arity}`);
+        for (const type of arg.ensure)
+          assertAssignable(expect[pos++]!, type,
+            `Expression child at position ${pos}`);
+      } else
+        children.push(Expression.fromLiteral(arg, expect[pos++]!));
     this.children = children;
   }
 

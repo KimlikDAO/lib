@@ -50,6 +50,18 @@ type EvmType =
 const isAssignable = (sup: EvmType, sub: EvmType): boolean =>
   sub === sup || sup.isPrototypeOf(sub);
 
+const typeName = (type: EvmType): string => type.name || "Word";
+
+const assertAssignable = (
+  sup: EvmType,
+  sub: EvmType,
+  context = "type mismatch",
+) => {
+  if (!isAssignable(sup, sub))
+    throw new TypeError(
+      `${context}: expected ${typeName(sup)}, received ${typeName(sub)}`);
+}
+
 const narrowType = (
   a: EvmType,
   b: EvmType,
@@ -57,7 +69,7 @@ const narrowType = (
 ): EvmType => {
   if (isAssignable(a, b)) return b;
   if (isAssignable(b, a)) return a;
-  throw new TypeError(`${context}: ${a.name} vs ${b.name}`);
+  throw new TypeError(`${context}: ${typeName(a)} vs ${typeName(b)}`);
 }
 
 type AddrLit = Address | Bytes | bigint;
@@ -88,6 +100,8 @@ export {
   Uint, UintLit,
   Weis, WeisLit,
   Word,
+  assertAssignable,
   isAssignable,
   narrowType,
+  typeName,
 };
