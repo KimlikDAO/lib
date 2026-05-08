@@ -1,32 +1,31 @@
-import { Op, DUPN } from "./opcodes";
+import { Fragment } from "./fragment";
+import { DUPN, Op } from "./opcodes";
+import { HaltState, TypeList } from "./signature";
 import {
   Addr,
   Bool,
   Data,
   EvmType,
-  Fragment,
-  HaltState,
   Locn,
   Size,
-  TypeList,
   Uint,
   Weis,
   Word,
 } from "./types";
 
 const op = (
-  op: Op,
+  opcode: Op,
   expect: TypeList,
   out: TypeList | HaltState,
 ): Fragment => {
   const [ensure, halt] = typeof out == "string" ? [[], out] : [out, undefined];
-  return new Fragment(
-    expect.toReversed(),
-    expect.length,
+  return Fragment.from({
+    expect: expect.toReversed(),
+    pop: expect.length,
     ensure,
-    [op],
-    halt
-  );
+    halt,
+    code: [opcode],
+  });
 }
 
 const Ops: Partial<Record<Op, Fragment>> = {
@@ -122,7 +121,7 @@ const Ops: Partial<Record<Op, Fragment>> = {
 const dupN = (n: number, type: EvmType): Fragment => {
   const expect = Array<EvmType>(n).fill(Word);
   expect[0] = type;
-  return new Fragment(expect, 0, [type], [DUPN(n)]);
+  return Fragment.from({ expect, ensure: [type], code: [DUPN(n)] });
 }
 
 export { Ops, dupN };

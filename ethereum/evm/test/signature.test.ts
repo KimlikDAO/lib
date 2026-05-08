@@ -1,20 +1,20 @@
 import { expect, test } from "bun:test";
-import { signature } from "../signatures";
+import { Signature } from "../signature";
 
 test("parses compact named signatures", () => {
-  const out = signature("(Word, Word)->0|x:Word,y:Addr");
+  const out = Signature.from("(Word, Word)->0|x:Word,y:Addr");
 
   expect(String(out)).toBe("(, ) → 0|x, y: Addr");
 });
 
 test("parses printed signatures with gaps and names", () => {
-  const out = signature("(Locn, , , Bool) → 1|size: Size, addr: Addr");
+  const out = Signature.from("(Locn, , , Bool) → 1|size: Size, addr: Addr");
 
   expect(String(out)).toBe("(Locn, , , Bool) → 1|size: Size, addr: Addr");
 });
 
 test("parses halt-only signatures", () => {
-  const out = signature("() → 0|⊤");
+  const out = Signature.from("() → 0|⊤");
 
   expect(String(out)).toBe("() → 0|⊤");
 });

@@ -1,5 +1,5 @@
-import { keccak256Uint8 } from "../../crypto/sha3";
-import { Address } from "../address.d";
+import { keccak256Uint8 } from "../../../crypto/sha3";
+import { Address } from "../../address.d";
 
 const CreatePrefix = keccak256Uint8(new TextEncoder().encode("zksyncCreate"));
 

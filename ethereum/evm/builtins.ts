@@ -1,25 +1,21 @@
-import { Op } from "./opcodes";
-import { Ops } from "./ops";
 import {
-  Blob,
-  Expression,
-  blob,
-} from "./syntax";
-import type {
   AddrArg,
   BoolArg,
   DataArg,
+  Expression,
   LocnArg,
   SizeArg,
   UintArg,
   WeisArg,
-} from "./syntax";
+} from "./expression";
+import { Fragment } from "./fragment";
+import { Op } from "./opcodes";
+import { Ops } from "./ops";
+import { label } from "./statement";
 import {
   Bool,
-  Fragment,
   Locn,
   Size,
-  label,
 } from "./types";
 
 const address = (): Expression => new Expression([], Ops[Op.ADDRESS]!);
@@ -27,9 +23,9 @@ const address = (): Expression => new Expression([], Ops[Op.ADDRESS]!);
 const balance = (addr: AddrArg): Expression =>
   new Expression([addr], Ops[Op.BALANCE]!);
 
-const gas = (): Expression => new Expression([], Ops[Op.GAS]!);
+const caller = (): Expression => new Expression([], Ops[Op.CALLER]!);
 
-const pop = (): Fragment => Ops[Op.POP]!;
+const gas = (): Expression => new Expression([], Ops[Op.GAS]!);
 
 const calldataSize = (): Expression => new Expression([], Ops[Op.CALLDATASIZE]!);
 
@@ -110,32 +106,31 @@ const returnOrRevert = (
   size: SizeArg,
 ): Expression => {
   const ok = label("returnOrRevert-ok");
-  return new Expression([size, offset, cond], new Fragment(
-    [Size, Locn, Bool],
-    3,
-    [],
-    [...ok.ref(true).code, Op.JUMPI, Op.REVERT, ...ok.dest().code, Op.RETURN],
-    "⊢",
-  ));
+  return new Expression([size, offset, cond], Fragment.from({
+    expect: [Size, Locn, Bool],
+    pop: 3,
+    code: [
+      ...ok.ref(true).frag.code,
+      Op.JUMPI,
+      Op.REVERT,
+      ...ok.dest().frag.code,
+      Op.RETURN,
+    ],
+    halt: "⊢",
+  }));
 }
 
 export {
-  Ops,
-  Blob,
   address,
   balance,
-  blob,
   call,
   calldataCopy,
   calldataSize,
+  caller,
   codeCopy,
   delegateCall,
   gas,
-  pop,
-  ret,
-  returnOrRevert,
-  returndataCopy,
-  returndataSize,
-  sload,
-  sstore,
+  ret, returndataCopy,
+  returndataSize, returnOrRevert, sload,
+  sstore
 };

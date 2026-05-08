@@ -1,60 +1,63 @@
 import { expect, test } from "bun:test";
-import { bind } from "../binder";
 import { assert, assertCaller } from "../common";
+import { Expression, StackRef, get } from "../expression";
+import { Fragment } from "../fragment";
 import { Op } from "../opcodes";
-import { Expression, use } from "../syntax";
-import { Bool, Fragment, Word } from "../types";
+import { Bool } from "../types";
 
 const numberOps = (code: readonly unknown[]): number[] =>
   code.filter((atom): atom is number => typeof atom == "number");
 
-const compile = (expr: Expression): Fragment => bind(expr.args, expr.frag);
+test("assert packages literal boolean conditions", () => {
+  const out = assert(true);
 
-test("assert binds literal boolean conditions", () => {
-  const out = compile(assert(true));
-
-  expect(String(out.signature())).toBe("() → 0|⊢");
-  expect(numberOps(out.code)).toEqual([
-    Op.PUSH1,
+  expect(out).toBeInstanceOf(Expression);
+  expect(String(out.frag.signature)).toBe("(Bool) → 1|⊢");
+  expect(out.children).toHaveLength(1);
+  expect(out.children[0]).toBeInstanceOf(Expression);
+  expect(String((out.children[0] as Expression).frag.signature))
+    .toBe("() → 0|Bool");
+  expect(numberOps(out.frag.code)).toEqual([
     Op.JUMPI,
-    Op.INVALID,
+    Op.STOP,
     Op.JUMPDEST,
   ]);
 });
 
-test("assert currently rejects named stack refs when compiled", () => {
-  expect(() => compile(assert(use("cond"))))
-    .toThrow("named stack refs are not implemented yet");
+test("assert accepts named stack refs as expression children", () => {
+  const out = assert(get("cond"));
+
+  expect(out.children).toEqual([new StackRef("cond")]);
+  expect(String(out.frag.signature)).toBe("(Bool) → 1|⊢");
 });
 
 test("assert accepts boolean expressions", () => {
-  const out = compile(assert(Expression.fromFragment(new Fragment([], 0, [Bool], [Op.ISZERO]))));
+  const cond = Expression.fromFragment(Fragment.from({
+    ensure: [Bool],
+    code: [Op.ISZERO],
+  }));
+  const out = assert(cond);
 
-  expect(String(out.signature())).toBe("() → 0|⊢");
-  expect(numberOps(out.code)).toEqual([
-    Op.ISZERO,
+  expect(out.children).toEqual([cond]);
+  expect(String(out.frag.signature)).toBe("(Bool) → 1|⊢");
+  expect(numberOps(out.frag.code)).toEqual([
     Op.JUMPI,
-    Op.INVALID,
+    Op.STOP,
     Op.JUMPDEST,
   ]);
 });
 
 test("assertCaller checks a literal address against msg.sender", () => {
-  const out = compile(assertCaller("0x1111111111111111111111111111111111111111"));
+  const out = assertCaller("0x1111111111111111111111111111111111111111");
 
-  expect(String(out.signature())).toBe("() → 0|⊢");
-  expect(numberOps(out.code)).toEqual([
-    Op.PUSH20,
-    Op.CALLER,
-    Op.EQ,
-    Op.JUMPI,
-    Op.INVALID,
-    Op.JUMPDEST,
-  ]);
-});
+  expect(String(out.frag.signature)).toBe("(Bool) → 1|⊢");
+  expect(out.children).toHaveLength(1);
 
-test("assert rejects non-boolean expressions", () => {
-  const word = Expression.fromFragment(new Fragment([], 0, [Word], [Op.PUSH0]));
-
-  expect(() => compile(assert(word))).toThrow("bound fragment at position 1");
+  const eq = out.children[0] as Expression;
+  expect(String(eq.frag.signature)).toBe("(, ) → 2|Bool");
+  expect(numberOps(eq.frag.code)).toEqual([Op.EQ]);
+  expect(eq.children).toHaveLength(2);
+  expect(eq.children[0]).toBeInstanceOf(Expression);
+  expect(numberOps((eq.children[1] as Expression).frag.code))
+    .toEqual([Op.CALLER]);
 });

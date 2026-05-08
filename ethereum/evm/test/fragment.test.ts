@@ -1,18 +1,14 @@
 import { expect, test } from "bun:test";
-import { compose } from "../composer";
+import { compose, FlatCode, Fragment } from "../fragment";
 import { Op } from "../opcodes";
-import { Ops } from "../ops";
+import { HaltState, TypeList } from "../signature";
 import {
   Addr,
   Bool,
   Data,
   EvmType,
-  FlatCode,
-  Fragment,
-  HaltState,
   Locn,
   Size,
-  TypeList,
   Uint,
   Weis,
   Word,
@@ -25,11 +21,11 @@ const fragment = (
   code: FlatCode = [],
   halt?: HaltState,
   ensureNames?: readonly (string |undefined)[],
-): Fragment => new Fragment(expect, pop, ensure, code, halt, ensureNames);
+): Fragment => Fragment.from({ expect, pop, ensure, ensureNames, halt, code });
 
 test("composes no fragments into an identity fragment", () => {
   const out = compose();
-  expect(String(out.signature())).toBe("() → 0|");
+  expect(String(out.signature)).toBe("() → 0|");
   expect(out.code).toEqual([]);
 });
 
@@ -39,7 +35,7 @@ test("uses produced stack values to satisfy later expectations", () => {
     fragment([Addr], [Bool], 1, [Op.ISZERO]),
   );
 
-  expect(String(out.signature())).toBe("() → 0|Weis, Bool");
+  expect(String(out.signature)).toBe("() → 0|Weis, Bool");
   expect(out.code).toEqual([Op.ADDRESS, Op.ISZERO]);
 });
 
@@ -49,7 +45,7 @@ test("preserves names on surviving ensured stack items", () => {
     fragment([Addr], [Bool], 1, [Op.ISZERO]),
   );
 
-  expect(String(out.signature())).toBe("() → 0|value: Weis, Bool");
+  expect(String(out.signature)).toBe("() → 0|value: Weis, Bool");
 });
 
 test("appends ensured names correctly with holes on both sides", () => {
@@ -58,8 +54,8 @@ test("appends ensured names correctly with holes on both sides", () => {
     fragment([Addr], [Bool, Size], 1, [], undefined, [undefined, "len"]),
   );
 
-  expect(out.ensureNames).toEqual(["value", undefined, "len"]);
-  expect(String(out.signature())).toBe("() → 0|value: Weis, Bool, len: Size");
+  expect(out.signature.ensureNames).toEqual(["value", undefined, "len"]);
+  expect(String(out.signature)).toBe("() → 0|value: Weis, Bool, len: Size");
 });
 
 test("translates later expectations through produced stack values", () => {
@@ -68,7 +64,7 @@ test("translates later expectations through produced stack values", () => {
     fragment([Locn, Word], [Word], 2, []),
   );
 
-  expect(String(out.signature())).toBe("(Locn, Bool) → 2|");
+  expect(String(out.signature)).toBe("(Locn, Bool) → 2|");
 });
 
 test("merges compatible expectations on the original stack", () => {
@@ -77,7 +73,7 @@ test("merges compatible expectations on the original stack", () => {
     fragment([Word], [Bool], 1, []),
   );
 
-  expect(String(out.signature())).toBe("(Size, , ) → 1|Bool");
+  expect(String(out.signature)).toBe("(Size, , ) → 1|Bool");
 });
 
 test("rejects incompatible expectations on the original stack", () => {
@@ -104,10 +100,10 @@ test("rejects narrower produced values where later code expects wider ones", () 
 test("accepts subtype outputs for specialized opcode expectations", () => {
   const out = compose(
     fragment([], [Size, Locn], 0, []),
-    Ops[Op.ADD]!,
+    fragment([Uint, Uint], [Uint], 2, [Op.ADD]),
   );
 
-  expect(String(out.signature())).toBe("() → 0|Uint");
+  expect(String(out.signature)).toBe("() → 0|Uint");
 });
 
 test("termination preserves following code without changing signature", () => {
@@ -116,7 +112,7 @@ test("termination preserves following code without changing signature", () => {
     fragment([], [Addr], 0, [Op.ADDRESS]),
   );
 
-  expect(String(out.signature())).toBe("(Size, Locn) → 2|⊤");
+  expect(String(out.signature)).toBe("(Size, Locn) → 2|⊤");
   expect(out.code).toEqual([Op.RETURN, Op.ADDRESS]);
 });
 
@@ -128,7 +124,7 @@ test("compose is associative for linear fragments", () => {
   const left = compose(compose(f, g), h);
   const right = compose(f, compose(g, h));
 
-  expect(String(left.signature())).toBe("(Addr, Size, Weis, Bool) → 2|Bool, Size");
-  expect(String(right.signature())).toBe(String(left.signature()));
+  expect(String(left.signature)).toBe("(Addr, Size, Weis, Bool) → 2|Bool, Size");
+  expect(String(right.signature)).toBe(String(left.signature));
   expect(right.code).toEqual(left.code);
 });

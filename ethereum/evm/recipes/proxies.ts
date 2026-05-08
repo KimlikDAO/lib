@@ -1,5 +1,5 @@
-import { Address } from "../address.d";
-import { assemble, Program } from "./assembler";
+import { Address } from "../../address.d";
+import { assemble, Program } from "../assembler";
 import {
   calldataCopy,
   calldataSize,
@@ -12,16 +12,17 @@ import {
   returnOrRevert,
   sload,
   sstore,
-} from "./builtins";
-import { blob, dup, Expression, set, use } from "./syntax";
-import { Bytes } from "./types";
+} from "../builtins";
+import { get } from "../expression";
+import { blob, set } from "../statement";
+import { Bytes } from "../types";
 
 const upgradableProxy = (slot: Bytes): Program =>
   assemble(
     calldataCopy(0),
     set("success", delegateCall(gas(), sload(slot), 0, calldataSize(), 0, 0)),
     returndataCopy(0),
-    returnOrRevert(dup("success"), 0, returndataSize()),
+    returnOrRevert(get("success"), 0, returndataSize()),
   );
 
 const createUpgradableProxy = (
@@ -33,8 +34,8 @@ const createUpgradableProxy = (
   return assemble(
     sstore(implSlot, implAddress),
     set("x", runtime.len()),
-    codeCopy(0, Expression.fromFragment(runtime.beg()), dup("x")),
-    ret(0, use("x")),
+    codeCopy(0, runtime.beg(), get("x")),
+    ret(0, get("x")),
     runtime,
   );
 };

@@ -1,33 +1,30 @@
+import { caller } from "./builtins";
+import { AddrArg, BoolArg, Expression } from "./expression";
+import { Fragment } from "./fragment";
 import { Op } from "./opcodes";
 import { Ops } from "./ops";
-import { Expression } from "./syntax";
-import type { AddrArg, BoolArg } from "./syntax";
-import {
-  Bool,
-  Fragment,
-  label
-} from "./types";
+import { label } from "./statement";
+import { Bool } from "./types";
 
 const addrEq = (lhs: AddrArg, rhs: AddrArg): Expression =>
   new Expression([lhs, rhs], Ops[Op.EQ]!);
 
 const assert = (cond: BoolArg): Expression => {
-  const ok = label("check-ok");
-  return new Expression([cond], new Fragment(
-    [Bool],
-    1,
-    [],
-    [
-      ...ok.ref(true).code,
+  const ok = label("assert-ok");
+  return new Expression([cond], Fragment.from({
+    expect: [Bool],
+    pop: 1,
+    code: [
+      ...ok.ref(true).frag.code,
       Op.JUMPI,
-      Op.INVALID,
-      ...ok.dest().code,
+      Op.STOP,
+      ...ok.dest().frag.code,
     ],
-    "⊢"
-  ));
+    halt: "⊢",
+  }));
 }
 
 const assertCaller = (addr: AddrArg): Expression =>
-  assert(addrEq(addr, Expression.fromFragment(Ops[Op.CALLER]!)));
+  assert(addrEq(addr, caller()));
 
 export { assert, assertCaller };

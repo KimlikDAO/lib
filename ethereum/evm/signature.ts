@@ -4,13 +4,48 @@ import {
   Data,
   EvmType,
   Locn,
-  Signature,
   Size,
-  TypeList,
   Uint,
   Weis,
   Word,
 } from "./types";
+import { assert } from "./util";
+
+const HaltStates = ["⊣", "⊥", "⊤", "⊢"] as const;
+type TypeList = readonly EvmType[];
+type EnsureNames = readonly (string | undefined)[];
+type HaltState = (typeof HaltStates)[number] | undefined;
+
+class Signature {
+  constructor(
+    readonly expect: TypeList,
+    readonly pop: number,
+    readonly ensure: TypeList,
+    readonly ensureNames: EnsureNames = Array(ensure.length).fill(undefined),
+    readonly halt?: HaltState,
+  ) {
+    assert(ensure.length == ensureNames.length,
+      `Signature ensureNames length ${ensureNames.length}`
+      + ` does not match ensure length ${ensure.length}`);
+  }
+
+  toString(): string {
+    const halt = this.halt
+      ? this.ensure.length ? ", " + this.halt : this.halt
+      : "";
+    const pop = this.pop < 0 ? "*" : "" + this.pop;
+    const expect = this.expect.map((type) => type.name).join(", ");
+    const ensure = this.ensure.map((type, i) =>
+      this.ensureNames[i] ? type.name
+        ? `${this.ensureNames[i]}: ${type.name}` : this.ensureNames[i]
+        : type.name
+    ).join(", ");
+    return `(${expect}) → ${pop}|${ensure}${halt}`;
+  }
+  static from(sig: string): Signature {
+    return parseSignature(sig);
+  }
+}
 
 const TypeByName = {
   "Addr": Addr,
@@ -22,8 +57,6 @@ const TypeByName = {
   "Weis": Weis,
   "Word": Word,
 } satisfies Record<string, EvmType>;
-
-const Halts = ["⊣", "⊥", "⊤", "⊢"] as const;
 
 const parseType = (text: string, context: string): EvmType => {
   const name = text.trim();
@@ -81,10 +114,10 @@ const parseEnsureAndHalt = (
 ): {
   ensure: EvmType[];
   ensureNames: (string | undefined)[];
-  halt?: "⊣" | "⊥" | "⊤" | "⊢";
+  halt?: HaltState;
 } => {
   const trimmed = text.trim();
-  for (const halt of Halts) {
+  for (const halt of HaltStates) {
     if (trimmed == halt)
       return { ensure: [], ensureNames: [], halt };
     const suffix = `, ${halt}`;
@@ -98,7 +131,7 @@ const parseEnsureAndHalt = (
   return parseEnsure(trimmed);
 }
 
-const signature = (text: string): Signature => {
+const parseSignature = (text: string): Signature => {
   const match = text.match(/^\s*\((.*)\)\s*(?:->|→)\s*([0-9]+|\*)\|(.*)\s*$/);
   if (!match)
     throw new TypeError(`invalid signature: ${text}`);
@@ -107,7 +140,12 @@ const signature = (text: string): Signature => {
   const expect = parseExpect(expectText!);
   const pop = popText == "*" ? -1 : +popText!;
   const { ensure, ensureNames, halt } = parseEnsureAndHalt(ensureText!);
-  return new Signature(expect, ensure, pop, halt, ensureNames);
+  return new Signature(expect, pop, ensure, ensureNames, halt);
 }
 
-export { signature };
+export {
+  EnsureNames,
+  HaltState,
+  Signature,
+  TypeList
+};

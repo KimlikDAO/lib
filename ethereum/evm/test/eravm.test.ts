@@ -1,5 +1,5 @@
 import { expect, it } from "bun:test";
-import { getCreateAddress } from "../eravm";
+import { getCreateAddress } from "../util/eravm";
 
 it("should compute create address", () => {
   expect(getCreateAddress("0xE9D29Bf6Eaa12E6d79265BcC8E07F7Bf6085D53e", 0))
