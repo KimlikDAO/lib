@@ -80,9 +80,9 @@ class Expression {
 
 const hook = (
   cond: BoolArg,
-  trueExpr: ExprChild,
-  falseExpr: ExprChild
-): ExprChild => {
+  trueExpr: ExprArg,
+  falseExpr: ExprArg
+): ExprArg => {
   if (cond instanceof StackRef || cond instanceof Expression)
     throw new TypeError("not implemented");
   return cond ? trueExpr : falseExpr;

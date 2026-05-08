@@ -57,15 +57,15 @@ test("stringifies named Word ensures as bare names", () => {
     .toBe("() → 0|x, owner: Addr");
 });
 
-test("fragment constructor validates pop invariants", () => {
-  expect(() => Fragment.from({ pop: 0.5 }))
-    .toThrow("Fragment pop must be an integer, received 0.5");
-  expect(() => Fragment.from({ pop: -2 }))
-    .toThrow("Fragment pop must be -1 or non-negative, received -2");
-  expect(() => Fragment.from({ expect: [Word], pop: 2 }))
-    .toThrow("Fragment pop 2 exceeds expect length 1");
-  expect(() => Fragment.from({ ensure: [Word], ensureNames: [] }))
-    .toThrow("Fragment ensureNames length 0 does not match ensure length 1");
+test("signature constructor validates pop invariants", () => {
+  expect(() => new Signature([], 0.5, []))
+    .toThrow("Signature pop must be an integer, received 0.5");
+  expect(() => new Signature([], -2, []))
+    .toThrow("Signature pop must be -1 or non-negative, received -2");
+  expect(() => new Signature([Word], 2, []))
+    .toThrow("Signature pop 2 exceeds expect length 1");
+  expect(() => new Signature([], 0, [Word], []))
+    .toThrow("Signature ensureNames length 0 does not match ensure length 1");
 });
 
 test("address byte literals emit the shortest push", () => {

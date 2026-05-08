@@ -8,6 +8,8 @@ import {
   Uint,
   Weis,
   Word,
+  isAssignable,
+  narrowType,
 } from "./types";
 import { assert } from "./util";
 
@@ -24,6 +26,12 @@ class Signature {
     readonly ensureNames: EnsureNames = Array(ensure.length).fill(undefined),
     readonly halt?: HaltState,
   ) {
+    assert(Number.isInteger(pop),
+      `Signature pop must be an integer, received ${pop}`);
+    assert(-1 <= pop,
+      `Signature pop must be -1 or non-negative, received ${pop}`);
+    assert(pop <= expect.length,
+      `Signature pop ${pop} exceeds expect length ${expect.length}`);
     assert(ensure.length == ensureNames.length,
       `Signature ensureNames length ${ensureNames.length}`
       + ` does not match ensure length ${ensure.length}`);
@@ -45,6 +53,58 @@ class Signature {
   static from(sig: string): Signature {
     return parseSignature(sig);
   }
+}
+
+const compose = (...sigs: Signature[]): Signature => {
+  const { len, pop } = peek(sigs);
+  const expect = Array<EvmType>(len).fill(Word);
+  const ensure: EvmType[] = [];
+  const ensureNames: (string | undefined)[] = [];
+  let halt: HaltState | undefined;
+
+  let pos = 0; // Position relative to tos.
+  let poc = 0; // max pop so far. -pos <= poc <= pop
+
+  const narrowWith = (list: TypeList) => {
+    const n = list.length;
+    const ns = poc + pos; // length of ensure
+    const nx = len + pos; // length of expect
+    for (let i = 1; i <= n; ++i)
+      if (i <= ns)
+        assert(isAssignable(list[n - i]!, ensure[ns - i]!),
+          `fragment output at stack position ${i}`);
+      else
+        expect[nx - i] = narrowType(expect[nx - i]!, list[n - i]!,
+          `conflicting expectation at stack position ${len - (nx - i)}`);
+  }
+
+  for (const sig of sigs) {
+    if (halt) continue;
+    narrowWith(sig.expect);
+    pos -= sig.pop;
+    ensure.length =
+      ensureNames.length = Math.max(0, ensure.length - sig.pop);
+    poc = Math.max(poc, -pos);
+    ensure.push(...sig.ensure);
+    ensureNames.push(...sig.ensureNames);
+    pos += sig.ensure.length;
+    halt = sig.halt;
+  }
+  return new Signature(expect, pop, ensure, ensureNames, halt);
+}
+
+const peek = (sigs: Signature[]) => {
+  let pos = 0;
+  let len = 0;
+  let pop = 0;
+  for (const sig of sigs) {
+    len = Math.max(len, sig.expect.length - pos);
+    pos -= sig.pop;
+    pop = Math.max(pop, -pos);
+    pos += sig.ensure.length;
+    if (sig.halt) break;
+  }
+  return { len, pop };
 }
 
 const TypeByName = {
@@ -105,7 +165,6 @@ const parseEnsure = (
     ensure.push(type);
     ensureNames.push(name);
   }
-
   return { ensure, ensureNames };
 }
 
@@ -147,5 +206,6 @@ export {
   EnsureNames,
   HaltState,
   Signature,
-  TypeList
+  TypeList,
+  compose,
 };

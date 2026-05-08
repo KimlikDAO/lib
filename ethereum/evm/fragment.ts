@@ -1,6 +1,12 @@
 import { parseEther } from "../denominations";
 import { Op, OpData, PUSHN } from "./opcodes";
-import { EnsureNames, HaltState, Signature, TypeList } from "./signature";
+import {
+  EnsureNames,
+  HaltState,
+  Signature,
+  TypeList,
+  compose as composeSignatures,
+} from "./signature";
 import {
   Addr, AddrLit,
   Bool, BoolLit,
@@ -12,8 +18,6 @@ import {
   Size, SizeLit,
   Uint, UintLit,
   Weis, WeisLit,
-  Word,
-  isAssignable, narrowType
 } from "./types";
 import { assert } from "./util";
 
@@ -26,27 +30,10 @@ type CodeAtom =
 type FlatCode = readonly CodeAtom[];
 
 class Fragment {
-  readonly signature: Signature;
-
   constructor(
-    expect: TypeList,
-    pop: number,
-    ensure: TypeList,
-    ensureNames: EnsureNames,
-    halt: HaltState,
+    readonly signature: Signature,
     readonly code: FlatCode,
-  ) {
-    assert(Number.isInteger(pop),
-      `Fragment pop must be an integer, received ${pop}`);
-    assert(-1 <= pop,
-      `Fragment pop must be -1 or non-negative, received ${pop}`);
-    assert(pop <= expect.length,
-      `Fragment pop ${pop} exceeds expect length ${expect.length}`);
-    assert(ensure.length == ensureNames.length,
-      `Fragment ensureNames length ${ensureNames.length}`
-      + ` does not match ensure length ${ensure.length}`);
-    this.signature = new Signature(expect, pop, ensure, ensureNames, halt);
-  }
+  ) { }
 
   static from({
     expect = [],
@@ -63,7 +50,10 @@ class Fragment {
     halt?: HaltState;
     code?: FlatCode;
   }): Fragment {
-    return new Fragment(expect, pop, ensure, ensureNames, halt, code);
+    return new Fragment(
+      new Signature(expect, pop, ensure, ensureNames, halt),
+      code,
+    );
   }
   static fromLiteral(lit: Literal, type: EvmType): Fragment {
     switch (type) {
@@ -166,58 +156,9 @@ class LabelPos {
   ) { }
 }
 
-const peek = (frags: Fragment[]) => {
-  let pos = 0;
-  let len = 0;
-  let pop = 0;
-  for (const { signature } of frags) {
-    len = Math.max(len, signature.expect.length - pos);
-    pos -= signature.pop;
-    pop = Math.max(pop, -pos);
-    pos += signature.ensure.length;
-    if (signature.halt) break;
-  }
-  return { len, pop };
-}
-
 const compose = (...frags: Fragment[]): Fragment => {
-  const { len, pop } = peek(frags)
-  const expect = Array<EvmType>(len).fill(Word);
-  const ensure: EvmType[] = [];
-  const ensureNames: (string | undefined)[] = [];
-  let halt: HaltState | undefined;
-  const code: CodeAtom[] = [];
-
-  let pos = 0; // Position relative to tos.
-  let poc = 0; // max pop so far. -pos <= poc <= pop
-
-  const narrowWith = (list: TypeList) => {
-    const n = list.length;
-    const ns = poc + pos; // length of ensure
-    const nx = len + pos; // length of expect
-    for (let i = 1; i <= n; ++i)
-      if (i <= ns)
-        assert(isAssignable(list[n - i], ensure[ns - i]),
-          `fragment output at stack position ${i}`);
-      else
-        expect[nx - i] = narrowType(expect[nx - i], list[n - i],
-          `conflicting expectation at stack position ${len - (nx - i)}`);
-  }
-
-  for (const { code: fragCode, signature } of frags) {
-    code.push(...fragCode);
-    if (halt) continue;
-    narrowWith(signature.expect);
-    pos -= signature.pop;
-    ensure.length =
-      ensureNames.length = Math.max(0, ensure.length - signature.pop);
-    poc = Math.max(poc, -pos);
-    ensure.push(...signature.ensure);
-    ensureNames.push(...signature.ensureNames);
-    pos += signature.ensure.length;
-    halt = signature.halt;
-  }
-  return Fragment.from({ expect, pop, ensure, ensureNames, halt, code });
+  const signature = composeSignatures(...frags.map((frag) => frag.signature));
+  return new Fragment(signature, frags.flatMap((frag) => frag.code));
 }
 
 export {
@@ -226,5 +167,5 @@ export {
   Fragment,
   LabelPos,
   LabelRef,
-  compose,
+  compose
 };
