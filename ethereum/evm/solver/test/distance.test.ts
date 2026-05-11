@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
-import { hScore, starDistance } from "../heuristic";
+import { starDistance } from "../distance";
 import { Problem, RuleInputs, StackState, ValueId } from "../solver.d";
-import { ProblemState } from "../state";
+import { SearchNodeView } from "../state";
 
 const problem = (
   init: StackState,
@@ -15,13 +15,20 @@ const wideProblem = () => problem([], [], 1, [[], [7, 6, 5, 4, 3, 2]]);
 const score = (
   problem: Problem,
   stack: number[],
-): number => hScore(ProblemState.from(problem).withState(stack));
+): number => SearchNodeView.from(problem).hScore(stack);
 
 test("starDistance projects available children onto suffix homes", () => {
   expect(starDistance(
     [4, 5, 6, 7, 8],
     [4, 5, 6, 0, 0, 0, 0],
   )).toBe(5);
+});
+
+test("SearchNodeView.from scores the initial node", () => {
+  const state = SearchNodeView.from(wideProblem());
+
+  expect(state.node.h).toBe(state.hScore());
+  expect(state.node.h).toBeGreaterThan(0);
 });
 
 test("hScore prices star swaps, missing children, and white rule nodes", () => {

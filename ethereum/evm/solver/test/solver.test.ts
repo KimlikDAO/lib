@@ -12,7 +12,7 @@ import {
   swapIndex,
 } from "../action";
 import { Problem, RuleInputs, StackState, ValueId } from "../solver.d";
-import { forEachNode, ProblemState } from "../state";
+import { forEachNode, SearchNodeView } from "../state";
 
 const problem = (
   init: StackState,
@@ -33,18 +33,17 @@ test("Solution stores start, action ids, and end stack", () => {
   expect(solution.end).toEqual([2, -1]);
 });
 
-test("ProblemState validates Problem and counts stack vars", () => {
+test("SearchNodeView validates Problem and counts stack vars", () => {
   const p = problem(
     [-3, -2, -1, 0, 0],
     [-1, -3, -2],
     1,
     [[], [-1]],
   );
-  const state = ProblemState.from(p);
+  const view = SearchNodeView.from(p);
 
-  expect(p.keep).toEqual([-1, -3, -2]);
-  expect(state.keep).toEqual([-3, -2, -1]);
-  expect(state.stackVars).toBe(3);
+  expect(view.keep).toEqual([-3, -2, -1]);
+  expect(view.stackVars).toBe(3);
 });
 
 test("primitive action ids are fixed", () => {
@@ -86,19 +85,19 @@ test("forEachNode visits the rule tree in postorder", () => {
   ]);
 });
 
-test("ProblemState separates green and white values", () => {
+test("SearchNodeView separates green and white values", () => {
   const p = problem(
     [],
     [],
     1,
     [[], [2, 3], [4, 5], [6]],
   );
-  const state = ProblemState.from(p).withState([2]);
+  const state = SearchNodeView.from(p);
   const green: number[] = [];
   const white: number[] = [];
 
-  state.forEachGreen((value) => green.push(value));
-  state.forEachWhite((value) => white.push(value));
+  state.forEachGreen((value) => green.push(value), [2]);
+  state.forEachWhite((value) => white.push(value), [2]);
 
   expect(green).toEqual([2, 4, 5]);
   expect(white).toEqual([1, 3, 6]);

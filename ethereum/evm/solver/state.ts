@@ -1,14 +1,22 @@
 import { assert } from "../util";
+import { hashArray } from "../util/arrays";
 import {
   BLANK_ACTION,
   DUP_ACTION,
   POP_ACTION,
   SWAP_ACTION,
   dupIndex,
+  gas,
   swapIndex,
 } from "./action";
 import {
+  APPLY_COST,
+  UNKNOWN_SUBTREE_COST,
+  ruleDistance,
+} from "./distance";
+import {
   ActionId,
+  Path,
   Problem,
   RuleInputs,
   StackState,
@@ -20,115 +28,181 @@ interface PresentChild {
   readonly stack: number;
 }
 
-class ProblemState {
+/**
+ * Represents a node in the search graph. It knows the {@link SearchNode} from
+ * which the present node was obtain, and know through which action it was
+ * obtained.
+ */
+class SearchNode {
+  constructor(
+    readonly stack: StackState,
+    readonly action: ActionId,
+    readonly prev: SearchNode | null,
+    readonly g: number,
+    public h: number
+  ) { }
+
+  get f(): number {
+    return this.g + this.h;
+  }
+
+  hash(): number {
+    return hashArray(this.stack);
+  }
+
+  incomingPath(): Path {
+    const actions: ActionId[] = [];
+    let node: SearchNode = this;
+    for (; node.prev; node = node.prev)
+      actions.push(node.action);
+    return {
+      beg: node.stack,
+      actions: actions.reverse(),
+      end: this.stack,
+    };
+  }
+}
+
+class SearchNodeView {
   private green?: Set<ValueId>;
 
   constructor(
     readonly keep: ValueId[],
     readonly output: ValueId,
     readonly rules: RuleInputs[],
-    readonly state: StackState,
-    readonly stackVars = countStackVars(state),
+    readonly stack: StackState,
+    readonly node: SearchNode,
+    readonly stackVars: number,
+    readonly maxStack: number,
   ) { }
 
-  static from(problem: Problem): ProblemState {
+  static from(problem: Problem): SearchNodeView {
     assert(problem.output == 1, "Currently we support single output 1");
     assert(problem.rules.length > 1, "At least 1 rule is needed");
     assert(problem.rules[0].length == 0, "First rule must be empty");
     const stackVars = validateInitialStack(problem.init);
-    const keep = [...problem.keep].sort((a, b) => a - b);
+    const keep = problem.keep.sort((a, b) => a - b);
     assert(keep.length == 0 || -stackVars <= keep[0],
       `Keep list can only include init values`);
-    return new ProblemState(
+    const maxStack = problem.init.length + keep.length + 16 +
+      problem.rules.reduce((sum, r) => sum + r.length, 0);
+    const node = new SearchNode(problem.init, BLANK_ACTION, null, 0, 0);
+    const view = new SearchNodeView(
       keep,
       problem.output,
       problem.rules,
       problem.init,
+      node,
       stackVars,
+      maxStack,
+    );
+    node.h = view.hScore();
+    return view;
+  }
+
+  static ofNode(node: SearchNode, source: SearchNodeView): SearchNodeView {
+    return new SearchNodeView(
+      source.keep,
+      source.output,
+      source.rules,
+      node.stack,
+      node,
+      source.stackVars,
+      source.maxStack,
     );
   }
 
-  withState(state: StackState): ProblemState {
-    return this.next(state);
+  getNeighbor(action: ActionId): SearchNode | null {
+    const stack = this.applyStack(action);
+    if (!stack) return null;
+    const g = this.node.g + gas(action);
+    const h = this.hScore(stack);
+    return new SearchNode(stack, action, this.node, g, h);
   }
 
-  apply(action: ActionId): ProblemState | null {
-    const { state } = this;
+  private applyStack(action: ActionId): StackState | null {
+    const { stack } = this;
     if (action == BLANK_ACTION)
-      return this.next([...state, 0]);
+      return [...stack, 0];
 
     if (action == POP_ACTION)
-      return state.length ? this.next(state.slice(0, -1)) : null;
+      return stack.length ? stack.slice(0, -1) : null;
 
     const dup = dupIndex(action);
     if (dup)
-      return state.length >= dup
-        ? this.next([...state, state[state.length - dup]!])
+      return stack.length >= dup
+        ? [...stack, stack[stack.length - dup]!]
         : null;
 
     const swap = swapIndex(action);
     if (swap) {
-      if (state.length <= swap) return null;
-      const next = [...state];
+      if (stack.length <= swap) return null;
+      const next = [...stack];
       const top = next.length - 1;
       const other = top - swap;
       [next[top], next[other]] = [next[other]!, next[top]!];
-      return this.next(next);
+      return next;
     }
-
     if (action <= 0) return null;
-
     const inputs = this.rules[action];
     if (!inputs)
-      return this.next([...state, action]);
-    if (!endsWith(state, inputs))
+      return [...stack, action];
+    if (!endsWith(stack, inputs))
       return null;
-    const next = state.slice(0, state.length - inputs.length);
+    const next = stack.slice(0, stack.length - inputs.length);
     next.push(action);
-    return this.next(next);
+    return next;
   }
 
-  candidateActions(maxStack: number): ActionId[] {
+  candidateActions(): ActionId[] {
     const actions = this.whiteLeafActions();
-    if (this.state.length < maxStack) {
+    const { stack } = this;
+    if (stack.length < this.maxStack) {
       if (actions.some((action) => this.rules[action]?.includes(0)))
         actions.push(BLANK_ACTION);
-      for (let dup = 1; dup <= Math.min(16, this.state.length); ++dup)
-        if (this.state[this.state.length - dup] != 0)
+      for (let dup = 1; dup <= Math.min(16, stack.length); ++dup)
+        if (stack[stack.length - dup] != 0)
           actions.push(DUP_ACTION(dup));
     }
-    for (let swap = 1; swap <= Math.min(16, this.state.length - 1); ++swap)
+    for (let swap = 1; swap <= Math.min(16, stack.length - 1); ++swap)
       actions.push(SWAP_ACTION(swap));
-    if (this.canPop())
+    const top = stack[stack.length - 1];
+    if (top !== undefined && top != this.output && !this.keep.includes(top))
       actions.push(POP_ACTION);
     return actions;
   }
 
-  whiteLeafActions(): ActionId[] {
+  whiteLeafActions(stack = this.stack): ActionId[] {
     const actions: ActionId[] = [];
     this.forEachWhite((action) => {
-      if (this.isWhiteLeaf(action))
+      if (this.isWhiteLeaf(action, stack))
         actions.push(action);
-    });
+    }, stack);
     return actions;
   }
 
   isGoal(): boolean {
-    if (this.state[this.state.length - 1] != this.output) return false;
-    for (const kept of this.keep)
-      if (!this.state.includes(kept))
-        return false;
-    return true;
+    const { stack, keep } = this;
+    if (stack[stack.length - 1] != this.output)
+      return false;
+    const freq = Array(this.stackVars + 1);
+    for (const k of keep)
+      freq[-k] = 1;
+    let toKeep = keep.length;
+    for (const s of stack)
+      if (s < 0 && freq[-s]) { freq[-s] = 0; --toKeep; }
+    return toKeep == 0;
   }
 
-  forEachGreen(fn: (value: ValueId) => void) {
-    this.collectGreen().forEach(fn);
+  forEachGreen(fn: (value: ValueId) => void, stack = this.stack) {
+    this.collectGreen(stack).forEach(fn);
   }
 
-  forEachWhite(fn: (action: ActionId) => void) {
+  forEachWhite(fn: (action: ActionId) => void, stack = this.stack) {
     const seen = new Set<ActionId>();
     const visit = (action: ValueId) => {
-      if (action <= 0 || seen.has(action) || this.isGreen(action)) return;
+      if (action <= 0 || seen.has(action) || this.isGreen(action, stack))
+        return;
       seen.add(action);
       fn(action);
       const inputs = this.rules[action];
@@ -138,16 +212,19 @@ class ProblemState {
     visit(this.output);
   }
 
-  presentChildren(inputs: readonly ValueId[]): PresentChild[] {
+  presentChildren(
+    inputs: readonly ValueId[],
+    stack = this.stack,
+  ): PresentChild[] {
     const present: PresentChild[] = [];
     const used = new Set<number>();
     for (let input = 0; input < inputs.length; ++input) {
       const value = inputs[input]!;
-      if (!this.isAvailableInput(value)) continue;
-      for (let stack = 0; stack < this.state.length; ++stack) {
-        if (!used.has(stack) && this.state[stack] == value) {
-          present.push({ input, stack });
-          used.add(stack);
+      if (!this.isAvailableInput(value, stack)) continue;
+      for (let pos = 0; pos < stack.length; ++pos) {
+        if (!used.has(pos) && stack[pos] == value) {
+          present.push({ input, stack: pos });
+          used.add(pos);
           break;
         }
       }
@@ -155,23 +232,37 @@ class ProblemState {
     return present;
   }
 
-  isGreen(value: ValueId): boolean {
+  hScore(stack = this.stack): number {
+    if (this.isGreen(this.output, stack))
+      return 0;
+
+    let score = 0;
+    let found = false;
+    this.forEachWhite((action) => {
+      const inputs = this.rules[action];
+      if (!inputs) return;
+      score += APPLY_COST;
+      found = true;
+      const contribution = ruleDistance(inputs, stack,
+        this.presentChildren(inputs, stack));
+      if (contribution == null) return;
+      score += contribution;
+    }, stack);
+    return found ? score : UNKNOWN_SUBTREE_COST;
+  }
+
+  isGreen(value: ValueId, stack = this.stack): boolean {
     return value > 0
-      ? this.collectGreen().has(value)
-      : this.state.includes(value);
+      ? this.collectGreen(stack).has(value)
+      : stack.includes(value);
   }
 
-  isAvailableInput(value: ValueId): boolean {
-    return value == 0 || this.isGreen(value);
+  isAvailableInput(value: ValueId, stack = this.stack): boolean {
+    return value == 0 || this.isGreen(value, stack);
   }
 
-  private canPop(): boolean {
-    const top = this.state[this.state.length - 1];
-    return top !== undefined && top != this.output && !this.keep.includes(top);
-  }
-
-  private collectGreen(): ReadonlySet<ValueId> {
-    if (this.green) return this.green;
+  private collectGreen(stack = this.stack): ReadonlySet<ValueId> {
+    if (stack == this.stack && this.green) return this.green;
     const green = new Set<ValueId>();
     const visit = (value: ValueId) => {
       if (value <= 0 || green.has(value)) return;
@@ -180,32 +271,24 @@ class ProblemState {
       if (inputs)
         for (const input of inputs) visit(input);
     }
-    for (const value of this.state) visit(value);
-    return this.green = green;
+    for (const value of stack) visit(value);
+    if (stack == this.stack)
+      this.green = green;
+    return green;
   }
 
-  private isWhiteLeaf(action: ActionId): boolean {
+  private isWhiteLeaf(action: ActionId, stack = this.stack): boolean {
     const inputs = this.rules[action];
     if (!inputs) return true;
     for (const input of inputs)
-      if (!this.isAvailableInput(input))
+      if (!this.isAvailableInput(input, stack))
         return false;
     return true;
-  }
-
-  private next(state: StackState): ProblemState {
-    return new ProblemState(
-      this.keep,
-      this.output,
-      this.rules,
-      state,
-      this.stackVars,
-    );
   }
 }
 
 const forEachNode = (
-  problem: Pick<Problem | ProblemState, "rules" | "output">,
+  problem: Pick<Problem | SearchNodeView, "rules" | "output">,
   fn: (actionId: ActionId, pos: number) => void
 ) => {
   const { rules, output } = problem;
@@ -217,14 +300,6 @@ const forEachNode = (
     pos -= children.length;
   }
   visit(output);
-}
-
-const countStackVars = (init: readonly ValueId[]): number => {
-  let min = 0;
-  for (const value of init)
-    if (value < min)
-      min = value;
-  return -min;
 }
 
 const validateInitialStack = (init: readonly ValueId[]): number => {
@@ -256,6 +331,7 @@ const endsWith = (
 }
 
 export {
-  PresentChild,
-  ProblemState, forEachNode
+  SearchNode,
+  SearchNodeView,
+  forEachNode
 };

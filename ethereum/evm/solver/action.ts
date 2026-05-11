@@ -27,6 +27,8 @@ const dupIndex = (action: ActionId): number =>
   DUP16_ACTION <= action && action <= DUP1_ACTION
     ? -17 - action : 0;
 
+const gas = (action: ActionId) => (action == -1 || action == 0) ? 2 : 3;
+
 export {
   BLANK_ACTION,
   DUP16_ACTION,
@@ -38,4 +40,5 @@ export {
   SWAP_ACTION,
   dupIndex,
   swapIndex,
+  gas
 };

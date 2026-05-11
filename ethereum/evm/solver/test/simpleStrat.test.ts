@@ -13,7 +13,7 @@ import {
   StackState,
   ValueId,
 } from "../solver.d";
-import { ProblemState } from "../state";
+import { SearchNodeView } from "../state";
 import { trySolveAllKept } from "../simpleStrat";
 
 const problem = (
@@ -73,7 +73,7 @@ const expectPathSolves = (problem: Problem, path: Solution) => {
     expect(path.end).toContain(kept);
 }
 
-const live = (problem: Problem): ProblemState => ProblemState.from(problem);
+const live = (problem: Problem): SearchNodeView => SearchNodeView.from(problem);
 
 test("trySolveAllKept emits a postorder DUP path", () => {
   const p = problem(

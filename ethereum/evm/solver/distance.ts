@@ -1,27 +1,12 @@
 import { ValueId } from "./solver.d";
-import { PresentChild, ProblemState } from "./state";
 
 const INSERT_COST = 3;
 const APPLY_COST = 3;
 const UNKNOWN_SUBTREE_COST = 3;
 
-const hScore = (
-  state: ProblemState,
-): number => {
-  if (state.isGreen(state.output))
-    return 0;
-
-  let score = 0;
-  let found = false;
-  state.forEachWhite((action) => {
-    if (!state.rules[action]) return;
-    score += APPLY_COST;
-    found = true;
-    const contribution = ruleScore(state, action);
-    if (contribution == null) return;
-    score += contribution;
-  });
-  return found ? score : UNKNOWN_SUBTREE_COST;
+interface PresentChild {
+  readonly input: number;
+  readonly stack: number;
 }
 
 const starDistance = (
@@ -35,16 +20,14 @@ const starDistance = (
     : 0;
 }
 
-const ruleScore = (
-  state: ProblemState,
-  action: ValueId,
+const ruleDistance = (
+  inputs: readonly ValueId[],
+  stack: readonly ValueId[],
+  present: readonly PresentChild[],
 ): number | null => {
-  const inputs = state.rules[action];
-  if (!inputs) return UNKNOWN_SUBTREE_COST;
-  const present = state.presentChildren(inputs);
   if (present.length == 0) return null;
   const missing = inputs.length - present.length;
-  return (projectedStarSwaps(inputs, state.state, present, missing)
+  return (projectedStarSwaps(inputs, stack, present, missing)
     + missing) * INSERT_COST;
 }
 
@@ -86,7 +69,7 @@ const presentChildren = (
 
 // Project the directly available inputs onto their eventual suffix homes.
 // Missing inputs are modeled as future pushes/holes and charged separately by
-// ruleScore.
+// ruleDistance.
 const projectedStarSwaps = (
   inputs: readonly ValueId[],
   stack: readonly ValueId[],
@@ -196,6 +179,7 @@ const matches = (
 
 export {
   APPLY_COST,
-  hScore,
+  UNKNOWN_SUBTREE_COST,
+  ruleDistance,
   starDistance,
 };
