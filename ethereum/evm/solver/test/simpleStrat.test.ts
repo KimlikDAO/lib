@@ -6,10 +6,24 @@ import {
   dupIndex,
   swapIndex,
 } from "../action";
-import { Path, Problem } from "../problem";
+import {
+  Problem,
+  RuleInputs,
+  Solution,
+  StackState,
+  ValueId,
+} from "../solver.d";
+import { ProblemState } from "../state";
 import { trySolveAllKept } from "../simpleStrat";
 
-const applyPath = (problem: Problem, path: Path): number[] => {
+const problem = (
+  init: StackState,
+  keep: ValueId[],
+  output: ValueId,
+  rules: RuleInputs[],
+): Problem => ({ init, keep, output, rules });
+
+const applyPath = (problem: Problem, path: Solution): number[] => {
   const stack = [...path.beg];
   for (const action of path.actions) {
     if (action == POP_ACTION) {
@@ -51,7 +65,7 @@ const applyPath = (problem: Problem, path: Path): number[] => {
   return stack;
 }
 
-const expectPathSolves = (problem: Problem, path: Path) => {
+const expectPathSolves = (problem: Problem, path: Solution) => {
   expect(path.beg).toEqual(problem.init);
   expect(applyPath(problem, path)).toEqual(path.end);
   expect(path.end[path.end.length - 1]).toBe(problem.output);
@@ -59,17 +73,19 @@ const expectPathSolves = (problem: Problem, path: Path) => {
     expect(path.end).toContain(kept);
 }
 
+const live = (problem: Problem): ProblemState => ProblemState.from(problem);
+
 test("trySolveAllKept emits a postorder DUP path", () => {
-  const problem = new Problem(
+  const p = problem(
     [-2, -1],
     [-2, -1],
     1,
     [[], [-2, -1]],
   );
 
-  const path = trySolveAllKept(problem)!;
+  const path = trySolveAllKept(live(p))!;
 
-  expectPathSolves(problem, path);
+  expectPathSolves(p, path);
   expect(path).toEqual({
     beg: [-2, -1],
     actions: [DUP_ACTION(2), DUP_ACTION(2), 1],
@@ -80,16 +96,16 @@ test("trySolveAllKept emits a postorder DUP path", () => {
 test(
   "trySolveAllKept counts pending sibling outputs on the ancestor path",
   () => {
-    const problem = new Problem(
+    const p = problem(
       [-2, -1],
       [-2, -1],
       1,
       [[], [2, -1]],
     );
 
-    const path = trySolveAllKept(problem)!;
+    const path = trySolveAllKept(live(p))!;
 
-    expectPathSolves(problem, path);
+    expectPathSolves(p, path);
     expect(path.actions).toEqual([
       2,
       DUP_ACTION(2),
@@ -100,56 +116,56 @@ test(
 test(
   "trySolveAllKept treats missing positive rules as terminal actions",
   () => {
-    const problem = new Problem(
+    const p = problem(
       [],
       [],
       1,
       [[], [2, 3]],
     );
 
-    const path = trySolveAllKept(problem)!;
+    const path = trySolveAllKept(live(p))!;
 
-    expectPathSolves(problem, path);
+    expectPathSolves(p, path);
     expect(path.actions).toEqual([2, 3, 1]);
     expect(path.end).toEqual([1]);
   });
 
 test("trySolveAllKept pops trailing zeros to bring DUP depth under 16", () => {
   const init = [-1, ...Array(16).fill(0)];
-  const problem = new Problem(init, [-1], 1, [[], [-1]]);
+  const p = problem(init, [-1], 1, [[], [-1]]);
 
-  const path = trySolveAllKept(problem)!;
+  const path = trySolveAllKept(live(p))!;
 
-  expectPathSolves(problem, path);
+  expectPathSolves(p, path);
   expect(path.actions).toEqual([POP_ACTION, DUP_ACTION(16), 1]);
   expect(path.end).toEqual([-1, ...Array(15).fill(0), 1]);
 });
 
 test("trySolveAllKept does not add pending to previous max depth", () => {
   const init = [-1, ...Array(15).fill(0)];
-  const problem = new Problem(init, [-1], 1, [[], [-1, 2]]);
+  const p = problem(init, [-1], 1, [[], [-1, 2]]);
 
-  const path = trySolveAllKept(problem)!;
+  const path = trySolveAllKept(live(p))!;
 
-  expectPathSolves(problem, path);
+  expectPathSolves(p, path);
   expect(path.actions).toEqual([DUP_ACTION(16), 2, 1]);
 });
 
 test(
-  "trySolveAllKept fails when useful stack blocks required zero pops",
+  "trySolveAllKept fails when a kept stack ref blocks required zero pops",
   () => {
-    const problem = new Problem(
+    const p = problem(
       [-2, ...Array(16).fill(0), -1],
       [-2, -1],
       1,
       [[], [-2]],
     );
 
-    expect(trySolveAllKept(problem)).toBeNull();
+    expect(trySolveAllKept(live(p))).toBeNull();
   });
 
 test("trySolveAllKept only handles all-kept stack vars", () => {
-  const problem = new Problem([-2, -1], [-1], 1, [[], [-1]]);
+  const p = problem([-2, -1], [-1], 1, [[], [-1]]);
 
-  expect(trySolveAllKept(problem)).toBeNull();
+  expect(trySolveAllKept(live(p))).toBeNull();
 });

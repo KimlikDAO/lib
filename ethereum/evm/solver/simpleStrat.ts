@@ -1,16 +1,16 @@
 import {
-  ActionId,
   BLANK_ACTION,
   DUP_ACTION,
   POP_ACTION,
 } from "./action";
-import { Path, Problem, forEachLeaf, forEachNode } from "./problem";
+import { ActionId, Solution } from "./solver.d";
+import { forEachNode, ProblemState } from "./state";
 
-const computeDepths = (problem: Problem): number[] => {
+const computeDepths = (problem: ProblemState): number[] => {
   const depths = Array(problem.stackVars + 1);
-  const n = problem.init.length;
+  const n = problem.state.length;
   for (let d = 1; d <= n; ++d)
-    depths[-problem.init[n - d]] = d;
+    depths[-problem.state[n - d]] = d;
   return depths;
 }
 
@@ -21,22 +21,22 @@ const countTrailingZeros = (stack: readonly number[]): number => {
   return count;
 }
 
-const trySolveAllKept = (problem: Problem): Path | null => {
+const trySolveAllKept = (problem: ProblemState): Solution | null => {
   if (problem.stackVars != problem.keep.length)
     return null;
 
   const depths = computeDepths(problem);
   let maxDepth = 0;
-  forEachLeaf(problem, (leaf: ActionId, pos: number) => {
-    if (leaf < 0)
-      maxDepth = Math.max(maxDepth, pos + depths[-leaf])
+  forEachNode(problem, (node: ActionId, pos: number) => {
+    if (node < 0)
+      maxDepth = Math.max(maxDepth, pos + depths[-node])
   });
   const pop = Math.max(0, maxDepth - 16);
-  if (countTrailingZeros(problem.init) < pop)
+  if (countTrailingZeros(problem.state) < pop)
     return null;
 
   const actions = Array<ActionId>(pop).fill(POP_ACTION);
-  const end = problem.init.slice(0, problem.init.length - pop);
+  const end = problem.state.slice(0, problem.state.length - pop);
   end.push(problem.output);
 
   forEachNode(problem, (node: ActionId, pos: number) => {
@@ -48,7 +48,7 @@ const trySolveAllKept = (problem: Problem): Path | null => {
       actions.push(node);
   });
   return {
-    beg: problem.init,
+    beg: problem.state,
     actions,
     end
   };

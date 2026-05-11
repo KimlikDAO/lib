@@ -11,30 +11,40 @@ import {
   dupIndex,
   swapIndex,
 } from "../action";
-import { Problem, forEachLeaf, forEachNode } from "../problem";
+import { Problem, RuleInputs, StackState, ValueId } from "../solver.d";
+import { forEachNode, ProblemState } from "../state";
 
-test("Path stores start, action ids, and end stack", () => {
-  const path = {
+const problem = (
+  init: StackState,
+  keep: ValueId[],
+  output: ValueId,
+  rules: RuleInputs[],
+): Problem => ({ init, keep, output, rules });
+
+test("Solution stores start, action ids, and end stack", () => {
+  const solution = {
     beg: [2, 1],
     actions: [-1],
     end: [2, -1],
   };
 
-  expect(path.beg).toEqual([2, 1]);
-  expect(path.actions).toEqual([-1]);
-  expect(path.end).toEqual([2, -1]);
+  expect(solution.beg).toEqual([2, 1]);
+  expect(solution.actions).toEqual([-1]);
+  expect(solution.end).toEqual([2, -1]);
 });
 
-test("Problem normalizes keep order and counts stack vars", () => {
-  const problem = new Problem(
+test("ProblemState validates Problem and counts stack vars", () => {
+  const p = problem(
     [-3, -2, -1, 0, 0],
     [-1, -3, -2],
     1,
     [[], [-1]],
   );
+  const state = ProblemState.from(p);
 
-  expect(problem.keep).toEqual([-3, -2, -1]);
-  expect(problem.stackVars).toBe(3);
+  expect(p.keep).toEqual([-1, -3, -2]);
+  expect(state.keep).toEqual([-3, -2, -1]);
+  expect(state.stackVars).toBe(3);
 });
 
 test("primitive action ids are fixed", () => {
@@ -56,26 +66,8 @@ test("primitive action ids are fixed", () => {
   expect(dupIndex(-17)).toBe(0);
 });
 
-test("forEachLeaf visits only terminal inputs", () => {
-  const problem = new Problem(
-    [-2, -1],
-    [-2, -1],
-    1,
-    [[], [2, -1], [-2, BLANK_ACTION]],
-  );
-  const seen: [number, number][] = [];
-
-  forEachLeaf(problem, (actionId, pos) => seen.push([actionId, pos]));
-
-  expect(seen).toEqual([
-    [-2, 0],
-    [BLANK_ACTION, 1],
-    [-1, 1],
-  ]);
-});
-
 test("forEachNode visits the rule tree in postorder", () => {
-  const problem = new Problem(
+  const p = problem(
     [-2, -1],
     [-2, -1],
     1,
@@ -83,7 +75,7 @@ test("forEachNode visits the rule tree in postorder", () => {
   );
   const seen: [number, number][] = [];
 
-  forEachNode(problem, (actionId, pos) => seen.push([actionId, pos]));
+  forEachNode(p, (actionId, pos) => seen.push([actionId, pos]));
 
   expect(seen).toEqual([
     [-2, 0],
@@ -92,4 +84,22 @@ test("forEachNode visits the rule tree in postorder", () => {
     [-1, 1],
     [1, 2],
   ]);
+});
+
+test("ProblemState separates green and white values", () => {
+  const p = problem(
+    [],
+    [],
+    1,
+    [[], [2, 3], [4, 5], [6]],
+  );
+  const state = ProblemState.from(p).withState([2]);
+  const green: number[] = [];
+  const white: number[] = [];
+
+  state.forEachGreen((value) => green.push(value));
+  state.forEachWhite((value) => white.push(value));
+
+  expect(green).toEqual([2, 4, 5]);
+  expect(white).toEqual([1, 3, 6]);
 });

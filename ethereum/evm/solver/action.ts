@@ -1,4 +1,4 @@
-type ActionId = number;
+import { ActionId } from "./solver.d";
 
 const BLANK_ACTION: ActionId = 0;
 const POP_ACTION: ActionId = -1;
@@ -36,7 +36,6 @@ export {
   SWAP16_ACTION,
   SWAP1_ACTION,
   SWAP_ACTION,
-  ActionId,
   dupIndex,
   swapIndex,
 };

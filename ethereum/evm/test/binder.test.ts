@@ -3,7 +3,7 @@ import { bind, collectNames, createProblem, fragmentFromPath } from "../binder";
 import { call } from "../builtins";
 import { Expression, get } from "../expression";
 import { Fragment } from "../fragment";
-import { DUPN, Op } from "../opcodes";
+import { DUPN, Op, SWAPN } from "../opcodes";
 import { Signature } from "../signature";
 import {
   BLANK_ACTION,
@@ -11,7 +11,7 @@ import {
   POP_ACTION,
   SWAP_ACTION,
 } from "../solver/action";
-import { Weis, Uint, Word } from "../types";
+import { Uint, Weis, Word } from "../types";
 
 const numberOps = (code: readonly unknown[]): number[] =>
   code.filter((atom): atom is number => typeof atom == "number");
@@ -315,7 +315,7 @@ test("bind accounts for emitted values before a deep DUP", () => {
   ]);
 });
 
-test("bind rejects direct DUP postorder when top junk cannot expose deep refs", () => {
+test("bind uses A* when direct DUP postorder cannot expose deep refs", () => {
   const expr = new Expression([get("amount"), get("top")], bin());
   const prefix = new Signature(
     [],
@@ -328,6 +328,16 @@ test("bind rejects direct DUP postorder when top junk cannot expose deep refs", 
       undefined, "top"],
   );
 
-  expect(() => bind(prefix, expr, new Set(["amount", "top"])))
-    .toThrow("solver failed to find path");
+  const out = bind(prefix, expr, new Set(["amount", "top"]));
+
+  expect(out.signature.pop).toBe(4);
+  expect(numberOps(out.code)).toEqual([
+    SWAPN(14),
+    Op.POP,
+    Op.POP,
+    Op.POP,
+    Op.POP,
+    DUPN(16),
+    DUPN(12),
+  ]);
 });

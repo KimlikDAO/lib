@@ -3,28 +3,31 @@ import { CodeAtom, Fragment } from "./fragment";
 import { DUPN, Op, SWAPN } from "./opcodes";
 import { Signature } from "./signature";
 import {
-  ActionId,
   BLANK_ACTION,
   POP_ACTION,
   dupIndex,
   swapIndex,
 } from "./solver/action";
-import { Path, Problem, ValueId } from "./solver/problem";
 import { solve } from "./solver/solver";
+import {
+  ActionId,
+  Problem,
+  RuleInputs,
+  Solution,
+  ValueId,
+} from "./solver/solver.d";
 import { EvmType, Word } from "./types";
 
-class BoundProblem extends Problem {
+class BoundProblem implements Problem {
   constructor(
-    init: ValueId[],
-    keep: ValueId[],
-    output: ValueId,
-    rules: ActionId[][],
+    readonly init: ValueId[],
+    readonly keep: ValueId[],
+    readonly output: ValueId,
+    readonly rules: RuleInputs[],
     readonly fragsByActionId: ReadonlyMap<ActionId, Fragment>,
     readonly idsByName: ReadonlyMap<string, ValueId>,
     readonly typesById: ReadonlyMap<ValueId, EvmType>,
-  ) {
-    super(init, keep, output, rules);
-  }
+  ) { }
 }
 
 const collectNames = (expr: Expression): Set<string> => {
@@ -148,7 +151,7 @@ const bind = (
   return fragmentFromPath(problem, path);
 }
 
-const fragmentFromPath = (problem: BoundProblem, path: Path): Fragment => {
+const fragmentFromPath = (problem: BoundProblem, path: Solution): Fragment => {
   const code: CodeAtom[] = [];
   for (const actionId of path.actions)
     appendActionCode(problem, actionId, code);
