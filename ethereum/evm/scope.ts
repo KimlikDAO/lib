@@ -5,7 +5,7 @@ import { Op } from "./opcodes";
 import { Signature } from "./signature";
 import { Blob, NameBinding, SetStatement, Statement } from "./statement";
 import { EvmType, Word } from "./types";
-import { assert } from "./util";
+import { assert } from "./util/assert";
 
 function scope(statements: readonly Statement[]): Fragment;
 function scope(...statements: readonly Statement[]): Fragment;

@@ -12,7 +12,7 @@ import {
   WeisLit,
   assertAssignable,
 } from "./types";
-import { assert } from "./util";
+import { assert } from "./util/assert";
 
 class StackRef {
   constructor(

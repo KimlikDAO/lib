@@ -2,7 +2,7 @@ import { CodeAtom, FlatCode, Fragment, LabelPos, LabelRef } from "./fragment";
 import { Op, PUSHN } from "./opcodes";
 import { scope } from "./scope";
 import { Label, Statement } from "./statement";
-import { assert } from "./util";
+import { assert } from "./util/assert";
 
 type Program = Uint8Array<ArrayBuffer>;
 

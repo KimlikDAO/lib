@@ -19,7 +19,7 @@ import {
   Uint, UintLit,
   Weis, WeisLit,
 } from "./types";
-import { assert } from "./util";
+import { assert } from "./util/assert";
 
 type CodeAtom =
   | Op

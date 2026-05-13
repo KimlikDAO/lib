@@ -11,7 +11,7 @@ import {
   isAssignable,
   narrowType,
 } from "./types";
-import { assert } from "./util";
+import { assert } from "./util/assert";
 
 const HaltStates = ["⊣", "⊥", "⊤", "⊢"] as const;
 type TypeList = readonly EvmType[];

@@ -1,4 +1,4 @@
-import { assert } from "../util";
+import { assert } from "../util/assert";
 import { endsWith } from "../util/arrays";
 import {
   BLANK_ACTION,
