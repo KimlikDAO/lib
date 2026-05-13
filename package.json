@@ -14,7 +14,7 @@
     "@kimlikdao/kdts": "0.2.2",
     "@ethereumjs/evm": "^10.1.1",
     "@noble/secp256k1": "^3.1.0",
-    "@types/bun": "^1.3.13",
+    "@types/bun": "^1.3.14",
     "ethers": "^6.16.0",
     "js-sha256": "0.11.1",
     "mina-signer": "^4.0.0",

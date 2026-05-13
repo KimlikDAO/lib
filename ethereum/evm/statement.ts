@@ -99,6 +99,7 @@ const label = (name?: string): Label => new Label(name);
 
 export {
   Blob,
+  Label,
   NameBinding,
   SetStatement,
   Statement,

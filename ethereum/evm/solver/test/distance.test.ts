@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { starDistance } from "../distance";
-import { Problem as SearchProblem } from "../problem";
+import { Problem } from "../problem";
 import { ProblemData, RuleInputs, StackState, ValueId } from "../solver.d";
 
 const problem = (
@@ -15,7 +15,7 @@ const wideProblem = () => problem([], [], 1, [[], [7, 6, 5, 4, 3, 2]]);
 const score = (
   problem: ProblemData,
   stack: number[],
-): number => SearchProblem.fromProblemData(problem).problem.hScore(stack);
+): number => Problem.fromProblemData(problem).problem.hScore(stack);
 
 test("starDistance projects available children onto suffix homes", () => {
   expect(starDistance(
@@ -25,7 +25,7 @@ test("starDistance projects available children onto suffix homes", () => {
 });
 
 test("Problem.fromProblemData scores the initial node", () => {
-  const { problem, start } = SearchProblem.fromProblemData(wideProblem());
+  const { problem, start } = Problem.fromProblemData(wideProblem());
 
   expect(start.h).toBe(problem.hScore(start.stack));
   expect(start.h).toBeGreaterThan(0);

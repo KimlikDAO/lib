@@ -189,7 +189,6 @@ const matches = (
 
 export {
   APPLY_COST,
-  PresentChild,
   ruleDistance,
   starDistance,
 };

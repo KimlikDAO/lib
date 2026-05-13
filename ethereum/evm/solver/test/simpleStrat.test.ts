@@ -14,7 +14,7 @@ import {
   ValueId,
 } from "../solver.d";
 import { GraphNode } from "../graph";
-import { Problem as SearchProblem } from "../problem";
+import { Problem } from "../problem";
 import { trySolveAllKept } from "../simpleStrat";
 
 const problem = (
@@ -75,11 +75,11 @@ const expectPathSolves = (problem: ProblemData, path: Solution) => {
 }
 
 const live = (problem: ProblemData): {
-  searchProblem: SearchProblem;
+  searchProblem: Problem;
   startNode: GraphNode;
 } => {
   const { problem: searchProblem, start } =
-    SearchProblem.fromProblemData(problem);
+    Problem.fromProblemData(problem);
   return { searchProblem, startNode: start };
 }
 

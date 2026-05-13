@@ -11,7 +11,7 @@ import {
   dupIndex,
   swapIndex,
 } from "../action";
-import { Problem as SearchProblem } from "../problem";
+import { Problem } from "../problem";
 import { ProblemData, RuleInputs, StackState, ValueId } from "../solver.d";
 
 const problem = (
@@ -40,7 +40,7 @@ test("Problem validates ProblemData and counts stack vars", () => {
     1,
     [[], [-1]],
   );
-  const { problem: searchProblem } = SearchProblem.fromProblemData(p);
+  const { problem: searchProblem } = Problem.fromProblemData(p);
 
   expect(searchProblem.keep).toEqual([-3, -2, -1]);
   expect(searchProblem.stackVars).toBe(3);
@@ -74,7 +74,7 @@ test("forEachNode visits the rule tree in postorder", () => {
   );
   const seen: [number, number][] = [];
 
-  SearchProblem.fromProblemData(p).problem.forEachNode(
+  Problem.fromProblemData(p).problem.forEachNode(
     (actionId, pos) => seen.push([actionId, pos])
   );
 
@@ -96,7 +96,7 @@ test("forEachWhiteNode stops at stack values", () => {
   );
   const white: number[] = [];
 
-  SearchProblem.fromProblemData(p).problem.forEachWhiteNode(
+  Problem.fromProblemData(p).problem.forEachWhiteNode(
     [2],
     (value) => white.push(value),
   );

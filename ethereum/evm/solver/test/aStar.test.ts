@@ -9,7 +9,7 @@ import {
   gas,
 } from "../action";
 import { GraphNode } from "../graph";
-import { Problem as SearchProblem } from "../problem";
+import { Problem } from "../problem";
 import { ProblemData, RuleInputs, StackState, ValueId } from "../solver.d";
 
 const problem = (
@@ -26,7 +26,7 @@ const stepState = (
   state: readonly number[],
   action: number,
 ): number[] | null => {
-  const { problem } = SearchProblem.fromProblemData(problemData);
+  const { problem } = Problem.fromProblemData(problemData);
   const node = new GraphNode(
     [...state],
     BLANK_ACTION,
@@ -122,7 +122,7 @@ test("solveAStar solves a terminal expression tree", () => {
     1,
     [[], [2, 3], [4, 5]],
   );
-  const { problem: searchProblem, start } = SearchProblem.fromProblemData(p);
+  const { problem: searchProblem, start } = Problem.fromProblemData(p);
   const path = solveAStar(searchProblem, start)!;
 
   expect(path.beg).toEqual(p.init);
@@ -132,7 +132,7 @@ test("solveAStar solves a terminal expression tree", () => {
 
 test("solveAStar applies a rule using a stack ref at TOS", () => {
   const p = problem([-1], [], 1, [[], [-1]]);
-  const { problem: searchProblem, start } = SearchProblem.fromProblemData(p);
+  const { problem: searchProblem, start } = Problem.fromProblemData(p);
   const path = solveAStar(searchProblem, start)!;
 
   expect(path.beg).toEqual(p.init);
@@ -142,7 +142,7 @@ test("solveAStar applies a rule using a stack ref at TOS", () => {
 
 test("solveAStar accepts output above unkept stack refs", () => {
   const p = problem([-1], [], 1, [[], [2]]);
-  const { problem: searchProblem, start } = SearchProblem.fromProblemData(p);
+  const { problem: searchProblem, start } = Problem.fromProblemData(p);
   const path = solveAStar(searchProblem, start)!;
 
   expect(path.beg).toEqual(p.init);
@@ -158,7 +158,7 @@ test("solveAStar solves a wide rule with a stack ref and holes", () => {
     1,
     [[], [2, 3, 4, -1, 5, 6]],
   );
-  const { problem: searchProblem, start } = SearchProblem.fromProblemData(p);
+  const { problem: searchProblem, start } = Problem.fromProblemData(p);
   const path = solveAStar(searchProblem, start)!;
 
   expect(path.beg).toEqual(p.init);
@@ -174,7 +174,7 @@ test("solveAStar solves a wide rule with a deep stack ref after holes", () => {
     1,
     [[], [2, 3, 4, 5, 6, -1]],
   );
-  const { problem: searchProblem, start } = SearchProblem.fromProblemData(p);
+  const { problem: searchProblem, start } = Problem.fromProblemData(p);
   const path = solveAStar(searchProblem, start)!;
 
   expect(path.beg).toEqual(p.init);
@@ -190,7 +190,7 @@ test("solveAStar duplicates a repeated stack ref for an intermediate rule", () =
     1,
     [[], [2, -2], [-1, -1]],
   );
-  const { problem: searchProblem, start } = SearchProblem.fromProblemData(p);
+  const { problem: searchProblem, start } = Problem.fromProblemData(p);
   const path = solveAStar(searchProblem, start)!;
 
   expect(path.beg).toEqual(p.init);
@@ -211,7 +211,7 @@ test("solveAStar assembles sibling rules with duplicated stack refs", () => {
       [6, 7, -2, -2],
     ],
   );
-  const { problem: searchProblem, start } = SearchProblem.fromProblemData(p);
+  const { problem: searchProblem, start } = Problem.fromProblemData(p);
   const path = solveAStar(searchProblem, start)!;
 
   expect(path.beg).toEqual(p.init);
@@ -240,7 +240,7 @@ test("solveAStar solves a wide rule with multiple stack refs and holes", () => {
     1,
     [[], [2, 3, 4, -2, 5, -1]],
   );
-  const { problem: searchProblem, start } = SearchProblem.fromProblemData(p);
+  const { problem: searchProblem, start } = Problem.fromProblemData(p);
   const path = solveAStar(searchProblem, start)!;
 
   expect(path.beg).toEqual(p.init);

@@ -77,16 +77,11 @@ const createProblem = (
 
   const initialStack = Array.from({ length: deepest }, (_, i) =>
     idsByDepth.get(deepest - i) ?? 0);
-  const keepIds = [...new Set([...keep]
-    .map((name) => idsByName.get(name))
-    .filter((id): id is ValueId => id !== undefined))]
-    .sort((a, b) => a - b);
-
   let nextId = 1;
   const rules: ActionId[][] = [[]];
   const fragsByActionId = new Map<ActionId, Fragment>();
 
-  const buildExpression = (expr: Expression): ValueId => {
+  const buildExpression = (expr: Expression, root = false): ValueId => {
     if (expr.ensure.length != 1)
       throw new TypeError(
         "binder currently supports only single-output expression nodes");
@@ -95,6 +90,11 @@ const createProblem = (
     typesById.set(output, expr.ensure[0]!);
     rules[output] = inputs;
     fragsByActionId.set(output, expr.frag);
+    if (root) {
+      const name = expr.frag.signature.ensureNames[0];
+      if (name)
+        idsByName.set(name, output);
+    }
     return output;
   }
 
@@ -103,7 +103,12 @@ const createProblem = (
       ? resolveName(idsByName, child.name)
       : buildExpression(child);
 
-  const output = buildExpression(expr);
+  const output = buildExpression(expr, true);
+  const keepIds = [...new Set([...keep]
+    .map((name) => idsByName.get(name))
+    .filter((id): id is ValueId => id !== undefined && id < 0))]
+    .sort((a, b) => a - b);
+
   return new BoundProblem(
     initialStack,
     keepIds,
@@ -163,6 +168,7 @@ const fragmentFromPath = (problem: BoundProblem, path: Solution): Fragment => {
     pop,
     ensure: ensure.map((id) => typeOfId(problem, id)),
     ensureNames: ensureNamesFor(problem, ensure),
+    halt: problem.fragsByActionId.get(problem.output)?.signature.halt,
     code,
   });
 }
@@ -209,7 +215,7 @@ const ensureNamesFor = (
   const keep = new Set(problem.keep);
   const namesById = new Map<ValueId, string>();
   for (const [name, id] of problem.idsByName)
-    if (keep.has(id) && !namesById.has(id))
+    if ((0 < id || keep.has(id)) && !namesById.has(id))
       namesById.set(id, name);
   return stack.map((id) => namesById.get(id));
 }

@@ -12,11 +12,7 @@ import { Fragment } from "./fragment";
 import { Op } from "./opcodes";
 import { Ops } from "./ops";
 import { label } from "./statement";
-import {
-  Bool,
-  Locn,
-  Size,
-} from "./types";
+import { Bool, Data, EvmType, Locn, Size } from "./types";
 
 const address = (): Expression => new Expression([], Ops[Op.ADDRESS]!);
 
@@ -32,8 +28,13 @@ const calldataSize = (): Expression => new Expression([], Ops[Op.CALLDATASIZE]!)
 const returndataSize = (): Expression =>
   new Expression([], Ops[Op.RETURNDATASIZE]!);
 
-const sload = (key: DataArg): Expression =>
-  new Expression([key], Ops[Op.SLOAD]!);
+const sload = (key: DataArg, type: EvmType = Data): Expression =>
+  new Expression([key], Fragment.from({
+    expect: [Data],
+    pop: 1,
+    ensure: [type],
+    code: [Op.SLOAD],
+  }));
 
 const sstore = (key: DataArg, value: DataArg): Expression =>
   new Expression([value, key], Ops[Op.SSTORE]!);

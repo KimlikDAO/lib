@@ -15,12 +15,13 @@ import {
 } from "../builtins";
 import { get } from "../expression";
 import { blob, set } from "../statement";
-import { Bytes } from "../types";
+import { Addr, Bytes } from "../types";
 
 const upgradableProxy = (slot: Bytes): Program =>
   assemble(
     calldataCopy(0),
-    set("success", delegateCall(gas(), sload(slot), 0, calldataSize(), 0, 0)),
+    set("success",
+      delegateCall(gas(), sload(slot, Addr), 0, calldataSize(), 0, 0)),
     returndataCopy(0),
     returnOrRevert(get("success"), 0, returndataSize()),
   );
