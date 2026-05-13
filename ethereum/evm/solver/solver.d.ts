@@ -44,7 +44,7 @@ type RuleInputs = ValueId[];
 /**
  * Complete input to the integer stack problem.
  */
-interface Problem {
+interface ProblemData {
   /**
    * Initial abstract stack.
    *
@@ -103,7 +103,7 @@ type Solution = Path;
 export {
   ActionId,
   Path,
-  Problem,
+  ProblemData,
   RuleInputs,
   Solution,
   StackState,

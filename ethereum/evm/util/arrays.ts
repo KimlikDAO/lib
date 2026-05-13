@@ -25,4 +25,19 @@ const fmix32 = (value: number): number => {
   return value >>> 0;
 }
 
-export { hashArray };
+const endsWith = <T>(
+  values: readonly T[],
+  suffix: readonly T[],
+): boolean => {
+  if (values.length < suffix.length) return false;
+  const offset = values.length - suffix.length;
+  for (let i = 0; i < suffix.length; ++i)
+    if (values[offset + i] != suffix[i])
+      return false;
+  return true;
+}
+
+export {
+  endsWith,
+  hashArray,
+};

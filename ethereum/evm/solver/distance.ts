@@ -1,8 +1,8 @@
 import { ValueId } from "./solver.d";
 
-const INSERT_COST = 3;
 const APPLY_COST = 3;
-const UNKNOWN_SUBTREE_COST = 3;
+const DUP_COST = 3;
+const SWAP_COST = 1.5;
 
 interface PresentChild {
   readonly input: number;
@@ -12,9 +12,8 @@ interface PresentChild {
 const starDistance = (
   inputs: readonly ValueId[],
   stack: readonly ValueId[],
-  green = positiveStackValues(stack),
 ): number => {
-  const present = presentChildren(inputs, stack, green);
+  const present = presentChildren(inputs, stack);
   return present.length
     ? projectedStarSwaps(inputs, stack, present, inputs.length - present.length)
     : 0;
@@ -23,40 +22,40 @@ const starDistance = (
 const ruleDistance = (
   inputs: readonly ValueId[],
   stack: readonly ValueId[],
-  present: readonly PresentChild[],
-): number | null => {
-  if (present.length == 0) return null;
+  present = presentChildren(inputs, stack),
+): number => {
+  if (present.length == 0) return 0;
   const missing = inputs.length - present.length;
-  return (projectedStarSwaps(inputs, stack, present, missing)
-    + missing) * INSERT_COST;
+  return Math.min(
+    projectedStarSwaps(inputs, stack, present, missing) * SWAP_COST,
+    copyFillDistance(inputs, stack),
+  );
 }
 
-const isAvailable = (
-  value: ValueId,
+// Alternate projection: preserve the assembled suffix prefix and append copies
+// of remaining stack-resident inputs.
+const copyFillDistance = (
+  inputs: readonly ValueId[],
   stack: readonly ValueId[],
-  green: ReadonlySet<ValueId>,
-): boolean =>
-  value == 0 || (value > 0 ? green.has(value) : stack.includes(value));
-
-const positiveStackValues = (stack: readonly ValueId[]): Set<ValueId> => {
-  const green = new Set<ValueId>();
-  for (const value of stack)
-    if (0 < value)
-      green.add(value);
-  return green;
+): number => {
+  let distance = 0;
+  for (let i = suffixPrefix(inputs, stack); i < inputs.length; ++i) {
+    const value = inputs[i]!;
+    if (value && stack.includes(value))
+      distance += DUP_COST;
+  }
+  return distance;
 }
 
 const presentChildren = (
   inputs: readonly ValueId[],
   stack: readonly ValueId[],
-  green: ReadonlySet<ValueId>,
 ): PresentChild[] => {
   const present: PresentChild[] = [];
   const used = new Set<number>();
-  for (let input = 0; input < inputs.length; ++input) {
+  for (let input = inputs.length - 1; 0 <= input; --input) {
     const value = inputs[input]!;
-    if (!isAvailable(value, stack, green)) continue;
-    for (let pos = 0; pos < stack.length; ++pos) {
+    for (let pos = stack.length - 1; 0 <= pos; --pos) {
       if (!used.has(pos) && stack[pos] == value) {
         present.push({ input, stack: pos });
         used.add(pos);
@@ -64,12 +63,12 @@ const presentChildren = (
       }
     }
   }
-  return present;
+  return present.reverse();
 }
 
 // Project the directly available inputs onto their eventual suffix homes.
-// Missing inputs are modeled as future pushes/holes and charged separately by
-// ruleDistance.
+// Missing inputs are modeled as future pushes/holes when projecting final
+// suffix homes. Their action cost is charged by the tree heuristic.
 const projectedStarSwaps = (
   inputs: readonly ValueId[],
   stack: readonly ValueId[],
@@ -165,6 +164,17 @@ const orderedPrefix = (
   return 0;
 }
 
+const suffixPrefix = (
+  inputs: readonly ValueId[],
+  stack: readonly ValueId[],
+): number => {
+  const n = Math.min(inputs.length, stack.length);
+  for (let len = n; 0 < len; --len)
+    if (matches(inputs, stack, len, stack.length - len))
+      return len;
+  return 0;
+}
+
 const matches = (
   inputs: readonly ValueId[],
   stack: readonly ValueId[],
@@ -179,7 +189,7 @@ const matches = (
 
 export {
   APPLY_COST,
-  UNKNOWN_SUBTREE_COST,
+  PresentChild,
   ruleDistance,
   starDistance,
 };

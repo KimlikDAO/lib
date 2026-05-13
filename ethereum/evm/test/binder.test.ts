@@ -332,12 +332,12 @@ test("bind uses A* when direct DUP postorder cannot expose deep refs", () => {
 
   expect(out.signature.pop).toBe(4);
   expect(numberOps(out.code)).toEqual([
-    SWAPN(13),
+    SWAPN(4),
     Op.POP,
     Op.POP,
     Op.POP,
     Op.POP,
     DUPN(16),
-    DUPN(11),
+    DUPN(2),
   ]);
 });

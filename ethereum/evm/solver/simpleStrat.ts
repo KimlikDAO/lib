@@ -3,14 +3,19 @@ import {
   DUP_ACTION,
   POP_ACTION,
 } from "./action";
+import { GraphNode } from "./graph";
+import { NodeId, Problem } from "./problem";
 import { ActionId, Solution } from "./solver.d";
-import { forEachNode, SearchNodeView } from "./state";
 
-const computeDepths = (problem: SearchNodeView): number[] => {
+const computeDepths = (
+  problem: Problem,
+  start: GraphNode,
+): number[] => {
+  const { stack } = start;
   const depths = Array(problem.stackVars + 1);
-  const n = problem.stack.length;
+  const n = stack.length;
   for (let d = 1; d <= n; ++d)
-    depths[-problem.stack[n - d]] = d;
+    depths[-stack[n - d]] = d;
   return depths;
 }
 
@@ -21,25 +26,29 @@ const countTrailingZeros = (stack: readonly number[]): number => {
   return count;
 }
 
-const trySolveAllKept = (problem: SearchNodeView): Solution | null => {
+const trySolveAllKept = (
+  problem: Problem,
+  start: GraphNode,
+): Solution | null => {
+  const { stack } = start;
   if (problem.stackVars != problem.keep.length)
     return null;
 
-  const depths = computeDepths(problem);
+  const depths = computeDepths(problem, start);
   let maxDepth = 0;
-  forEachNode(problem, (node: ActionId, pos: number) => {
+  problem.forEachNode((node: NodeId, pos: number) => {
     if (node < 0)
       maxDepth = Math.max(maxDepth, pos + depths[-node])
   });
   const pop = Math.max(0, maxDepth - 16);
-  if (countTrailingZeros(problem.stack) < pop)
+  if (countTrailingZeros(stack) < pop)
     return null;
 
   const actions = Array<ActionId>(pop).fill(POP_ACTION);
-  const end = problem.stack.slice(0, problem.stack.length - pop);
+  const end = stack.slice(0, stack.length - pop);
   end.push(problem.output);
 
-  forEachNode(problem, (node: ActionId, pos: number) => {
+  problem.forEachNode((node: NodeId, pos: number) => {
     if (node == 0)
       actions.push(BLANK_ACTION);
     else if (node < 0)
@@ -48,7 +57,7 @@ const trySolveAllKept = (problem: SearchNodeView): Solution | null => {
       actions.push(node);
   });
   return {
-    beg: problem.stack,
+    beg: stack,
     actions,
     end
   };

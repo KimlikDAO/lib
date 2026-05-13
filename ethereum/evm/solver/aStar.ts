@@ -1,13 +1,15 @@
+import { GraphNode, compareGraphNodes } from "./graph";
 import { Heap } from "./heap";
+import { Problem } from "./problem";
 import { Solution } from "./solver.d";
-import { SearchNode, SearchNodeView } from "./state";
 
 const MAX_EXPANSIONS = 100_000;
 
-const solveAStar = (problem: SearchNodeView): Solution | null => {
-  const initialView = problem;
-  const start = initialView.node;
-  const frontier = Heap.empty<SearchNode>(compareSearchNode);
+const solveAStar = (
+  problem: Problem,
+  start: GraphNode,
+): Solution | null => {
+  const frontier = Heap.empty<GraphNode>(compareGraphNodes);
   const best = new Map<number, number>();
   frontier.push(start);
   best.set(start.hash(), start.g);
@@ -17,26 +19,20 @@ const solveAStar = (problem: SearchNodeView): Solution | null => {
     if (!curr) break;
     const hash = curr.hash();
     if (best.get(hash) != curr.g) continue;
-    const view = SearchNodeView.ofNode(curr, initialView);
-    if (view.isGoal())
+    if (problem.isGoal(curr.stack))
       return curr.incomingPath();
 
-    for (const action of view.candidateActions()) {
-      const next = view.getNeighbor(action);
-      if (!next || next.stack.length > view.maxStack) continue;
+    for (const action of problem.validActions(curr.stack)) {
+      const next = problem.applyAction(curr, action);
+      if (next.stack.length > problem.maxStack) continue;
       const hash = next.hash();
       const previous = best.get(hash);
       if (previous !== undefined && previous <= next.g) continue;
-      best.set(hash, next.g);
       frontier.push(next);
+      best.set(hash, next.g);
     }
   }
   return null;
 }
-
-const compareSearchNode = (
-  a: SearchNode,
-  b: SearchNode,
-): number => a.f - b.f || a.h - b.h || b.g - a.g;
 
 export { solveAStar };

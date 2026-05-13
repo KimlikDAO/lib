@@ -1,25 +1,25 @@
 import { expect, test } from "bun:test";
 import {
   BLANK_ACTION,
-  DUP_ACTION,
-  DUP1_ACTION,
   DUP16_ACTION,
+  DUP1_ACTION,
+  DUP_ACTION,
   POP_ACTION,
-  SWAP_ACTION,
-  SWAP1_ACTION,
   SWAP16_ACTION,
+  SWAP1_ACTION,
+  SWAP_ACTION,
   dupIndex,
   swapIndex,
 } from "../action";
-import { Problem, RuleInputs, StackState, ValueId } from "../solver.d";
-import { forEachNode, SearchNodeView } from "../state";
+import { Problem as SearchProblem } from "../problem";
+import { ProblemData, RuleInputs, StackState, ValueId } from "../solver.d";
 
 const problem = (
   init: StackState,
   keep: ValueId[],
   output: ValueId,
   rules: RuleInputs[],
-): Problem => ({ init, keep, output, rules });
+): ProblemData => ({ init, keep, output, rules });
 
 test("Solution stores start, action ids, and end stack", () => {
   const solution = {
@@ -33,17 +33,17 @@ test("Solution stores start, action ids, and end stack", () => {
   expect(solution.end).toEqual([2, -1]);
 });
 
-test("SearchNodeView validates Problem and counts stack vars", () => {
+test("Problem validates ProblemData and counts stack vars", () => {
   const p = problem(
     [-3, -2, -1, 0, 0],
     [-1, -3, -2],
     1,
     [[], [-1]],
   );
-  const view = SearchNodeView.from(p);
+  const { problem: searchProblem } = SearchProblem.fromProblemData(p);
 
-  expect(view.keep).toEqual([-3, -2, -1]);
-  expect(view.stackVars).toBe(3);
+  expect(searchProblem.keep).toEqual([-3, -2, -1]);
+  expect(searchProblem.stackVars).toBe(3);
 });
 
 test("primitive action ids are fixed", () => {
@@ -74,7 +74,9 @@ test("forEachNode visits the rule tree in postorder", () => {
   );
   const seen: [number, number][] = [];
 
-  forEachNode(p, (actionId, pos) => seen.push([actionId, pos]));
+  SearchProblem.fromProblemData(p).problem.forEachNode(
+    (actionId, pos) => seen.push([actionId, pos])
+  );
 
   expect(seen).toEqual([
     [-2, 0],
@@ -85,20 +87,19 @@ test("forEachNode visits the rule tree in postorder", () => {
   ]);
 });
 
-test("SearchNodeView separates green and white values", () => {
+test("forEachWhiteNode stops at stack values", () => {
   const p = problem(
     [],
     [],
     1,
     [[], [2, 3], [4, 5], [6]],
   );
-  const state = SearchNodeView.from(p);
-  const green: number[] = [];
   const white: number[] = [];
 
-  state.forEachGreen((value) => green.push(value), [2]);
-  state.forEachWhite((value) => white.push(value), [2]);
+  SearchProblem.fromProblemData(p).problem.forEachWhiteNode(
+    [2],
+    (value) => white.push(value),
+  );
 
-  expect(green).toEqual([2, 4, 5]);
-  expect(white).toEqual([1, 3, 6]);
+  expect(white).toEqual([6, 3, 1]);
 });

@@ -11,14 +11,14 @@ import {
 import { solve } from "./solver/solver";
 import {
   ActionId,
-  Problem,
+  ProblemData,
   RuleInputs,
   Solution,
   ValueId,
 } from "./solver/solver.d";
 import { EvmType, Word } from "./types";
 
-class BoundProblem implements Problem {
+class BoundProblem implements ProblemData {
   constructor(
     readonly init: ValueId[],
     readonly keep: ValueId[],
