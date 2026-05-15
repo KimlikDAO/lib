@@ -18,6 +18,10 @@ test("assemble accepts statement inputs through scope", () => {
   expect([...assemble(set("x", Uint, 0))]).toEqual([Op.PUSH0]);
 });
 
+test("assemble accepts recursive bodies through scope", () => {
+  expect([...assemble([[set("x", Uint, 0)]])]).toEqual([Op.PUSH0]);
+});
+
 test("assemble builds the upgradable proxy recipe", () => {
   const addr = "0x1111111111111111111111111111111111111111";
   const slot = Uint8Array.from(Array(32).fill(1));

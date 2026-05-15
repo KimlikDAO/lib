@@ -2,16 +2,17 @@ import { Address } from "../../address.d";
 import { assemble, Program } from "../assembler";
 import { call } from "../builtins";
 import { get } from "../expression";
-import { set, Statement, unrollFor } from "../statement";
+import type { Body } from "../scope";
+import { set, unrollFor } from "../statement";
 import { Weis } from "../types";
 
 type Recipient = { address: Address; amount: bigint };
 type RecipientGroup = { amount: bigint; recipients: Address[] };
 
-const fixedAmountStatements = (
+const fixedAmountBody = (
   recipients: readonly Address[],
   amount: bigint,
-): Statement[] => {
+): Body => {
   if (recipients.length == 0)
     return [];
   if (recipients.length == 1)
@@ -26,13 +27,13 @@ const fixedAmountStatements = (
 const batchSend = (recipients: Recipient[]): Program => assemble(unrollFor(
   [],
   groupByAmount(recipients),
-  ({ recipients, amount }) => fixedAmountStatements(recipients, amount),
+  ({ recipients, amount }) => fixedAmountBody(recipients, amount),
 ));
 
 const batchSendFixedAmount = (
   recipients: Address[],
   amount: bigint,
-): Program => assemble(fixedAmountStatements(recipients, amount));
+): Program => assemble(fixedAmountBody(recipients, amount));
 
 const groupByAmount = (recipients: readonly Recipient[]): RecipientGroup[] => {
   const sorted = [...recipients].sort((a, b) =>
@@ -51,6 +52,6 @@ const groupByAmount = (recipients: readonly Recipient[]): RecipientGroup[] => {
 export {
   batchSend,
   batchSendFixedAmount,
-  fixedAmountStatements,
+  fixedAmountBody,
   Recipient,
 };

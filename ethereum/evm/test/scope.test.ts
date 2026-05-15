@@ -32,6 +32,18 @@ test("scope erases names from plain expression statements", () => {
   expect(frag.signature.ensureNames).toEqual([undefined]);
 });
 
+test("scope accepts recursive bodies", () => {
+  const frag = scope([
+    set("x", Uint, 1),
+    [
+      set("y", new Expression([get("x"), 2], Ops[Op.ADD]!)),
+    ],
+  ]);
+
+  expect(String(frag.signature)).toBe("() → 0|y: Uint");
+  expect(numberOps(frag.code)).toEqual([Op.PUSH1, Op.PUSH1, Op.ADD]);
+});
+
 test("scope binds zero-output expression statements", () => {
   const frag = scope(sstore(0, 1));
 
@@ -40,7 +52,6 @@ test("scope binds zero-output expression statements", () => {
     Op.PUSH1,
     Op.PUSH0,
     Op.SSTORE,
-    Op.PUSH0,
   ]);
 });
 

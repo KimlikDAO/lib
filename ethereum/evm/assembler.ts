@@ -1,7 +1,8 @@
 import { CodeAtom, FlatCode, Fragment, LabelPos, LabelRef } from "./fragment";
 import { Op, PUSHN } from "./opcodes";
 import { scope } from "./scope";
-import { Label, Statement } from "./statement";
+import type { Body } from "./scope";
+import { Label } from "./statement";
 import { assert } from "./util/assert";
 
 type Program = Uint8Array<ArrayBuffer>;
@@ -11,7 +12,7 @@ interface Layout {
   readonly labels: ReadonlyMap<number, number>;
 }
 
-type AssemblyInput = Fragment | Statement | readonly Statement[];
+type AssemblyInput = Fragment | Body;
 
 const layout = (code: FlatCode): Layout => {
   while (true) {
@@ -55,11 +56,11 @@ const layout = (code: FlatCode): Layout => {
 }
 
 function assemble(fragment: Fragment): Program;
-function assemble(...stmts: readonly (Statement | readonly Statement[])[]): Program;
+function assemble(...body: readonly Body[]): Program;
 function assemble(...input: readonly AssemblyInput[]): Program {
   const fragment = input.length == 1 && input[0] instanceof Fragment
     ? input[0]
-    : scope(flattenStatements(input as readonly (Statement | readonly Statement[])[]));
+    : scope(...input as readonly Body[]);
   assert(fragment.signature.expect.length == 0,
     `Can only assemble fulfilled fragments, received `
     + `${fragment.signature.expect.length} expected stack values`);
@@ -71,11 +72,6 @@ function assemble(...input: readonly AssemblyInput[]): Program {
   validateJumps(fragment.code, out);
   return out;
 }
-
-const flattenStatements = (
-  stmts: readonly (Statement | readonly Statement[])[],
-): Statement[] => stmts.flatMap((stmt) =>
-  Array.isArray(stmt) ? [...stmt] : [stmt]);
 
 const writeToken = (
   out: Uint8Array,

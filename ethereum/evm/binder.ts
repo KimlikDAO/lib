@@ -27,6 +27,7 @@ class BoundProblem implements ProblemData {
     readonly fragsByActionId: ReadonlyMap<ActionId, Fragment>,
     readonly idsByName: ReadonlyMap<string, ValueId>,
     readonly typesById: ReadonlyMap<ValueId, EvmType>,
+    readonly outputArity: number,
   ) { }
 }
 
@@ -82,12 +83,12 @@ const createProblem = (
   const fragsByActionId = new Map<ActionId, Fragment>();
 
   const buildExpression = (expr: Expression, root = false): ValueId => {
-    if (expr.ensure.length != 1)
+    if (expr.ensure.length != 1 && !(root && expr.ensure.length == 0))
       throw new TypeError(
         "binder currently supports only single-output expression nodes");
     const output = nextId++;
     const inputs = expr.children.map(buildChild);
-    typesById.set(output, expr.ensure[0]!);
+    typesById.set(output, expr.ensure[0] ?? Word);
     rules[output] = inputs;
     fragsByActionId.set(output, expr.frag);
     if (root) {
@@ -117,6 +118,7 @@ const createProblem = (
     fragsByActionId,
     idsByName,
     typesById,
+    expr.ensure.length,
   );
 }
 
@@ -160,8 +162,16 @@ const fragmentFromPath = (problem: BoundProblem, path: Solution): Fragment => {
   const code: CodeAtom[] = [];
   for (const actionId of path.actions)
     appendActionCode(problem, actionId, code);
-  const pop = Math.max(path.beg.length - path.end.length + 1, 0);
-  const ensure = path.end.slice(path.beg.length - pop);
+  const end = problem.outputArity == 0 ? path.end.slice(0, -1) : path.end;
+  let prefix = 0;
+  while (
+    prefix < path.beg.length
+    && prefix < end.length
+    && path.beg[prefix] == end[prefix]
+  )
+    ++prefix;
+  const pop = path.beg.length - prefix;
+  const ensure = end.slice(prefix);
 
   return Fragment.from({
     expect: path.beg.map((id) => typeOfId(problem, id)),

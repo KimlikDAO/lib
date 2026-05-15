@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import {
   batchSend,
   batchSendFixedAmount,
-  fixedAmountStatements,
+  fixedAmountBody,
 } from "../recipes/batchSend";
 import { assemble } from "../assembler";
 import { Op } from "../opcodes";
@@ -25,15 +25,15 @@ const pushedAddresses = (program: Uint8Array): string[] => {
   return out;
 }
 
-test("fixedAmountStatements chooses direct calls for singleton groups", () => {
-  const stmts = fixedAmountStatements([addr(1)], 1n);
-  const program = assemble(stmts);
+test("fixedAmountBody chooses direct calls for singleton groups", () => {
+  const body = fixedAmountBody([addr(1)], 1n);
+  const program = assemble(body);
 
-  expect(stmts).toHaveLength(1);
+  expect(Array.isArray(body) ? body.length : 1).toBe(1);
   expect(hasDup(program)).toBe(false);
 });
 
-test("fixedAmountStatements reuses amount for repeated groups", () => {
+test("fixedAmountBody reuses amount for repeated groups", () => {
   const program = batchSendFixedAmount([addr(1), addr(2)], 1n);
 
   expect(hasDup(program)).toBe(true);

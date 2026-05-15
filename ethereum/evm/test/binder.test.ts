@@ -215,7 +215,7 @@ test("fragmentFromPath emits primitive stack actions", () => {
 
   const out = fragmentFromPath(problem, path);
 
-  expect(out.signature.pop).toBe(1);
+  expect(out.signature.pop).toBe(0);
   expect(numberOps(out.code)).toEqual([DUPN(1), Op.SWAP1, Op.POP]);
 });
 
@@ -330,7 +330,7 @@ test("bind uses A* when direct DUP postorder cannot expose deep refs", () => {
 
   const out = bind(prefix, expr, new Set(["amount", "top"]));
 
-  expect(out.signature.pop).toBe(4);
+  expect(out.signature.pop).toBe(5);
   expect(numberOps(out.code)).toEqual([
     SWAPN(4),
     Op.POP,

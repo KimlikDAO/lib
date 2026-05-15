@@ -2,6 +2,7 @@ import {
   AddrArg,
   BoolArg,
   DataArg,
+  ExprArg,
   Expression,
   LocnArg,
   SizeArg,
@@ -12,7 +13,61 @@ import { Fragment } from "./fragment";
 import { Op } from "./opcodes";
 import { Ops } from "./ops";
 import { label } from "./statement";
-import { Bool, Data, EvmType, Locn, Size } from "./types";
+import { Bool, Data, EvmType, Locn, Size, Uint, Word } from "./types";
+
+const binary = (
+  opcode: Op,
+  lhs: UintArg,
+  rhs: UintArg,
+  out: EvmType = Uint,
+): Expression => new Expression([lhs, rhs], Fragment.from({
+  expect: [Uint, Uint],
+  pop: 2,
+  ensure: [out],
+  code: [opcode],
+}));
+
+const bitAnd = (lhs: UintArg, rhs: UintArg): Expression =>
+  binary(Op.AND, lhs, rhs);
+
+const mul = (lhs: UintArg, rhs: UintArg): Expression =>
+  binary(Op.MUL, lhs, rhs);
+
+const sub = (lhs: UintArg, rhs: UintArg): Expression =>
+  new Expression([rhs, lhs], Fragment.from({
+    expect: [Uint, Uint],
+    pop: 2,
+    ensure: [Uint],
+    code: [Op.SUB],
+  }));
+
+const shr = (shift: UintArg, value: UintArg): Expression =>
+  new Expression([value, shift], Fragment.from({
+    expect: [Uint, Uint],
+    pop: 2,
+    ensure: [Uint],
+    code: [Op.SHR],
+  }));
+
+const eq = (lhs: ExprArg, rhs: ExprArg): Expression =>
+  new Expression([lhs, rhs], Ops[Op.EQ]!);
+
+function range(stop: number): number[];
+function range(start: number, stop: number, step?: number): number[];
+function range(startOrStop: number, stop?: number, step = 1): number[] {
+  if (step == 0)
+    throw new RangeError("range step cannot be 0");
+  const start = stop === undefined ? 0 : startOrStop;
+  const end = stop === undefined ? startOrStop : stop;
+  const out: number[] = [];
+  if (0 < step)
+    for (let i = start; i < end; i += step)
+      out.push(i);
+  else
+    for (let i = start; end < i; i += step)
+      out.push(i);
+  return out;
+}
 
 const address = (): Expression => new Expression([], Ops[Op.ADDRESS]!);
 
@@ -27,6 +82,29 @@ const calldataSize = (): Expression => new Expression([], Ops[Op.CALLDATASIZE]!)
 
 const returndataSize = (): Expression =>
   new Expression([], Ops[Op.RETURNDATASIZE]!);
+
+const calldataLoad = (offset: LocnArg, type: EvmType = Data): Expression =>
+  new Expression([offset], Fragment.from({
+    expect: [Locn],
+    pop: 1,
+    ensure: [type],
+    code: [Op.CALLDATALOAD],
+  }));
+
+const mstore = (offset: UintArg, value: ExprArg): Expression =>
+  new Expression([value, offset], Fragment.from({
+    expect: [Word, Uint],
+    pop: 2,
+    code: [Op.MSTORE],
+  }));
+
+const keccak256 = (offset: UintArg, size: SizeArg): Expression =>
+  new Expression([size, offset], Fragment.from({
+    expect: [Size, Uint],
+    pop: 2,
+    ensure: [Data],
+    code: [Op.SHA3],
+  }));
 
 const sload = (key: DataArg, type: EvmType = Data): Expression =>
   new Expression([key], Fragment.from({
@@ -124,14 +202,26 @@ const returnOrRevert = (
 export {
   address,
   balance,
+  bitAnd,
   call,
   calldataCopy,
+  calldataLoad,
   calldataSize,
   caller,
   codeCopy,
   delegateCall,
+  eq,
   gas,
-  ret, returndataCopy,
-  returndataSize, returnOrRevert, sload,
+  keccak256,
+  mstore,
+  mul,
+  range,
+  ret,
+  returndataCopy,
+  returndataSize,
+  returnOrRevert,
+  shr,
+  sload,
+  sub,
   sstore
 };

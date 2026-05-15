@@ -1,20 +1,28 @@
 import { bind, collectNames } from "./binder";
 import { ExprChild, Expression, StackRef } from "./expression";
 import { Fragment, LabelPos, compose } from "./fragment";
-import { Op } from "./opcodes";
 import { Signature } from "./signature";
 import { Blob, NameBinding, SetStatement, Statement } from "./statement";
 import { EvmType, Word } from "./types";
 import { assert } from "./util/assert";
 
-function scope(statements: readonly Statement[]): Fragment;
-function scope(...statements: readonly Statement[]): Fragment;
-function scope(...input: readonly Statement[] | readonly [readonly Statement[]]): Fragment {
-  const statements = input.length == 1 && Array.isArray(input[0])
-    ? input[0] as readonly Statement[]
-    : input as readonly Statement[];
-  const keepAfter = futureRefs(statements);
-  let frag = Fragment.from({});
+type Body = Statement | readonly Body[];
+
+function scope(body: Body): Fragment;
+function scope(...body: readonly Body[]): Fragment;
+function scope(...input: readonly Body[]): Fragment {
+  const statements = flattenBody(input.length == 1 ? input[0]! : input);
+  return scopeFrom(Fragment.from({}), statements);
+}
+
+const scopeFrom = (
+  prefix: Fragment,
+  body: Body,
+  keepAtEnd = new Set<string>(),
+): Fragment => {
+  const statements = flattenBody(body);
+  const keepAfter = futureRefs(statements, keepAtEnd);
+  let frag = prefix;
   for (let i = 0; i < statements.length; ++i) {
     const stmt = statements[i]!;
     let next: Fragment;
@@ -33,9 +41,18 @@ function scope(...input: readonly Statement[] | readonly [readonly Statement[]])
   return frag;
 }
 
-const futureRefs = (statements: readonly Statement[]): Set<string>[] => {
+const isBodyList = (body: Body): body is readonly Body[] =>
+  Array.isArray(body);
+
+const flattenBody = (body: Body): Statement[] =>
+  isBodyList(body) ? body.flatMap(flattenBody) : [body];
+
+const futureRefs = (
+  statements: readonly Statement[],
+  keepAtEnd = new Set<string>(),
+): Set<string>[] => {
   const keepAfter = Array<Set<string>>(statements.length);
-  const keep = new Set<string>();
+  const keep = new Set(keepAtEnd);
   for (let i = statements.length - 1; 0 <= i; --i) {
     keepAfter[i] = new Set(keep);
     for (const name of refsIn(statements[i]!))
@@ -64,24 +81,11 @@ const eraseNames = (expr: Expression): Expression =>
   withEnsureNames(expr, Array(expr.ensure.length).fill(undefined));
 
 const statementExpr = (expr: Expression): Expression => {
-  if (expr.ensure.length == 1)
+  if (expr.ensure.length <= 1)
     return eraseNames(expr);
-  if (expr.ensure.length == 0)
-    return withDummyOutput(expr);
   throw new TypeError(
     `Expression statement expected at most one output, received`
     + ` ${expr.ensure.length}`);
-}
-
-const withDummyOutput = (expr: Expression): Expression => {
-  const { expect, pop, halt } = expr.frag.signature;
-  return new Expression(expr.children, Fragment.from({
-    expect,
-    pop,
-    ensure: [Word],
-    halt,
-    code: halt ? expr.frag.code : [...expr.frag.code, Op.PUSH0],
-  }));
 }
 
 const stackRefExpr = (
@@ -140,4 +144,5 @@ const typeOfRef = (prefix: Signature, name: string): EvmType => {
   return Word;
 }
 
-export { scope };
+export { flattenBody, scope, scopeFrom };
+export type { Body };

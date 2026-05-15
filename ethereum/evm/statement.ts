@@ -1,5 +1,6 @@
 import { BoolArg, ExprChild, Expression, StackRef } from "./expression";
 import { Fragment } from "./fragment";
+import type { Body } from "./scope";
 import { Bytes, EvmType, Literal, Size } from "./types";
 
 class Label {
@@ -60,16 +61,10 @@ function set(
 }
 
 const unrollFor = <T>(
-  init: Statement | readonly Statement[],
-  arr: T[],
-  fn: (elm: T) => Statement | readonly Statement[],
-): Statement[] => {
-  const initArr = Array.isArray(init) ? [...init] : [init];
-  return [...initArr, ...arr.flatMap((elm) => {
-    const out = fn(elm);
-    return Array.isArray(out) ? [...out] : [out];
-  })];
-}
+  init: Body,
+  arr: readonly T[],
+  fn: (elm: T) => Body,
+): Body[] => [init, ...arr.map(fn)];
 
 class Blob {
   readonly label: Label;
