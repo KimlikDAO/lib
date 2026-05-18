@@ -3,19 +3,17 @@ import { ExprChild, Expression, StackRef } from "./expression";
 import { Fragment, LabelPos, compose } from "./fragment";
 import { Signature } from "./signature";
 import { Blob, NameBinding, SetStatement, Statement } from "./statement";
-import { EvmType, Word } from "./types";
+import { EvmType, Word, assertAssignable } from "./types";
 import { assert } from "./util/assert";
 
 type Body = Statement | readonly Body[];
 
-function scope(body: Body): Fragment;
-function scope(...body: readonly Body[]): Fragment;
-function scope(...input: readonly Body[]): Fragment {
+function body(...input: readonly Body[]): Fragment {
   const statements = flattenBody(input.length == 1 ? input[0]! : input);
-  return scopeFrom(Fragment.from({}), statements);
+  return bodyFrom(Fragment.from({}), statements);
 }
 
-const scopeFrom = (
+const bodyFrom = (
   prefix: Fragment,
   body: Body,
   keepAtEnd = new Set<string>(),
@@ -31,12 +29,16 @@ const scopeFrom = (
         code: [new LabelPos(stmt.label.id), stmt.data],
       });
     else if (stmt instanceof SetStatement)
-      next = bind(frag.signature, setExpr(stmt, frag.signature), keepAfter[i]!);
+      next = bind(
+        frag.signature,
+        setExpr(stmt, frag.signature),
+        bindKeep(stmt, keepAfter[i]!),
+      );
     else if (stmt instanceof Expression)
       next = bind(frag.signature, statementExpr(stmt), keepAfter[i]!);
     else
       next = Fragment.from({ code: [new LabelPos(stmt.id)] });
-    frag = compose(frag, next);
+    frag = eraseReboundName(compose(frag, next), stmt);
   }
   return frag;
 }
@@ -69,6 +71,46 @@ const refsIn = (stmt: Statement): Set<string> => {
 
 const refsInChild = (child: ExprChild): Set<string> =>
   child instanceof StackRef ? new Set([child.name]) : collectNames(child);
+
+const bindKeep = (
+  stmt: SetStatement,
+  keep: Set<string>,
+): Set<string> => {
+  if (!(stmt.name instanceof StackRef) || !keep.has(stmt.name.name))
+    return keep;
+  const out = new Set(keep);
+  out.delete(stmt.name.name);
+  return out;
+}
+
+const eraseReboundName = (frag: Fragment, stmt: Statement): Fragment =>
+  stmt instanceof SetStatement && stmt.name instanceof StackRef
+    ? keepLastName(frag, stmt.name.name)
+    : frag;
+
+const keepLastName = (frag: Fragment, name: string): Fragment => {
+  const { ensure, ensureNames } = frag.signature;
+  const names = [...ensureNames];
+  let found = false;
+  let changed = false;
+  for (let i = names.length - 1; 0 <= i; --i)
+    if (names[i] == name) {
+      if (!found)
+        found = true;
+      else {
+        names[i] = undefined;
+        changed = true;
+      }
+    }
+  return changed
+    ? compose(frag, Fragment.from({
+      expect: ensure,
+      pop: ensure.length,
+      ensure,
+      ensureNames: names,
+    }))
+    : frag;
+}
 
 const setExpr = (stmt: SetStatement, prefix: Signature): Expression => {
   const init = stmt.init instanceof StackRef
@@ -112,6 +154,14 @@ const namesFor = (
       `set name expects one output, received ${ensure.length}`);
     return [binding];
   }
+  if (binding instanceof StackRef) {
+    assert(ensure.length == 1,
+      `set name expects one output, received ${ensure.length}`);
+    if (binding.type)
+      assertAssignable(binding.type, ensure[0]!,
+        `set ${binding.name}`);
+    return [binding.name];
+  }
   if (Array.isArray(binding)) {
     assert(binding.length == ensure.length,
       `set name count ${binding.length} does not match output count`
@@ -144,5 +194,5 @@ const typeOfRef = (prefix: Signature, name: string): EvmType => {
   return Word;
 }
 
-export { flattenBody, scope, scopeFrom };
+export { body, bodyFrom, flattenBody };
 export type { Body };

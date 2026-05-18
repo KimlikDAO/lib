@@ -1,4 +1,5 @@
 import { Fragment } from "./fragment";
+import { Op } from "./opcodes";
 import { TypeList } from "./signature";
 import {
   AddrLit,
@@ -6,6 +7,7 @@ import {
   DataLit,
   EvmType,
   Literal,
+  Locn,
   LocnLit,
   SizeLit,
   UintLit,
@@ -17,6 +19,7 @@ import { assert } from "./util/assert";
 class StackRef {
   constructor(
     readonly name: string,
+    readonly type?: EvmType,
   ) { }
 }
 
@@ -58,6 +61,9 @@ class Expression {
     let pos = 0;
     for (const arg of args)
       if (arg instanceof StackRef) {
+        if (arg.type)
+          assertAssignable(expect[pos]!, arg.type,
+            `Expression child at position ${pos + 1}`);
         children.push(arg);
         ++pos;
       } else if (arg instanceof Expression) {
@@ -78,6 +84,26 @@ class Expression {
   }
 }
 
+class CalldataRef<T extends EvmType = EvmType> extends Expression {
+  constructor(
+    readonly offset: LocnArg,
+    readonly type: T,
+  ) {
+    super([offset], Fragment.from({
+      expect: [Locn],
+      pop: 1,
+      ensure: [type],
+      code: [Op.CALLDATALOAD],
+    }));
+  }
+}
+
+type Arg<T extends EvmType = EvmType> =
+  | Literal
+  | StackRef
+  | CalldataRef<T>
+  | Expression;
+
 const hook = (
   cond: BoolArg,
   trueExpr: ExprArg,
@@ -88,11 +114,14 @@ const hook = (
   return cond ? trueExpr : falseExpr;
 }
 
-const get = (name: string): StackRef => new StackRef(name);
+const get = (name: string, type?: EvmType): StackRef =>
+  new StackRef(name, type);
 
 export {
   AddrArg,
+  Arg,
   BoolArg,
+  CalldataRef,
   DataArg,
   ExprArg,
   ExprChild,

@@ -2,7 +2,7 @@ import { Address } from "../../address.d";
 import { assemble, Program } from "../assembler";
 import { call } from "../builtins";
 import { get } from "../expression";
-import type { Body } from "../scope";
+import type { Body } from "../body";
 import { set, unrollFor } from "../statement";
 import { Weis } from "../types";
 

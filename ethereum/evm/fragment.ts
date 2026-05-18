@@ -63,7 +63,7 @@ class Fragment {
         });
       case Uint:
         return Fragment.from({
-          ensure: [Uint], code: pushNumber(lit as UintLit)
+          ensure: [Uint], code: pushNumber(uintValue(lit as UintLit))
         });
       case Weis: {
         let value = lit as WeisLit;
@@ -121,6 +121,9 @@ const pushNumber = (n: bigint | number, maxLength = 32): FlatCode => {
     `Number literal ${n} exceeds ${maxLength} bytes`);
   return [PUSHN(opData.length), opData];
 };
+
+const uintValue = (value: UintLit): bigint | number =>
+  value instanceof Uint ? value.toBigInt() : value;
 
 const pushHex = (hex: string): FlatCode => {
   if (hex.startsWith("0x")) hex = hex.slice(2);

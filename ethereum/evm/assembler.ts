@@ -1,7 +1,6 @@
+import { body, Body } from "./body";
 import { CodeAtom, FlatCode, Fragment, LabelPos, LabelRef } from "./fragment";
 import { Op, PUSHN } from "./opcodes";
-import { scope } from "./scope";
-import type { Body } from "./scope";
 import { Label } from "./statement";
 import { assert } from "./util/assert";
 
@@ -60,7 +59,7 @@ function assemble(...body: readonly Body[]): Program;
 function assemble(...input: readonly AssemblyInput[]): Program {
   const fragment = input.length == 1 && input[0] instanceof Fragment
     ? input[0]
-    : scope(...input as readonly Body[]);
+    : body(...input as readonly Body[]);
   assert(fragment.signature.expect.length == 0,
     `Can only assemble fulfilled fragments, received `
     + `${fragment.signature.expect.length} expected stack values`);

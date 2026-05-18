@@ -14,11 +14,11 @@ test("assemble serializes flat opcode and data atoms", () => {
   expect([...program]).toEqual([Op.PUSH1, 0x2a]);
 });
 
-test("assemble accepts statement inputs through scope", () => {
+test("assemble accepts statement inputs through body", () => {
   expect([...assemble(set("x", Uint, 0))]).toEqual([Op.PUSH0]);
 });
 
-test("assemble accepts recursive bodies through scope", () => {
+test("assemble accepts recursive bodies through body", () => {
   expect([...assemble([[set("x", Uint, 0)]])]).toEqual([Op.PUSH0]);
 });
 

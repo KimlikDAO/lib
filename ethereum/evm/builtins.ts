@@ -1,6 +1,7 @@
 import {
   AddrArg,
   BoolArg,
+  CalldataRef,
   DataArg,
   ExprArg,
   Expression,
@@ -84,12 +85,7 @@ const returndataSize = (): Expression =>
   new Expression([], Ops[Op.RETURNDATASIZE]!);
 
 const calldataLoad = (offset: LocnArg, type: EvmType = Data): Expression =>
-  new Expression([offset], Fragment.from({
-    expect: [Locn],
-    pop: 1,
-    ensure: [type],
-    code: [Op.CALLDATALOAD],
-  }));
+  new CalldataRef(offset, type);
 
 const mstore = (offset: UintArg, value: ExprArg): Expression =>
   new Expression([value, offset], Fragment.from({

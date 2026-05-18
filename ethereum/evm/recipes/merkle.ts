@@ -1,6 +1,5 @@
 import {
   bitAnd,
-  calldataLoad,
   eq,
   keccak256,
   mstore,
@@ -10,8 +9,8 @@ import {
   sload,
   sub,
 } from "../builtins";
-import { get } from "../expression";
 import { inline } from "../function";
+import { array } from "../array";
 import { set, unrollFor } from "../statement";
 import { Data, Uint } from "../types";
 
@@ -25,24 +24,21 @@ const hashPairAtOffset = inline(
 );
 
 const verifyMerkle = (depth: number) => inline(
-  { leaf: Data, index: Uint },
-  ({ leaf, index }) => [
+  { hash: Data, index: Uint, proof: array(Data, depth) },
+  ({ hash, index, proof }) => [
     unrollFor(
-      [
-        set("hash", leaf),
-        set("index", index),
-      ],
+      [],
       range(depth),
       (level) => [
-        set("hash", hashPairAtOffset(
-          calldataLoad(level * 32 + 64, Data),
-          mul(bitAnd(get("index"), 1), 32),
-          get("hash"),
+        set(hash, hashPairAtOffset(
+          proof.at(level),
+          mul(bitAnd(index, 1), 32),
+          hash,
         )),
-        set("index", shr(1, get("index"))),
+        set(index, shr(1, index)),
       ],
     ),
-    eq(get("hash"), sload(0, Data)),
+    eq(hash, sload(0, Data)),
   ],
 );
 

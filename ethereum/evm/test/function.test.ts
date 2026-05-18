@@ -1,8 +1,9 @@
 import { expect, test } from "bun:test";
 import { assemble } from "../assembler";
-import { keccak256, mstore, sub } from "../builtins";
+import { eq, keccak256, mstore, sub } from "../builtins";
 import { get } from "../expression";
 import { inline } from "../function";
+import { array, calldata } from "../array";
 import { Op } from "../opcodes";
 import { set } from "../statement";
 import { Data, Uint } from "../types";
@@ -45,4 +46,17 @@ test("inline body must end with a single-output expression", () => {
   expect(() => inline({ x: Uint }, ({ x }) => [
     set("y", x),
   ])).toThrow("inline body must end with an expression");
+});
+
+test("inline accepts arrays supplied at the call site", () => {
+  const pick = inline(
+    { hash: Data, proof: array(Data, 2) },
+    ({ hash, proof }) => eq(proof.at(1), hash),
+  );
+  const cd = calldata({ proof: [64, array(Data, 2)] });
+  const expr = pick(get("hash"), cd.proof);
+
+  expect(String(expr.frag.signature)).toBe("(Data) → 1|Bool");
+  expect(numberOps(expr.frag.code)).toContain(Op.CALLDATALOAD);
+  expect(numberOps(expr.frag.code)).toContain(Op.EQ);
 });

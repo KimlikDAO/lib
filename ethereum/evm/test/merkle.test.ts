@@ -4,6 +4,7 @@ import { expect, test } from "bun:test";
 import { keccak256Uint8 } from "../../../crypto/sha3";
 import { assemble } from "../assembler";
 import { calldataLoad, mstore, ret } from "../builtins";
+import { array, calldata as calldataLayout } from "../array";
 import { Op } from "../opcodes";
 import { verifyMerkle } from "../recipes/merkle";
 import { Data, Uint } from "../types";
@@ -49,7 +50,7 @@ const rootOf = (
   return hash;
 }
 
-const calldata = (
+const encodeCalldata = (
   leaf: Uint8Array,
   index: bigint,
   proof: readonly Uint8Array[],
@@ -76,6 +77,11 @@ const verifyMerkleProgram = (depth: number): Uint8Array<ArrayBuffer> =>
     mstore(0, verifyMerkle(depth)(
       calldataLoad(0, Data),
       calldataLoad(32, Uint),
+      calldataLayout({
+        leaf: [0, Data],
+        index: [32, Uint],
+        proof: [64, array(Data, depth)],
+      }).proof,
     )),
     ret(0, 32),
   );
@@ -87,6 +93,7 @@ test("verifyMerkle assembles a fixed-depth verifier", () => {
   expect(String(verifier(
     calldataLoad(0, Data),
     calldataLoad(32, Uint),
+    calldataLayout({ proof: [64, array(Data, 2)] }).proof,
   ).frag.signature)).toBe("(Data, Uint) → 2|Bool");
   expect(program).toContain(Op.CALLDATALOAD);
   expect(program).toContain(Op.MSTORE);
@@ -101,7 +108,7 @@ test("verifyMerkle accepts and rejects proofs against storage root", async () =>
   const proof = [word(0x22), word(0x33)];
   const index = 1n;
   const root = rootOf(leaf, proof, index);
-  const data = calldata(leaf, index, proof);
+  const data = encodeCalldata(leaf, index, proof);
 
   const valid = await runVerifier(2, root, data);
   expect(valid).toEqual(wordBigint(1n));

@@ -2,9 +2,25 @@ import { Address } from "../address.d";
 
 type Bytes = Uint8Array<ArrayBuffer>;
 
+const wordBytes = (value: bigint): Bytes => {
+  const out = new Uint8Array(32);
+  for (let i = 31; 0 <= i; --i) {
+    out[i] = Number(value & 0xffn);
+    value >>= 8n;
+  }
+  return out;
+}
+
 class Word {
   static name = "";
   constructor(private word: Bytes) { }
+
+  toBigInt(): bigint {
+    let value = 0n;
+    for (const byte of this.word)
+      value = (value << 8n) | BigInt(byte);
+    return value;
+  }
 
   toString() { return "" + this.word; }
 }
@@ -19,6 +35,19 @@ class Addr extends Word {
 
 class Uint extends Word {
   static override name = "Uint";
+
+  static from(value: Uint | bigint | number): Uint {
+    return value instanceof Uint ? value : new Uint(wordBytes(BigInt(value)));
+  }
+
+  static of(value: Uint | bigint | number): Uint {
+    return Uint.from(value);
+  }
+
+  shr(value: Uint): Uint {
+    const shift = this.toBigInt();
+    return Uint.from(256n <= shift ? 0n : value.toBigInt() >> shift);
+  }
 }
 
 class Weis extends Uint {
@@ -77,7 +106,7 @@ type BoolLit = boolean;
 type DataLit = Bytes | number | bigint | string;
 type LocnLit = bigint | number;
 type SizeLit = bigint | number;
-type UintLit = bigint | number;
+type UintLit = Uint | bigint | number;
 type WeisLit = bigint | string;
 type Literal =
   | AddrLit

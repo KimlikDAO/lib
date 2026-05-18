@@ -14,6 +14,7 @@ import {
   sstore,
   sub,
 } from "../builtins";
+import { shr as evalShr } from "../eval/builtins";
 import { Expression, get } from "../expression";
 import { Op } from "../opcodes";
 import { set } from "../statement";
@@ -76,7 +77,9 @@ test("arithmetic and memory helpers expose small expression fragments", () => {
     .toBe("(Uint, Uint) → 2|Uint");
   expect(String(mul(get("x"), 32).frag.signature))
     .toBe("(Uint, Uint) → 2|Uint");
-  expect(String(shr(1, get("x")).frag.signature))
+  const out = shr(1, get("x"));
+  expect(out).toBeInstanceOf(Expression);
+  expect(String(out.frag.signature))
     .toBe("(Uint, Uint) → 2|Uint");
   expect(String(eq(get("x"), get("y")).frag.signature))
     .toBe("(, ) → 2|Bool");
@@ -84,6 +87,17 @@ test("arithmetic and memory helpers expose small expression fragments", () => {
     .toBe("(, Uint) → 2|");
   expect(String(keccak256(0, 64).frag.signature))
     .toBe("(Size, Uint) → 2|Data");
+});
+
+test("eval shr runs directly on small JS values", () => {
+  expect(Uint.from(evalShr(1, 8)).toBigInt()).toBe(4n);
+});
+
+test("IR shr exposes expression lowering", () => {
+  const expr = shr(1, get("x"));
+  expect(expr).toBeInstanceOf(Expression);
+  expect(String(expr.frag.signature))
+    .toBe("(Uint, Uint) → 2|Uint");
 });
 
 test("sub keeps the public lhs-rhs order over EVM stack order", () => {

@@ -1,6 +1,6 @@
 import { BoolArg, ExprChild, Expression, StackRef } from "./expression";
 import { Fragment } from "./fragment";
-import type { Body } from "./scope";
+import type { Body } from "./body";
 import { Bytes, EvmType, Literal, Size } from "./types";
 
 class Label {
@@ -32,7 +32,7 @@ const ifElse = (_cond: BoolArg, _t: Expression, _f: Expression): Expression => {
   throw new TypeError("ifElse is not implemented yet");
 }
 
-type NameBinding = string | string[] | Record<string, string>;
+type NameBinding = string | StackRef | string[] | Record<string, string>;
 
 class SetStatement {
   constructor(
