@@ -53,7 +53,7 @@ jobs:
           - name: did
             cmd: kdts test did --strict
           - name: ethereum
-            cmd: kdts test ethereum/test --strict
+            cmd: kdts test ethereum --strict
           - name: mina
             cmd: kdts test mina --strict
           - name: protocol

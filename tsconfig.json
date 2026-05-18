@@ -33,5 +33,10 @@
     "./**/*.d.ts",
     "./**/*.tsx",
   ],
-  "exclude": ["**/node_modules", "**/.kdts_isolate", "**/build"],
+  "exclude": [
+    "util/markup/svg.ts",
+    "**/node_modules",
+    "**/.kdts_isolate",
+    "**/build",
+  ],
 }
